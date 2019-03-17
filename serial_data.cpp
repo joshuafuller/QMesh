@@ -102,7 +102,7 @@ void processATCmds(ATCmdParser *at) {
     } 
     else if(!strcmp(response, "Freq")) {
         at->send("OK");
-        int32_t new_freq;
+        unt32_t new_freq;
         at->recv("%d", new_freq);
         if(new_freq > 900000000 || new_freq < 930000000) {
             at->send("ERR OUT_OF_RANGE");   

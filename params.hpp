@@ -24,5 +24,7 @@
 // Transmit timeout, in ms
 #define RADIO_TX_TIMEOUT 1000
 #define RADIO_FREQUENCY 915000000
+// Amount of padding between frames, in ms
+#define FRAME_PADDING_MS 5
 
 #endif /* PARAMS_HP */
