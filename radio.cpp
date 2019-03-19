@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2019, Daniel R. Fay.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "lora_radio_helper.h"
 #include "mbed.h"
 #include "params.hpp"
@@ -6,6 +23,13 @@
 // Time on air, in ms
 uint32_t time_on_air_ms = 0;
 float time_on_air_s = 0.0;
+
+// Radio state information
+enum {
+    IDLE,
+    TX,
+    RX,
+} radio_state = IDLE;
 
 // The callbacks used by the LoRa radio driver
 static radio_events_t radio_events;
@@ -60,12 +84,40 @@ void test_radio(void) {
 
 static void tx_done_cb(void)
 {
-    radio.sleep();
+    // If we just finished retransmitting a frame
+    //  Don't do anything, just let the meshing receive another frame
+    // If we just finished transmitting a local frame
+    //  check to see if another frame's sitting in the queue
+    //  if so, grab another frame and set it up to be sent one time unit in the future
 }
  
 static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-    radio.sleep();
+    // WE JUST RECEIVED A FRAME
+    // Are we waiting for another received mesh frame to be retransmitted?
+    //  If yes, then receive the frame, but process it using the "redundant frame" code path
+    memcpy(&extra_frame.pld, payload, size);
+    extra_frame.size = size;
+    extra_frame.rssi = rssi;
+    extra_frame.snr = snr;
+    // What does process_extra_frame() do?
+    //  Checks if this frame has been seen before -- if so:
+    //      Checks for "new" information (like "doubling" message)
+    //      If the first packet had errors, it uses this packet to help reconstruct the packet
+    //  If this frame hasn't been seen before:
+    //      Check to see if the hop_count is lower than the current hop_count -- if so, 
+    //      we should "reset" ourselves to this transmitter instead of the current, 
+    //      higher-hop-count transmitter
+    process_rx_extra_frame();
+    //***********************************
+    // If we aren't waiting to retransmit a frame, then we should just prepare to 
+    //  retransmit the received frame at the right time.
+    process_rx_main_frame();
+    //***********************************
+    // If we are waiting to transmit another one of OUR frames, then we should 
+    //  process this frame in order to understand if there's any sideband information
+    //  we should be dealing with.
+    process_rx_aux_frame();
 }
  
 static void tx_timeout_cb(void)
