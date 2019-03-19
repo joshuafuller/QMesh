@@ -53,25 +53,27 @@ void txCallback(void) {
 }
 
 
-void rxCallback(frame_t *rx_frame) {
-    rx_mesh_time.attach(txCallback, TIME_SLOT_SECONDS);
-    rx_queue.enqueue(rx_frame);
-    memcpy(&mesh_data, rx_frame, sizeof(frame_t));
-}
-
-
-static list<uint32_t> crc_list_vals;
-bool checkRedundantPkt(const uint8_t *pld, const size_t len) {
+static list<uint32_t> past_crc;
+static bool checkRedundantPkt(const uint8_t *pld, const size_t len) {
     bool ret_val = false;
     MbedCRC<POLY_32BIT_ANSI, 32> ct;
     uint32_t crc = 0;
     ct.compute((void *) pld, len, &crc);
-    if(find(crc_list_vals.begin(), crc_list_vals.end(), crc) == crc_list_vals.end()) {
+    if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         ret_val = true;
-        crc_list_vals.push_back(crc);
-        if(crc_list_vals.size() > PKT_CHK_HISTORY) {
-            crc_list_vals.pop_front();
+        past_crc.push_back(crc);
+        if(past_crc.size() > PKT_CHK_HISTORY) {
+            past_crc.pop_front();
         }
     }
     return ret_val;
+}
+
+
+void rxCallback(frame_t *rx_frame) {
+    if(!checkRedundantPkt(rx_frame->data, FRAME_PAYLOAD_LEN)) {
+        rx_mesh_time.attach(txCallback, TIME_SLOT_SECONDS);
+        rx_queue.enqueue(rx_frame);
+        memcpy(&mesh_data, rx_frame, sizeof(frame_t));
+    }
 }
