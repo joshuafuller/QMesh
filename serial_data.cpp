@@ -18,6 +18,7 @@
 #include <mbed.h>
 #include <ATCmdParser.h>
 #include "serial_data.hpp"
+#include "lora_radio_helper.h"
 
 
 bool FrameQueue::enqueue(frame_t *frame) {
@@ -206,4 +207,16 @@ void processATCmds(ATCmdParser *at) {
             at->send("ERR %d", errcode);   
         }
     }
+    else if(!strcmp(response, "NVCLR")) {  
+        clearNVSettings();
+        at->send("OK");
+    }   
+    else if(!strcmp(response, "ENABLE_MESH")) {
+        mesh_enable = true;
+        at->send("OK");
+    }
+    else if(!strcmp(response, "DISABLE_MESH")) {
+        mesh_enable = false;
+        at->send("OK");
+    }    
 }

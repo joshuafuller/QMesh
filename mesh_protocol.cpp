@@ -16,8 +16,8 @@
  */
 
 #include "mbed.h"
-#include "serial_data.hpp"
 #include "params.hpp"
+#include "serial_data.hpp"
 #include <list>
 #include <algorithm>
 

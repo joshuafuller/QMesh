@@ -20,6 +20,8 @@
 #include "params.hpp"
 #include <string>
 
+union nv_radio_settings_union nv_radio_settings;
+
 // Time on air, in ms
 uint32_t time_on_air_ms = 0;
 float time_on_air_s = 0.0;
@@ -53,7 +55,7 @@ void init_radio(void) {
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
     radio.init_radio(&radio_events);
-    radio.set_rx_config(1, RADIO_BANDWIDTH,
+    radio.set_rx_config((1, RADIO_BANDWIDTH,
                             RADIO_SF, RADIO_CODERATE,
                             0, RADIO_PREAMBLE_LEN,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
@@ -122,17 +124,17 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
  
 static void tx_timeout_cb(void)
 {
-    radio.sleep();
+    printf("ERROR: Tx Timeout\r\n");
 }
  
 static void rx_timeout_cb(void)
 {
-    radio.sleep();
+    printf("ERROR: Rx Timeout\r\n");
 }
  
 static void rx_error_cb(void)
 {
-    radio.sleep();
+    printf("ERROR: Rx Error\r\n");
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) {

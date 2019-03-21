@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2019, Daniel R. Fay.
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -15,13 +15,23 @@
  * limitations under the License.
  */
 
-#include "mbed.h"
+#ifndef SERIAL_DATA_HPP
+#define SERIAL_DATA_HPP
 
-typedef struct {
+#include "mbed.h"
+#include "params.hpp"
+#include "nv_settings.hpp"
+
+typedef struct frame_struct_t {
     uint8_t type;    
     uint16_t stream_id;
     uint8_t ttl;
     uint8_t data[FRAME_PAYLOAD_LEN];
+} frame_struct_t;
+
+typedef union frame_t {
+    frame_struct_t frame;
+    uint8_t buf[sizeof(frame_struct_t)];
 } frame_t;
 
 
@@ -43,3 +53,6 @@ class FrameQueue {
         // Returns whether queue is full
         bool getFull(void);
 };
+
+
+#endif /* SERIAL_DATA_HPP */
