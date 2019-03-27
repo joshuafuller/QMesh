@@ -21,11 +21,17 @@
 #include "mbed.h"
 #include "params.hpp"
 #include "nv_settings.hpp"
+#include "SX1272_LoRaRadio.h"
+
+extern SX1272_LoRaRadio radio;
 
 typedef struct frame_struct_t {
     uint8_t type;    
     uint16_t stream_id;
     uint8_t ttl;
+    int16_t rssi;
+    int8_t snr;
+    uint16_t rx_size;
     uint8_t data[FRAME_PAYLOAD_LEN];
 } frame_struct_t;
 

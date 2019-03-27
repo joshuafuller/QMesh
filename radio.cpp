@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-#include "lora_radio_helper.h"
+//#include "lora_radio_helper.h"
 #include "mbed.h"
 #include "params.hpp"
+#include "serial_data.hpp"
 #include <string>
+#include "SX1272_LoRaRadio.h"
 
+extern SX1272_LoRaRadio radio;
+
+#if 0
 union nv_radio_settings_union nv_radio_settings;
+#endif
 
 // Time on air, in ms
 uint32_t time_on_air_ms = 0;
@@ -55,21 +61,21 @@ void init_radio(void) {
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
     radio.init_radio(&radio_events);
-    radio.set_rx_config((1, RADIO_BANDWIDTH,
+    radio.set_rx_config(MODEM_LORA, RADIO_BANDWIDTH,
                             RADIO_SF, RADIO_CODERATE,
                             0, RADIO_PREAMBLE_LEN,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             FRAME_PAYLOAD_LEN,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
-    radio.set_tx_config(1, RADIO_POWER, 0,
+    radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
                             RADIO_BANDWIDTH, RADIO_SF,
                             RADIO_CODERATE, RADIO_PREAMBLE_LEN,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
     radio.set_channel(RADIO_FREQUENCY);
-    time_on_air_ms = radio.time_on_air(1, FRAME_PAYLOAD_LEN);
+    time_on_air_ms = radio.time_on_air(MODEM_LORA, FRAME_PAYLOAD_LEN);
     time_on_air_s = time_on_air_ms/1000.0;
 }
 
@@ -92,16 +98,21 @@ static void tx_done_cb(void)
     //  check to see if another frame's sitting in the queue
     //  if so, grab another frame and set it up to be sent one time unit in the future
 }
- 
+
+#warning "Need to properly implement extra_frame"
+frame_t extra_frame;
+static void process_rx_extra_frame(void) {}
+static void process_rx_main_frame(void) {}
+static void process_rx_aux_frame(void) {}
 static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
     // WE JUST RECEIVED A FRAME
     // Are we waiting for another received mesh frame to be retransmitted?
     //  If yes, then receive the frame, but process it using the "redundant frame" code path
-    memcpy(&extra_frame.pld, payload, size);
-    extra_frame.size = size;
-    extra_frame.rssi = rssi;
-    extra_frame.snr = snr;
+    memcpy(&extra_frame.frame.data, payload, size);
+    extra_frame.frame.rx_size = size;
+    extra_frame.frame.rssi = rssi;
+    extra_frame.frame.snr = snr;
     // What does process_extra_frame() do?
     //  Checks if this frame has been seen before -- if so:
     //      Checks for "new" information (like "doubling" message)

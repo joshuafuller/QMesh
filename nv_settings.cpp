@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#if 0
 #define RADIO_SETTINGS_KEY 0
 #define MESH_SETTINGS_KEY 1
 
@@ -55,3 +56,4 @@ void clearNVSettings(void) {
     NVStore &nvstore = NVStore::get_instance();
     nvstore.reset();
 }
+#endif

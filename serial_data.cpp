@@ -18,7 +18,8 @@
 #include <mbed.h>
 #include <ATCmdParser.h>
 #include "serial_data.hpp"
-#include "lora_radio_helper.h"
+//#include "lora_radio_helper.h"
+
 
 
 bool FrameQueue::enqueue(frame_t *frame) {
@@ -54,8 +55,6 @@ bool FrameQueue::getEmpty(void) {
 bool FrameQueue::getFull(void) {
     return queue.full();
 }
-
-
 
 FrameQueue tx_queue, rx_queue;
 
@@ -110,15 +109,19 @@ FrameQueue tx_queue, rx_queue;
 // AT+NVS -- save settings to Non-Volatile Storage (NVS)
 // -- OK -- response
 //
-// 
+//
+#if 0 
 char response[64];
 char recv_data[256];
 void processATCmds(ATCmdParser *at) {
     at->recv("AT+%s", response);
-    if(!strcmp(response, "Freq?")) {
+    if(!strcmp(response, "CHECK?")) {
+        at->send("CHECK OK");
+    }
+    else if(!strcmp(response, "FREQ?")) {
         at->send(radio->freq);
     } 
-    else if(!strcmp(response, "Freq")) {
+    else if(!strcmp(response, "FREQ")) {
         at->send("OK");
         unt32_t new_freq;
         at->recv("%d", new_freq);
@@ -220,3 +223,4 @@ void processATCmds(ATCmdParser *at) {
         at->send("OK");
     }    
 }
+#endif

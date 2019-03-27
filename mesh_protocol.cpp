@@ -20,6 +20,7 @@
 #include "serial_data.hpp"
 #include <list>
 #include <algorithm>
+#include "LoRaRadio.h"
 
 extern FrameQueue tx_queue, rx_queue;
 
@@ -28,26 +29,26 @@ static Timeout rx_mesh_time;
 typedef enum {
     TX,
     RX,
-} radio_state_t;
-radio_state_t radio_state; 
+} mesh_state_t;
+mesh_state_t mesh_state; 
 
 #define TX_TIMEOUT 10
 static int tx_timeout = 0;
 void txCallback(void) {
-    if(radio_state == TX) {
+    if(mesh_state == TX) {
         // If there's something to send in the TX queue, then send it
         tx_timeout = 0;
         // Otherwise, wait until the next timeslot to try again
         tx_timeout += 1;
         if(tx_timeout > 10) {
             tx_timeout = 0;
-            radio_state = RX;
+            mesh_state = RX;
         }
         else {
             
         }
     }
-    else if(radio_state == RX) {
+    else if(mesh_state == RX) {
         // send(mesh_data);
     }
 }
@@ -69,9 +70,10 @@ static bool checkRedundantPkt(const uint8_t *pld, const size_t len) {
     return ret_val;
 }
 
-
+#warning "Dummy Value for TIME_SLOT_SECONDS"
+#define TIME_SLOT_SECONDS 1
 void rxCallback(frame_t *rx_frame) {
-    if(!checkRedundantPkt(rx_frame->data, FRAME_PAYLOAD_LEN)) {
+    if(!checkRedundantPkt(rx_frame->frame.data, FRAME_PAYLOAD_LEN)) {
         rx_mesh_time.attach(txCallback, TIME_SLOT_SECONDS);
         rx_queue.enqueue(rx_frame);
         memcpy(&mesh_data, rx_frame, sizeof(frame_t));
