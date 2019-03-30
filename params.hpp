@@ -32,7 +32,7 @@
 #define RADIO_SYM_TIMEOUT 12
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
-#define RADIO_BANDWIDTH 2
+#define RADIO_BANDWIDTH 1
 #define RADIO_SF 9
 // 1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8
 #define RADIO_CODERATE 1
@@ -41,6 +41,7 @@
 // Transmit timeout, in ms
 #define RADIO_TX_TIMEOUT 1000
 #define RADIO_FREQUENCY 915000000
+#define HOP_CHANNEL_SIZE 500000
 // Amount of padding between frames, in ms
 #define FRAME_PADDING_MS 5
 // Number of past packets to check the current packet against

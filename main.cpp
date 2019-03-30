@@ -17,12 +17,14 @@
 
 #include "mbed.h"
 #include "lora_radio_helper.h"
+#include "radio.hpp"
 
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 Thread led2_thread;
 Thread led3_thread;
+Thread radio_thread;
 
 void led2_thread_fn() {
     while (true) {
@@ -44,9 +46,15 @@ void led3_thread_fn() {
 // main() runs in its own thread in the OS
 int main()
 {
+    // Set up the radio
+    init_radio();
+
     // Start a thread for blinking LEDs
     led2_thread.start(led2_thread_fn);
     led3_thread.start(led3_thread_fn);
+
+    // Start a thread for the radio
+    radio_thread.start(test_radio);
 
     int count = 0;
     while (true) {

@@ -73,6 +73,7 @@ static bool checkRedundantPkt(const uint8_t *pld, const size_t len) {
 #warning "Dummy Value for TIME_SLOT_SECONDS"
 #define TIME_SLOT_SECONDS 1
 void rxCallback(frame_t *rx_frame) {
+    
     if(!checkRedundantPkt(rx_frame->frame.data, FRAME_PAYLOAD_LEN)) {
         rx_mesh_time.attach(txCallback, TIME_SLOT_SECONDS);
         rx_queue.enqueue(rx_frame);
