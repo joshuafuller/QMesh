@@ -40,9 +40,6 @@ union {
 void init_radio(void);
 void test_radio(void);
 
-#define CENTER_FREQUENCY 915000000
-#define HOP_CHANNEL_SIZE 500000
-
 /*!
  * Frequency hopping frequencies table
  */

@@ -18,6 +18,7 @@
 #include "mbed.h"
 #include "lora_radio_helper.h"
 #include "radio.hpp"
+#include "params.hpp"
 
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
@@ -53,8 +54,10 @@ int main()
     led2_thread.start(led2_thread_fn);
     led3_thread.start(led3_thread_fn);
 
+#ifdef TX_TEST_MODE
     // Start a thread for the radio
     radio_thread.start(test_radio);
+#endif
 
     int count = 0;
     while (true) {

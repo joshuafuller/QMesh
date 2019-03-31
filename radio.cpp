@@ -125,6 +125,7 @@ static void process_rx_main_frame(void) {}
 static void process_rx_aux_frame(void) {}
 static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
+#ifndef RX_TEST_MODE
     static bool first_time = true;
     // Seed the PRNG with the RSSI to try to add some more entropy
     if(first_time) {
@@ -157,6 +158,9 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
     //  process this frame in order to understand if there's any sideband information
     //  we should be dealing with.
     process_rx_aux_frame();
+#else
+    printf("Received frame\r\n");
+#endif /* RX_TEST_MODE */
 }
  
 static void tx_timeout_cb(void)
