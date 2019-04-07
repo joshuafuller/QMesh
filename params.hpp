@@ -21,8 +21,8 @@
 // Defines key parameters
 
 // Test mode selection
-#define TX_TEST_MODE
-//#define RX_TEST_MODE
+//#define TX_TEST_MODE
+#define RX_TEST_MODE
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 32
@@ -50,5 +50,10 @@
 #define FRAME_PADDING_MS 5
 // Number of past packets to check the current packet against
 #define PKT_CHK_HISTORY 32
+
+// Debug options
+#define DEBUG_INFO
+#define DEBUG_WARN
+#define DEBUG_ERROR
 
 #endif /* PARAMS_HP */

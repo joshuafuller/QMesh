@@ -17,17 +17,25 @@
 
 //#include "lora_radio_helper.h"
 #include "mbed.h"
+#include "rtos.h"
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <string>
 #include "SX1272_LoRaRadio.h"
 #include "radio.hpp"
 
+
 extern SX1272_LoRaRadio radio;
 
 #if 0
 union nv_radio_settings_union nv_radio_settings;
 #endif
+
+// Main thread for working with the LoRa radio
+Thread radio_thread;
+
+// Radio event flags for synchronizing threads
+EventFlags rx_done_evt;
 
 // Time on air for a packet
 float time_on_air_us = 0.0;
@@ -100,11 +108,20 @@ void init_radio(void) {
 // Simple function that just sends out a simple packet every 1s
 static std::string send_str("KG5VBY: This is a test string\r\n");
 static char send_string[256];
-void test_radio(void) {
+void tx_test_radio(void) {
     while(true) {
         memcpy(send_string, send_str.c_str(), send_str.length());
         radio.send((uint8_t *) send_string, send_str.length());
         wait(1.0);
+    }
+}
+
+// Simple test function that just prints out received packets
+void rx_test_radio(void) {
+    while(true) {
+        radio.receive();
+        rx_done_evt.wait_all(0x1);
+        debug_printf(DBG_INFO, "Received Packet\r\n");
     }
 }
 
@@ -119,7 +136,7 @@ static void tx_done_cb(void)
 }
 
 #warning "Need to properly implement extra_frame"
-frame_t extra_frame;
+Frame extra_frame;
 static void process_rx_extra_frame(void) {}
 static void process_rx_main_frame(void) {}
 static void process_rx_aux_frame(void) {}
@@ -159,7 +176,8 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
     //  we should be dealing with.
     process_rx_aux_frame();
 #else
-    printf("Received frame\r\n");
+    debug_printf(DBG_INFO, "Received frame\r\n");
+    rx_done_evt.set(0x1);
 #endif /* RX_TEST_MODE */
 }
  

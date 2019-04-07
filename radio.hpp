@@ -35,10 +35,16 @@ union {
     uint8_t buf[sizeof(nv_radio_settings_t)];
 } nv_radio_settings_union;
 
+// Main thread for working with the LoRa radio
+extern Thread radio_thread;
 
 // Initialize the radio
 void init_radio(void);
-void test_radio(void);
+
+// Test functions, one for transmitting and one for receiving
+#define RX_DONE_SIGNAL 0xAB
+void tx_test_radio(void);
+void rx_test_radio(void);
 
 /*!
  * Frequency hopping frequencies table

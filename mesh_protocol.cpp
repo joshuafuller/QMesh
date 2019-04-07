@@ -24,7 +24,7 @@
 
 extern FrameQueue tx_queue, rx_queue;
 
-static frame_t mesh_data;
+static Frame mesh_frame;
 static Timeout rx_mesh_time;
 typedef enum {
     TX,
@@ -55,11 +55,9 @@ void txCallback(void) {
 
 
 static list<uint32_t> past_crc;
-static bool checkRedundantPkt(const uint8_t *pld, const size_t len) {
+static bool checkRedundantPkt(Frame &rx_frame) {
+    uint32_t crc = rx_frame.calculateUniqueCrc();
     bool ret_val = false;
-    MbedCRC<POLY_32BIT_ANSI, 32> ct;
-    uint32_t crc = 0;
-    ct.compute((void *) pld, len, &crc);
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         ret_val = true;
         past_crc.push_back(crc);
@@ -72,11 +70,10 @@ static bool checkRedundantPkt(const uint8_t *pld, const size_t len) {
 
 #warning "Dummy Value for TIME_SLOT_SECONDS"
 #define TIME_SLOT_SECONDS 1
-void rxCallback(frame_t *rx_frame) {
-    
-    if(!checkRedundantPkt(rx_frame->frame.data, FRAME_PAYLOAD_LEN)) {
+void rxCallback(Frame &rx_frame) {
+    if(!checkRedundantPkt(rx_frame)) {
         rx_mesh_time.attach(txCallback, TIME_SLOT_SECONDS);
         rx_queue.enqueue(rx_frame);
-        memcpy(&mesh_data, rx_frame, sizeof(frame_t));
+        mesh_frame.load(rx_frame);
     }
 }

@@ -19,13 +19,13 @@
 #include "lora_radio_helper.h"
 #include "radio.hpp"
 #include "params.hpp"
+#include "serial_data.hpp"
 
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 Thread led2_thread;
 Thread led3_thread;
-Thread radio_thread;
 
 void led2_thread_fn() {
     while (true) {
@@ -45,18 +45,32 @@ void led3_thread_fn() {
 #define PRINT_AFTER_N_LOOPS         20
 
 // main() runs in its own thread in the OS
+Serial pc(USBTX, USBRX);
 int main()
 {
+    // Set the UART comms speed
+    pc.baud(230400);
+
     // Set up the radio
+    debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
 
     // Start a thread for blinking LEDs
+    debug_printf(DBG_INFO, "Starting LED2 thread\r\n");
     led2_thread.start(led2_thread_fn);
+    debug_printf(DBG_INFO, "Starting LED3 thread\r\n");
     led3_thread.start(led3_thread_fn);
 
 #ifdef TX_TEST_MODE
     // Start a thread for the radio
-    radio_thread.start(test_radio);
+    debug_printf(DBG_INFO, "Starting Tx test thread\r\n");
+    radio_thread.start(tx_test_radio);
+#elif defined RX_TEST_MODE
+    // Start a thread for the radio_thread
+    debug_printf(DBG_INFO, "Starting Rx test thread\r\n");
+    radio_thread.start(rx_test_radio);
+#else
+    debug_printf(DBG_INFO, "Starting the mesh network\r\n");
 #endif
 
     int count = 0;

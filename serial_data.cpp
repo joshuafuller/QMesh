@@ -18,28 +18,68 @@
 #include <mbed.h>
 #include <ATCmdParser.h>
 #include "serial_data.hpp"
+#include "mbedtls/platform.h"
+#include "mbedtls/base64.h"
+#include <string>
 //#include "lora_radio_helper.h"
 
 
+// Compute the header CRC.
+uint16_t Frame::calculateHeaderCrc(void) {
+    // Header
+    MbedCRC<POLY_16BIT_CCITT, 16> ct;
+    uint32_t crc = 0;
+    ct.compute((void *) &pkt.hdr, sizeof(pkt.hdr), &crc);
+    return crc & 0x0000FFFF;
+}
 
-bool FrameQueue::enqueue(frame_t *frame) {
+// Compute the payload CRC.
+uint16_t Frame::calculatePayloadCrc(void) {
+    MbedCRC<POLY_16BIT_CCITT, 16> ct;
+    uint32_t crc = 0;
+    ct.compute((void *) &pkt.data, sizeof(pkt.data), &crc);
+    return crc & 0x0000FFFF;
+}
+
+// Calculate the CRC for the "unique" information.
+// The unique information consists of the type, stream_id, and payload.
+uint32_t Frame::calculateUniqueCrc(void) {
+    const size_t buf_size = sizeof(pkt.data)+sizeof(pkt.hdr);
+    uint8_t buf[buf_size];
+    size_t byte_cnt = 0;
+    memcpy(buf, &pkt.hdr, sizeof(pkt.hdr));
+    memcpy(buf+sizeof(pkt.hdr), &pkt.data, sizeof(pkt.data));
+    MbedCRC<POLY_32BIT_ANSI, 32> ct;
+    uint32_t crc = 0;
+    ct.compute((void *) buf, buf_size, &crc);
+    return crc;        
+}
+
+bool FrameQueue::enqueue(Frame &enq_frame) {
     if(queue.full()) 
         return false;
-    frame_t *tmp_frame = queue.alloc();
-    memcpy(tmp_frame, frame, sizeof(frame_t));
+    Frame *tmp_frame = queue.alloc();
+    tmp_frame->load(enq_frame);
+    queue.put(tmp_frame);
+    return true;
+}
+
+bool FrameQueue::enqueue(const uint8_t *buf, const size_t buf_size) {
+    if(queue.full()) 
+        return false;
+    Frame *tmp_frame = queue.alloc();
+    tmp_frame->deserialize(buf, buf_size);
     queue.put(tmp_frame);
     return true;
 }
 
 // Dequeue a frame. Copies the dequeued data into the frame if successful,
 //  returning true. Returns false if unsuccessful (queue is empty).
-bool FrameQueue::dequeue(frame_t *frame) {
-    if(queue.empty())
-        return false;
+bool FrameQueue::dequeue(Frame &deq_frame) {
     osEvent evt = queue.get();
     if(evt.status == osEventMail) {
-        frame_t *tmp_frame = (frame_t *) evt.value.p;
-        memcpy(frame, tmp_frame, sizeof(frame_t));
+        Frame *tmp_frame = (Frame *) evt.value.p;
+        deq_frame.load(*tmp_frame);
         queue.free(tmp_frame);
         return true;
     }
@@ -224,3 +264,59 @@ void processATCmds(ATCmdParser *at) {
     }    
 }
 #endif
+
+
+
+// Special debug printf. Prepends "[-] " to facilitate using the same
+//  UART for both AT commands as well as debug commands.
+static char tmp_str[512];
+int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    sprintf(tmp_str, fmt, args);
+    string msg_type;
+    if(dbg_type == DBG_INFO) {
+        #ifndef DEBUG_INFO
+        return 0;
+        #endif
+        msg_type = "INFO";
+    }
+    else if(dbg_type == DBG_WARN) {
+        #ifndef DEBUG_WARN
+        return 0;
+        #endif
+        msg_type = "WARN";
+    }
+    else if(dbg_type == DBG_ERROR) {
+        #ifndef DEBUG_ERROR
+        return 0;
+        #endif
+        msg_type = "ERR ";
+    }
+    else {
+        MBED_ASSERT(false);
+    }
+    int ret_val = printf("[+] %s -- %s", msg_type.c_str(), tmp_str);
+
+    va_end(args);
+    return ret_val;
+}
+
+
+// Takes an incoming Base64-encoded frame, decodes it, and stuffs it into the tx queue.
+static uint8_t base64_buf[512];
+void enqueue_tx_frames(const uint8_t *b64_tx_frame, const size_t b64_tx_frame_len) {
+    size_t frame_size;
+    int ret = mbedtls_base64_decode(base64_buf, sizeof(base64_buf), &frame_size, b64_tx_frame, b64_tx_frame_len);
+    MBED_ASSERT(ret != MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL);
+    MBED_ASSERT(ret != MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
+    if(frame_size == Frame::getPktSize()) {
+        tx_queue.enqueue(base64_buf, frame_size);
+        debug_printf(DBG_INFO, "Enqueued Tx frame\r\n");
+    }
+    else {
+        debug_printf(DBG_ERROR, "Decoded bytes not equal to a frame. %d decoded, frame size is %d\r\n",
+            frame_size, Frame::getPktSize());
+    }
+}
