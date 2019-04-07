@@ -120,6 +120,7 @@ void tx_test_radio(void) {
 // Simple test function that just prints out received packets
 void rx_test_radio(void) {
     while(true) {
+        radio.set_channel( RADIO_FREQUENCY );
         radio.receive();
         rx_done_evt.wait_all(0x1);
         debug_printf(DBG_INFO, "Received Packet\r\n");
@@ -179,6 +180,8 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
     process_rx_aux_frame();
 #endif
 #else
+    radio.set_channel( RADIO_FREQUENCY );
+    radio.sleep();
     debug_printf(DBG_INFO, "Received frame\r\n");
     rx_done_evt.set(0x1);
 #endif /* RX_TEST_MODE */
@@ -187,19 +190,21 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
 static void tx_timeout_cb(void)
 {
     radio.set_channel( RADIO_FREQUENCY );
-    printf("ERROR: Tx Timeout\r\n");
+    debug_printf(DBG_ERROR, "Tx Timeout\r\n");
 }
  
 static void rx_timeout_cb(void)
 {
     radio.set_channel( RADIO_FREQUENCY );
-    printf("ERROR: Rx Timeout\r\n");
+    radio.sleep();
+    debug_printf(DBG_ERROR, "Rx Timeout\r\n");
 }
  
 static void rx_error_cb(void)
 {
     radio.set_channel( RADIO_FREQUENCY );
-    printf("ERROR: Rx Error\r\n");
+    radio.sleep();
+    debug_printf(DBG_ERROR, "Rx Error\r\n");
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) {

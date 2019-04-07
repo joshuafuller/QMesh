@@ -21,8 +21,8 @@
 // Defines key parameters
 
 // Test mode selection
-#define TX_TEST_MODE
-//#define RX_TEST_MODE
+//#define TX_TEST_MODE
+#define RX_TEST_MODE
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 32
@@ -32,7 +32,7 @@
 #define RADIO_HOP_PERIOD 1
 #define RADIO_FREQ_HOP true
 #define RADIO_CRC_ON true
-#define RADIO_FIXED_LEN true
+#define RADIO_FIXED_LEN false
 #define RADIO_SYM_TIMEOUT 12
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
