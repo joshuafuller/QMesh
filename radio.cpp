@@ -112,6 +112,7 @@ void tx_test_radio(void) {
     while(true) {
         memcpy(send_string, send_str.c_str(), send_str.length());
         radio.send((uint8_t *) send_string, send_str.length());
+        debug_printf(DBG_INFO, "Transmitted Packet\r\n");
         wait(1.0);
     }
 }
@@ -143,6 +144,7 @@ static void process_rx_aux_frame(void) {}
 static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
 #ifndef RX_TEST_MODE
+#ifndef TX_TEST_MODE
     static bool first_time = true;
     // Seed the PRNG with the RSSI to try to add some more entropy
     if(first_time) {
@@ -175,6 +177,7 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
     //  process this frame in order to understand if there's any sideband information
     //  we should be dealing with.
     process_rx_aux_frame();
+#endif
 #else
     debug_printf(DBG_INFO, "Received frame\r\n");
     rx_done_evt.set(0x1);

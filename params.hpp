@@ -21,8 +21,8 @@
 // Defines key parameters
 
 // Test mode selection
-//#define TX_TEST_MODE
-#define RX_TEST_MODE
+#define TX_TEST_MODE
+//#define RX_TEST_MODE
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 32
