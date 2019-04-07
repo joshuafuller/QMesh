@@ -30,7 +30,7 @@
 // Radio parameters
 #define RADIO_INVERT_IQ false
 #define RADIO_HOP_PERIOD 1
-#define RADIO_FREQ_HOP true
+#define RADIO_FREQ_HOP false
 #define RADIO_CRC_ON true
 #define RADIO_FIXED_LEN false
 #define RADIO_SYM_TIMEOUT 12

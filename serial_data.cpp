@@ -274,7 +274,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    sprintf(tmp_str, fmt, args);
+    vsprintf(tmp_str, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
         #ifndef DEBUG_INFO

@@ -182,7 +182,8 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
 #else
     radio.set_channel( RADIO_FREQUENCY );
     radio.sleep();
-    debug_printf(DBG_INFO, "Received frame\r\n");
+    debug_printf(DBG_INFO, "Received frame with size %d, rssi %d, snr %d\r\n", size, rssi, snr);
+    debug_printf(DBG_INFO, "Packet is: %s\r\n", payload);
     rx_done_evt.set(0x1);
 #endif /* RX_TEST_MODE */
 }
@@ -205,6 +206,7 @@ static void rx_error_cb(void)
     radio.set_channel( RADIO_FREQUENCY );
     radio.sleep();
     debug_printf(DBG_ERROR, "Rx Error\r\n");
+    rx_done_evt.set(0x1);
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) {
