@@ -55,6 +55,60 @@ uint32_t Frame::calculateUniqueCrc(void) {
     return crc;        
 }
 
+// Take an array of bytes and unpack it into the object's internal data structures.
+// In the process of doing this, it checks the packet for various things, returning
+// the following:
+//  1. PKT_BAD_HDR_CRC -- the header CRC is bad.
+//  2. PKT_BAD_PLD_CRC -- the payload CRC is bad.
+//  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
+//  4. PKT_OK -- the received packet data is ok
+PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
+    // Step one: check the size of the packet
+    if(sizeof(pkt) != bytes_rx) {
+        pkt_status = PKT_BAD_SIZE;
+        return pkt_status;
+    }
+    // Step two: load the packet data and check the header CRC
+    memcpy(&pkt, buf, sizeof(pkt));
+    if(!checkHeaderCrc()) {
+        pkt_status = PKT_BAD_HDR_CRC;
+        return pkt_status;
+    }
+    // Step three: check the payload CRC
+    if(!checkPayloadCrc()) {
+        pkt_status = PKT_BAD_PLD_CRC;
+        return pkt_status;
+    }
+    // Size checked out, CRCs checked out, so return OK
+    pkt_status = PKT_OK;
+    return pkt_status;
+}
+
+// Pretty-print the Frame.
+void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
+    debug_printf(dbg_type, "==========\r\n");
+    debug_printf(dbg_type, "Frame Info\r\n");
+    debug_printf(dbg_type, "----------\r\n");
+    debug_printf(dbg_type, "HEADER\r\n");
+    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", pkt.hdr.type, pkt.hdr.stream_id);
+    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", pkt.hdr.ttl, pkt.hdr.sender);
+    debug_printf(dbg_type, "Offsets -- %2d (pre), %2d (nsym), %2d (sym)\r\n", 
+        pkt.hdr.pre_offset, pkt.hdr.nsym_offset, pkt.hdr.sym_offset);
+    debug_printf(dbg_type, "CRC: %4x\r\n", pkt.hdr_crc);
+    debug_printf(dbg_type, "----------\r\n");
+    debug_printf(dbg_type, "PAYLOAD\r\n");
+    for(size_t i = 0; i < FRAME_PAYLOAD_LEN; i++) {
+        if(i%16 == 0) {
+            debug_printf(dbg_type, "\r\n");
+        }
+        debug_printf(dbg_type, "%2x ", pkt.data[i]);
+    }
+    debug_printf(dbg_type, "\r\n");
+    debug_printf(dbg_type, "CRC: %4x\r\n", pkt.data_crc);
+    debug_printf(dbg_type, "----------\r\n");
+    debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
+}
+
 bool FrameQueue::enqueue(Frame &enq_frame) {
     if(queue.full()) 
         return false;
