@@ -20,40 +20,100 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "I2C.h"
+#include "serial_data.hpp"
 
-#if 0
-#define RADIO_SETTINGS_KEY 0
-#define MESH_SETTINGS_KEY 1
-
-// Non-volatile settings
-extern union nv_radio_settings_union nv_radio_settings;
-extern bool mesh_enable;
-
-
-// Load the settings saved into the NV storage
-void loadNVSettings(void) {
-    uint16_t actual_len_bytes = 0;
-    NVStore &nvstore = NVStore::get_instance();
-    // Load the radio settings
-    nvstore.get(RADIO_SETTINGS_KEY, sizeof(nv_radio_settings.buf), nv_radio_settings.buf, actual_len_bytes);
-    // Load the mesh settings
-    nvstore.get(MESH_SETTINGS_KEY, sizeof(bool), &mesh_enable, actual_len_bytes);
+// Read a byte from the EEPROM
+uint8_t EEPROM::readEEPROMByte(uint32_t addr) {
+    // Set the address
+    uint8_t addr_bytes[2];
+    uint8_t top_addr_bit = (addr >> 16 & 0x01);
+    uint8_t dev_addr = 0xA0 | (top_addr_bit << 1);
+    addr_bytes[0] = (uint8_t) ((addr >> 8) & 0x000000FF);
+    addr_bytes[1] = (uint8_t) (addr & 0x000000FF);
+    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) addr_bytes, sizeof(addr_bytes), true));
+    // Read out the byte
+    dev_addr = 0xA0;
+    uint8_t ret_val = 0xFF;
+    MBED_ASSERT(i2c_dev->read(dev_addr, (char *) &ret_val, 1, false));
+    return ret_val;
 }
 
 
-// Save the current settings to the NV storage
-void saveNVSettings(void) {
-    NVStore &nvstore = NVStore::get_instance();
-    // Save the radio settings
-    nvstore.set(RADIO_SETTINGS_KEY, sizeof(nv_radio_settings.buf), nv_radio_settings.buf);
-    // Save the mesh settings
-    nvstore.set(MESH_SETTINGS_KEY, sizeof(bool), &mesh_enable);
+// Write a byte to the EEPROM
+void EEPROM::writeEEPROMByte(uint32_t addr, uint8_t val) {
+    uint8_t addr_bytes[2];
+    uint8_t top_addr_bit = (addr >> 16 & 0x01);
+    uint8_t dev_addr = 0xA0 | (top_addr_bit << 1);
+    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) &val, 1, true));
 }
 
 
-// Clear the NV MESH_SETTINGS_KEY
-void clearNVSettings(void) {
-    NVStore &nvstore = NVStore::get_instance();
-    nvstore.reset();
+// Read multiple bytes from the EEPROM into a buffer
+void EEPROM::readEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
+    for(uint32_t idx = addr; addr < addr+size; addr++) {
+        *((uint8_t *)buf+idx) = readEEPROMByte(idx);
+    }
 }
-#endif
+
+
+// Write multiple bytes from a supplied buffer into the EEPROM
+void EEPROM::writeEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
+    for(uint32_t idx = addr; addr < addr+size; addr++) {
+        writeEEPROMByte(idx, *((uint8_t *)buf+idx));
+    }
+}
+
+
+// Function that performs some tests on the EEPROM, mainly as a way
+//  of checking out a newly-built EEPROM board.
+void EEPROM::testEEPROM(void) {
+    // Test results variables
+    size_t num_correct_walking_bits = 0;
+    size_t num_incorrect_walking_bits = 0;
+    size_t num_correct_seq = 0;
+    size_t num_incorrect_seq = 0;
+    debug_printf(DBG_INFO, "EEPROM TESTING\r\n");
+    debug_printf(DBG_INFO, "----------\r\n");
+    debug_printf(DBG_INFO, "Performing walking bits test...\r\n");
+    for(int i = 0; i < 1000; i++) {
+        debug_printf(DBG_INFO, "Writing walking bits iteration %d\r\n", i);
+        uint8_t write_val = i & 0x1 ? 0xAA : 0x55;
+        for(int j = 0; j < (1 << 19); j++) {
+            writeEEPROMByte(j, write_val);
+        }
+        debug_printf(DBG_INFO, "Reading walking bits iteration %d\r\n", i);        
+        for(int j = 0; i < (1 << 19); j++) {
+            if(readEEPROMByte(j) == write_val) {
+                num_correct_walking_bits += 1;
+            }
+            else {
+                num_incorrect_walking_bits += 1;
+            }
+        }
+    }
+    debug_printf(DBG_INFO, "----------\r\n");
+    debug_printf(DBG_INFO, "Performing sequence test...\r\n");    
+    for(int i = 0; i < 1000; i++) {
+        debug_printf(DBG_INFO, "Writing sequence iteration %d\r\n", i);
+        for(int j = 0; j < (1 << 19); j++) {
+            writeEEPROMByte(j, j);
+        }
+        debug_printf(DBG_INFO, "Reading sequence iteration %d\r\n", i);
+        for(int j = 0; j < (1 << 19); j++) {
+            if(readEEPROMByte(j) == j) {
+                num_correct_seq += 1;
+            }
+            else {
+                num_incorrect_seq += 1;
+            }
+        }
+    }
+    debug_printf(DBG_INFO, "----------\r\n");   
+    debug_printf(DBG_INFO, "EEPROM test complete!\r\n");
+    debug_printf(DBG_INFO, "\t Walking bits test: %d correct, %d incorrect \r\n", 
+            num_correct_walking_bits, num_incorrect_walking_bits);
+    debug_printf(DBG_INFO, "\t Sequence test: %d correct, %d incorrect \r\n",
+            num_correct_seq, num_incorrect_seq);
+}
+

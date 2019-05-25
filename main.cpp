@@ -20,7 +20,10 @@
 #include "radio.hpp"
 #include "params.hpp"
 #include "serial_data.hpp"
+#include "nv_settings.hpp"
 
+I2C i2c(PB_9, PB_8);
+EEPROM eeprom(&i2c);
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
@@ -51,6 +54,11 @@ int main()
     // Set the UART comms speed
     pc.baud(230400);
 
+    // Set up and test the EEPROM
+#ifdef TEST_EEPROM
+    eeprom.testEEPROM();
+#endif
+
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
@@ -69,6 +77,10 @@ int main()
     // Start a thread for the radio_thread
     debug_printf(DBG_INFO, "Starting Rx test thread\r\n");
     radio_thread.start(rx_test_radio);
+#elif defined MESH_TEST_MODE_ORIGINATOR
+    // Start a thread for the radio_thread
+    debug_printf(DBG_INFO, "Starting Mesh test originator thread\r\n");
+    radio_thread.start(mesh_originator_test);
 #else
     debug_printf(DBG_INFO, "Starting the mesh network\r\n");
 #endif

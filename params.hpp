@@ -23,6 +23,7 @@
 // Test mode selection
 //#define TX_TEST_MODE
 #define RX_TEST_MODE
+#define TEST_EEPROM
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 32
@@ -46,14 +47,17 @@
 #define RADIO_TX_TIMEOUT 1000
 #define RADIO_FREQUENCY 915000000
 #define HOP_CHANNEL_SIZE 12500
-// Amount of padding between frames, in ms
-#define FRAME_PADDING_MS 5
 // Number of past packets to check the current packet against
 #define PKT_CHK_HISTORY 32
+
+// Various parameters for the TDMA meshing
+#define FRAME_PADDING_MS 5 // Amount of padding between frames, in ms
+#define NUM_PREAMBLE_SLOTS 4
+#define NUM_SYM_OFFSETS 4
 
 // Debug options
 #define DEBUG_INFO
 #define DEBUG_WARN
 #define DEBUG_ERROR
 
-#endif /* PARAMS_HP */
+#endif /* PARAMS_HPP */

@@ -27,4 +27,31 @@ void saveNVSettings(void);
 // Clear the NV MESH_SETTINGS_KEY
 void clearNVSettings(void);
 
- #endif /* NV_SETTINGS_HPP */
+
+class EEPROM {
+protected:
+    I2C *i2c_dev;
+public:
+    EEPROM(I2C *my_i2c_dev) {
+        i2c_dev = my_i2c_dev;
+    }
+
+    // Read a byte from the EEPROM
+    uint8_t readEEPROMByte(uint32_t addr);
+
+    // Write a byte to the EEPROM
+    void writeEEPROMByte(uint32_t addr, uint8_t val);
+
+    // Read multiple bytes from the EEPROM into a buffer
+    void readEEPROMBlock(uint32_t addr, uint32_t size, void *buf);
+
+    // Write multiple bytes from a supplied buffer into the EEPROM
+    void writeEEPROMBlock(uint32_t addr, uint32_t size, void *buf);
+
+    // Function that performs some tests on the EEPROM, mainly as a way
+    //  of checking out a newly-built EEPROM board.
+    void testEEPROM(void);
+};
+
+#endif /* NV_SETTINGS_HPP */
+
