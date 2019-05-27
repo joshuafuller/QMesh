@@ -23,6 +23,8 @@
 #include "I2C.h"
 #include "serial_data.hpp"
 
+#define NUM_TEST_ITERS 10
+
 // Read a byte from the EEPROM
 uint8_t EEPROM::readEEPROMByte(uint32_t addr) {
     // Set the address
@@ -31,21 +33,32 @@ uint8_t EEPROM::readEEPROMByte(uint32_t addr) {
     uint8_t dev_addr = 0xA0 | (top_addr_bit << 1);
     addr_bytes[0] = (uint8_t) ((addr >> 8) & 0x000000FF);
     addr_bytes[1] = (uint8_t) (addr & 0x000000FF);
-    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) addr_bytes, sizeof(addr_bytes), true));
+    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) addr_bytes, sizeof(addr_bytes), true) == 0);
     // Read out the byte
     dev_addr = 0xA0;
     uint8_t ret_val = 0xFF;
-    MBED_ASSERT(i2c_dev->read(dev_addr, (char *) &ret_val, 1, false));
+    MBED_ASSERT(i2c_dev->read(dev_addr, (char *) &ret_val, 1, false) == 0);
     return ret_val;
 }
 
 
 // Write a byte to the EEPROM
 void EEPROM::writeEEPROMByte(uint32_t addr, uint8_t val) {
-    uint8_t addr_bytes[2];
+    uint8_t data_bytes[3];
     uint8_t top_addr_bit = (addr >> 16 & 0x01);
     uint8_t dev_addr = 0xA0 | (top_addr_bit << 1);
-    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) &val, 1, true));
+    data_bytes[0] = (uint8_t) ((addr >> 8) & 0x000000FF);
+    data_bytes[1] = (uint8_t) (addr & 0x000000FF);
+    data_bytes[2] = val;
+    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) data_bytes, 3, false) == 0);
+    // Poll the device until the write operation is complete
+    while(true) {
+        char test_val = 0;
+        i2c_dev->write(dev_addr, (char *) data_bytes, 2, false);
+        if(!i2c_dev->read(dev_addr, &test_val, 1, false)) {
+            break;
+        }
+    }
 }
 
 
@@ -69,45 +82,69 @@ void EEPROM::writeEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
 //  of checking out a newly-built EEPROM board.
 void EEPROM::testEEPROM(void) {
     // Test results variables
-    size_t num_correct_walking_bits = 0;
-    size_t num_incorrect_walking_bits = 0;
-    size_t num_correct_seq = 0;
-    size_t num_incorrect_seq = 0;
+    int num_correct_walking_bits = 0;
+    int num_incorrect_walking_bits = 0;
+    int num_correct_seq = 0;
+    int num_incorrect_seq = 0;
     debug_printf(DBG_INFO, "EEPROM TESTING\r\n");
     debug_printf(DBG_INFO, "----------\r\n");
     debug_printf(DBG_INFO, "Performing walking bits test...\r\n");
-    for(int i = 0; i < 1000; i++) {
-        debug_printf(DBG_INFO, "Writing walking bits iteration %d\r\n", i);
+    for(int i = 0; i < NUM_TEST_ITERS; i++) {
+        debug_printf(DBG_INFO, "Writing walking bits iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);
         uint8_t write_val = i & 0x1 ? 0xAA : 0x55;
-        for(int j = 0; j < (1 << 19); j++) {
-            writeEEPROMByte(j, write_val);
+        for(int j = 0; j < (1 << 17); j++) {          
+            if((j & 0x00000FFF) == 0) {
+                debug_printf(DBG_INFO, "Byte %d\r\n", j);
+            }
+            uint8_t test_val = write_val;
+            if(j & 0x100) {
+                test_val ^ 0xFF;
+            }
+            writeEEPROMByte(j, test_val);
         }
-        debug_printf(DBG_INFO, "Reading walking bits iteration %d\r\n", i);        
-        for(int j = 0; i < (1 << 19); j++) {
-            if(readEEPROMByte(j) == write_val) {
+        debug_printf(DBG_INFO, "Reading walking bits iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);        
+        for(int j = 0; j < (1 << 17); j++) {
+            uint8_t test_val = write_val;
+            if(j & 0x100) {
+                test_val ^ 0xFF;
+            }            
+            if(readEEPROMByte(j) == test_val) {
                 num_correct_walking_bits += 1;
             }
             else {
                 num_incorrect_walking_bits += 1;
+            }        
+            if((j & 0x00000FFF) == 0) {
+                debug_printf(DBG_INFO, "Byte %d\r\n", j);
             }
         }
+        debug_printf(DBG_INFO, "Iteration %d complete, %d correct, %d incorrect\r\n", 
+                i, num_correct_walking_bits, num_incorrect_walking_bits);
     }
     debug_printf(DBG_INFO, "----------\r\n");
     debug_printf(DBG_INFO, "Performing sequence test...\r\n");    
-    for(int i = 0; i < 1000; i++) {
-        debug_printf(DBG_INFO, "Writing sequence iteration %d\r\n", i);
-        for(int j = 0; j < (1 << 19); j++) {
-            writeEEPROMByte(j, j);
+    for(int i = 0; i < NUM_TEST_ITERS; i++) {
+        debug_printf(DBG_INFO, "Writing sequence iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);
+        for(int j = 0; j < (1 << 17); j++) {           
+            if((j & 0x00000FFF) == 0) {
+                debug_printf(DBG_INFO, "Byte %d\r\n", j);
+            }
+            writeEEPROMByte(j, (j ^ (j>>8 & 0xFF)) & 0xFF);
         }
-        debug_printf(DBG_INFO, "Reading sequence iteration %d\r\n", i);
-        for(int j = 0; j < (1 << 19); j++) {
-            if(readEEPROMByte(j) == j) {
+        debug_printf(DBG_INFO, "Reading sequence iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);
+        for(int j = 0; j < (1 << 17); j++) {         
+            if((j & 0x00000FFF) == 0) {
+                debug_printf(DBG_INFO, "Byte %d\r\n", j);
+            }       
+            if(readEEPROMByte(j) == ((j ^ (j>>8 & 0xFF)) & 0xFF)) {
                 num_correct_seq += 1;
             }
             else {
                 num_incorrect_seq += 1;
             }
         }
+        debug_printf(DBG_INFO, "Iteration %d complete, %d correct, %d incorrect\r\n", 
+                i, num_correct_seq, num_incorrect_seq);
     }
     debug_printf(DBG_INFO, "----------\r\n");   
     debug_printf(DBG_INFO, "EEPROM test complete!\r\n");
@@ -115,5 +152,8 @@ void EEPROM::testEEPROM(void) {
             num_correct_walking_bits, num_incorrect_walking_bits);
     debug_printf(DBG_INFO, "\t Sequence test: %d correct, %d incorrect \r\n",
             num_correct_seq, num_incorrect_seq);
+
+    // Just spin
+    while(true);
 }
 

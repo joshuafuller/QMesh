@@ -56,6 +56,7 @@ int main()
 
     // Set up and test the EEPROM
 #ifdef TEST_EEPROM
+    debug_printf(DBG_INFO, "Now testing the EEPROM\r\n");
     eeprom.testEEPROM();
 #endif
 
