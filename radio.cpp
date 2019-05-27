@@ -127,6 +127,19 @@ void rx_test_radio(void) {
     }
 }
 
+// Originator node function. Sends out a frame once a second
+//  in order to test the mesh network capability
+void mesh_originator_test(void) {
+    while(true) {
+        // Build the frame
+        memcpy(send_string, send_str.c_str(), send_str.length());
+        // Send the frame
+        radio.send((uint8_t *) send_string, send_str.length());
+        debug_printf(DBG_INFO, "Transmitted Frame\r\n");
+        wait(1.0);
+    }
+}
+
 static void tx_done_cb(void)
 {
     // If we just finished retransmitting a frame
