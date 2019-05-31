@@ -23,13 +23,13 @@
 #include <string>
 #include "SX1272_LoRaRadio.h"
 #include "radio.hpp"
+#include "correct.h"
 
 
-extern SX1272_LoRaRadio radio;
+extern SX1272_LoRaRadio SX1272radio;
 
-#if 0
-union nv_radio_settings_union nv_radio_settings;
-#endif
+// Nonvolatile radio settings
+extern NVSettings nv_settings;
 
 // Main thread for working with the LoRa radio
 Thread radio_thread;
@@ -78,16 +78,20 @@ void init_radio(void) {
     radio.primary_active = false;
     radio.secondary_active = false;
     radio.init_radio(&radio_events);
-    radio.set_rx_config(MODEM_LORA, RADIO_BANDWIDTH,
-                            RADIO_SF, RADIO_CODERATE,
+    uint8_t radio_bw = nv_settings.getBW();
+    uint8_t radio_sf = nv_settings.getSF();
+    uint8_t radio_cr = nv_settings.getCR();
+    uint8_t radio_freq = nv_settings.getFrequency();
+    radio.set_rx_config(MODEM_LORA, radio_bw,
+                            radio_sf, radio_cr,
                             0, RADIO_PREAMBLE_LEN,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             FRAME_PAYLOAD_LEN,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
     radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
-                            RADIO_BANDWIDTH, RADIO_SF,
-                            RADIO_CODERATE, RADIO_PREAMBLE_LEN,
+                            radio_bw, radio_sf,
+                            radio_cr, RADIO_PREAMBLE_LEN,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);

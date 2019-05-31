@@ -34,6 +34,7 @@ DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 Thread led2_thread;
 Thread led3_thread;
+correct_convolutional *corr_con;
 
 // Set up a block device in RAM
 BlockDevice *bd = new HeapBlockDevice(65536, 1, 1, 512);
@@ -69,7 +70,6 @@ int main()
 #endif
 
     // Set up the FEC
-    correct_convolutional *corr_con;
     corr_con = correct_convolutional_create(2, 7, correct_conv_r12_7_polynomial);
 
     // Set up the radio
