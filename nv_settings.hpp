@@ -18,15 +18,7 @@
  #ifndef NV_SETTINGS_HPP
  #define NV_SETTINGS_HPP
 
-// Load the settings saved into the NV storage
-void loadNVSettings(void);
-
-// Save the current settings to the NV storage
-void saveNVSettings(void);
-
-// Clear the NV MESH_SETTINGS_KEY
-void clearNVSettings(void);
-
+#include "mbed.h"
 
 class EEPROM {
 protected:
@@ -52,6 +44,92 @@ public:
     //  of checking out a newly-built EEPROM board.
     void testEEPROM(void);
 };
+
+typedef enum {
+    MESH_MODE_BEACON,
+    MESH_MODE_NORMAL,
+} mesh_mode_t;
+
+class NVSettings {
+protected:
+    EEPROM *eeprom;
+    struct {
+        uint32_t magic;
+        mesh_mode_t mode;
+        uint32_t freq;
+        uint8_t sf;
+        uint8_t bw;
+        uint8_t cr;
+    } nv_settings;
+
+public:
+    NVSettings(EEPROM *my_eeprom) {
+        eeprom = my_eeprom;
+        loadEEPROM();
+    }
+
+    void loadEEPROM(void); 
+
+    void saveEEPROM(void) {
+        eeprom->writeEEPROMBlock(0, sizeof(nv_settings), (void *) &nv_settings);
+    }
+
+    mesh_mode_t getMode(void) {
+        loadEEPROM();
+        return nv_settings.mode;
+    }
+
+    void setMode(mesh_mode_t my_mode) {
+        loadEEPROM();
+        nv_settings.mode = my_mode;
+        saveEEPROM();
+    }
+
+    uint32_t getFrequency(void) {
+        loadEEPROM();
+        return nv_settings.freq;
+    }
+
+    void setFrequency(uint32_t frequency) {
+        loadEEPROM();
+        nv_settings.freq = frequency;
+        saveEEPROM();
+    }
+
+    uint8_t getBW(void) {
+        loadEEPROM();
+        return nv_settings.bw;
+    }
+
+    void setBW(uint8_t bandwidth) {
+        loadEEPROM();
+        nv_settings.bw = bandwidth;
+        saveEEPROM();
+    }
+
+    uint8_t getSF(void) {
+        loadEEPROM();
+        return nv_settings.sf;
+    }
+
+    void setSF(uint8_t spreading_factor) {
+        loadEEPROM();
+        nv_settings.sf = spreading_factor;
+        saveEEPROM();
+    }
+
+    uint8_t getCR(void) {
+        loadEEPROM();
+        return nv_settings.cr;
+    }
+
+    void setCR(uint8_t coding_rate) {
+        loadEEPROM();
+        nv_settings.cr = coding_rate;
+        saveEEPROM();
+    }
+};
+
 
 #endif /* NV_SETTINGS_HPP */
 

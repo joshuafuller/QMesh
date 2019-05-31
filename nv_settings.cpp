@@ -16,12 +16,12 @@
  */
 
 #include "mbed.h"
-#include "nvstore.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "I2C.h"
 #include "serial_data.hpp"
+#include "nv_settings.hpp"
 
 #define NUM_TEST_ITERS 10
 
@@ -98,7 +98,7 @@ void EEPROM::testEEPROM(void) {
             }
             uint8_t test_val = write_val;
             if(j & 0x100) {
-                test_val ^ 0xFF;
+                test_val ^= 0xFF;
             }
             writeEEPROMByte(j, test_val);
         }
@@ -156,4 +156,32 @@ void EEPROM::testEEPROM(void) {
     // Just spin
     while(true);
 }
+
+
+void NVSettings::loadEEPROM(void) {
+    debug_printf(DBG_INFO, "Reading EEPROM...\r\n");
+    eeprom->readEEPROMBlock(0, sizeof(nv_settings), (void *) &nv_settings);
+    if(nv_settings.magic != 0xFEEDFACE) {  // Invalid settings block
+        debug_printf(DBG_INFO, "NOTE: No valid configuration stored in EEPROM.\r\n");
+        debug_printf(DBG_INFO, "Saving default configuration to EEPROM.\r\n");
+        nv_settings.magic = 0xFEEDFACE ^ sizeof(nv_settings);
+        nv_settings.mode = MESH_MODE_NORMAL;
+        nv_settings.freq = 915000000;
+        nv_settings.sf = 9;
+        nv_settings.bw = 7;
+        nv_settings.cr = 4;
+        saveEEPROM();
+    }
+    debug_printf(DBG_INFO, "----------\r\n"); 
+    bool node_mode = this->getMode();
+    debug_printf(DBG_INFO, "Mode: %s\r\n", node_mode == MESH_MODE_NORMAL ? "NORMAL":"BEACON");
+    debug_printf(DBG_INFO, "Frequency: %d\r\n", this->getFrequency());
+    debug_printf(DBG_INFO, "SF: %d\r\n", this->getSF());
+    debug_printf(DBG_INFO, "BW: %d\r\n", this->getBW());
+    debug_printf(DBG_INFO, "CR: %d\r\n", this->getCR());
+    debug_printf(DBG_INFO, "----------\r\n");
+    debug_printf(DBG_INFO, "Configuration loading complete.\r\n");
+}
+
+////kljlkj
 
