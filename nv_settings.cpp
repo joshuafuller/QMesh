@@ -64,7 +64,7 @@ void EEPROM::writeEEPROMByte(uint32_t addr, uint8_t val) {
 
 // Read multiple bytes from the EEPROM into a buffer
 void EEPROM::readEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
-    for(uint32_t idx = addr; addr < addr+size; addr++) {
+    for(uint32_t idx = addr; idx < addr+size; idx++) {
         *((uint8_t *)buf+idx) = readEEPROMByte(idx);
     }
 }
@@ -72,7 +72,7 @@ void EEPROM::readEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
 
 // Write multiple bytes from a supplied buffer into the EEPROM
 void EEPROM::writeEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
-    for(uint32_t idx = addr; addr < addr+size; addr++) {
+    for(uint32_t idx = addr; idx < addr+size; idx++) {
         writeEEPROMByte(idx, *((uint8_t *)buf+idx));
     }
 }
@@ -161,7 +161,7 @@ void EEPROM::testEEPROM(void) {
 void NVSettings::loadEEPROM(void) {
     debug_printf(DBG_INFO, "Reading EEPROM...\r\n");
     eeprom->readEEPROMBlock(0, sizeof(nv_settings), (void *) &nv_settings);
-    if(nv_settings.magic != 0xFEEDFACE) {  // Invalid settings block
+    if(nv_settings.magic != (0xFEEDFACE ^ sizeof(nv_settings))) {  // Invalid settings block
         debug_printf(DBG_INFO, "NOTE: No valid configuration stored in EEPROM.\r\n");
         debug_printf(DBG_INFO, "Saving default configuration to EEPROM.\r\n");
         nv_settings.magic = 0xFEEDFACE ^ sizeof(nv_settings);
@@ -173,12 +173,12 @@ void NVSettings::loadEEPROM(void) {
         saveEEPROM();
     }
     debug_printf(DBG_INFO, "----------\r\n"); 
-    bool node_mode = this->getMode();
+    bool node_mode = nv_settings.mode;
     debug_printf(DBG_INFO, "Mode: %s\r\n", node_mode == MESH_MODE_NORMAL ? "NORMAL":"BEACON");
-    debug_printf(DBG_INFO, "Frequency: %d\r\n", this->getFrequency());
-    debug_printf(DBG_INFO, "SF: %d\r\n", this->getSF());
-    debug_printf(DBG_INFO, "BW: %d\r\n", this->getBW());
-    debug_printf(DBG_INFO, "CR: %d\r\n", this->getCR());
+    debug_printf(DBG_INFO, "Frequency: %d\r\n", nv_settings.freq);
+    debug_printf(DBG_INFO, "SF: %d\r\n", nv_settings.sf);
+    debug_printf(DBG_INFO, "BW: %d\r\n", nv_settings.bw);
+    debug_printf(DBG_INFO, "CR: %d\r\n", nv_settings.cr);
     debug_printf(DBG_INFO, "----------\r\n");
     debug_printf(DBG_INFO, "Configuration loading complete.\r\n");
 }
