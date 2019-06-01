@@ -21,23 +21,18 @@
 #include "params.hpp"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
-#include "BlockDevice.h"
-#include "HeapBlockDevice.h"
-#include "correct.h"
+#include "fec.hpp"
 
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);
-NVSettings nv_settings(&eeprom);
+NVSettings *nv_settings;
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 Thread led2_thread;
 Thread led3_thread;
-correct_convolutional *corr_con;
-
-// Set up a block device in RAM
-BlockDevice *bd = new HeapBlockDevice(65536, 1, 1, 512);
+FEC fec;
 
 void led2_thread_fn() {
     while (true) {
@@ -69,8 +64,17 @@ int main()
     eeprom.testEEPROM();
 #endif
 
-    // Set up the FEC
-    corr_con = correct_convolutional_create(2, 7, correct_conv_r12_7_polynomial);
+    nv_settings = new NVSettings(&eeprom);
+
+    // Test the FEC
+    debug_printf(DBG_INFO, "Now testing the FEC\r\n");
+    static uint8_t fec_enc_buf[512];
+    static uint8_t fec_dec_buf[512];
+    static char test_msg[] = "0123456789\r\n";
+    debug_printf(DBG_INFO, "Encoding %s", test_msg);
+    fec.encode((uint8_t *) test_msg, 13, fec_enc_buf);
+    fec.decode(fec_enc_buf, 26, fec_dec_buf);
+    debug_printf(DBG_INFO, "Decoded %s", fec_dec_buf);
 
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing radio\r\n");

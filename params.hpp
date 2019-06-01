@@ -23,7 +23,7 @@
 // Test mode selection
 //#define TX_TEST_MODE
 #define RX_TEST_MODE
-#define TEST_EEPROM
+//#define TEST_EEPROM
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 32

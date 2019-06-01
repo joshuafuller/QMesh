@@ -29,7 +29,7 @@
 extern SX1272_LoRaRadio SX1272radio;
 
 // Nonvolatile radio settings
-extern NVSettings nv_settings;
+extern NVSettings *nv_settings;
 
 // Main thread for working with the LoRa radio
 Thread radio_thread;
@@ -78,10 +78,10 @@ void init_radio(void) {
     radio.primary_active = false;
     radio.secondary_active = false;
     radio.init_radio(&radio_events);
-    uint8_t radio_bw = nv_settings.getBW();
-    uint8_t radio_sf = nv_settings.getSF();
-    uint8_t radio_cr = nv_settings.getCR();
-    uint8_t radio_freq = nv_settings.getFrequency();
+    uint8_t radio_bw = nv_settings->getBW();
+    uint8_t radio_sf = nv_settings->getSF();
+    uint8_t radio_cr = nv_settings->getCR();
+    uint8_t radio_freq = nv_settings->getFrequency();
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,
                             0, RADIO_PREAMBLE_LEN,
