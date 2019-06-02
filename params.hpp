@@ -26,14 +26,14 @@
 //#define TEST_EEPROM
 
 // Frame parameters
-#define FRAME_PAYLOAD_LEN 32
+#define FRAME_PAYLOAD_LEN 64
 
 // Radio parameters
 #define RADIO_INVERT_IQ false
 #define RADIO_HOP_PERIOD 1
 #define RADIO_FREQ_HOP false
-#define RADIO_CRC_ON true
-#define RADIO_FIXED_LEN false
+#define RADIO_CRC_ON false
+#define RADIO_FIXED_LEN true
 #define RADIO_SYM_TIMEOUT 12
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
