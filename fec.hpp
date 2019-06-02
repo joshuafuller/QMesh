@@ -24,6 +24,10 @@ public:
         return correct_convolutional_decode(corr_con, enc_msg, enc_len*8, dec_msg);
     }
 
+    size_t getEncSize(const size_t msg_len) {
+        return correct_convolutional_encode_len(corr_con, msg_len)/8;
+    }
+
 };
 
 #endif /* FEC_HPP */
