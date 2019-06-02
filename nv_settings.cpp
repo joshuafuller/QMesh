@@ -106,7 +106,7 @@ void EEPROM::testEEPROM(void) {
         for(int j = 0; j < (1 << 17); j++) {
             uint8_t test_val = write_val;
             if(j & 0x100) {
-                test_val ^ 0xFF;
+                test_val ^= 0xFF;
             }            
             if(readEEPROMByte(j) == test_val) {
                 num_correct_walking_bits += 1;
