@@ -82,11 +82,13 @@ void init_radio(void) {
     uint8_t radio_sf = nv_settings->getSF();
     uint8_t radio_cr = nv_settings->getCR();
     uint8_t radio_freq = nv_settings->getFrequency();
+    Frame tmp_frame;
+    uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,
                             0, RADIO_PREAMBLE_LEN,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
-                            FRAME_PAYLOAD_LEN,
+                            full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
     radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
@@ -110,12 +112,24 @@ void init_radio(void) {
 }
 
 // Simple function that just sends out a simple packet every 1s
-static std::string send_str("KG5VBY: This is a test string\r\n");
-static char send_string[256];
+static std::string send_str("KG5VBY: 01234567890123456789--\r\n");
+static uint8_t pld_string[512];
+static uint8_t send_string[512];
+static Frame tx_test_frame;
 void tx_test_radio(void) {
     while(true) {
-        memcpy(send_string, send_str.c_str(), send_str.length());
-        radio.send((uint8_t *) send_string, send_str.length());
+#if 0        
+        //memcpy(send_string, send_str.c_str(), send_str.length());
+        // apply FEC
+        fec.encode((uint8_t *) send_str.c_str(), send_str.length(), send_string);
+        radio.send((uint8_t *) send_string, send_str.length()*2);
+#else
+        memcpy(pld_string, send_str.c_str(), send_str.length());
+        tx_test_frame.loadTestFrame(pld_string);
+        tx_test_frame.prettyPrint(DBG_INFO);
+        size_t send_len = tx_test_frame.serialize(send_string);
+        radio.send(send_string, send_len);
+#endif
         debug_printf(DBG_INFO, "Transmitted Packet\r\n");
         wait(1.0);
     }
