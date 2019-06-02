@@ -21,8 +21,21 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 #include <string>
-//#include "lora_radio_helper.h"
 
+
+// Load the frame with a payload and dummy values.
+void Frame::loadTestFrame(uint8_t *buf) {
+    pkt.hdr.type = 0;
+    pkt.hdr.stream_id = 1;
+    pkt.hdr.ttl = 8;
+    pkt.hdr.sender = 0xAB;
+    pkt.hdr.pre_offset = 0;
+    pkt.hdr.nsym_offset = 0;
+    pkt.hdr.sym_offset = 0;
+    memcpy(pkt.data, buf, FRAME_PAYLOAD_LEN);
+    setHeaderCrc();
+    setPayloadCrc();
+}
 
 // Compute the header CRC.
 uint16_t Frame::calculateHeaderCrc(void) {
@@ -61,15 +74,23 @@ uint32_t Frame::calculateUniqueCrc(void) {
 //  1. PKT_BAD_HDR_CRC -- the header CRC is bad.
 //  2. PKT_BAD_PLD_CRC -- the payload CRC is bad.
 //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
-//  4. PKT_OK -- the received packet data is ok
+//  4. PKT_FEC_FAIL -- FEC decode failed.
+//  5. PKT_OK -- the received packet data is ok
 PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
+    // Step zero: remove the forward error correction
+    static uint8_t dec_buf[512];
+    ssize_t bytes_dec = fec.decode(buf, bytes_rx, dec_buf);
+    if(bytes_dec == -1) {
+        pkt_status = PKT_FEC_FAIL;
+        return pkt_status;
+    }
     // Step one: check the size of the packet
-    if(sizeof(pkt) != bytes_rx) {
+    if(sizeof(pkt) != bytes_dec) {
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
     }
     // Step two: load the packet data and check the header CRC
-    memcpy(&pkt, buf, sizeof(pkt));
+    memcpy(&pkt, dec_buf, sizeof(pkt));
     if(!checkHeaderCrc()) {
         pkt_status = PKT_BAD_HDR_CRC;
         return pkt_status;

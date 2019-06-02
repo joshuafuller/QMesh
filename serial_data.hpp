@@ -22,8 +22,12 @@
 #include "params.hpp"
 #include "nv_settings.hpp"
 #include "SX1272_LoRaRadio.h"
+#include "fec.hpp"
 
 extern SX1272_LoRaRadio radio;
+static FEC fec; // forward error correction block
+static uint8_t enc_buf[512], dec_buf[256];
+
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
 //  UART for both AT commands as well as debug commands.
@@ -36,6 +40,7 @@ int debug_printf(const enum DBG_TYPES, const char *fmt, ...);
 
 typedef enum {
     PKT_OK = 0,
+    PKT_FEC_FAIL,
     PKT_BAD_HDR_CRC,
     PKT_BAD_PLD_CRC,
     PKT_BAD_SIZE,
@@ -60,12 +65,12 @@ class Frame {
         uint16_t data_crc;
     } frame_pkt;
 protected:
-        frame_pkt pkt;
-        // receive stats
-        int16_t rssi;
-        int8_t snr;
-        uint16_t rx_size;
-        PKT_STATUS_ENUM pkt_status;
+    frame_pkt pkt;
+    // receive stats
+    int16_t rssi;
+    int8_t snr;
+    uint16_t rx_size;
+    PKT_STATUS_ENUM pkt_status;
 
 public:
     // Call operator. Just loads the object with the contents
@@ -77,10 +82,19 @@ public:
         rx_size = frame.rx_size;
     }
 
+    // Load the frame with a payload and dummy values.
+    void loadTestFrame(uint8_t *buf);
+
+    // Load the payload into a buffer. Returns the number of bytes put into 
+    //  the buffer that's supplied as an argument.
+    size_t getPayload(uint8_t *buf) {
+        memcpy(buf, pkt.data, FRAME_PAYLOAD_LEN);
+        return FRAME_PAYLOAD_LEN;
+    }
+
     // Get an array of bytes of the frame for e.g. transmitting over the air.
     size_t serialize(uint8_t *buf) {
-        memcpy(buf, &pkt, sizeof(pkt));
-        return sizeof(pkt);
+        return fec.encode((uint8_t *) &pkt, sizeof(pkt), buf);
     }
 
     // Compute the header CRC.
@@ -130,7 +144,8 @@ public:
     //  1. PKT_BAD_HDR_CRC -- the header CRC is bad.
     //  2. PKT_BAD_PLD_CRC -- the payload CRC is bad.
     //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
-    //  4. PKT_OK -- the received packet data is ok
+    //  4. PKT_FEC_FAIL -- FEC decode failed.
+    //  5. PKT_OK -- the received packet data is ok
     PKT_STATUS_ENUM deserialize(const uint8_t *buf, const size_t bytes_rx);
 
     // Increment the TTL, updating the header CRC in the process.
@@ -152,6 +167,11 @@ public:
     // Get the size of a packet header
     static size_t getHdrSize(void) {
         return sizeof(frame_hdr);
+    }
+
+    // Get the size of a packet with fec
+    size_t getFullPktSize(void) {
+        return fec.getEncSize(getPktSize());
     }
 
     // Get the offsets from the packet header
