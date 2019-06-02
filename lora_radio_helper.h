@@ -22,6 +22,7 @@
 
 #include "SX1272_LoRaRadio.h"
 #include "SX1276_LoRaRadio.h"
+#include "SX126X_LoRaRadio.h"
 
 #define SX1272   0xFF
 #define SX1276   0xEE
@@ -67,6 +68,20 @@ SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
                        MBED_CONF_APP_LORA_ANT_SWITCH,
                        MBED_CONF_APP_LORA_PWR_AMP_CTL,
                        MBED_CONF_APP_LORA_TCXO);
+
+#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
+#error SX1262 driver support is not properly implemented yet!
+SX126X_LoRaRadio radio(PinName mosi,
+                     PinName miso,
+                     PinName sclk,
+                     PinName nss,
+                     PinName reset,
+                     PinName dio1,
+                     PinName busy,
+                     PinName freq_select,
+                     PinName device_select,
+                     PinName crystal_select,
+                     PinName ant_switch);
 
 #else
 #error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"
