@@ -32,7 +32,6 @@ DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 Thread led2_thread;
 Thread led3_thread;
-FEC fec;
 
 void led2_thread_fn() {
     while (true) {
