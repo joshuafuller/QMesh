@@ -76,7 +76,7 @@ uint32_t Frame::calculateUniqueCrc(void) {
 //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
 //  4. PKT_FEC_FAIL -- FEC decode failed.
 //  5. PKT_OK -- the received packet data is ok
-PKT_STATUS_ENUM Frame::deserialize(uint8_t *buf, const size_t bytes_rx) {
+PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
     // Step zero: remove the forward error correction
     static uint8_t dec_buf[512];
     ssize_t bytes_dec = fec->decode(buf, bytes_rx, dec_buf);

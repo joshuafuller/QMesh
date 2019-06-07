@@ -65,28 +65,28 @@ protected:
     size_t order;
 
     // Helper methods
-    uint8_t extractBit(uint8_t *buf, size_t bit_pos);
-    void writeBit(uint8_t *buf, size_t bit_pos, uint8_t bit_val);
+    uint8_t extractBit(const uint8_t *buf, const size_t bit_pos);
+    void writeBit(uint8_t *buf, const size_t bit_pos, const uint8_t bit_val);
 
-    size_t encodeRSV(uint8_t *msg, size_t msg_len, uint8_t *enc_msg);
+    size_t encodeRSV(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg);
 
-    ssize_t decodeRSV(uint8_t *enc_msg, size_t enc_len, uint8_t *dec_msg) {
+    ssize_t decodeRSV(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) {
         return correct_convolutional_decode(corr_con, enc_msg, enc_len*8, dec_msg);
     }
 
-    size_t encodeConv(uint8_t *msg, size_t msg_len, uint8_t *enc_msg) {
+    size_t encodeConv(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
         return correct_convolutional_encode(corr_con, msg, msg_len, enc_msg);
     }
 
-    ssize_t decodeConv(uint8_t *enc_msg, size_t enc_len, uint8_t *dec_msg) {
+    ssize_t decodeConv(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) {
         return correct_convolutional_decode(corr_con, enc_msg, enc_len*8, dec_msg);
     }
 
-    size_t getEncSizeConv(size_t msg_len) {
+    size_t getEncSizeConv(const size_t msg_len) {
         return msg_len * inv_rate;
     }
 
-    size_t getEncSizeRSV(size_t msg_len) {
+    size_t getEncSizeRSV(const size_t msg_len) {
         float enc_size = getEncSizeConv(msg_len);
         enc_size *= 8.0f;
         enc_size *= (256.0/223.0);
@@ -94,29 +94,29 @@ protected:
     }
 
 public:
-    FEC(size_t msg_size, size_t inv_rate, size_t order);
+    FEC(const size_t msg_size, const size_t inv_rate, const size_t order);
 
-    virtual size_t getEncSize(size_t msg_len) = 0;
+    virtual size_t getEncSize(size_t const msg_len) = 0;
 
-    virtual size_t encode(uint8_t *msg, size_t msg_len, uint8_t *enc_msg) = 0;
+    virtual size_t encode(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) = 0;
 
-    virtual ssize_t decode(uint8_t *enc_msg, size_t enc_len, uint8_t *dec_msg) = 0;    
+    virtual ssize_t decode(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) = 0;    
 };
 
 
 class FECRSV: public FEC {
 public:
-    FECRSV(size_t msg_size, size_t inv_rate, size_t order) : FEC(msg_size, inv_rate, order) {}
+    FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order) : FEC(msg_size, inv_rate, order) {}
 
-    size_t encode(uint8_t *msg, size_t msg_len, uint8_t *enc_msg) {
+    size_t encode(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
         return encodeRSV(msg, msg_len, enc_msg);
     }
 
-    ssize_t decode(uint8_t *enc_msg, size_t enc_len, uint8_t *dec_msg) {
+    ssize_t decode(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) {
         return decodeRSV(enc_msg, enc_len, dec_msg);
     }
 
-    size_t getEncSize(size_t msg_len) {
+    size_t getEncSize(const size_t msg_len) {
         return getEncSizeRSV(msg_len);
     }
 };
@@ -124,17 +124,17 @@ public:
 
 class FECConv: public FEC {
 public:    
-    FECConv(size_t msg_size, size_t inv_rate, size_t order) : FEC(msg_size, inv_rate, order) {}
+    FECConv(const size_t msg_size, const size_t inv_rate, const size_t order) : FEC(msg_size, inv_rate, order) {}
 
-    size_t encode(uint8_t *msg, size_t msg_len, uint8_t *enc_msg) {
+    size_t encode(const uint8_t *msg, size_t msg_len, uint8_t *enc_msg) {
         return encodeConv(msg, msg_len, enc_msg);
     }
 
-    ssize_t decode(uint8_t *enc_msg, size_t enc_len, uint8_t *dec_msg) {
+    ssize_t decode(const uint8_t *enc_msg, size_t enc_len, uint8_t *dec_msg) {
         return decodeConv(enc_msg, enc_len, dec_msg);
     }
 
-    size_t getEncSize(size_t msg_len) {
+    size_t getEncSize(const size_t msg_len) {
         return getEncSizeConv(msg_len);
     }
 };

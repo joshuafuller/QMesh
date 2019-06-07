@@ -8,7 +8,7 @@
 #include <string.h>
 
 
-FEC::FEC(size_t msg_size, size_t inv_rate, size_t order) {
+FEC::FEC(const size_t msg_size, const size_t inv_rate, const size_t order) {
     // Set up the Reed-Solomon inner code
     block_length = 255;
     min_distance = 32;
@@ -64,7 +64,7 @@ FEC::FEC(size_t msg_size, size_t inv_rate, size_t order) {
     corr_con = correct_convolutional_create(inv_rate, order, poly);
 }
 
-uint8_t FEC::extractBit(uint8_t *buf, size_t bit_pos) {
+uint8_t FEC::extractBit(const uint8_t *buf, const size_t bit_pos) {
     size_t byte_idx = bit_pos / 8;
     size_t bit_idx = bit_pos % 8;
     uint8_t val = buf[byte_idx];
@@ -72,13 +72,13 @@ uint8_t FEC::extractBit(uint8_t *buf, size_t bit_pos) {
     return ret_val;
 }
 
-void FEC::writeBit(uint8_t *buf, size_t bit_pos, uint8_t bit_val) {
+void FEC::writeBit(uint8_t *buf, const size_t bit_pos, const uint8_t bit_val) {
     size_t byte_idx = bit_pos / 8;
     size_t bit_idx = bit_pos % 8;
     buf[byte_idx] |= (bit_val << (7-bit_idx));
 }
 
-size_t FEC::encodeRSV(uint8_t *msg, size_t msg_len, uint8_t *enc_msg) {
+size_t FEC::encodeRSV(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
     uint8_t rs_enc_msg[MAX_FRAME_SIZE];
     memset(rs_enc_msg, 0xAB, sizeof(rs_enc_msg));
     // First, the Reed-Solomon

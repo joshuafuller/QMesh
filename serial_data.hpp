@@ -146,7 +146,7 @@ public:
     //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
     //  4. PKT_FEC_FAIL -- FEC decode failed.
     //  5. PKT_OK -- the received packet data is ok
-    PKT_STATUS_ENUM deserialize(uint8_t *buf, const size_t bytes_rx);
+    PKT_STATUS_ENUM deserialize(const uint8_t *buf, const size_t bytes_rx);
 
     // Increment the TTL, updating the header CRC in the process.
     void incrementTTL(void) {
