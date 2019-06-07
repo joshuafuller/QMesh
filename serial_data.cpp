@@ -76,10 +76,10 @@ uint32_t Frame::calculateUniqueCrc(void) {
 //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
 //  4. PKT_FEC_FAIL -- FEC decode failed.
 //  5. PKT_OK -- the received packet data is ok
-PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
+PKT_STATUS_ENUM Frame::deserialize(uint8_t *buf, const size_t bytes_rx) {
     // Step zero: remove the forward error correction
     static uint8_t dec_buf[512];
-    ssize_t bytes_dec = fec.decode(buf, bytes_rx, dec_buf);
+    ssize_t bytes_dec = fec->decode(buf, bytes_rx, dec_buf);
     if(bytes_dec == -1) {
         pkt_status = PKT_FEC_FAIL;
         return pkt_status;
@@ -139,7 +139,7 @@ bool FrameQueue::enqueue(Frame &enq_frame) {
     return true;
 }
 
-bool FrameQueue::enqueue(const uint8_t *buf, const size_t buf_size) {
+bool FrameQueue::enqueue(uint8_t *buf, const size_t buf_size) {
     if(queue.full()) 
         return false;
     Frame *tmp_frame = queue.alloc();
@@ -363,8 +363,8 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         #endif
         msg_type = "WARN";
     }
-    else if(dbg_type == DBG_ERROR) {
-        #ifndef DEBUG_ERROR
+    else if(dbg_type == DBG_ERR) {
+        #ifndef DEBUG_ERR
         return 0;
         #endif
         msg_type = "ERR ";
@@ -391,7 +391,7 @@ void enqueue_tx_frames(const uint8_t *b64_tx_frame, const size_t b64_tx_frame_le
         debug_printf(DBG_INFO, "Enqueued Tx frame\r\n");
     }
     else {
-        debug_printf(DBG_ERROR, "Decoded bytes not equal to a frame. %d decoded, frame size is %d\r\n",
+        debug_printf(DBG_ERR, "Decoded bytes not equal to a frame. %d decoded, frame size is %d\r\n",
             frame_size, Frame::getPktSize());
     }
 }

@@ -59,7 +59,7 @@ static radio_events_t radio_events;
 
 // Prototypes for the callbacks
 static void tx_done_cb(void);
-static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
+static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr);
 static void tx_timeout_cb(void);
 static void rx_timeout_cb(void);
 static void rx_error_cb(void);
@@ -174,7 +174,7 @@ Frame extra_frame;
 static void process_rx_extra_frame(void) {}
 static void process_rx_main_frame(void) {}
 static void process_rx_aux_frame(void) {}
-static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
+static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
 #ifndef RX_TEST_MODE
 #ifndef TX_TEST_MODE
@@ -224,21 +224,21 @@ static void rx_done_cb(const uint8_t *payload, uint16_t size, int16_t rssi, int8
 static void tx_timeout_cb(void)
 {
     radio.set_channel( RADIO_FREQUENCY );
-    debug_printf(DBG_ERROR, "Tx Timeout\r\n");
+    debug_printf(DBG_ERR, "Tx Timeout\r\n");
 }
  
 static void rx_timeout_cb(void)
 {
     radio.set_channel( RADIO_FREQUENCY );
     radio.sleep();
-    debug_printf(DBG_ERROR, "Rx Timeout\r\n");
+    debug_printf(DBG_ERR, "Rx Timeout\r\n");
 }
  
 static void rx_error_cb(void)
 {
     radio.set_channel( RADIO_FREQUENCY );
     radio.sleep();
-    debug_printf(DBG_ERROR, "Rx Error\r\n");
+    debug_printf(DBG_ERR, "Rx Error\r\n");
     rx_done_evt.set(0x1);
 }
 

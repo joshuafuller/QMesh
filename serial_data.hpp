@@ -25,7 +25,7 @@
 #include "fec.hpp"
 
 extern SX1272_LoRaRadio radio;
-static FEC fec; // forward error correction block
+static FEC *fec; // forward error correction block
 static uint8_t enc_buf[512], dec_buf[256];
 
 
@@ -34,7 +34,7 @@ static uint8_t enc_buf[512], dec_buf[256];
 enum DBG_TYPES {
     DBG_INFO,
     DBG_WARN,
-    DBG_ERROR,
+    DBG_ERR,
 };
 int debug_printf(const enum DBG_TYPES, const char *fmt, ...);
 
@@ -94,7 +94,7 @@ public:
 
     // Get an array of bytes of the frame for e.g. transmitting over the air.
     size_t serialize(uint8_t *buf) {
-        return fec.encode((uint8_t *) &pkt, sizeof(pkt), buf);
+        return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf);
     }
 
     // Compute the header CRC.
@@ -146,7 +146,7 @@ public:
     //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
     //  4. PKT_FEC_FAIL -- FEC decode failed.
     //  5. PKT_OK -- the received packet data is ok
-    PKT_STATUS_ENUM deserialize(const uint8_t *buf, const size_t bytes_rx);
+    PKT_STATUS_ENUM deserialize(uint8_t *buf, const size_t bytes_rx);
 
     // Increment the TTL, updating the header CRC in the process.
     void incrementTTL(void) {
@@ -171,7 +171,7 @@ public:
 
     // Get the size of a packet with fec
     size_t getFullPktSize(void) {
-        return fec.getEncSize(getPktSize());
+        return fec->getEncSize(getPktSize());
     }
 
     // Get the offsets from the packet header
@@ -213,7 +213,7 @@ class FrameQueue {
         // Enqueue a frame. Returns true if enqueue was successful,
         //  false if unsuccessful due to overflow
         bool enqueue(Frame &enq_frame);
-        bool enqueue(const uint8_t *buf, const size_t buf_size);
+        bool enqueue(uint8_t *buf, const size_t buf_size);
 
         // Dequeue a frame. Copies the dequeued data into the frame if successful,
         //  returning true. Returns false if unsuccessful (queue is empty).

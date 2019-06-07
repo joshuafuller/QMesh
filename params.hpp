@@ -49,15 +49,21 @@
 #define HOP_CHANNEL_SIZE 12500
 // Number of past packets to check the current packet against
 #define PKT_CHK_HISTORY 32
+// Maximum frame size. Currently the LoRa frame max, but may expand
+//  to accommodate fragmentation in the future.
+#define MAX_FRAME_SIZE 256
 
 // Various parameters for the TDMA meshing
 #define FRAME_PADDING_MS 5 // Amount of padding between frames, in ms
 #define NUM_PREAMBLE_SLOTS 4
 #define NUM_SYM_OFFSETS 4
 
+// FEC parameters
+#define FEC_CONV
+
 // Debug options
 #define DEBUG_INFO
 #define DEBUG_WARN
-#define DEBUG_ERROR
+#define DEBUG_ERR
 
 #endif /* PARAMS_HPP */
