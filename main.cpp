@@ -70,9 +70,9 @@ int main()
     Frame *fec_frame = new Frame();  
     FEC *fec;  
 #ifdef FEC_CONV
-    fec = new FECRSV(fec_frame->getPktSize(), 2, 7);
+    fec = new FECConv(fec_frame->getPktSize(), 2, 9);
 #elif defined FEC_RSV
-    fec = new FECConv(fec_frame->getPktSize(), 2, 7);
+    fec = new FECRSV(fec_frame->getPktSize(), 2, 9);
 #else
 #error "Need to define either FEC_CONV or FEC_RSV\r\n"
 #endif
