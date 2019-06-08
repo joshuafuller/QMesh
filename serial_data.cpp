@@ -23,7 +23,7 @@
 #include <string>
 #include "fec.hpp"
 
-static FEC *fec; // forward error correction block
+extern FEC *fec; // forward error correction block
 
 // Load the frame with a payload and dummy values.
 void Frame::loadTestFrame(uint8_t *buf) {
