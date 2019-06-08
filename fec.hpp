@@ -4,6 +4,7 @@
 #include "mbed.h"
 #include "correct.h"
 #include "params.hpp"
+#include "serial_data.hpp"
 #include <math.h>
 
 // Convolutional Codes
@@ -52,6 +53,7 @@ static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627,
 //  a character array provided.
 class FEC {
 protected:
+    size_t my_msg_size;
     // Reed-Solomon parameters
     size_t block_length;
     size_t min_distance;
@@ -101,6 +103,8 @@ public:
     virtual size_t encode(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) = 0;
 
     virtual ssize_t decode(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) = 0;    
+
+    virtual void benchmark(size_t num_iters) = 0;
 };
 
 
@@ -119,6 +123,8 @@ public:
     size_t getEncSize(const size_t msg_len) {
         return getEncSizeRSV(msg_len);
     }
+
+    void benchmark(size_t num_iters);
 };
 
 
@@ -137,6 +143,8 @@ public:
     size_t getEncSize(const size_t msg_len) {
         return getEncSizeConv(msg_len);
     }
+
+    void benchmark(size_t num_iters);
 };
 
 #endif /* FEC_HPP */

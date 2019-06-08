@@ -9,6 +9,7 @@
 
 
 FEC::FEC(const size_t msg_size, const size_t inv_rate, const size_t order) {
+    my_msg_size = msg_size;
     // Set up the Reed-Solomon inner code
     block_length = 255;
     min_distance = 32;
@@ -110,4 +111,84 @@ size_t FEC::encodeRSV(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg
     size_t total_bits_enc = 256*full_rs_blocks + bits_enc;
     // Then, the convolutional coding
     return correct_convolutional_encode(corr_con, rs_enc_msg, total_bits_enc, enc_msg);
+}
+
+void FECRSV::benchmark(size_t num_iters) {
+    debug_printf(DBG_INFO, "====================\r\n");
+    debug_printf(DBG_INFO, "Now benchmarking the RSV FEC. Running for %d iterations\r\n");
+    uint8_t *msg_data = (uint8_t *) malloc(my_msg_size);
+    uint8_t *enc_data = (uint8_t *) malloc(getEncSize(my_msg_size));
+    debug_printf(DBG_INFO, "Benchmarking the encode...");
+    Timer *enc_timer = new Timer();
+    enc_timer->start();
+    for(size_t i = 0; i < num_iters; i++) {
+        encode(msg_data, my_msg_size, enc_data);
+    }
+    enc_timer->stop();
+    int enc_num_ms = enc_timer->read_ms();
+    debug_printf(DBG_INFO, "Done!\r\n");
+    debug_printf(DBG_INFO, "Benchmarking the decode...");
+    Timer *dec_timer = new Timer();
+    size_t enc_size = getEncSize(my_msg_size);
+    dec_timer->start();
+    for(size_t i = 0; i < num_iters; i++) {
+        decode(enc_data, enc_size, msg_data);
+    }
+    dec_timer->stop();
+    int dec_num_ms = dec_timer->read_ms();
+    debug_printf(DBG_INFO, "Done!\r\n");        
+    debug_printf(DBG_INFO, "Benchmarking complete! \r\n");
+    debug_printf(DBG_INFO, "Encode: %d iterations complete in %d ms\r\n", num_iters, enc_num_ms);
+    float enc_ms_per_iter = (float) enc_num_ms / (float) num_iters;
+    float enc_iters_per_sec = (float) num_iters / ((float) enc_num_ms / 1000.f);
+    debug_printf(DBG_INFO, "Encode: %f ms/iteration, %f iterations/s\r\n", enc_ms_per_iter, enc_iters_per_sec);
+    debug_printf(DBG_INFO, "Decode: %d iterations complete in %d ms\r\n", num_iters, dec_num_ms);
+    float dec_ms_per_iter = (float) dec_num_ms / (float) num_iters;
+    float dec_iters_per_sec = (float) num_iters / ((float) dec_num_ms / 1000.f);
+    debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
+    debug_printf(DBG_INFO, "====================\r\n");
+    free(msg_data);
+    free(enc_data);
+    delete enc_timer;
+    delete dec_timer;
+}
+
+void FECConv::benchmark(size_t num_iters) {
+    debug_printf(DBG_INFO, "====================\r\n");
+    debug_printf(DBG_INFO, "Now benchmarking the Conv FEC. Running for %d iterations\r\n");
+    uint8_t *msg_data = (uint8_t *) malloc(my_msg_size);
+    uint8_t *enc_data = (uint8_t *) malloc(getEncSize(my_msg_size));
+    debug_printf(DBG_INFO, "Benchmarking the encode...");
+    Timer *enc_timer = new Timer();
+    enc_timer->start();
+    for(size_t i = 0; i < num_iters; i++) {
+        encode(msg_data, my_msg_size, enc_data);
+    }
+    enc_timer->stop();
+    int enc_num_ms = enc_timer->read_ms();
+    debug_printf(DBG_INFO, "Done!\r\n");
+    debug_printf(DBG_INFO, "Benchmarking the decode...");
+    Timer *dec_timer = new Timer();
+    size_t enc_size = getEncSize(my_msg_size);
+    dec_timer->start();
+    for(size_t i = 0; i < num_iters; i++) {
+        decode(enc_data, enc_size, msg_data);
+    }
+    dec_timer->stop();
+    int dec_num_ms = dec_timer->read_ms();
+    debug_printf(DBG_INFO, "Done!\r\n");        
+    debug_printf(DBG_INFO, "Benchmarking complete! \r\n");
+    debug_printf(DBG_INFO, "Encode: %d iterations complete in %d ms\r\n", num_iters, enc_num_ms);
+    float enc_ms_per_iter = (float) enc_num_ms / (float) num_iters;
+    float enc_iters_per_sec = (float) num_iters / ((float) enc_num_ms / 1000.f);
+    debug_printf(DBG_INFO, "Encode: %f ms/iteration, %f iterations/s\r\n", enc_ms_per_iter, enc_iters_per_sec);
+    debug_printf(DBG_INFO, "Decode: %d iterations complete in %d ms\r\n", num_iters, dec_num_ms);
+    float dec_ms_per_iter = (float) dec_num_ms / (float) num_iters;
+    float dec_iters_per_sec = (float) num_iters / ((float) dec_num_ms / 1000.f);
+    debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
+    debug_printf(DBG_INFO, "====================\r\n");
+    free(msg_data);
+    free(enc_data);
+    delete enc_timer;
+    delete dec_timer;
 }

@@ -67,7 +67,8 @@ int main()
 
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
-    Frame *fec_frame = new Frame();    
+    Frame *fec_frame = new Frame();  
+    FEC *fec;  
 #ifdef FEC_CONV
     fec = new FECRSV(fec_frame->getPktSize(), 2, 7);
 #elif defined FEC_RSV
@@ -75,6 +76,7 @@ int main()
 #else
 #error "Need to define either FEC_CONV or FEC_RSV\r\n"
 #endif
+    fec->benchmark(1000);
     delete fec_frame;
     static uint8_t fec_enc_buf[512];
     static uint8_t fec_dec_buf[512];

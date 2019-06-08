@@ -21,7 +21,9 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 #include <string>
+#include "fec.hpp"
 
+static FEC *fec; // forward error correction block
 
 // Load the frame with a payload and dummy values.
 void Frame::loadTestFrame(uint8_t *buf) {
@@ -35,6 +37,16 @@ void Frame::loadTestFrame(uint8_t *buf) {
     memcpy(pkt.data, buf, FRAME_PAYLOAD_LEN);
     setHeaderCrc();
     setPayloadCrc();
+}
+
+// Get the size of a packet with fec
+size_t Frame::getFullPktSize(void) {
+    return fec->getEncSize(getPktSize());
+}
+
+// Get an array of bytes of the frame for e.g. transmitting over the air.
+size_t Frame::serialize(uint8_t *buf) {
+    return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf);
 }
 
 // Compute the header CRC.

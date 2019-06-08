@@ -22,10 +22,8 @@
 #include "params.hpp"
 #include "nv_settings.hpp"
 #include "SX1272_LoRaRadio.h"
-#include "fec.hpp"
 
 extern SX1272_LoRaRadio radio;
-static FEC *fec; // forward error correction block
 static uint8_t enc_buf[512], dec_buf[256];
 
 
@@ -93,9 +91,7 @@ public:
     }
 
     // Get an array of bytes of the frame for e.g. transmitting over the air.
-    size_t serialize(uint8_t *buf) {
-        return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf);
-    }
+    size_t serialize(uint8_t *buf);
 
     // Compute the header CRC.
     uint16_t calculateHeaderCrc(void);
@@ -170,9 +166,7 @@ public:
     }
 
     // Get the size of a packet with fec
-    size_t getFullPktSize(void) {
-        return fec->getEncSize(getPktSize());
-    }
+    size_t getFullPktSize(void);
 
     // Get the offsets from the packet header
     void getOffsets(uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset) {
