@@ -470,6 +470,9 @@ void SX1272_LoRaRadio::set_rx_config(radio_modems_t modem, uint32_t bandwidth,
                 _rf_settings.lora.low_datarate_optimize = 0x00;
             }
 
+            // Turn on LNABoost
+            write_to_register(REG_LR_LNA, (read_register(REG_LR_LNA) & RFLR_LNA_BOOST_MASK) | RFLR_LNA_BOOST_ON);
+
             write_to_register(REG_LR_MODEMCONFIG1, (read_register(REG_LR_MODEMCONFIG1) & RFLR_MODEMCONFIG1_BW_MASK
                           & RFLR_MODEMCONFIG1_CODINGRATE_MASK
                           & RFLR_MODEMCONFIG1_IMPLICITHEADER_MASK
