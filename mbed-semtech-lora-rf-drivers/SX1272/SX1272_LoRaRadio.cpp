@@ -1409,7 +1409,7 @@ void SX1272_LoRaRadio::default_antenna_switch_ctrls()
 uint8_t SX1272_LoRaRadio::get_pa_conf_reg()
 {
     if (radio_variant == SX1272UNDEFINED) {
-        return RF_PACONFIG_PASELECT_PABOOST;
+        return RF_PACONFIG_PASELECT_RFO;
     } else if (radio_variant == SX1272MB1DCS) {
         return RF_PACONFIG_PASELECT_PABOOST;
     } else {
