@@ -21,8 +21,8 @@
 // Defines key parameters
 
 // Test mode selection
-#define TX_TEST_MODE
-//#define RX_TEST_MODE
+//#define TX_TEST_MODE
+#define RX_TEST_MODE
 //#define TEST_EEPROM
 
 // Frame parameters
@@ -34,7 +34,7 @@
 #define RADIO_FREQ_HOP false
 #define RADIO_CRC_ON false
 #define RADIO_FIXED_LEN true
-#define RADIO_SYM_TIMEOUT 12
+#define RADIO_SYM_TIMEOUT 512
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
 #define RADIO_BANDWIDTH 1

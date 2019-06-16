@@ -91,7 +91,7 @@ void init_radio(void) {
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
-                            RADIO_INVERT_IQ, true);
+                            RADIO_INVERT_IQ, false);
     radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
                             RADIO_BANDWIDTH, RADIO_SF,
                             RADIO_CODERATE, RADIO_PREAMBLE_LEN,
@@ -142,8 +142,11 @@ void tx_test_radio(void) {
 // Simple test function that just prints out received packets
 void rx_test_radio(void) {
     while(true) {
+        debug_printf(DBG_ERR, "Started\r\n");
         radio.set_channel( RADIO_FREQUENCY );
+        debug_printf(DBG_ERR, "Started2\r\n");
         radio.receive();
+        debug_printf(DBG_ERR, "Started3\r\n");
         rx_done_evt.wait_all(0x1);
         debug_printf(DBG_INFO, "Received Packet\r\n");
     }
@@ -218,8 +221,14 @@ static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8
 #endif
 #else
     radio.set_channel( RADIO_FREQUENCY );
-    radio.sleep();
-    rx_frame.deserialize(payload, size);
+    //radio.sleep();
+    static uint8_t rx_buf[1024];
+    memcpy(rx_buf, payload, size);
+    for(int i = 0; i < size; i++) {
+        printf("%02x ", rx_buf[i]);
+    }
+    printf("\r\n");
+    rx_frame.deserialize(rx_buf, size);
     rx_frame.setRxStats(rssi, snr, size);
     rx_frame.prettyPrint(DBG_INFO);
     rx_done_evt.set(0x1);
@@ -237,6 +246,7 @@ static void rx_timeout_cb(void)
     radio.set_channel( RADIO_FREQUENCY );
     radio.sleep();
     debug_printf(DBG_ERR, "Rx Timeout\r\n");
+    rx_done_evt.set(0x1);
 }
  
 static void rx_error_cb(void)

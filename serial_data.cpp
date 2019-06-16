@@ -92,28 +92,35 @@ uint32_t Frame::calculateUniqueCrc(void) {
 PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
     // Step zero: remove the forward error correction
     static uint8_t dec_buf[512];
+    debug_printf(DBG_WARN, "Received %d bytes\r\n", bytes_rx);
     ssize_t bytes_dec = fec->decode(buf, bytes_rx, dec_buf);
+    debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
     if(bytes_dec == -1) {
+        debug_printf(DBG_INFO, "FEC Failed\r\n");
         pkt_status = PKT_FEC_FAIL;
         return pkt_status;
     }
     // Step one: check the size of the packet
     if(sizeof(pkt) != bytes_dec) {
+        debug_printf(DBG_INFO, "Bad packet size\r\n");
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
     }
     // Step two: load the packet data and check the header CRC
     memcpy(&pkt, dec_buf, sizeof(pkt));
     if(!checkHeaderCrc()) {
+        debug_printf(DBG_INFO, "Bad header CRC\r\n");
         pkt_status = PKT_BAD_HDR_CRC;
         return pkt_status;
     }
     // Step three: check the payload CRC
     if(!checkPayloadCrc()) {
+        debug_printf(DBG_INFO, "Bad payload CRC\r\n");
         pkt_status = PKT_BAD_PLD_CRC;
         return pkt_status;
     }
     // Size checked out, CRCs checked out, so return OK
+    debug_printf(DBG_INFO, "Packet OK\r\n");
     pkt_status = PKT_OK;
     return pkt_status;
 }
@@ -131,8 +138,6 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "CRC: %4x\r\n", pkt.hdr_crc);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
-    char *pld_str = (char *) malloc(2048);
-    MBED_ASSERT(pld_str != NULL);
     for(size_t i = 0; i < FRAME_PAYLOAD_LEN; i++) {
         if(i%16 == 0) {
             debug_printf(dbg_type, "");
@@ -143,8 +148,6 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "CRC: %4x\r\n", pkt.data_crc);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
-
-    free(pld_str);
 }
 
 bool FrameQueue::enqueue(Frame &enq_frame) {
