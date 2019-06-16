@@ -85,7 +85,7 @@ protected:
     }
 
     size_t getEncSizeConv(const size_t msg_len) {
-        return msg_len * inv_rate;
+        return correct_convolutional_encode_len(corr_con, msg_len)/8;
     }
 
     size_t getEncSizeRSV(const size_t msg_len) {
