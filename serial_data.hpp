@@ -34,7 +34,10 @@ enum DBG_TYPES {
     DBG_WARN,
     DBG_ERR,
 };
+
 int debug_printf(const enum DBG_TYPES, const char *fmt, ...);
+
+int debug_printf_clean(const enum DBG_TYPES, const char *fmt, ...);
 
 typedef enum {
     PKT_OK = 0,
@@ -46,7 +49,7 @@ typedef enum {
 } PKT_STATUS_ENUM;
 
 class Frame {
-    typedef struct {
+    typedef struct __attribute__((__packed__)) {
         uint8_t type;
         uint16_t stream_id;
         uint8_t ttl;
@@ -55,7 +58,7 @@ class Frame {
         uint8_t nsym_offset;
         uint8_t sym_offset;
     } frame_hdr;
-    typedef struct {
+    typedef struct __attribute__((__packed__)) {
         frame_hdr hdr;
         uint16_t hdr_crc;
         // payload

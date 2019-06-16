@@ -108,6 +108,7 @@ public:
 };
 
 
+#if 0
 class FECRSV: public FEC {
 public:
     FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order) : FEC(msg_size, inv_rate, order) {}
@@ -126,6 +127,7 @@ public:
 
     void benchmark(size_t num_iters);
 };
+#endif
 
 
 class FECConv: public FEC {

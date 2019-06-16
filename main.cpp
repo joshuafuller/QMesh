@@ -69,6 +69,7 @@ int main()
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
     Frame *fec_frame = new Frame();  
+    debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
 #ifdef FEC_CONV
     fec = new FECConv(fec_frame->getPktSize(), 2, 9);
 #elif defined FEC_RSV

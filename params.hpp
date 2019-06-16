@@ -21,12 +21,12 @@
 // Defines key parameters
 
 // Test mode selection
-//#define TX_TEST_MODE
-#define RX_TEST_MODE
+#define TX_TEST_MODE
+//#define RX_TEST_MODE
 //#define TEST_EEPROM
 
 // Frame parameters
-#define FRAME_PAYLOAD_LEN 64
+#define FRAME_PAYLOAD_LEN 16
 
 // Radio parameters
 #define RADIO_INVERT_IQ false
@@ -37,14 +37,14 @@
 #define RADIO_SYM_TIMEOUT 12
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
-#define RADIO_BANDWIDTH 0
-#define RADIO_SF 9
+#define RADIO_BANDWIDTH 1
+#define RADIO_SF 12
 // 1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8
 #define RADIO_CODERATE 1
 // Tx power, in mW
 #define RADIO_POWER 14
 // Transmit timeout, in ms
-#define RADIO_TX_TIMEOUT 1000
+#define RADIO_TX_TIMEOUT 3000
 #define RADIO_FREQUENCY 915000000
 #define HOP_CHANNEL_SIZE 12500
 // Number of past packets to check the current packet against

@@ -46,7 +46,7 @@ size_t Frame::getFullPktSize(void) {
 
 // Get an array of bytes of the frame for e.g. transmitting over the air.
 size_t Frame::serialize(uint8_t *buf) {
-    return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf);
+    return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf)/8;
 }
 
 // Compute the header CRC.
@@ -130,16 +130,20 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "CRC: %4x\r\n", pkt.hdr_crc);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
+    char *pld_str = (char *) malloc(2048);
+    MBED_ASSERT(pld_str != NULL);
     for(size_t i = 0; i < FRAME_PAYLOAD_LEN; i++) {
         if(i%16 == 0) {
-            debug_printf(dbg_type, "\r\n");
+            debug_printf(dbg_type, "");
         }
-        debug_printf(dbg_type, "%2x ", pkt.data[i]);
+        debug_printf_clean(dbg_type, "%2x ", pkt.data[i]);
     }
-    debug_printf(dbg_type, "\r\n");
+    debug_printf_clean(dbg_type, "\r\n");
     debug_printf(dbg_type, "CRC: %4x\r\n", pkt.data_crc);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
+
+    free(pld_str);
 }
 
 bool FrameQueue::enqueue(Frame &enq_frame) {
@@ -385,6 +389,39 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     int ret_val = printf("[+] %s -- %s", msg_type.c_str(), tmp_str);
+
+    va_end(args);
+    return ret_val;
+}
+
+int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    vsprintf(tmp_str, fmt, args);
+    string msg_type;
+    if(dbg_type == DBG_INFO) {
+        #ifndef DEBUG_INFO
+        return 0;
+        #endif
+        msg_type = "INFO";
+    }
+    else if(dbg_type == DBG_WARN) {
+        #ifndef DEBUG_WARN
+        return 0;
+        #endif
+        msg_type = "WARN";
+    }
+    else if(dbg_type == DBG_ERR) {
+        #ifndef DEBUG_ERR
+        return 0;
+        #endif
+        msg_type = "ERR ";
+    }
+    else {
+        MBED_ASSERT(false);
+    }
+    int ret_val = printf("%s", tmp_str);
 
     va_end(args);
     return ret_val;

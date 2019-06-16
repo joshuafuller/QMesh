@@ -84,16 +84,17 @@ void init_radio(void) {
     uint8_t radio_freq = nv_settings->getFrequency();
     Frame tmp_frame;
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
-    radio.set_rx_config(MODEM_LORA, radio_bw,
-                            radio_sf, radio_cr,
+    debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
+    radio.set_rx_config(MODEM_LORA, RADIO_BANDWIDTH,
+                            RADIO_SF, RADIO_CODERATE,
                             0, RADIO_PREAMBLE_LEN,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
     radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
-                            radio_bw, radio_sf,
-                            radio_cr, RADIO_PREAMBLE_LEN,
+                            RADIO_BANDWIDTH, RADIO_SF,
+                            RADIO_CODERATE, RADIO_PREAMBLE_LEN,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
@@ -121,17 +122,20 @@ void tx_test_radio(void) {
 #if 0        
         //memcpy(send_string, send_str.c_str(), send_str.length());
         // apply FEC
-        fec.encode((uint8_t *) send_str.c_str(), send_str.length(), send_string);
-        radio.send((uint8_t *) send_string, send_str.length()*2);
+        //fec.encode((uint8_t *) send_str.c_str(), send_str.length(), send_string);
+        //radio.send((uint8_t *) send_string, send_str.length()*2);
+        debug_printf(DBG_INFO, "Length of send string is %d\r\n", send_str.length());
+        radio.send((uint8_t *) send_string, send_str.length());
 #else
         memcpy(pld_string, send_str.c_str(), send_str.length());
         tx_test_frame.loadTestFrame(pld_string);
         tx_test_frame.prettyPrint(DBG_INFO);
         size_t send_len = tx_test_frame.serialize(send_string);
+        debug_printf(DBG_INFO, "Sending %d bytes\r\n", send_len);
         radio.send(send_string, send_len);
 #endif
         debug_printf(DBG_INFO, "Transmitted Packet\r\n");
-        wait(1.0);
+        wait(5.0);
     }
 }
 
@@ -165,6 +169,7 @@ static void tx_done_cb(void)
     // If we just finished transmitting a local frame
     //  check to see if another frame's sitting in the queue
     //  if so, grab another frame and set it up to be sent one time unit in the future
+    debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");
     radio.set_channel( RADIO_FREQUENCY );
 }
 

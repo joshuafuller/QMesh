@@ -10,15 +10,6 @@
 
 FEC::FEC(const size_t msg_size, const size_t inv_rate, const size_t order) {
     my_msg_size = msg_size;
-    // Set up the Reed-Solomon inner code
-    block_length = 255;
-    min_distance = 32;
-    message_length = block_length - min_distance;
-    rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds, 1, 1, min_distance);
-    // Determine number of RS blocks per message
-    double num_rs_blks = ceil((msg_size*8.0)/223.0);
-    num_rs_bytes = (256*num_rs_blks)/8;
-    rs_int_buf = (uint8_t *) malloc(num_rs_bytes);
     // Set up the convolutional outer code
     this->inv_rate = inv_rate;
     this->order = order;
@@ -65,24 +56,16 @@ FEC::FEC(const size_t msg_size, const size_t inv_rate, const size_t order) {
     corr_con = correct_convolutional_create(inv_rate, order, poly);
 }
 
-uint8_t FEC::extractBit(const uint8_t *buf, const size_t bit_pos) {
-    size_t byte_idx = bit_pos / 8;
-    size_t bit_idx = bit_pos % 8;
-    uint8_t val = buf[byte_idx];
-    uint8_t ret_val = (val >> (7-bit_idx)) & 0x01;
-    return ret_val;
-}
-
-void FEC::writeBit(uint8_t *buf, const size_t bit_pos, const uint8_t bit_val) {
-    size_t byte_idx = bit_pos / 8;
-    size_t bit_idx = bit_pos % 8;
-    buf[byte_idx] |= (bit_val << (7-bit_idx));
-}
-
+#if 0
 size_t FEC::encodeRSV(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
     uint8_t rs_enc_msg[MAX_FRAME_SIZE];
     memset(rs_enc_msg, 0xAB, sizeof(rs_enc_msg));
     // First, the Reed-Solomon
+    size_t rs_enc_msg_idx = 0;
+    size_t msg_remaining = msg_len;
+    for(int i = 0; i < num_rs_blocks; i++) {
+        rs_enc_msg_idx += correct_reed_solomon_encode(rs_con, msg_len, enc_msg);
+    }
     for(int i = 0; i < msg_len*8 / 223; i+=223) {
         // extract 223 bits
         uint8_t buf_223[28];
@@ -152,6 +135,7 @@ void FECRSV::benchmark(size_t num_iters) {
     delete enc_timer;
     delete dec_timer;
 }
+#endif
 
 void FECConv::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
