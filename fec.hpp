@@ -59,7 +59,6 @@ protected:
     size_t min_distance;
     size_t message_length;    
     correct_convolutional *corr_con;
-    correct_reed_solomon *rs_con;
     size_t num_rs_bytes;
     uint8_t *rs_int_buf;
     // Convolutional coding parameters
@@ -88,13 +87,6 @@ protected:
         return correct_convolutional_encode_len(corr_con, msg_len)/8;
     }
 
-    size_t getEncSizeRSV(const size_t msg_len) {
-        float enc_size = getEncSizeConv(msg_len);
-        enc_size *= 8.0f;
-        enc_size *= (256.0/223.0);
-        return (size_t) ceilf(enc_size/8.0);
-    }
-
 public:
     FEC(const size_t msg_size, const size_t inv_rate, const size_t order);
 
@@ -105,29 +97,49 @@ public:
     virtual ssize_t decode(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) = 0;    
 
     virtual void benchmark(size_t num_iters) = 0;
+
 };
 
 
-#if 0
 class FECRSV: public FEC {
+protected:
+    size_t rs_corr_bytes;
+    correct_reed_solomon *rs_con;
+    uint8_t rs_buf[256];
+
 public:
-    FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order) : FEC(msg_size, inv_rate, order) {}
+    FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order, const size_t rs_corr_bytes) 
+        : FEC(msg_size, inv_rate, order) {
+        rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
+                                                  1, 1, rs_corr_bytes);
+    }
 
     size_t encode(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
-        return encodeRSV(msg, msg_len, enc_msg);
+        MBED_ASSERT(getEncSize(msg_len) <= 256);
+        size_t conv_len = correct_convolutional_encode(corr_con, msg, msg_len, rs_buf)/8;
+        return correct_reed_solomon_encode(rs_con, rs_buf, conv_len, enc_msg);
     }
 
     ssize_t decode(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) {
-        return decodeRSV(enc_msg, enc_len, dec_msg);
+        size_t rs_len = correct_reed_solomon_decode(rs_con, enc_msg, enc_len, rs_buf);
+        size_t conv_bytes = correct_convolutional_decode(corr_con, rs_buf, rs_len*8, dec_msg);
+        MBED_ASSERT(conv_bytes != -1);
+        return conv_bytes;
     }
 
     size_t getEncSize(const size_t msg_len) {
-        return getEncSizeRSV(msg_len);
+        size_t enc_size = getEncSizeConv(msg_len) + rs_corr_bytes;
+        MBED_ASSERT(enc_size <= 256);
+        return enc_size;
     }
 
     void benchmark(size_t num_iters);
+
+    ~FECRSV() {
+        correct_convolutional_destroy(corr_con);
+        correct_reed_solomon_destroy(rs_con);
+    }
 };
-#endif
 
 
 class FECConv: public FEC {
@@ -147,6 +159,10 @@ public:
     }
 
     void benchmark(size_t num_iters);
+
+    ~FECConv() {
+        correct_convolutional_destroy(corr_con);
+    }
 };
 
 #endif /* FEC_HPP */
