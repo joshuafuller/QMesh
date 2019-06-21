@@ -73,14 +73,14 @@ int main()
 #ifdef FEC_CONV
     fec = new FECConv(fec_frame->getPktSize(), 2, 9);
 #elif defined FEC_RSV
-    fec = new FECRSV(fec_frame->getPktSize(), 2, 9);
+    fec = new FECRSV(fec_frame->getPktSize(), 2, 9, 8);
 #else
 #error "Need to define either FEC_CONV or FEC_RSV\r\n"
 #endif
     fec->benchmark(100);
     delete fec_frame;
-    static uint8_t fec_enc_buf[512];
-    static uint8_t fec_dec_buf[512];
+    uint8_t *fec_enc_buf = (uint8_t *) malloc(fec_frame->getPktSize());
+    uint8_t *fec_dec_buf = (uint8_t *) malloc(fec->getEncSize(fec_frame->getPktSize()));
     static char test_msg[] = "0123456789\r\n";
     debug_printf(DBG_INFO, "Encoding %s", test_msg);
     fec->encode((uint8_t *) test_msg, 13, fec_enc_buf);

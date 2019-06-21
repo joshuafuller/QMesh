@@ -132,6 +132,7 @@ void FECConv::benchmark(size_t num_iters) {
     float dec_iters_per_sec = (float) num_iters / ((float) dec_num_ms / 1000.f);
     debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
     debug_printf(DBG_INFO, "====================\r\n");
+    // Clean up
     free(msg_data);
     free(enc_data);
     delete enc_timer;

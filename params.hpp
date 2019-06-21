@@ -59,7 +59,8 @@
 #define NUM_SYM_OFFSETS 4
 
 // FEC parameters
-#define FEC_CONV
+//#define FEC_CONV
+#define FEC_RSV
 
 // Debug options
 #define DEBUG_INFO

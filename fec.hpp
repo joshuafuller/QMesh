@@ -105,13 +105,14 @@ class FECRSV: public FEC {
 protected:
     size_t rs_corr_bytes;
     correct_reed_solomon *rs_con;
-    uint8_t rs_buf[256];
+    uint8_t *rs_buf;
 
 public:
     FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order, const size_t rs_corr_bytes) 
         : FEC(msg_size, inv_rate, order) {
         rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
                                                   1, 1, rs_corr_bytes);
+        rs_buf = (uint8_t *) malloc(getEncSize(msg_size));
     }
 
     size_t encode(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
@@ -138,6 +139,7 @@ public:
     ~FECRSV() {
         correct_convolutional_destroy(corr_con);
         correct_reed_solomon_destroy(rs_con);
+        free(rs_buf);
     }
 };
 
