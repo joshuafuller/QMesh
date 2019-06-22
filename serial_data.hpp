@@ -24,6 +24,7 @@
 #include "SX1272_LoRaRadio.h"
 
 extern SX1272_LoRaRadio radio;
+extern NVSettings *nv_settings;
 static uint8_t enc_buf[512], dec_buf[256];
 
 

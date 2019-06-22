@@ -53,6 +53,8 @@ typedef enum {
 class NVSettings {
 protected:
     EEPROM *eeprom;
+
+public:
     struct {
         uint32_t magic;
         mesh_mode_t mode;
@@ -62,7 +64,6 @@ protected:
         uint8_t cr;
     } nv_settings;
 
-public:
     NVSettings(EEPROM *my_eeprom) {
         eeprom = my_eeprom;
         loadEEPROM();

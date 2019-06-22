@@ -22,31 +22,12 @@
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
 #include "fec.hpp"
-
+#include "leds.hpp"
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);
 NVSettings *nv_settings;
-DigitalOut led1(LED1);
-DigitalOut led2(LED2);
-DigitalOut led3(LED3);
-Thread led2_thread;
-Thread led3_thread;
 FEC *fec;  
-
-void led2_thread_fn() {
-    while (true) {
-        led2 = !led2;
-        wait(0.333);
-    }
-}
-
-void led3_thread_fn() {
-    while (true) {
-        led3 = !led3;
-        wait(0.1);
-    }
-}
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
@@ -57,6 +38,13 @@ int main()
 {
     // Set the UART comms speed
     pc.baud(230400);
+
+    // Start a thread for blinking LEDs
+    led1.LEDSolid();
+    led2.LEDBlink();
+    led3.LEDBlink();
+
+    wait(10);
 
     // Set up and test the EEPROM
 #ifdef TEST_EEPROM
@@ -91,12 +79,6 @@ int main()
     debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
 
-    // Start a thread for blinking LEDs
-    debug_printf(DBG_INFO, "Starting LED2 thread\r\n");
-    led2_thread.start(led2_thread_fn);
-    debug_printf(DBG_INFO, "Starting LED3 thread\r\n");
-    led3_thread.start(led3_thread_fn);
-
 #ifdef TX_TEST_MODE
     // Start a thread for the radio
     debug_printf(DBG_INFO, "Starting Tx test thread\r\n");
@@ -115,8 +97,6 @@ int main()
 
     int count = 0;
     while (true) {
-        // Blink LED and wait 0.5 seconds
-        led1 = !led1;
         wait_ms(SLEEP_TIME);
     }
 }
