@@ -16,13 +16,11 @@
  */
 
 #include "mbed.h"
-#include "lora_radio_helper.h"
-#include "radio.hpp"
+#include "peripherals.hpp"
 #include "params.hpp"
 #include "serial_data.hpp"
-#include "nv_settings.hpp"
 #include "fec.hpp"
-#include "leds.hpp"
+
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);
