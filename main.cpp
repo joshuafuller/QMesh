@@ -38,11 +38,17 @@ int main()
     pc.baud(230400);
 
     // Start a thread for blinking LEDs
-    led1.LEDSolid();
-    led2.LEDBlink();
-    led3.LEDBlink();
+    led1.LEDBlink();
+    led2.LEDOff();
+    led3.LEDOff();
 
-    wait(10);
+    wait(3);
+
+    if(button.getPressed() == true) {
+        led2.LEDBlink();
+        led3.LEDBlink();
+        while(true);
+    }
 
     // Set up and test the EEPROM
 #ifdef TEST_EEPROM

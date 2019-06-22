@@ -5,5 +5,6 @@
 #include "nv_settings.hpp"
 #include "radio.hpp"
 #include "leds.hpp"
+#include "buttons.hpp"
 
 #endif /* PERIPHERALS_HPP */
