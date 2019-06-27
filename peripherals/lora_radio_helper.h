@@ -70,18 +70,18 @@ SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
                        MBED_CONF_APP_LORA_TCXO);
 
 #elif (MBED_CONF_APP_LORA_RADIO == SX126X)
-#error SX1262 driver support is not properly implemented yet!
-SX126X_LoRaRadio radio(PinName mosi,
-                     PinName miso,
-                     PinName sclk,
-                     PinName nss,
-                     PinName reset,
-                     PinName dio1,
-                     PinName busy,
-                     PinName freq_select,
-                     PinName device_select,
-                     PinName crystal_select,
-                     PinName ant_switch);
+#warning Pins being used for SX1262 Mbed board
+SX126X_LoRaRadio radio(D11, // PinName mosi
+                       D12, // PinName miso
+                       D13, // PinName sclk
+                       D7,  // PinName nss
+                       A0,  // PinName reset
+                       D5,  // PinName dio1
+                       D3,  // PinName busy,
+                       A1,  // PinName freq_select,
+                       A2,  // PinName device_select,
+                       A3,  // PinName crystal_select,
+                       D8); // PinName ant_switch);
 
 #else
 #error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"

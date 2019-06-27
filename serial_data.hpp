@@ -21,9 +21,18 @@
 #include "mbed.h"
 #include "params.hpp"
 #include "nv_settings.hpp"
-#include "SX1272_LoRaRadio.h"
 
+#if (MBED_CONF_APP_LORA_RADIO == SX1272)
+#include "SX1272_LoRaRadio.h"
 extern SX1272_LoRaRadio radio;
+#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
+#include "SX1276_LoRaRadio.h"
+extern SX1276_LoRaRadio radio;
+#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
+#include "SX126X_LoRaRadio.h"
+extern SX126X_LoRaRadio radio;
+#endif
+
 extern NVSettings *nv_settings;
 static uint8_t enc_buf[512], dec_buf[256];
 
@@ -222,6 +231,20 @@ class FrameQueue {
 
         // Returns whether queue is full
         bool getFull(void);
+};
+
+
+class ATSettings {
+protected:
+    char cmd[32];
+    ATCmdParser *at;
+    Thread parser_thread;
+    NVSettings *nv_settings;
+public:
+    ATSettings(Serial *ser_port, NVSettings *settings);
+    void processATCmds(void);
+    void threadFn(void);
+    ~ATSettings(void);
 };
 
 

@@ -194,46 +194,50 @@ bool FrameQueue::getFull(void) {
 FrameQueue tx_queue, rx_queue;
 
 
-static char cat[64];
-static char cmd[64];
-static char recv_data[256];
-void processATCmds(ATCmdParser *at) {
+ATSettings::ATSettings(Serial *ser_port,  NVSettings *settings) {
+    nv_settings = settings;
+    at = new ATCmdParser(ser_port);
+    parser_thread.start(callback(this, &ATSettings::threadFn));
+}
+
+void ATSettings::threadFn(void) {
+    for(;;) {
+        processATCmds();
+    }
+}
+
+ATSettings::~ATSettings(void) {
+    parser_thread.terminate();
+    delete at;
+}
+
+void ATSettings::processATCmds(void) {
     int32_t val;
-    at->recv("AT+%s+%s+%d", cmd, cat, &val);
-	if(!strcmp(cmd, "GET")) {
-		if(!strcmp(cat, "FREQ")) {
-			at->send("%d", nv_settings->nv_settings.freq);
-		}
-		else if(!strcmp(cat, "SF")) {
-			at->send("%d", nv_settings->nv_settings.sf);
-		}
-		else if(!strcmp(cat, "BW")) {
-			at->send("%d", nv_settings->nv_settings.bw);
-		}
-		else {
-			at->send("ERR UNKNOWN CMD");
-		}
+    at->recv("AT+%s=%d", cmd, &val);
+	if(!strcmp(cmd, "FREQ?")) {
+		at->send("%d", nv_settings->nv_settings.freq);
 	}
-	else if(!strcmp(cmd, "SET")) {
-		if(!strcmp(cat, "FREQ")) {
-			nv_settings->nv_settings.freq = val;
-			nv_settings->saveEEPROM();
-			at->send("OK");
-		}
-		else if(!strcmp(cat, "SF")) {
-			nv_settings->nv_settings.sf = val;
-			nv_settings->saveEEPROM();
-			at->send("OK");
-		}
-		else if(!strcmp(cat, "BW")) {
-			nv_settings->nv_settings.bw = val;
-			nv_settings->saveEEPROM();
-			at->send("OK");
-		}
-		else {
-			at->send("ERR UNKNOWN CMD");
-		}		
+    else if(!strcmp(cmd, "FREQ")) {
+		nv_settings->nv_settings.freq = val;
+		nv_settings->saveEEPROM();
+		at->send("OK");
+    }
+	else if(!strcmp(cmd, "SF?")) {
+		at->send("%d", nv_settings->nv_settings.sf);
 	}
+	else if(!strcmp(cmd, "SF")) {
+		nv_settings->nv_settings.sf = val;
+		nv_settings->saveEEPROM();
+		at->send("OK");
+	}    
+	else if(!strcmp(cmd, "BW?")) {
+		at->send("%d", nv_settings->nv_settings.bw);
+	}
+    else if(!strcmp(cmd, "BW")) {
+        nv_settings->nv_settings.bw = val;
+		nv_settings->saveEEPROM();
+		at->send("OK");
+    }
 	else {
 		at->send("ERR UNKNOWN CMD");
 	}

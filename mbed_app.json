@@ -2,7 +2,7 @@
     "config": {
         "lora-radio": {
             "help": "Which radio to use (options: SX1272,SX1276,SX126X)",
-            "value": "SX1272"
+            "value": "SX126X"
         },
         "main_stack_size":     { "value": 4096 },
 
