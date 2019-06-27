@@ -245,7 +245,7 @@ FrameQueue tx_queue, rx_queue;
 // -- OK -- response
 //
 //
-#if 0 
+#if 0
 char response[64];
 char recv_data[256];
 void processATCmds(ATCmdParser *at) {
