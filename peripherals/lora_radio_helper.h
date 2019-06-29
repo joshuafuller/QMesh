@@ -22,6 +22,7 @@
 
 #define SX1272   0xFF
 #define SX1276   0xEE
+#define SX126X   0xDD
 
 #if (MBED_CONF_APP_LORA_RADIO == SX1272)
 #include "SX1272_LoRaRadio.h"

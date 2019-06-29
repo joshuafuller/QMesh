@@ -67,4 +67,9 @@
 #define DEBUG_WARN
 #define DEBUG_ERR
 
+#define SX1272   0xFF
+#define SX1276   0xEE
+#define SX126X   0xDD
+
+
 #endif /* PARAMS_HPP */

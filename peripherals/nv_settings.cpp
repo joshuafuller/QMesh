@@ -183,5 +183,3 @@ void NVSettings::loadEEPROM(void) {
     debug_printf(DBG_INFO, "Configuration loading complete.\r\n");
 }
 
-////kljlkj
-
