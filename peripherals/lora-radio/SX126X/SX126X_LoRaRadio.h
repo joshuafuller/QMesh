@@ -40,6 +40,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #endif
 #include "sx126x_ds.h"
 #include "lorawan/LoRaRadio.h"
+#include "mbed.h"
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #define MAX_DATA_BUFFER_SIZE_SX126X                        MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -288,6 +289,12 @@ public:
      * Release exclusive access
      */
     virtual void unlock(void);
+
+    /**
+     * Timers for tracking when the Rx interrupt was thrown
+     */
+    mbed::Timer primary_rx_tmr, secondary_rx_tmr;
+    bool primary_active, secondary_active;
 
 private:
 

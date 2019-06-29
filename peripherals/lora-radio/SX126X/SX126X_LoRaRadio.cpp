@@ -266,7 +266,15 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 int16_t rssi = 0;
                 int8_t snr = 0;
                 packet_status_t pkt_status;
-
+                // Start timing the duration since the packet was received
+                if(primary_active == false) {
+                    primary_active = true;
+                    primary_rx_tmr.start();
+                }
+                else if(secondary_active == false) {
+                    secondary_active = true;
+                    secondary_rx_tmr.start();
+                }
                 get_rx_buffer_status(&payload_len, &offset);
                 read_fifo(_data_buffer, payload_len, offset);
                 get_packet_status(&pkt_status);
@@ -397,10 +405,11 @@ void SX126X_LoRaRadio::set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage,
 void SX126X_LoRaRadio::init_radio(radio_events_t *events)
 {
     _radio_events = events;
-
+    printf("attaching callback\r\n");
+    while(true);
     // attach DIO1 interrupt line to its respective ISR
     _dio1_ctl.rise(callback(this, &SX126X_LoRaRadio::dio1_irq_isr));
-
+    printf("attached callback\r\n");
     uint8_t freq_support = get_frequency_support();
 
     // Hold chip-select high
@@ -409,6 +418,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     _spi.frequency(SPI_FREQUENCY);
     // 100 us wait to settle down
     wait_us(100);
+    printf("messed with SPI\r\n");
 
     radio_reset();
 

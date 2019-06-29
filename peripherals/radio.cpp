@@ -21,12 +21,23 @@
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <string>
+#if (MBED_CONF_APP_LORA_RADIO == SX1272)
 #include "SX1272_LoRaRadio.h"
+#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
+#include "SX1276_LoRaRadio.h"
+#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
+#include "SX126X_LoRaRadio.h"
+#endif
 #include "radio.hpp"
 #include "correct.h"
 
-
-extern SX1272_LoRaRadio SX1272radio;
+#if (MBED_CONF_APP_LORA_RADIO == SX1272)
+extern SX1272_LoRaRadio radio;
+#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
+extern SX1276_LoRaRadio radio;
+#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
+extern SX126X_LoRaRadio radio;
+#endif
 
 // Nonvolatile radio settings
 extern NVSettings *nv_settings;
@@ -75,9 +86,12 @@ void init_radio(void) {
     radio_events.tx_timeout = tx_timeout_cb;
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
+    printf("before unique variable\r\n");
     radio.primary_active = false;
     radio.secondary_active = false;
+    printf("after unique variable\r\n");
     radio.init_radio(&radio_events);
+    printf("afer init_radio\r\n");
     uint8_t radio_bw = nv_settings->getBW();
     uint8_t radio_sf = nv_settings->getSF();
     uint8_t radio_cr = nv_settings->getCR();

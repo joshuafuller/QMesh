@@ -20,15 +20,18 @@
 #ifndef APP_LORA_RADIO_HELPER_H_
 #define APP_LORA_RADIO_HELPER_H_
 
-#include "SX1272_LoRaRadio.h"
-#include "SX1276_LoRaRadio.h"
-#include "SX126X_LoRaRadio.h"
-
 #define SX1272   0xFF
 #define SX1276   0xEE
 
 #if (MBED_CONF_APP_LORA_RADIO == SX1272)
+#include "SX1272_LoRaRadio.h"
+#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
+#include "SX1276_LoRaRadio.h"
+#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
+#include "SX126X_LoRaRadio.h"
+#endif
 
+#if (MBED_CONF_APP_LORA_RADIO == SX1272)
 SX1272_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
                        MBED_CONF_APP_LORA_SPI_MISO,
                        MBED_CONF_APP_LORA_SPI_SCLK,
@@ -49,7 +52,6 @@ SX1272_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
                        MBED_CONF_APP_LORA_TCXO);
 
 #elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-
 SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
                        MBED_CONF_APP_LORA_SPI_MISO,
                        MBED_CONF_APP_LORA_SPI_SCLK,
@@ -82,7 +84,6 @@ SX126X_LoRaRadio radio(D11, // PinName mosi
                        A2,  // PinName device_select,
                        A3,  // PinName crystal_select,
                        D8); // PinName ant_switch);
-
 #else
 #error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"
 #endif
