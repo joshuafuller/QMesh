@@ -77,10 +77,14 @@ SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
 SX126X_LoRaRadio radio(D11, // PinName mosi
                        D12, // PinName miso
                        D13, // PinName sclk
-                       D7,  // PinName nss
+                       D10,  // PinName nss
+                       D7,  // PinName rxen
+                       D6,  // PinName txen
                        A0,  // PinName reset
                        D5,  // PinName dio1
-                       D3,  // PinName busy,
+                       D4,  // PinName dio2
+                       D3,  // PinName nrst
+                       D2,  // PinName busy,
                        A1,  // PinName freq_select,
                        A2,  // PinName device_select,
                        A3,  // PinName crystal_select,

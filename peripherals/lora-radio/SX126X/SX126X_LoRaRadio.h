@@ -52,16 +52,20 @@ class SX126X_LoRaRadio : public LoRaRadio {
 
 public:
     SX126X_LoRaRadio(PinName mosi,
-                     PinName miso,
-                     PinName sclk,
-                     PinName nss,
-                     PinName reset,
-                     PinName dio1,
-                     PinName busy,
-                     PinName freq_select,
-                     PinName device_select,
-                     PinName crystal_select,
-                     PinName ant_switch);
+                       PinName miso,
+                       PinName sclk,
+                       PinName nss,
+                       PinName rxen,
+                       PinName txen,
+                       PinName reset,
+                       PinName dio1,
+                       PinName dio2,
+                       PinName nrst,
+                       PinName busy,
+                       PinName freq_select,
+                       PinName device_select,
+                       PinName crystal_select,
+                       PinName ant_switch);
 
     virtual ~SX126X_LoRaRadio();
 
