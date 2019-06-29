@@ -21,8 +21,8 @@
 // Defines key parameters
 
 // Test mode selection
-//#define TX_TEST_MODE
-#define RX_TEST_MODE
+#define TX_TEST_MODE
+//#define RX_TEST_MODE
 //#define TEST_EEPROM
 
 // Frame parameters

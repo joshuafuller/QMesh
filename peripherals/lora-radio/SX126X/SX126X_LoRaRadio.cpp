@@ -405,11 +405,8 @@ void SX126X_LoRaRadio::set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage,
 void SX126X_LoRaRadio::init_radio(radio_events_t *events)
 {
     _radio_events = events;
-    printf("attaching callback\r\n");
-    while(true);
     // attach DIO1 interrupt line to its respective ISR
     _dio1_ctl.rise(callback(this, &SX126X_LoRaRadio::dio1_irq_isr));
-    printf("attached callback\r\n");
     uint8_t freq_support = get_frequency_support();
 
     // Hold chip-select high

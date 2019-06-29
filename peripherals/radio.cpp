@@ -156,11 +156,8 @@ void tx_test_radio(void) {
 // Simple test function that just prints out received packets
 void rx_test_radio(void) {
     while(true) {
-        debug_printf(DBG_ERR, "Started\r\n");
         radio.set_channel( RADIO_FREQUENCY );
-        debug_printf(DBG_ERR, "Started2\r\n");
         radio.receive();
-        debug_printf(DBG_ERR, "Started3\r\n");
         rx_done_evt.wait_all(0x1);
         debug_printf(DBG_INFO, "Received Packet\r\n");
     }
