@@ -60,6 +60,7 @@ FEC::FEC(const size_t msg_size, const size_t inv_rate, const size_t order) {
 void FECRSV::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the RSV FEC. Running for %d iterations\r\n", num_iters);
+    debug_printf(DBG_INFO, "Message size is %d, encoded size is %d\r\n", my_msg_size, getEncSize(my_msg_size));
     uint8_t *msg_data = (uint8_t *) malloc(my_msg_size);
     uint8_t *enc_data = (uint8_t *) malloc(getEncSize(my_msg_size));
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");

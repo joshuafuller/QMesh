@@ -74,9 +74,11 @@ int main()
     uint8_t *fec_enc_buf = (uint8_t *) malloc(fec_frame->getPktSize());
     uint8_t *fec_dec_buf = (uint8_t *) malloc(fec->getEncSize(fec_frame->getPktSize()));
     static char test_msg[] = "0123456789\r\n";
+    size_t enc_size = fec->getEncSize(13);
+    debug_printf(DBG_INFO, "Encoded size is %d\r\n", enc_size);
     debug_printf(DBG_INFO, "Encoding %s", test_msg);
     fec->encode((uint8_t *) test_msg, 13, fec_enc_buf);
-    fec->decode(fec_enc_buf, 26, fec_dec_buf);
+    fec->decode(fec_enc_buf, enc_size, fec_dec_buf);
     debug_printf(DBG_INFO, "Decoded %s", fec_dec_buf);
 
     // Set up the radio
