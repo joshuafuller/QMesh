@@ -49,6 +49,7 @@ int main()
         ATSettings *at = new ATSettings(&pc, nv_settings);
         for(;;) { wait(1); }
     }
+    led1.LEDSolid();
 
     // Set up and test the EEPROM
 #ifdef TEST_EEPROM
