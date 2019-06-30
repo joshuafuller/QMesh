@@ -327,6 +327,10 @@ private:
     // Radio specific controls (TX/RX duplexer switch control)
     mbed::DigitalInOut _ant_switch;
 
+    // RF switch controls, for the CDEBytes E22
+    mbed::DigitalOut _rxen;
+    mbed::DigitalOut _txen;
+
     // Structure containing function pointers to the stack callbacks
     radio_events_t *_radio_events;
 

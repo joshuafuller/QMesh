@@ -107,6 +107,8 @@ SX126X_LoRaRadio::SX126X_LoRaRadio(PinName mosi,
       _freq_select(freq_select),
       _dev_select(device_select),
       _crystal_select(crystal_select, PullDown),
+      _rxen(rxen),
+      _txen(txen),
       _ant_switch(ant_switch, PIN_INPUT, PullUp, 0)
 #ifdef MBED_CONF_RTOS_PRESENT
         , irq_thread(osPriorityRealtime, 1024, NULL, "LR-SX126X")
@@ -985,6 +987,14 @@ void SX126X_LoRaRadio::configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
 void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
 {
     set_tx_power(_tx_power);
+
+    if(_rxen.is_connected()) {
+        _rxen = 0;
+    }
+    if(_txen.is_connected()) {
+        _txen = 1;
+    }
+   
     configure_dio_irq(IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
                       IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
                       IRQ_RADIO_NONE,
@@ -1023,6 +1033,13 @@ void SX126X_LoRaRadio::receive(void)
         write_opmode_command(RADIO_SET_STOPRXTIMERONPREAMBLE, &stop_at_preamble, 1);
         // Data-sheet 13.4.9 SetLoRaSymbNumTimeout
         write_opmode_command(RADIO_SET_LORASYMBTIMEOUT, &_rx_timeout_in_symbols, 1);
+    }
+
+    if(_txen.is_connected()) {
+        _txen = 0;
+    }
+    if(_rxen.is_connected()) {
+        _rxen = 1;
     }
 
     if (_reception_mode != RECEPTION_MODE_OTHER) {
