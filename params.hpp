@@ -42,7 +42,7 @@
 // 1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8
 #define RADIO_CODERATE 1
 // Tx power, in mW
-#define RADIO_POWER 14
+#define RADIO_POWER 22
 // Transmit timeout, in ms
 #define RADIO_TX_TIMEOUT 3000
 #define RADIO_FREQUENCY 915000000
@@ -59,8 +59,8 @@
 #define NUM_SYM_OFFSETS 4
 
 // FEC parameters
-#define FEC_CONV
-//#define FEC_RSV
+//#define FEC_CONV
+#define FEC_RSV
 
 // Debug options
 #define DEBUG_INFO
