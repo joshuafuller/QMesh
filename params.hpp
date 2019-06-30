@@ -71,5 +71,6 @@
 #define SX1276   0xEE
 #define SX126X   0xDD
 
+//#define CDEBYTES_E22
 
 #endif /* PARAMS_HPP */

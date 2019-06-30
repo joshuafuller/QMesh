@@ -16,6 +16,7 @@
  */
 
 #include "lorawan/LoRaRadio.h"
+#include "params.hpp"
 
 #ifndef APP_LORA_RADIO_HELPER_H_
 #define APP_LORA_RADIO_HELPER_H_
@@ -74,6 +75,8 @@ SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
 
 #elif (MBED_CONF_APP_LORA_RADIO == SX126X)
 #warning Pins being used for SX1262 Mbed board
+
+#ifdef CDEBYTES_E22
 SX126X_LoRaRadio radio(D11, // PinName mosi
                        D12, // PinName miso
                        D13, // PinName sclk
@@ -89,6 +92,25 @@ SX126X_LoRaRadio radio(D11, // PinName mosi
                        A2,  // PinName device_select,
                        A3,  // PinName crystal_select,
                        D8); // PinName ant_switch);
+#else
+#warning Pins being used for Mbed SX1262 board
+SX126X_LoRaRadio radio(D11, // PinName mosi
+                       D12, // PinName miso
+                       D13, // PinName sclk
+                       D7,  // PinName nss
+                       NC,  // PinName rxen
+                       NC,  // PinName txen
+                       A0,  // PinName reset
+                       D5,  // PinName dio1
+                       NC,  // PinName dio2   
+                       NC,  // PinName nrst  
+                       D3,  // PinName busy,
+                       A1,  // PinName freq_select,
+                       A2,  // PinName device_select,
+                       A3,  // PinName crystal_select,
+                       D8); // PinName ant_switch);
+#endif
+
 #else
 #error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"
 #endif
