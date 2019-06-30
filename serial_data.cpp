@@ -47,7 +47,7 @@ size_t Frame::getFullPktSize(void) {
 // Get an array of bytes of the frame for e.g. transmitting over the air.
 size_t Frame::serialize(uint8_t *buf) {
     debug_printf(DBG_WARN, "Frame size is now %d\r\n", sizeof(pkt));
-    return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf)/8;
+    return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf);
 }
 
 // Compute the header CRC.

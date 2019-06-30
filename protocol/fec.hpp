@@ -76,7 +76,7 @@ protected:
     }
 
     size_t encodeConv(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
-        return correct_convolutional_encode(corr_con, msg, msg_len, enc_msg);
+        return correct_convolutional_encode(corr_con, msg, msg_len, enc_msg)/8;
     }
 
     ssize_t decodeConv(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) {
@@ -108,8 +108,9 @@ protected:
     uint8_t *rs_buf;
 
 public:
-    FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order, const size_t rs_corr_bytes) 
+    FECRSV(const size_t msg_size, const size_t inv_rate, const size_t order, const size_t rs_corr_num_bytes) 
         : FEC(msg_size, inv_rate, order) {
+        rs_corr_bytes = rs_corr_num_bytes;
         rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
                                                   1, 1, rs_corr_bytes);
         rs_buf = (uint8_t *) malloc(getEncSize(msg_size));
@@ -118,7 +119,8 @@ public:
     size_t encode(const uint8_t *msg, const size_t msg_len, uint8_t *enc_msg) {
         MBED_ASSERT(getEncSize(msg_len) <= 256);
         size_t conv_len = correct_convolutional_encode(corr_con, msg, msg_len, rs_buf)/8;
-        return correct_reed_solomon_encode(rs_con, rs_buf, conv_len, enc_msg);
+        MBED_ASSERT(correct_reed_solomon_encode(rs_con, rs_buf, conv_len, enc_msg) != 256);
+        return conv_len + rs_corr_bytes;
     }
 
     ssize_t decode(const uint8_t *enc_msg, const size_t enc_len, uint8_t *dec_msg) {
