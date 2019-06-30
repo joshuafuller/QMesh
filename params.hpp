@@ -41,7 +41,7 @@
 #define RADIO_SF 12
 // 1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8
 #define RADIO_CODERATE 1
-// Tx power, in mW
+// Tx power, in dBm
 #define RADIO_POWER 22
 // Transmit timeout, in ms
 #define RADIO_TX_TIMEOUT 3000
