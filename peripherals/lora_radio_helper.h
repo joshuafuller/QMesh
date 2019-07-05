@@ -87,11 +87,7 @@ SX126X_LoRaRadio radio(D11, // PinName mosi
                        D5,  // PinName dio1
                        D4,  // PinName dio2
                        D3,  // PinName nrst
-                       D2,  // PinName busy,
-                       A1,  // PinName freq_select,
-                       A2,  // PinName device_select,
-                       A3,  // PinName crystal_select,
-                       D8); // PinName ant_switch);
+                       D2);  // PinName busy,
 #else
 #warning Pins being used for Mbed SX1262 board
 SX126X_LoRaRadio radio(D11, // PinName mosi
@@ -104,11 +100,7 @@ SX126X_LoRaRadio radio(D11, // PinName mosi
                        D5,  // PinName dio1
                        NC,  // PinName dio2   
                        NC,  // PinName nrst  
-                       D3,  // PinName busy,
-                       A1,  // PinName freq_select,
-                       A2,  // PinName device_select,
-                       A3,  // PinName crystal_select,
-                       D8); // PinName ant_switch);
+                       D3);  // PinName busy
 #endif
 
 #else

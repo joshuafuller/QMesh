@@ -42,6 +42,8 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "lorawan/LoRaRadio.h"
 #include "mbed.h"
 
+#include "params.hpp"
+
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #define MAX_DATA_BUFFER_SIZE_SX126X                        MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #else
@@ -61,11 +63,7 @@ public:
                        PinName dio1,
                        PinName dio2,
                        PinName nrst,
-                       PinName busy,
-                       PinName freq_select,
-                       PinName device_select,
-                       PinName crystal_select,
-                       PinName ant_switch);
+                       PinName busy);
 
     virtual ~SX126X_LoRaRadio();
 
@@ -314,18 +312,6 @@ private:
 
     // module busy control
     mbed::DigitalIn _busy;
-
-    // module frequency selection
-    mbed::AnalogIn _freq_select;
-
-    // module device variant selection
-    mbed::AnalogIn _dev_select;
-
-    // module TCXO/XTAL control
-    mbed::DigitalIn _crystal_select;
-
-    // Radio specific controls (TX/RX duplexer switch control)
-    mbed::DigitalInOut _ant_switch;
 
     // RF switch controls, for the CDEBytes E22
     mbed::DigitalOut _rxen;

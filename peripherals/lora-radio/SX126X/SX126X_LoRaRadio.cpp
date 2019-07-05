@@ -94,22 +94,14 @@ SX126X_LoRaRadio::SX126X_LoRaRadio(PinName mosi,
                                     PinName dio1,
                                     PinName dio2,
                                     PinName nrst,
-                                    PinName busy,
-                                    PinName freq_select,
-                                    PinName device_select,
-                                    PinName crystal_select,
-                                    PinName ant_switch)
+                                    PinName busy)
     : _spi(mosi, miso, sclk),
       _chip_select(nss, 1),
       _reset_ctl(reset),
       _dio1_ctl(dio1, PullNone),
       _busy(busy, PullNone),
-      _freq_select(freq_select),
-      _dev_select(device_select),
-      _crystal_select(crystal_select, PullDown),
       _rxen(rxen),
-      _txen(txen),
-      _ant_switch(ant_switch, PIN_INPUT, PullUp, 0)
+      _txen(txen)
 #ifdef MBED_CONF_RTOS_PRESENT
         , irq_thread(osPriorityRealtime, 1024, NULL, "LR-SX126X")
 #endif
@@ -413,7 +405,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     _radio_events = events;
     // attach DIO1 interrupt line to its respective ISR
     _dio1_ctl.rise(callback(this, &SX126X_LoRaRadio::dio1_irq_isr));
-    uint8_t freq_support = get_frequency_support();
+    //uint8_t freq_support = get_frequency_support();
 
     // Hold chip-select high
     _chip_select = 1;
@@ -441,12 +433,12 @@ void SX126X_LoRaRadio::cold_start_wakeup()
     write_opmode_command(RADIO_SET_REGULATORMODE, &regulator_mode, 1);
     set_buffer_base_addr(0x00, 0x00);
 
-    if (_crystal_select.is_connected() && _crystal_select == 0) {
-        caliberation_params_t calib_param;
-        set_dio3_as_tcxo_ctrl(TCXO_CTRL_1_7V, 320); //5 ms
-        calib_param.value = 0x7F;
-        write_opmode_command(RADIO_CALIBRATE, &calib_param.value, 1);
-    }
+#ifdef USES_TCXO
+    caliberation_params_t calib_param;
+    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 320); //5 ms
+    calib_param.value = 0x7F;
+    write_opmode_command(RADIO_CALIBRATE, &calib_param.value, 1);
+#endif
 
     set_dio2_as_rfswitch_ctrl(true);
 
@@ -702,6 +694,7 @@ void SX126X_LoRaRadio::read_fifo(uint8_t *buffer, uint8_t size, uint8_t offset)
 
 uint8_t SX126X_LoRaRadio::get_device_variant(void)
 {
+#if 0
     uint16_t val = 0;
     val = _dev_select.read_u16();
 
@@ -712,8 +705,12 @@ uint8_t SX126X_LoRaRadio::get_device_variant(void)
     } else {
         return SX1261;
     }
+#else
+    return LORA_DEVICE;
+#endif
 }
 
+#if 0
 uint8_t SX126X_LoRaRadio::get_frequency_support(void)
 {
     uint16_t val = 0;
@@ -735,6 +732,7 @@ uint8_t SX126X_LoRaRadio::get_frequency_support(void)
         return ( MATCHING_FREQ_868);
     }
 }
+#endif
 
 uint8_t SX126X_LoRaRadio::get_fsk_bw_reg_val(uint32_t bandwidth)
 {
@@ -1102,13 +1100,13 @@ void SX126X_LoRaRadio::set_tx_power(int8_t power)
 
     buf[0] = power;
 
-    if (_crystal_select.is_connected() && _crystal_select == 0) {
-        // TCXO
-        buf[1] = RADIO_RAMP_200_US;
-    } else {
-        // XTAL
-        buf[1] = RADIO_RAMP_20_US;
-    }
+#ifdef USES_TCXO
+    // TCXO
+    buf[1] = RADIO_RAMP_200_US;
+#else
+    // XTAL
+    buf[1] = RADIO_RAMP_20_US;
+#endif
 
     write_opmode_command(RADIO_SET_TXPARAMS, buf, 2);
 }

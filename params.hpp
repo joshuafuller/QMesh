@@ -73,4 +73,12 @@
 
 //#define CDEBYTES_E22
 
+#include "sx126x_ds.h"
+#define LORA_DEVICE SX1262
+#ifdef CDEBYTES_E22
+#define USES_TCXO
+#define TCXO_VOLTAGE TCXO_CTRL_1_8V
+#else
+#endif
+
 #endif /* PARAMS_HPP */
