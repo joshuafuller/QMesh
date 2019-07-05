@@ -42,7 +42,7 @@
 // 1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8
 #define RADIO_CODERATE 1
 // Tx power, in mW
-#define RADIO_POWER 14
+#define RADIO_POWER 22
 // Transmit timeout, in ms
 #define RADIO_TX_TIMEOUT 3000
 #define RADIO_FREQUENCY 915000000
@@ -71,7 +71,7 @@
 #define SX1276   0xEE
 #define SX126X   0xDD
 
-//#define CDEBYTES_E22
+#define CDEBYTES_E22
 
 #include "sx126x_ds.h"
 #define LORA_DEVICE SX1262
