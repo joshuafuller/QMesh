@@ -19,6 +19,8 @@
 #define SERIAL_DATA_HPP
 
 #include "mbed.h"
+#include "MbedJSONValue.h"
+#include <string>
 #include "params.hpp"
 #include "nv_settings.hpp"
 
@@ -211,6 +213,11 @@ public:
     // Pretty-print the Frame.
     void prettyPrint(const enum DBG_TYPES dbg_type);
 
+    // Load the frame with a parsed JSON object
+    void loadFromJSON(MbedJSONValue &json);
+
+    // Save the frame's contents to a JSON object.
+    void saveToJSON(MbedJSONValue &json);
 };
 
 class FrameQueue {

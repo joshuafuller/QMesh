@@ -88,10 +88,14 @@ void getType(string &type_str) {
 PKT_STATUS_ENUM getFrame(Frame &frame) {
     MBED_ASSERT(getType() == "Frame");
     string b64_str = rx_json["Data"].get<string>();
+    size_t b64_len;
     MBED_ASSERT(mbedtls_base64_decode(NULL, 0, &b64_len, b64_str.c_str(), b64_str.size()) == 0);
-    uint8_t frame_data[b64_len];
+    uint8_t *frame_data = new uint8_t[b64_len];
     MBED_ASSERT(mbedtls_base64_decode(frame_data, b64_len, &b64_len, b64_str.c_str(), b64_str.size()) == 0);
     PKT_STATUS_ENUM ret_val = frame.deserialize(frame_data, b64_len);
+
+    delete [] frame_data;
+
     return ret_val;
 }
 

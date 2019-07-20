@@ -125,6 +125,50 @@ PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
     return pkt_status;
 }
 
+// Load the frame with a parsed JSON object
+void Frame::loadFromJSON(MbedJSONValue &json) {
+    pkt.hdr.type = json["HDR Pkt Type"].get<int>();
+    pkt.hdr.stream_id = json["HDR Stream ID"].get<int>();
+    pkt.hdr.ttl = json["HDR TTL"].get<int>();
+    pkt.hdr.sender = json["HDR Sender"].get<int>();
+    pkt.hdr.pre_offset = json["HDR Pre Offset"].get<int>();
+    pkt.hdr.nsym_offset = json["HDR Num Sym Offset"].get<int>();
+    pkt.hdr.sym_offset = json["HDR Sym Offset"].get<int>();
+    pkt.hdr_crc = json["Header CRC"].get<int>();
+    pkt.data_crc = json["Data CRC"].get<int>();
+    string b64_str = json["Data Payload"].get<string>();
+    size_t b64_len;
+    MBED_ASSERT(mbedtls_base64_decode(NULL, 0, &b64_len, 
+        (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
+    MBED_ASSERT(b64_len == FRAME_PAYLOAD_LEN);
+    uint8_t *frame_data = new uint8_t[b64_len];
+    MBED_ASSERT(mbedtls_base64_decode(frame_data, b64_len, &b64_len, 
+        (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
+    memcpy(pkt.data, frame_data, FRAME_PAYLOAD_LEN);
+
+    delete [] frame_data;
+}
+
+// Save the frame's contents to a JSON object.
+void Frame::saveToJSON(MbedJSONValue &json) {
+    json["HDR Pkt Type"] = pkt.hdr.type;
+    json["HDR Stream ID"] = pkt.hdr.stream_id;
+    json["HDR TTL"] = pkt.hdr.ttl;
+    json["HDR Sender"] = pkt.hdr.sender;
+    json["HDR Pre Offset"] = pkt.hdr.pre_offset;
+    json["HDR Num Sym Offset"] = pkt.hdr.nsym_offset;
+    json["HDR Sym Offset"] = pkt.hdr.sym_offset;
+    json["Header CRC"] = pkt.hdr_crc;
+    json["Data CRC"] = pkt.data_crc;
+    size_t b64_len;
+    MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, pkt.data, FRAME_PAYLOAD_LEN) == 0);
+    unsigned char *b64_buf = new unsigned char[b64_len];
+    MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, pkt.data, FRAME_PAYLOAD_LEN) == 0);
+    json["Data Payload"] = b64_buf;
+
+    delete [] b64_buf;
+}
+
 // Pretty-print the Frame.
 void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "==========\r\n");
