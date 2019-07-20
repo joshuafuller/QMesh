@@ -20,7 +20,10 @@ void tx_serial_thread_fn(void) {
 static char rx_str[2048];
 void rx_serial_thread_fn(void) {
     for(;;) {
-        MBED_ASSERT(scanf("%s\r\n", rx_str) == 0);
+        if(scanf("%s\r\n", rx_str) != 0) {
+            debug_printf(DBG_WARN, "scanf() in Rx thread returned with error %d\r\n");
+            continue;
+        }
         string *rx_string = new string(rx_str);
         JSONSerial *json_ser = new JSONSerial();
         json_ser->loadJSONStr(*rx_string);
