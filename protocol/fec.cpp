@@ -61,8 +61,8 @@ void FECRSV::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the RSV FEC. Running for %d iterations\r\n", num_iters);
     debug_printf(DBG_INFO, "Message size is %d, encoded size is %d\r\n", my_msg_size, getEncSize(my_msg_size));
-    uint8_t *msg_data = (uint8_t *) malloc(my_msg_size);
-    uint8_t *enc_data = (uint8_t *) malloc(getEncSize(my_msg_size));
+    uint8_t *msg_data = new uint8_t[my_msg_size];
+    uint8_t *enc_data = new uint8_t[getEncSize(my_msg_size)];
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");
     Timer *enc_timer = new Timer();
     enc_timer->start();
@@ -92,8 +92,9 @@ void FECRSV::benchmark(size_t num_iters) {
     float dec_iters_per_sec = (float) num_iters / ((float) dec_num_ms / 1000.f);
     debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
     debug_printf(DBG_INFO, "====================\r\n");
-    free(msg_data);
-    free(enc_data);
+
+    delete [] msg_data;
+    delete [] enc_data;
     delete enc_timer;
     delete dec_timer;
 }
@@ -102,8 +103,8 @@ void FECRSV::benchmark(size_t num_iters) {
 void FECConv::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the Conv FEC. Running for %d iterations\r\n", num_iters);
-    uint8_t *msg_data = (uint8_t *) malloc(my_msg_size);
-    uint8_t *enc_data = (uint8_t *) malloc(getEncSize(my_msg_size));
+    uint8_t *msg_data = new uint8_t[my_msg_size];
+    uint8_t *enc_data = new uint8_t[my_msg_size];
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");
     Timer *enc_timer = new Timer();
     enc_timer->start();
@@ -133,9 +134,10 @@ void FECConv::benchmark(size_t num_iters) {
     float dec_iters_per_sec = (float) num_iters / ((float) dec_num_ms / 1000.f);
     debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
     debug_printf(DBG_INFO, "====================\r\n");
+    
     // Clean up
-    free(msg_data);
-    free(enc_data);
+    delete [] msg_data;
+    delete [] enc_data;
     delete enc_timer;
     delete dec_timer;
 }

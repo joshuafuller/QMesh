@@ -24,19 +24,19 @@ public:
 // Converts a frame into JSON, with the serialized frame being converted into Base64
 void frameToJSON(Frame &frame, string &json_str) {
     size_t frame_buf_len = frame.getFullPacketSize():
-    uint8_t *frame_buf = malloc(frame_buf_len);
+    uint8_t *frame_buf = new uint8_t[frame_buf_len];
     MBED_ASSERT(frame.serialize(frame_buf) > 0);
 
     MbedJSONValue json_val;
     MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, frame_buf, frame_buf_len) == 0);
-    unsigned char *b64_buf = malloc(b64_len);
+    unsigned char *b64_buf = new unsigned char[b64_len];
     MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, frame_buf, frame_buf_len) == 0);
     json_val["Type"] = "Frame";
     json_val["Data"] = b64_buf;
     json_str = json_val.serialize();
-        
-    free(frame_buf);
-    free(b64_buf);
+
+    delete [] frame_buf;
+    delete [] b64_buf;
 }
 
 // Creates a JSON-formatted string for a given setting
@@ -44,6 +44,15 @@ void settingToJSON(string &setting, string &value, string &json_str) {
     MbedJSONValue json_val;
     json_val["Type"] = "Setting";
     json_val["Setting"] = setting;
+    json_val["Value"] = value;
+    json_str = json_val.serialize();
+}
+
+// Creates a JSON-formatted string for the current status
+void statusToJSON(string &status, string &value, string &json_str) {
+    MbedJSONValue json_val;
+    json_val["Type"] = "Status";
+    json_val["Status"] = status;
     json_val["Value"] = value;
     json_str = json_val.serialize();
 }
@@ -57,12 +66,12 @@ void dbgPrintfToJSON(string &dbg_msg, string &json_str) {
     MbedJSONValue json_val;
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, dbg_msg.c_str(), dbg_msg.size()) == 0);
-    unsigned char *b64_buf = malloc(b64_len);
+    unsigned char *b64_buf = new unsigned char[b64_len];
     MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, dbg_msg.c_str(), dbg_msg.size()) == 0);
     json_val["Message"] = b64_buf;
     json_str = json_val.serialize();
 
-    free(b64_buf);
+    delete [] b64_buf;
 }
 
 // Loads a JSON-formatted string into the internal data structures
@@ -80,12 +89,9 @@ PKT_STATUS_ENUM getFrame(Frame &frame) {
     MBED_ASSERT(getType() == "Frame");
     string b64_str = rx_json["Data"].get<string>();
     MBED_ASSERT(mbedtls_base64_decode(NULL, 0, &b64_len, b64_str.c_str(), b64_str.size()) == 0);
-    uint8_t *frame_data = malloc(b64_len);
+    uint8_t frame_data[b64_len];
     MBED_ASSERT(mbedtls_base64_decode(frame_data, b64_len, &b64_len, b64_str.c_str(), b64_str.size()) == 0);
     PKT_STATUS_ENUM ret_val = frame.deserialize(frame_data, b64_len);
-
-    free(frame_data);
-
     return ret_val;
 }
 

@@ -34,7 +34,7 @@ Serial pc(USBTX, USBRX);
 int main()
 {
     // Set the UART comms speed
-    pc.baud(230400);
+    pc.baud(921600);
 
     // Start a thread for blinking LEDs
     led1.LEDBlink();
@@ -72,8 +72,8 @@ int main()
 #endif
     fec->benchmark(100);
     delete fec_frame;
-    uint8_t *fec_enc_buf = (uint8_t *) malloc(fec_frame->getPktSize());
-    uint8_t *fec_dec_buf = (uint8_t *) malloc(fec->getEncSize(fec_frame->getPktSize()));
+    uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
+    uint8_t *fec_dec_buf = new uint8_t[fec->getEncSize(fec_frame->getPktSize())];
     static char test_msg[] = "0123456789\r\n";
     size_t enc_size = fec->getEncSize(13);
     debug_printf(DBG_INFO, "Encoded size is %d\r\n", enc_size);
