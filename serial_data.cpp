@@ -22,6 +22,7 @@
 #include "mbedtls/base64.h"
 #include <string>
 #include "fec.hpp"
+#include "json_serial.hpp"
 
 extern FEC *fec; // forward error correction block
 
@@ -351,10 +352,15 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    int ret_val = printf("%s", tmp_str);
+    string *dbg_str = new string(tmp_str);
+    string *tx_str = new string();
+    tx_json_ser.dbgPrintfToJSON(*dbg_str, *tx_str);
+    MBED_ASSERT(tx_ser_queue.full() == false);
+    tx_ser_queue.put(tx_str);
 
+    delete dbg_str;
     va_end(args);
-    return ret_val;
+    return 0;
 }
 
 

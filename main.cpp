@@ -20,21 +20,29 @@
 #include "params.hpp"
 #include "serial_data.hpp"
 #include "fec.hpp"
+#include "json_serial.hpp"
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);
 NVSettings *nv_settings;
 FEC *fec;  
+Serial pc(USBTX, USBRX);
+JSONSerial rx_json_ser, tx_json_ser;
+Thread tx_serial_thread, rx_serial_thread;
+
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
 
 // main() runs in its own thread in the OS
-Serial pc(USBTX, USBRX);
 int main()
 {
     // Set the UART comms speed
     pc.baud(921600);
+
+    // Start the serial handler threads
+    tx_serial_thread.start(tx_serial_thread_fn);
+    rx_serial_thread.start(rx_serial_thread_fn);
 
     // Start a thread for blinking LEDs
     led1.LEDBlink();

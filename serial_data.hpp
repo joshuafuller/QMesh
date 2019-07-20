@@ -23,6 +23,7 @@
 #include <string>
 #include "params.hpp"
 #include "nv_settings.hpp"
+#include "json_serial.hpp"
 
 #if (MBED_CONF_APP_LORA_RADIO == SX1272)
 #include "SX1272_LoRaRadio.h"
