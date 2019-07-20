@@ -20,66 +20,86 @@ void tx_serial_thread_fn(void) {
 static char rx_str[2048];
 void rx_serial_thread_fn(void) {
     for(;;) {
-        scanf("%s\r\n", rx_str);
-    }
-    string *rx_string = new string(rx_str);
-    rx_json_ser.loadJSONStr(*rx_string);
-#warning Need to actually do stuff here
-    string *type_string = new string();
-    rx_json_ser.getType(*type_string);
-    if(*type_string == "Setting") {
+        MBED_ASSERT(scanf("%s\r\n", rx_str) == 0);
+        string *rx_string = new string(rx_str);
+        JSONSerial *json_ser = new JSONSerial();
+        json_ser->loadJSONStr(*rx_string);
+        string *type_string = new string();
+        json_ser->getType(*type_string);
+        if(*type_string == "Get Settings") {
+            nv_settings_t nv_settings_struct = nv_settings->getNVSettings();
+            JSONSerial *tx_json_ser = new JSONSerial();
+            string *json_str = new string();
+            tx_json_ser->settingsToJSON(nv_settings_struct, *json_str);
+            tx_ser_queue.put(json_str);
+            delete tx_json_ser;
+        }
+        else if(*type_string == "Put Settings") {
+            string *json_str = new string();
+            nv_settings_t nv_settings_struct;
+            json_ser->getSettings(nv_settings_struct);
+            nv_settings->putNVSettings(nv_settings_struct);
+        }
+        else if(*type_string == "Status") {
 
-    }
-    else if(*type_string == "Status") {
+        }
+        else if(*type_string == "Debug Msg") {
+            MBED_ASSERT(false);
+        }
+        else if(*type_string == "Frame") {
+            Frame *frame = new Frame();
+            frame->loadFromJSON(*(json_ser->getJSONObj()));
+        }
+        else {
+            MBED_ASSERT(false);
+        }
 
+        delete json_ser;
+        delete type_string;
+        delete rx_string;
     }
-    else if(*type_string == "Debug Msg") {
-        MBED_ASSERT(false);
-    }
-    else if(*type_string == "Frame") {
-        Frame *frame = new Frame();
-        frame->loadFromJSON(*rx_json_ser.getJSONObj());
-    }
-    else {
-        MBED_ASSERT(false);
-    }
-
-    delete type_string;
-    delete rx_string;
 }
 
 
 // Creates a JSON-formatted string for a given setting
-void JSONSerial::settingToJSON(string &setting, string &value, string &json_str) {
-    MbedJSONValue json_val;
-    json_val["Type"] = "Setting";
-    json_val["Setting"] = setting;
-    json_val["Value"] = value;
-    json_str = json_val.serialize();
+void JSONSerial::settingsToJSON(nv_settings_t &nv_settings, string &json_str) {
+    json["Type"] = "Settings";
+    json["Freq"] = (int) nv_settings.freq;
+    json["SF"] = (int) nv_settings.sf;
+    json["BW"] = (int) nv_settings.bw;
+    json["CR"] = (int) nv_settings.cr;
+    if(nv_settings.mode == MESH_MODE_NORMAL) {
+        json["Mode"] = "MESH_MODE_NORMAL";
+    }
+    else if(nv_settings.mode == MESH_MODE_BEACON) {
+        json["Mode"] = "MESH_MODE_BEACON";
+    }
+    else {
+        MBED_ASSERT(false);
+    }
+    json_str = json.serialize();
 }
 
 // Creates a JSON-formatted string for the current status
 void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
-    MbedJSONValue json_val;
-    json_val["Type"] = "Status";
-    json_val["Status"] = status;
-    json_val["Value"] = value;
-    json_str = json_val.serialize();
+    json["Type"] = "Status";
+    json["Status"] = status;
+    json["Value"] = value;
+    json_str = json.serialize();
 }
 
 // Creates a JSON-formatted string for a debug printf, with the message being
 //  encoded as Base64
 void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
-    MbedJSONValue json_val;
-    json_val["Type"] = "Debug Msg";
+    json["Type"] = "Debug Msg";
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, 
             (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);
     unsigned char *b64_buf = new unsigned char[b64_len];
     MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, 
             (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);
-    json_val["Message"] = b64_buf;
-    json_str = json_val.serialize();
+    json["Message"] = b64_buf;
+    json_str = json.serialize();
 
     delete [] b64_buf;
 }
@@ -95,10 +115,21 @@ void JSONSerial::getType(string &type_str) {
 }
 
 // Loads a setting from the JSON string
-void JSONSerial::getSetting(string &setting, string &value) {
-    MBED_ASSERT(json["Type"].get<string>() == "Setting");
-    setting = json["Setting"].get<string>();
-    value = json["Value"].get<string>();
+void JSONSerial::getSettings(nv_settings_t &nv_setting) {
+    nv_setting.freq = json["Freq"].get<int>();
+    nv_setting.sf = json["SF"].get<int>();
+    nv_setting.bw = json["BW"].get<int>();
+    nv_setting.cr = json["CR"].get<int>();
+    string mode = json["Mode"].get<string>();
+    if(mode == "MESH_MODE_NORMAL") {
+        nv_setting.mode = MESH_MODE_NORMAL;
+    }
+    else if(mode == "MESH_MODE_BEACON") {
+        nv_setting.mode = MESH_MODE_BEACON;
+    }
+    else {
+        MBED_ASSERT(false);
+    }
 }
 
 // Get the JSON object. Needed to initialize a Frame.

@@ -16,7 +16,9 @@
 #include "MbedJSONValue.h"
 #include "serial_data.hpp"
 #include <string>
+#include "nv_settings.hpp"
 
+extern NVSettings *nv_settings;
 extern Queue<string, 16> tx_ser_queue;
 void tx_serial_thread_fn(void);
 void rx_serial_thread_fn(void);
@@ -26,7 +28,7 @@ protected:
     MbedJSONValue json;
 public:
 // Creates a JSON-formatted string for a given setting
-void settingToJSON(string &setting, string &value, string &json_str);
+void settingsToJSON(nv_settings_t &nv_settings, string &json_str);
 
 // Creates a JSON-formatted string for the current status
 void statusToJSON(string &status, string &value, string &json_str);
@@ -42,12 +44,12 @@ void loadJSONStr(string &json_str);
 void getType(string &type_str);
 
 // Loads a setting from the JSON string
-void getSetting(string &setting, string &value);
+void getSettings(nv_settings_t &nv_setting);
 
 // Get the JSON object. Needed to initialize a Frame.
 MbedJSONValue *getJSONObj(void);
 };
 
-extern JSONSerial rx_json_ser, tx_json_ser;
+extern JSONSerial tx_json_ser;
 
 #endif /* JSON_SERIAL_HPP */

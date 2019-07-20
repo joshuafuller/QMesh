@@ -319,10 +319,23 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    int ret_val = printf("[+] %s -- %s", msg_type.c_str(), tmp_str);
+    //int ret_val = printf("[+] %s -- %s", msg_type.c_str(), tmp_str);
+    string *dbg_str = new string();
+    char *dbg_str_data = new char[sizeof(tmp_str)+32];
+    sprintf(dbg_str_data, "[+] %s -- %s", msg_type.c_str(), tmp_str);
+    *dbg_str = dbg_str_data;
+    string *tx_str = new string();
+    JSONSerial *json_ser = new JSONSerial();
+    json_ser->dbgPrintfToJSON(*dbg_str, *tx_str);
+    delete json_ser;
+    MBED_ASSERT(tx_ser_queue.full() == false);
+    tx_ser_queue.put(tx_str);
+
+    delete dbg_str;
+    delete [] dbg_str_data;
 
     va_end(args);
-    return ret_val;
+    return 0;
 }
 
 int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
@@ -354,7 +367,9 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     }
     string *dbg_str = new string(tmp_str);
     string *tx_str = new string();
-    tx_json_ser.dbgPrintfToJSON(*dbg_str, *tx_str);
+    JSONSerial *json_ser = new JSONSerial();
+    json_ser->dbgPrintfToJSON(*dbg_str, *tx_str);
+    delete json_ser;
     MBED_ASSERT(tx_ser_queue.full() == false);
     tx_ser_queue.put(tx_str);
 

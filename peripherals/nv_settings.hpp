@@ -50,19 +50,21 @@ typedef enum {
     MESH_MODE_NORMAL,
 } mesh_mode_t;
 
+
+typedef struct {
+    uint32_t magic;
+    mesh_mode_t mode;
+    uint32_t freq;
+    uint8_t sf;
+    uint8_t bw;
+    uint8_t cr;
+} nv_settings_t;
+
 class NVSettings {
 protected:
     EEPROM *eeprom;
-
 public:
-    struct {
-        uint32_t magic;
-        mesh_mode_t mode;
-        uint32_t freq;
-        uint8_t sf;
-        uint8_t bw;
-        uint8_t cr;
-    } nv_settings;
+    nv_settings_t nv_settings;
 
     NVSettings(EEPROM *my_eeprom) {
         eeprom = my_eeprom;
@@ -73,6 +75,16 @@ public:
 
     void saveEEPROM(void) {
         eeprom->writeEEPROMBlock(0, sizeof(nv_settings), (void *) &nv_settings);
+    }
+
+    nv_settings_t getNVSettings(void) {
+        return nv_settings;
+    }
+
+    void putNVSettings(nv_settings_t &settings) {
+        nv_settings = settings;
+        saveEEPROM();
+        loadEEPROM();
     }
 
     mesh_mode_t getMode(void) {
