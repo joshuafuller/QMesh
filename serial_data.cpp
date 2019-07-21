@@ -30,8 +30,8 @@ extern FEC *fec; // forward error correction block
 void Frame::loadTestFrame(uint8_t *buf) {
     pkt.hdr.type = 0;
     pkt.hdr.stream_id = 1;
-    pkt.hdr.ttl = 8;
-    pkt.hdr.sender = 0xAB;
+    pkt.hdr.ttl = 7;
+    pkt.hdr.sender = 0xB;
     pkt.hdr.pre_offset = 0;
     pkt.hdr.nsym_offset = 0;
     pkt.hdr.sym_offset = 0;

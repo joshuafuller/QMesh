@@ -63,13 +63,13 @@ typedef enum {
 
 class Frame {
     typedef struct __attribute__((__packed__)) {
-        uint8_t type;
-        uint16_t stream_id;
-        uint8_t ttl;
-        uint8_t sender;
-        uint8_t pre_offset;
-        uint8_t nsym_offset;
-        uint8_t sym_offset;
+        uint32_t type : 2;
+        uint32_t stream_id : 8;
+        uint32_t ttl : 3;
+        uint32_t sender : 4;
+        uint32_t pre_offset : 3;
+        uint32_t nsym_offset : 3;
+        uint32_t sym_offset : 3;
     } frame_hdr;
     typedef struct __attribute__((__packed__)) {
         frame_hdr hdr;
