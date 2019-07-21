@@ -18,12 +18,14 @@
 #include "mbed.h"
 #include "params.hpp"
 #include "serial_data.hpp"
+#include <math.h>
 #include <list>
 #include <map>
 #include <algorithm>
 #include "LoRaRadio.h"
+#include "mesh_protocol.hpp"
 
-extern FrameQueue tx_queue, rx_queue;
+
 
 static Frame mesh_frame;
 static Timeout rx_mesh_time;
@@ -89,3 +91,45 @@ void rxCallback(Frame &rx_frame) {
         mesh_frame.load(rx_frame);
     }
 }
+
+void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, 
+        uint32_t n_pre_sym, uint8_t n_pld_bytes) {
+    float bw_f = bw;
+    float sf_f = sf;
+    float cr_f = cr;
+    float n_pre_sym_f = n_pre_sym;
+    float n_pld_bytes_f = n_pld_bytes;
+    n_sym_pre = n_pre_sym;
+
+    // Compute duration of a symbol
+    sym_time_s = powf(2, sf_f)/bw_f;
+    sym_time_ms = sym_time_s*1e3f;
+    sym_time_us = sym_time_s*1e6f;
+
+    // Determine whether we need the low datarate optimize
+    float low_dr_opt_f = sym_time_ms >= 16.f ? 1.f : 0.f;
+
+    // Compute the duration of the preamble
+    pre_time_s = sym_time_s*n_pre_sym_f;
+    pre_time_ms = sym_time_s*n_pre_sym_f*1e3f;
+    pre_time_us = sym_time_s*n_pre_sym_f*1e6f;
+
+    // Compute number of payload symbols
+    float val = ceilf((8.f*n_pld_bytes_f-4.f*sf_f+28.f-20.f)/
+            (4.f*(sf_f-2.f*low_dr_opt_f)));
+    float n_sym_pld_f = 8.f + fmaxf(val*(cr_f+4.f), 0.f);
+    n_sym_pld = n_sym_pld_f;
+
+    // Compute the duration of the payload
+    pld_time_s = n_sym_pld_f*sym_time_s;
+    pld_time_ms = n_sym_pld_f*sym_time_s*1e3f;
+    pld_time_us = n_sym_pld_f*sym_time_s*1e6f;
+
+    // Compute the duration of the entire LoRa packet
+    float n_sym_pkt_f = n_pre_sym_f+n_sym_pld_f;
+    n_sym_pkt = n_sym_pkt_f;
+    pkt_time_s = n_sym_pkt_f*sym_time_s;
+    pkt_time_ms = n_sym_pkt_f*sym_time_s*1e3f;
+    pkt_time_us = n_sym_pkt_f*sym_time_s*1e6f;
+}
+
