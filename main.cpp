@@ -37,6 +37,10 @@ Thread tx_serial_thread, rx_serial_thread;
 // main() runs in its own thread in the OS
 int main()
 {
+    // Set the RTC to zero. We just use it to track the age of 
+    //  the packet tracker.
+    set_time(0);
+
     // Set the UART comms speed
     pc.baud(921600);
 

@@ -19,6 +19,7 @@
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <list>
+#include <map>
 #include <algorithm>
 #include "LoRaRadio.h"
 
@@ -55,14 +56,25 @@ void txCallback(void) {
 
 
 static list<uint32_t> past_crc;
+static map<uint32_t, time_t> past_timestamp;
 static bool checkRedundantPkt(Frame &rx_frame) {
     uint32_t crc = rx_frame.calculateUniqueCrc();
     bool ret_val = false;
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         ret_val = true;
         past_crc.push_back(crc);
+        past_timestamp.insert(pair<uint32_t, time_t>(crc, time(NULL)));
         if(past_crc.size() > PKT_CHK_HISTORY) {
             past_crc.pop_front();
+            past_timestamp.erase(crc);
+        }
+    }
+    else { // redundant packet was found. Check the age of the packet.
+        map<uint32_t, time_t>::iterator it = past_timestamp.find(crc);
+        if(time(NULL) - it->second > 60) { // Ignore entries more than a minute old
+            ret_val = true;
+            past_crc.erase(find(past_crc.begin(), past_crc.end(), crc));
+            past_timestamp.erase(crc);
         }
     }
     return ret_val;
