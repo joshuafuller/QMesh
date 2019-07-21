@@ -21,6 +21,7 @@
 #include "serial_data.hpp"
 #include "fec.hpp"
 #include "json_serial.hpp"
+#include "Watchdog.h"
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);
@@ -40,6 +41,9 @@ int main()
     // Set the RTC to zero. We just use it to track the age of 
     //  the packet tracker.
     set_time(0);
+
+    // Start the WDT thread
+    wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
     pc.baud(921600);
