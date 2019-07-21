@@ -26,11 +26,11 @@
 
 
 #include "mbed.h"
-#include "Watchdog.h"
+#include "stm32_watchdog.h"
 
 
 /// Watchdog gets instantiated at the module level
-Watchdog::Watchdog() {
+STM32Watchdog::STM32Watchdog() {
 #ifdef LPC    
     wdreset = (LPC_WDT->WDMOD >> 2) & 1;    // capture the cause of the previous reset
 #endif
@@ -51,7 +51,7 @@ Watchdog::Watchdog() {
 }
 
 /// Load timeout value in watchdog timer and enable
-void Watchdog::Configure(float timeout) {
+void STM32Watchdog::Configure(float timeout) {
 #ifdef LPC    
     LPC_WDT->WDCLKSEL = 0x1;                // Set CLK src to PCLK
     uint32_t clk = SystemCoreClock / 16;    // WD has a fixed /4 prescaler, PCLK default is /4
@@ -114,7 +114,7 @@ void Watchdog::Configure(float timeout) {
 
 /// "Service", "kick" or "feed" the dog - reset the watchdog timer
 /// by writing this required bit pattern
-void Watchdog::Service() {
+void STM32Watchdog::Service() {
 #ifdef LPC    
     LPC_WDT->WDFEED = 0xAA;
     LPC_WDT->WDFEED = 0x55;
@@ -125,7 +125,7 @@ void Watchdog::Service() {
 }
 
 /// get the flag to indicate if the watchdog causes the reset
-bool Watchdog::WatchdogCausedReset() {
+bool STM32Watchdog::WatchdogCausedReset() {
     return wdreset;
 }
 
@@ -133,7 +133,7 @@ bool Watchdog::WatchdogCausedReset() {
 // Watchdog function. Right now, just a dumb thread that 
 //  gets called every minute to kick the dog.
 Thread wdt_thread;
-static Watchdog wdt;
+static STM32Watchdog wdt;
 void wdt_fn(void) {
     wdt.Configure(70);
     for(;;) {

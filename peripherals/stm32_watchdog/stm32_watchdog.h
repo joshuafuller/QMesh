@@ -16,8 +16,8 @@
 /// History
 /// \li v1.00 - 20110616: initial release with some documentation improvements
 ///
-#ifndef WATCHDOG_H
-#define WATCHDOG_H
+#ifndef STM32_WATCHDOG_H
+#define STM32_WATCHDOG_H
 #include "mbed.h"
 
 /// The Watchdog class provides the interface to the Watchdog feature
@@ -48,7 +48,7 @@
 /// }
 /// @endcode
 ///
-class Watchdog {
+class STM32Watchdog {
 public:
     /// Create a Watchdog object
     ///
@@ -56,7 +56,7 @@ public:
     /// @code
     /// Watchdog wd;    // placed before main
     /// @endcode
-    Watchdog();
+    STM32Watchdog();
     
     /// Configure the timeout for the Watchdog
     ///
@@ -101,4 +101,4 @@ private:
 extern Thread wdt_thread;
 void wdt_fn(void);
 
-#endif // WATCHDOG_H
+#endif // STM32_WATCHDOG_H

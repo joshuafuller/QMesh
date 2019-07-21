@@ -21,7 +21,6 @@
 #include "serial_data.hpp"
 #include "fec.hpp"
 #include "json_serial.hpp"
-#include "Watchdog.h"
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);

@@ -6,5 +6,6 @@
 #include "radio.hpp"
 #include "leds.hpp"
 #include "buttons.hpp"
+#include "stm32_watchdog.h"
 
 #endif /* PERIPHERALS_HPP */
