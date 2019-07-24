@@ -5,7 +5,7 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 
-Queue<string, 16> tx_ser_queue;
+Mail<std::shared_ptr<string>, 16> tx_ser_queue;
 void tx_serial_thread_fn(void) {
     for(;;) {
         osEvent evt = tx_ser_queue.get();
@@ -24,42 +24,39 @@ void rx_serial_thread_fn(void) {
             debug_printf(DBG_WARN, "scanf() in Rx thread returned with error %d\r\n");
             continue;
         }
-        string *rx_string = new string(rx_str);
-        JSONSerial *json_ser = new JSONSerial();
-        json_ser->loadJSONStr(*rx_string);
-        string *type_string = new string();
-        json_ser->getType(*type_string);
-        if(*type_string == "Get Settings") {
+        string rx_string(rx_str);
+        JSONSerial json_ser;
+        json_ser.loadJSONStr(rx_string);
+        string type_string;
+        json_ser.getType(type_string);
+        if(type_string == "Get Settings") {
             nv_settings_t nv_settings_struct = nv_settings->getNVSettings();
-            JSONSerial *tx_json_ser = new JSONSerial();
-            string *json_str = new string();
-            tx_json_ser->settingsToJSON(nv_settings_struct, *json_str);
-            tx_ser_queue.put(json_str);
-            delete tx_json_ser;
+            JSONSerial tx_json_ser;
+            auto json_str = std::shared_ptr<string>(new string());
+            tx_json_ser.settingsToJSON(nv_settings_struct, *json_str);
+            auto json_str_sptr = tx_ser_queue.alloc();
+            *json_str_sptr = json_str;
+            tx_ser_queue.put(json_str_sptr);
         }
-        else if(*type_string == "Put Settings") {
-            string *json_str = new string();
+        else if(type_string == "Put Settings") {
+            string json_str;
             nv_settings_t nv_settings_struct;
-            json_ser->getSettings(nv_settings_struct);
+            json_ser.getSettings(nv_settings_struct);
             nv_settings->putNVSettings(nv_settings_struct);
         }
-        else if(*type_string == "Status") {
+        else if(type_string == "Status") {
 
         }
-        else if(*type_string == "Debug Msg") {
+        else if(type_string == "Debug Msg") {
             MBED_ASSERT(false);
         }
-        else if(*type_string == "Frame") {
-            Frame *frame = new Frame();
-            frame->loadFromJSON(*(json_ser->getJSONObj()));
+        else if(type_string == "Frame") {
+            Frame frame;
+            frame.loadFromJSON(*(json_ser.getJSONObj()));
         }
         else {
             MBED_ASSERT(false);
         }
-
-        delete json_ser;
-        delete type_string;
-        delete rx_string;
     }
 }
 

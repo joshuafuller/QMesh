@@ -291,11 +291,10 @@ void ATSettings::processATCmds(void) {
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
 //  UART for both AT commands as well as debug commands.
-static char tmp_str[512];
 int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-
+    char tmp_str[512];
     vsprintf(tmp_str, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
@@ -320,19 +319,17 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     //int ret_val = printf("[+] %s -- %s", msg_type.c_str(), tmp_str);
-    string *dbg_str = new string();
-    char *dbg_str_data = new char[sizeof(tmp_str)+32];
+    string dbg_str;
+    char dbg_str_data[sizeof(tmp_str)+32];
     sprintf(dbg_str_data, "[+] %s -- %s", msg_type.c_str(), tmp_str);
-    *dbg_str = dbg_str_data;
-    string *tx_str = new string();
-    JSONSerial *json_ser = new JSONSerial();
-    json_ser->dbgPrintfToJSON(*dbg_str, *tx_str);
-    delete json_ser;
+    dbg_str = dbg_str_data;
+    std::shared_ptr<string> tx_str(new string());
+    JSONSerial json_ser;
+    json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
+    auto tx_str_sptr = tx_ser_queue.alloc();
+    *tx_str_sptr = tx_str;
     MBED_ASSERT(tx_ser_queue.full() == false);
-    tx_ser_queue.put(tx_str);
-
-    delete dbg_str;
-    delete [] dbg_str_data;
+    tx_ser_queue.put(tx_str_sptr);
 
     va_end(args);
     return 0;
@@ -342,6 +339,7 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
+    char tmp_str[512];
     vsprintf(tmp_str, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
@@ -365,15 +363,15 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    string *dbg_str = new string(tmp_str);
-    string *tx_str = new string();
-    JSONSerial *json_ser = new JSONSerial();
-    json_ser->dbgPrintfToJSON(*dbg_str, *tx_str);
-    delete json_ser;
+    string dbg_str;
+    std::shared_ptr<string> tx_str(new string());;
+    JSONSerial json_ser;
+    json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
+    auto tx_str_sptr = tx_ser_queue.alloc();
+    *tx_str_sptr = tx_str;
     MBED_ASSERT(tx_ser_queue.full() == false);
-    tx_ser_queue.put(tx_str);
+    tx_ser_queue.put(tx_str_sptr);
 
-    delete dbg_str;
     va_end(args);
     return 0;
 }
