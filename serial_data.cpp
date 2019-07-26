@@ -203,99 +203,6 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
 }
 
-bool FrameQueue::enqueue(Frame &enq_frame) {
-    if(queue.full()) 
-        return false;
-    Frame *tmp_frame = queue.alloc();
-    tmp_frame->load(enq_frame);
-    queue.put(tmp_frame);
-    return true;
-}
-
-bool FrameQueue::enqueue(uint8_t *buf, const size_t buf_size) {
-    if(queue.full()) 
-        return false;
-    Frame *tmp_frame = queue.alloc();
-    tmp_frame->deserialize(buf, buf_size);
-    queue.put(tmp_frame);
-    return true;
-}
-
-// Dequeue a frame. Copies the dequeued data into the frame if successful,
-//  returning true. Returns false if unsuccessful (queue is empty).
-bool FrameQueue::dequeue(Frame &deq_frame) {
-    osEvent evt = queue.get();
-    if(evt.status == osEventMail) {
-        Frame *tmp_frame = (Frame *) evt.value.p;
-        deq_frame.load(*tmp_frame);
-        queue.free(tmp_frame);
-        return true;
-    }
-    return false;
-}
-
-// Returns whether queue is empty
-bool FrameQueue::getEmpty(void) {
-    return queue.empty();
-}
-
-// Returns whether queue is full
-bool FrameQueue::getFull(void) {
-    return queue.full();
-}
-
-FrameQueue tx_queue, rx_queue;
-
-
-ATSettings::ATSettings(Serial *ser_port,  NVSettings *settings) {
-    nv_settings = settings;
-    at = new ATCmdParser(ser_port);
-    parser_thread.start(callback(this, &ATSettings::threadFn));
-}
-
-void ATSettings::threadFn(void) {
-    for(;;) {
-        processATCmds();
-    }
-}
-
-ATSettings::~ATSettings(void) {
-    parser_thread.terminate();
-    delete at;
-}
-
-void ATSettings::processATCmds(void) {
-    int32_t val;
-    at->recv("AT+%s=%d", cmd, &val);
-	if(!strcmp(cmd, "FREQ?")) {
-		at->send("%d", nv_settings->nv_settings.freq);
-	}
-    else if(!strcmp(cmd, "FREQ")) {
-		nv_settings->nv_settings.freq = val;
-		nv_settings->saveEEPROM();
-		at->send("OK");
-    }
-	else if(!strcmp(cmd, "SF?")) {
-		at->send("%d", nv_settings->nv_settings.sf);
-	}
-	else if(!strcmp(cmd, "SF")) {
-		nv_settings->nv_settings.sf = val;
-		nv_settings->saveEEPROM();
-		at->send("OK");
-	}    
-	else if(!strcmp(cmd, "BW?")) {
-		at->send("%d", nv_settings->nv_settings.bw);
-	}
-    else if(!strcmp(cmd, "BW")) {
-        nv_settings->nv_settings.bw = val;
-		nv_settings->saveEEPROM();
-		at->send("OK");
-    }
-	else {
-		at->send("ERR UNKNOWN CMD");
-	}
-}
-
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
 //  UART for both AT commands as well as debug commands.
@@ -331,7 +238,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     char dbg_str_data[sizeof(tmp_str)+32];
     sprintf(dbg_str_data, "[+] %s -- %s", msg_type.c_str(), tmp_str);
     dbg_str = dbg_str_data;
-    std::shared_ptr<string> tx_str(new string());
+    auto tx_str = make_shared<string>();
     JSONSerial json_ser;
     json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
     auto tx_str_sptr = tx_ser_queue.alloc();
@@ -372,7 +279,7 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     string dbg_str;
-    std::shared_ptr<string> tx_str(new string());;
+    auto tx_str = make_shared<string>();
     JSONSerial json_ser;
     json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
     auto tx_str_sptr = tx_ser_queue.alloc();
@@ -382,22 +289,4 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
 
     va_end(args);
     return 0;
-}
-
-
-// Takes an incoming Base64-encoded frame, decodes it, and stuffs it into the tx queue.
-static uint8_t base64_buf[512];
-void enqueue_tx_frames(const uint8_t *b64_tx_frame, const size_t b64_tx_frame_len) {
-    size_t frame_size;
-    int ret = mbedtls_base64_decode(base64_buf, sizeof(base64_buf), &frame_size, b64_tx_frame, b64_tx_frame_len);
-    MBED_ASSERT(ret != MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL);
-    MBED_ASSERT(ret != MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
-    if(frame_size == Frame::getPktSize()) {
-        tx_queue.enqueue(base64_buf, frame_size);
-        debug_printf(DBG_INFO, "Enqueued Tx frame\r\n");
-    }
-    else {
-        debug_printf(DBG_ERR, "Decoded bytes not equal to a frame. %d decoded, frame size is %d\r\n",
-            frame_size, Frame::getPktSize());
-    }
 }

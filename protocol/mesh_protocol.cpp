@@ -143,7 +143,7 @@ static enum {
     RETRANSMIT_PACKET,
 } state = WAIT_FOR_RX;
 
-Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail;
+Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 void mesh_protocol_fsm(void) {
     RadioTiming radio_timing;
@@ -157,17 +157,31 @@ void mesh_protocol_fsm(void) {
                 { osEvent evt = rx_radio_evt_mail.get();
                 if(evt.status == osEventMessage) {
                     rx_radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
+                    rx_radio_evt_mail.free((std::shared_ptr<RadioEvent> *) evt.value.p);
                 }
-                else { MBED_ASSERT(false); } }
+                else { MBED_ASSERT(false); } 
+                }
                 if(rx_radio_event->evt_enum == RX_DONE_EVT) {
                     // Load up the frame
                     radio_timing.startTimer();
                     rx_frame_sptr = make_shared<Frame>();
                     rx_frame_sptr->deserialize(rx_radio_event->buf);
+                    rx_frame_sptr->incrementTTL();
+                    if(!nv_logger_mail.full()) {
+                        auto mail_item = nv_logger_mail.alloc();
+                        *mail_item = rx_frame_sptr;
+                        nv_logger_mail.put(mail_item);
+                    }
+                    else {
+                        debug_printf(DBG_WARN, "NV Logging Queue full, dropping frame\r\n");
+                    }
                     if(!rx_frame_mail.full()) {
-                        rx_frame_mail.put(&rx_frame_sptr);
+                        auto mail_item = rx_frame_mail.alloc();
+                        *mail_item = rx_frame_sptr;
+                        rx_frame_mail.put(mail_item);
                     }
                     if(checkRedundantPkt(rx_frame_sptr)) {
+                        debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
                         state = WAIT_FOR_RX;
                     }
                     else {
@@ -186,8 +200,10 @@ void mesh_protocol_fsm(void) {
                     {   osEvent evt = tx_frame_mail.get();
                         if(evt.status == osEventMessage) {
                             tx_frame_sptr = *((std::shared_ptr<Frame> *) evt.value.p); 
+                            tx_frame_mail.free((std::shared_ptr<Frame> *) evt.value.p);
                         }
-                        else { MBED_ASSERT(false); } 
+                        else { MBED_ASSERT(false); 
+                        } 
                     }
                     state = TX_PACKET;
                 }
@@ -206,8 +222,10 @@ void mesh_protocol_fsm(void) {
                 if(evt.status == osEventMessage) {
                     tx_radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
                     MBED_ASSERT(tx_radio_event->evt_enum == TX_DONE_EVT);
+                    tx_radio_evt_mail.free((std::shared_ptr<RadioEvent> *) evt.value.p);
                 }
-                else { MBED_ASSERT(false); } }
+                else { MBED_ASSERT(false); } 
+                }
                 radio_timing.waitSlots(2);
                 state = CHECK_TX_QUEUE;
                 }

@@ -222,39 +222,7 @@ public:
     void saveToJSON(MbedJSONValue &json);
 };
 
-class FrameQueue {
-    protected:
-        Mail<Frame, 32> queue;
-    public:
-        // Enqueue a frame. Returns true if enqueue was successful,
-        //  false if unsuccessful due to overflow
-        bool enqueue(Frame &enq_frame);
-        bool enqueue(uint8_t *buf, const size_t buf_size);
 
-        // Dequeue a frame. Copies the dequeued data into the frame if successful,
-        //  returning true. Returns false if unsuccessful (queue is empty).
-        bool dequeue(Frame &frame);
-
-        // Returns whether queue is empty
-        bool getEmpty(void);
-
-        // Returns whether queue is full
-        bool getFull(void);
-};
-
-
-class ATSettings {
-protected:
-    char cmd[32];
-    ATCmdParser *at;
-    Thread parser_thread;
-    NVSettings *nv_settings;
-public:
-    ATSettings(Serial *ser_port, NVSettings *settings);
-    void processATCmds(void);
-    void threadFn(void);
-    ~ATSettings(void);
-};
 
 
 

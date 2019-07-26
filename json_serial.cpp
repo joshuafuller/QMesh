@@ -10,9 +10,9 @@ void tx_serial_thread_fn(void) {
     for(;;) {
         osEvent evt = tx_ser_queue.get();
         if(evt.status == osEventMessage) {
-            string *str = (string *) evt.value.p;
-            printf("%s\r\n", str->c_str());
-            delete str;
+            auto str_sptr = *(std::shared_ptr<string> *) evt.value.p;
+            tx_ser_queue.free((std::shared_ptr<string> *) evt.value.p);
+            printf("%s\r\n", str_sptr->c_str());
         }
     }
 }
@@ -32,7 +32,7 @@ void rx_serial_thread_fn(void) {
         if(type_string == "Get Settings") {
             nv_settings_t nv_settings_struct = nv_settings->getNVSettings();
             JSONSerial tx_json_ser;
-            auto json_str = std::shared_ptr<string>(new string());
+            auto json_str = make_shared<string>();
             tx_json_ser.settingsToJSON(nv_settings_struct, *json_str);
             auto json_str_sptr = tx_ser_queue.alloc();
             *json_str_sptr = json_str;
