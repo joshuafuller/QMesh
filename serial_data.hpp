@@ -39,7 +39,6 @@ extern SX126X_LoRaRadio radio;
 extern NVSettings *nv_settings;
 static uint8_t enc_buf[512], dec_buf[256];
 
-
 // Special debug printf. Prepends "[-] " to facilitate using the same
 //  UART for both AT commands as well as debug commands.
 enum DBG_TYPES {
@@ -223,8 +222,34 @@ public:
 };
 
 
+extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 
+template <class T> 
+void enqueue_mail(Mail<T, 16> &mail_queue, T val);
+
+template <class T>
+T dequeue_mail(Mail<T, 16> &mail_queue);
+
+
+template <class T> 
+void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
+    auto mail_item = mail_queue.alloc();
+    *mail_item = val;
+    mail_queue.put(mail_item);
+}
+
+template <class T>
+T dequeue_mail(Mail<T, 16> &mail_queue) {
+    T mail_item;
+    { osEvent evt = mail_queue.get();
+    if(evt.status == osEventMessage) {
+        mail_item = *((T *) evt.value.p);
+        mail_queue.free((T *) evt.value.p);
+    }
+    else { MBED_ASSERT(false); } } 
+    return mail_item;
+}
 
 
 

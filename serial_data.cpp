@@ -26,6 +26,7 @@
 #include "json_serial.hpp"
 
 extern FEC *fec; // forward error correction block
+Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 // Load the frame with a payload and dummy values.
 void Frame::loadTestFrame(uint8_t *buf) {

@@ -17,6 +17,7 @@
 #include "serial_data.hpp"
 #include <string>
 #include "nv_settings.hpp"
+#include "mesh_protocol.hpp"
 
 extern NVSettings *nv_settings;
 extern Mail<std::shared_ptr<string>, 16> tx_ser_queue;

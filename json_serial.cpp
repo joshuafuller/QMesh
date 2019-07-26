@@ -2,18 +2,17 @@
 #include "mbed.h"
 #include "MbedJSONValue.h"
 #include <string>
+#include <memory>
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
+#include "mesh_protocol.hpp"
+
 
 Mail<std::shared_ptr<string>, 16> tx_ser_queue;
 void tx_serial_thread_fn(void) {
     for(;;) {
-        osEvent evt = tx_ser_queue.get();
-        if(evt.status == osEventMessage) {
-            auto str_sptr = *(std::shared_ptr<string> *) evt.value.p;
-            tx_ser_queue.free((std::shared_ptr<string> *) evt.value.p);
-            printf("%s\r\n", str_sptr->c_str());
-        }
+        auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
+        printf("%s\r\n", str_sptr->c_str());
     }
 }
 
@@ -34,9 +33,7 @@ void rx_serial_thread_fn(void) {
             JSONSerial tx_json_ser;
             auto json_str = make_shared<string>();
             tx_json_ser.settingsToJSON(nv_settings_struct, *json_str);
-            auto json_str_sptr = tx_ser_queue.alloc();
-            *json_str_sptr = json_str;
-            tx_ser_queue.put(json_str_sptr);
+            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
         }
         else if(type_string == "Put Settings") {
             string json_str;
@@ -95,13 +92,11 @@ void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, 
             (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);
-    unsigned char *b64_buf = new unsigned char[b64_len];
-    MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, 
+    auto b64_buf = make_unique<unsigned char>(b64_len);
+    MBED_ASSERT(mbedtls_base64_encode(b64_buf.get(), b64_len, &b64_len, 
             (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);
-    json["Message"] = b64_buf;
+    json["Message"] = b64_buf.get();
     json_str = json.serialize();
-
-    delete [] b64_buf;
 }
 
 // Loads a JSON-formatted string into the internal data structures
