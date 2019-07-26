@@ -43,7 +43,7 @@ extern SX126X_LoRaRadio radio;
 static radio_events_t radio_events;
 
 // Event queue for communicating events from the radio
-Mail<shared_ptr<RadioEvent>, 16> radio_evt_mail;
+Mail<shared_ptr<RadioEvent>, 16> tx_radio_evt_mail, rx_radio_evt_mail;
 
 // Prototypes for the callbacks
 static void tx_done_cb(void);
@@ -117,45 +117,45 @@ static void tx_done_cb(void)
     //  check to see if another frame's sitting in the queue
     //  if so, grab another frame and set it up to be sent one time unit in the future
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT);
-    MBED_ASSERT(!radio_evt_mail.full());
+    MBED_ASSERT(!tx_radio_evt_mail.full());
     radio.set_channel(RADIO_FREQUENCY);
-    radio_evt_mail.put(&radio_event);
+    tx_radio_evt_mail.put(&radio_event);
     debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");
 }
 
 static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
-    MBED_ASSERT(!radio_evt_mail.full());
+    MBED_ASSERT(!rx_radio_evt_mail.full());
     radio.set_channel(RADIO_FREQUENCY);
-    radio_evt_mail.put(&radio_event);
+    rx_radio_evt_mail.put(&radio_event);
     debug_printf(DBG_INFO, "RX Done interrupt generated\r\n");    
 }
  
 static void tx_timeout_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
-    MBED_ASSERT(!radio_evt_mail.full());
+    MBED_ASSERT(!tx_radio_evt_mail.full());
     radio.set_channel(RADIO_FREQUENCY);
-    radio_evt_mail.put(&radio_event);    
+    tx_radio_evt_mail.put(&radio_event);    
     debug_printf(DBG_ERR, "Tx Timeout\r\n");
 }
  
 static void rx_timeout_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
-    MBED_ASSERT(!radio_evt_mail.full());
+    MBED_ASSERT(!rx_radio_evt_mail.full());
     radio.set_channel(RADIO_FREQUENCY);
-    radio_evt_mail.put(&radio_event);   
+    rx_radio_evt_mail.put(&radio_event);   
     debug_printf(DBG_ERR, "Rx Timeout\r\n");
 }
  
 static void rx_error_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
-    MBED_ASSERT(!radio_evt_mail.full());
+    MBED_ASSERT(!rx_radio_evt_mail.full());
     radio.set_channel(RADIO_FREQUENCY);
-    radio_evt_mail.put(&radio_event);   
+    rx_radio_evt_mail.put(&radio_event);   
     debug_printf(DBG_ERR, "Rx Error\r\n");
 }
 

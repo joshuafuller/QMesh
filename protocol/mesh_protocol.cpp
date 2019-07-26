@@ -60,8 +60,9 @@ void txCallback(void) {
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
-static bool checkRedundantPkt(Frame &rx_frame) {
-    uint32_t crc = rx_frame.calculateUniqueCrc();
+static bool checkRedundantPkt(shared_ptr<Frame> rx_frame);
+static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
+    uint32_t crc = rx_frame->calculateUniqueCrc();
     bool ret_val = false;
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         ret_val = true;
@@ -81,16 +82,6 @@ static bool checkRedundantPkt(Frame &rx_frame) {
         }
     }
     return ret_val;
-}
-
-#warning "Dummy Value for TIME_SLOT_SECONDS"
-#define TIME_SLOT_SECONDS 1
-void rxCallback(Frame &rx_frame) {
-    if(!checkRedundantPkt(rx_frame)) {
-        rx_mesh_time.attach(txCallback, TIME_SLOT_SECONDS);
-        rx_queue.enqueue(rx_frame);
-        mesh_frame.load(rx_frame);
-    }
 }
 
 void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, 
@@ -152,30 +143,39 @@ static enum {
     RETRANSMIT_PACKET,
 } state = WAIT_FOR_RX;
 
-Mail<shared_ptr<Frame>, 16> tx_frame_mail;
+Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail;
 
 void mesh_protocol_fsm(void) {
     RadioTiming radio_timing;
-    std::shared_ptr<RadioEvent> radio_event;
+    std::shared_ptr<RadioEvent> rx_radio_event, tx_radio_event;
     std::shared_ptr<Frame> tx_frame_sptr;
     std::shared_ptr<Frame> rx_frame_sptr;
     static uint8_t tx_frame_buf[256], rx_frame_buf[256];
     for(;;) {
         switch(state) {
             case WAIT_FOR_RX:
-                { osEvent evt = radio_evt_mail.get();
+                { osEvent evt = rx_radio_evt_mail.get();
                 if(evt.status == osEventMessage) {
-                    radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
+                    rx_radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
                 }
                 else { MBED_ASSERT(false); } }
-                if(radio_event->evt_enum == RX_DONE_EVT) {
-                    // Copy out the data
-
+                if(rx_radio_event->evt_enum == RX_DONE_EVT) {
                     // Load up the frame
-                    auto frame_sptr = make_shared<Frame>();
-                    frame_sptr->deserialize(radio_event->buf);
+                    radio_timing.startTimer();
+                    rx_frame_sptr = make_shared<Frame>();
+                    rx_frame_sptr->deserialize(rx_radio_event->buf);
+                    if(!rx_frame_mail.full()) {
+                        rx_frame_mail.put(&rx_frame_sptr);
+                    }
+                    if(checkRedundantPkt(rx_frame_sptr)) {
+                        state = WAIT_FOR_RX;
+                    }
+                    else {
+                        state = RETRANSMIT_PACKET;
+                    }
+                    radio_timing.waitSlots(1);
                 }
-                else if(radio_event->evt_enum == RX_TIMEOUT_EVT) {
+                else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
                     state = CHECK_TX_QUEUE;
                 }
                 else { MBED_ASSERT(false); }
@@ -202,22 +202,31 @@ void mesh_protocol_fsm(void) {
                 MBED_ASSERT(tx_frame_size > 256);
                 radio.send(tx_frame_buf, tx_frame_size);
                 radio_timing.waitSlots(1);
-                state = WAIT_TWO_SLOTS;
+                { osEvent evt = tx_radio_evt_mail.get();
+                if(evt.status == osEventMessage) {
+                    tx_radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
+                    MBED_ASSERT(tx_radio_event->evt_enum == TX_DONE_EVT);
+                }
+                else { MBED_ASSERT(false); } }
+                radio_timing.waitSlots(2);
+                state = CHECK_TX_QUEUE;
                 }
             break;
 
-            case WAIT_TWO_SLOTS:
-                radio_timing.waitSlots(2);
-                state = CHECK_TX_QUEUE;
-            break;
-
-            case PROCESS_PACKET:
-            break;
-
-            case WAIT_ONE_SLOT:
-            break;
-
             case RETRANSMIT_PACKET:
+                { radio_timing.startTimer();
+                size_t rx_frame_size = rx_frame_sptr->serialize(tx_frame_buf);
+                MBED_ASSERT(rx_frame_size > 256);
+                radio.send(rx_frame_buf, rx_frame_size);
+                radio_timing.waitSlots(1);
+                { osEvent evt = tx_radio_evt_mail.get();
+                if(evt.status == osEventMessage) {
+                    tx_radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
+                    MBED_ASSERT(tx_radio_event->evt_enum == TX_DONE_EVT);
+                }
+                else { MBED_ASSERT(false); } }
+                state = WAIT_FOR_RX;
+                }
             break;
 
             default:

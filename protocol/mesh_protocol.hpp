@@ -1,7 +1,11 @@
 #ifndef MESH_PROTOCOL_HPP
 #define MESH_PROTOCOL_HPP
 
-extern FrameQueue tx_queue, rx_queue;
+#include "mbed.h"
+#include "serial_data.hpp"
+#include "radio.hpp"
+
+extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail;
 
 // Class that stores the different radio timing values.
 class RadioTiming {
