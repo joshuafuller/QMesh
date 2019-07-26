@@ -19,6 +19,8 @@
 
 #include "mbed.h"
 #include <stdint.h>
+#include <memory>
+#include <vector>
 
 // Radio settings struct. 
 // Why? Because it makes it easy to save and restore the state to NVRAM
@@ -102,6 +104,31 @@ const int32_t hopping_channels[] =
      21, // 925500000,
      -8, // 911000000
 };
+
+
+typedef enum {
+    TX_DONE_EVT,
+    RX_DONE_EVT,
+    TX_TIMEOUT_EVT,
+    RX_TIMEOUT_EVT,
+    RX_ERROR_EVT,
+} radio_evt_enum_t;
+
+class RadioEvent {
+public:
+    radio_evt_enum_t evt_enum;
+    Timer timer;
+    int16_t rssi;
+    int8_t snr;
+    std::shared_ptr<vector<uint8_t>> buf;
+
+    RadioEvent(const radio_evt_enum_t my_evt_enum);
+
+    RadioEvent(const radio_evt_enum_t my_evt_enum, const uint8_t *my_buf, 
+                const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
+};
+
+extern Mail<shared_ptr<RadioEvent>, 16> radio_evt_mail;
 
 
 #endif /* RADIO_HPP */

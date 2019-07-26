@@ -24,6 +24,7 @@
 #include <algorithm>
 #include "LoRaRadio.h"
 #include "mesh_protocol.hpp"
+#include "radio.hpp"
 
 
 
@@ -133,3 +134,95 @@ void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr,
     pkt_time_us = n_sym_pkt_f*sym_time_s*1e6f;
 }
 
+void RadioTiming::waitSlots(size_t num_slots) {
+
+}
+
+void RadioTiming::startTimer(void) {
+
+}
+
+static enum {
+    WAIT_FOR_RX,
+    CHECK_TX_QUEUE,
+    TX_PACKET,
+    WAIT_TWO_SLOTS,
+    PROCESS_PACKET,
+    WAIT_ONE_SLOT,
+    RETRANSMIT_PACKET,
+} state = WAIT_FOR_RX;
+
+Mail<shared_ptr<Frame>, 16> tx_frame_mail;
+
+void mesh_protocol_fsm(void) {
+    RadioTiming radio_timing;
+    std::shared_ptr<RadioEvent> radio_event;
+    std::shared_ptr<Frame> tx_frame_sptr;
+    std::shared_ptr<Frame> rx_frame_sptr;
+    static uint8_t tx_frame_buf[256], rx_frame_buf[256];
+    for(;;) {
+        switch(state) {
+            case WAIT_FOR_RX:
+                { osEvent evt = radio_evt_mail.get();
+                if(evt.status == osEventMessage) {
+                    radio_event = *((std::shared_ptr<RadioEvent> *) evt.value.p);
+                }
+                else { MBED_ASSERT(false); } }
+                if(radio_event->evt_enum == RX_DONE_EVT) {
+                    // Copy out the data
+
+                    // Load up the frame
+                    auto frame_sptr = make_shared<Frame>();
+                    frame_sptr->deserialize(radio_event->buf);
+                }
+                else if(radio_event->evt_enum == RX_TIMEOUT_EVT) {
+                    state = CHECK_TX_QUEUE;
+                }
+                else { MBED_ASSERT(false); }
+            break;
+
+            case CHECK_TX_QUEUE:
+                if(!tx_frame_mail.empty()) {
+                    {   osEvent evt = tx_frame_mail.get();
+                        if(evt.status == osEventMessage) {
+                            tx_frame_sptr = *((std::shared_ptr<Frame> *) evt.value.p); 
+                        }
+                        else { MBED_ASSERT(false); } 
+                    }
+                    state = TX_PACKET;
+                }
+                else {
+                    state = WAIT_FOR_RX;
+                }
+            break;
+
+            case TX_PACKET:
+                { radio_timing.startTimer();
+                size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
+                MBED_ASSERT(tx_frame_size > 256);
+                radio.send(tx_frame_buf, tx_frame_size);
+                radio_timing.waitSlots(1);
+                state = WAIT_TWO_SLOTS;
+                }
+            break;
+
+            case WAIT_TWO_SLOTS:
+                radio_timing.waitSlots(2);
+                state = CHECK_TX_QUEUE;
+            break;
+
+            case PROCESS_PACKET:
+            break;
+
+            case WAIT_ONE_SLOT:
+            break;
+
+            case RETRANSMIT_PACKET:
+            break;
+
+            default:
+                MBED_ASSERT(false);
+            break;
+        }   
+    }
+}

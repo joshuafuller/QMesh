@@ -21,6 +21,7 @@
 #include "serial_data.hpp"
 #include "fec.hpp"
 #include "json_serial.hpp"
+#include "mesh_protocol.hpp"
 
 I2C i2c(PB_9, PB_8);
 EEPROM eeprom(&i2c);
@@ -28,8 +29,8 @@ NVSettings *nv_settings;
 FEC *fec;  
 Serial pc(USBTX, USBRX);
 JSONSerial rx_json_ser, tx_json_ser;
-Thread tx_serial_thread, rx_serial_thread;
-
+Thread tx_serial_thread(4096), rx_serial_thread(4096);
+Thread mesh_protocol_thread(4096);
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
@@ -55,16 +56,6 @@ int main()
     led1.LEDBlink();
     led2.LEDOff();
     led3.LEDOff();
-
-    wait(3);
-
-    if(button.getPressed() == true) {
-        led2.LEDBlink();
-        led3.LEDBlink();
-        ATSettings *at = new ATSettings(&pc, nv_settings);
-        for(;;) { wait(1); }
-    }
-    led1.LEDSolid();
 
     // Set up and test the EEPROM
 #ifdef TEST_EEPROM
@@ -101,21 +92,8 @@ int main()
     debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
 
-#ifdef TX_TEST_MODE
-    // Start a thread for the radio
-    debug_printf(DBG_INFO, "Starting Tx test thread\r\n");
-    radio_thread.start(tx_test_radio);
-#elif defined RX_TEST_MODE
-    // Start a thread for the radio_thread
-    debug_printf(DBG_INFO, "Starting Rx test thread\r\n");
-    radio_thread.start(rx_test_radio);
-#elif defined MESH_TEST_MODE_ORIGINATOR
-    // Start a thread for the radio_thread
-    debug_printf(DBG_INFO, "Starting Mesh test originator thread\r\n");
-    radio_thread.start(mesh_originator_test);
-#else
-    debug_printf(DBG_INFO, "Starting the mesh network\r\n");
-#endif
+    // Start the mesh protocol thread
+    mesh_protocol_thread.start(mesh_protocol_fsm);
 
     int count = 0;
     while (true) {

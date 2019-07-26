@@ -27,10 +27,15 @@ public:
 
 void computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, 
         uint32_t n_pre_sym, uint8_t n_pld_bytes);
+
+void waitSlots(size_t num_slots);
+
+void startTimer(void);
 };
+
 extern RadioTiming radio_timing;
 
-
+void mesh_protocol_fsm(void);
 
 
 

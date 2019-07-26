@@ -21,6 +21,7 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 #include <string>
+#include <vector>
 #include "fec.hpp"
 #include "json_serial.hpp"
 
@@ -90,6 +91,13 @@ uint32_t Frame::calculateUniqueCrc(void) {
 //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
 //  4. PKT_FEC_FAIL -- FEC decode failed.
 //  5. PKT_OK -- the received packet data is ok
+PKT_STATUS_ENUM Frame::deserialize(std::shared_ptr<vector<uint8_t>> buf) {
+    uint8_t tmp_buf[256];
+    MBED_ASSERT(buf->size() > 256);
+    memcpy(tmp_buf, buf->data(), buf->size());
+    return this->deserialize(tmp_buf, buf->size());
+}
+
 PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
     // Step zero: remove the forward error correction
     static uint8_t dec_buf[512];
