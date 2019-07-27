@@ -29,7 +29,7 @@ void rx_serial_thread_fn(void) {
         string type_string;
         json_ser.getType(type_string);
         if(type_string == "Get Settings") {
-            nv_settings_t nv_settings_struct = nv_settings->getNVSettings();
+            nv_settings_t nv_settings_struct = nv_settings.getNVSettings();
             JSONSerial tx_json_ser;
             auto json_str = make_shared<string>();
             tx_json_ser.settingsToJSON(nv_settings_struct, *json_str);
@@ -39,7 +39,7 @@ void rx_serial_thread_fn(void) {
             string json_str;
             nv_settings_t nv_settings_struct;
             json_ser.getSettings(nv_settings_struct);
-            nv_settings->putNVSettings(nv_settings_struct);
+            nv_settings.putNVSettings(nv_settings_struct);
         }
         else if(type_string == "Status") {
 
@@ -59,16 +59,16 @@ void rx_serial_thread_fn(void) {
 
 
 // Creates a JSON-formatted string for a given setting
-void JSONSerial::settingsToJSON(nv_settings_t &nv_settings, string &json_str) {
+void JSONSerial::settingsToJSON(nv_settings_t &my_nv_settings, string &json_str) {
     json["Type"] = "Settings";
-    json["Freq"] = (int) nv_settings.freq;
-    json["SF"] = (int) nv_settings.sf;
-    json["BW"] = (int) nv_settings.bw;
-    json["CR"] = (int) nv_settings.cr;
-    if(nv_settings.mode == MESH_MODE_NORMAL) {
+    json["Freq"] = (int) my_nv_settings.freq;
+    json["SF"] = (int) my_nv_settings.sf;
+    json["BW"] = (int) my_nv_settings.bw;
+    json["CR"] = (int) my_nv_settings.cr;
+    if(my_nv_settings.mode == MESH_MODE_NORMAL) {
         json["Mode"] = "MESH_MODE_NORMAL";
     }
-    else if(nv_settings.mode == MESH_MODE_BEACON) {
+    else if(my_nv_settings.mode == MESH_MODE_BEACON) {
         json["Mode"] = "MESH_MODE_BEACON";
     }
     else {

@@ -183,3 +183,26 @@ void NVSettings::loadEEPROM(void) {
     debug_printf(DBG_INFO, "Configuration loading complete.\r\n");
 }
 
+void NVSettings::writeLogVal(log_val_t log_val) {
+    this->eeprom->writeEEPROMBlock(this->log_baseaddr, sizeof(log_val_t), (void *) &log_val);
+    this->log_baseaddr += sizeof(log_val_t);
+}
+
+static I2C i2c(PB_9, PB_8);
+static EEPROM eeprom(&i2c);
+NVSettings nv_settings(&eeprom);
+
+void nv_log_fn(void) {
+    uint8_t session_nonce = rand() % 255;
+    for(;;) {
+        auto log_frame = dequeue_mail(nv_logger_mail);
+        log_val_t log_val;
+        log_val.session_nonce = session_nonce;
+        log_frame->getRxStats(&(log_val.rssi), &(log_val.snr), &(log_val.rx_size));
+        log_val.hdr_comp_crc = log_frame->calculateHeaderCrc();
+        log_val.hdr_crc = log_frame->getHeaderCrc();
+        log_val.pld_comp_crc = log_frame->calculatePayloadCrc();
+        log_val.pld_crc = log_frame->getPayloadCrc();
+        nv_settings.writeLogVal(log_val);
+    }
+}

@@ -26,6 +26,8 @@ public:
     uint32_t n_sym_pld;
     uint32_t n_sym_pkt;
 
+    Timer tmr;
+
 void computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, 
         uint32_t n_pre_sym, uint8_t n_pld_bytes);
 

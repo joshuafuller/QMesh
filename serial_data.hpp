@@ -36,7 +36,6 @@ extern SX1276_LoRaRadio radio;
 extern SX126X_LoRaRadio radio;
 #endif
 
-extern NVSettings *nv_settings;
 static uint8_t enc_buf[512], dec_buf[256];
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
@@ -209,6 +208,14 @@ public:
         this->rssi = rssi;
         this->snr = snr;
         this->rx_size = rx_size;
+    }
+
+    uint16_t getPayloadCrc(void) {
+        return this->pkt.data_crc;
+    }
+
+    uint16_t getHeaderCrc(void) {
+        return this->pkt.hdr_crc;
     }
 
     // Pretty-print the Frame.

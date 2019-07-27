@@ -19,6 +19,9 @@
  #define NV_SETTINGS_HPP
 
 #include "mbed.h"
+#include "params.hpp"
+
+void nv_log_fn(void);
 
 class EEPROM {
 protected:
@@ -60,13 +63,26 @@ typedef struct {
     uint8_t cr;
 } nv_settings_t;
 
+typedef struct {
+    uint8_t session_nonce;
+    uint16_t pld_crc;
+    uint16_t pld_comp_crc;
+    uint16_t hdr_crc;
+    uint16_t hdr_comp_crc;
+    int16_t rssi;
+    int8_t snr;
+    uint16_t rx_size;
+} log_val_t;
+
 class NVSettings {
 protected:
     EEPROM *eeprom;
+    size_t log_baseaddr;
 public:
     nv_settings_t nv_settings;
 
     NVSettings(EEPROM *my_eeprom) {
+        log_baseaddr = LOG_BASEADDR;
         eeprom = my_eeprom;
         loadEEPROM();
     }
@@ -141,8 +157,11 @@ public:
         nv_settings.cr = coding_rate;
         saveEEPROM();
     }
+
+    void writeLogVal(log_val_t log_val);
 };
 
+extern NVSettings nv_settings;
 
 #endif /* NV_SETTINGS_HPP */
 

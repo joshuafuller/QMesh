@@ -62,6 +62,8 @@
 #define FEC_CONV
 //#define FEC_RSV
 
+#define LOG_BASEADDR 1024
+
 // Debug options
 #define DEBUG_INFO
 #define DEBUG_WARN

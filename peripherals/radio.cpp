@@ -68,11 +68,11 @@ void init_radio(void) {
     radio.secondary_active = false;
     printf("after unique variable\r\n");
     radio.init_radio(&radio_events);
-    printf("afer init_radio\r\n");
-    uint8_t radio_bw = nv_settings->getBW();
-    uint8_t radio_sf = nv_settings->getSF();
-    uint8_t radio_cr = nv_settings->getCR();
-    uint8_t radio_freq = nv_settings->getFrequency();
+    printf("after init_radio\r\n");
+    uint8_t radio_bw = nv_settings.getBW();
+    uint8_t radio_sf = nv_settings.getSF();
+    uint8_t radio_cr = nv_settings.getCR();
+    uint8_t radio_freq = nv_settings.getFrequency();
     Frame tmp_frame;
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
@@ -90,6 +90,7 @@ void init_radio(void) {
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
     radio.set_channel(RADIO_FREQUENCY);
+    radio_timing.computeTimes(RADIO_BANDWIDTH, RADIO_SF, RADIO_CODERATE, RADIO_PREAMBLE_LEN, full_pkt_len);
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {

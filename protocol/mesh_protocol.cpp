@@ -126,11 +126,14 @@ void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr,
 }
 
 void RadioTiming::waitSlots(size_t num_slots) {
-
+    int elapsed_us = tmr.read_us();
+    wait_us(pkt_time_us*2-elapsed_us);
 }
 
 void RadioTiming::startTimer(void) {
-
+    tmr.stop();
+    tmr.reset();
+    tmr.start();
 }
 
 static enum {
@@ -143,8 +146,9 @@ static enum {
     RETRANSMIT_PACKET,
 } state = WAIT_FOR_RX;
 
+RadioTiming radio_timing;
+
 void mesh_protocol_fsm(void) {
-    RadioTiming radio_timing;
     std::shared_ptr<RadioEvent> rx_radio_event, tx_radio_event;
     std::shared_ptr<Frame> tx_frame_sptr;
     std::shared_ptr<Frame> rx_frame_sptr;
@@ -157,7 +161,7 @@ void mesh_protocol_fsm(void) {
                     // Load up the frame
                     radio_timing.startTimer();
                     rx_frame_sptr = make_shared<Frame>();
-                    rx_frame_sptr->deserialize(rx_radio_event->buf);
+                    PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserialize(rx_radio_event->buf);
                     rx_frame_sptr->incrementTTL();
                     if(!nv_logger_mail.full()) {
                         enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
@@ -168,9 +172,12 @@ void mesh_protocol_fsm(void) {
                     if(!rx_frame_mail.full()) {
                         enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
                     }
-                    if(checkRedundantPkt(rx_frame_sptr)) {
+                    if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
                         debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
                         state = WAIT_FOR_RX;
+                    }
+                    else if(pkt_status != PKT_OK) {
+                        debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
                     }
                     else {
                         state = RETRANSMIT_PACKET;

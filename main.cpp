@@ -23,15 +23,13 @@
 #include "json_serial.hpp"
 #include "mesh_protocol.hpp"
 
-I2C i2c(PB_9, PB_8);
-EEPROM eeprom(&i2c);
-NVSettings *nv_settings;
 FEC *fec;  
 Serial pc(USBTX, USBRX);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(4096), rx_serial_thread(4096);
 Thread mesh_protocol_thread(4096);
 Thread beacon_thread;
+Thread nv_log_thread;
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
@@ -64,8 +62,6 @@ int main()
     eeprom.testEEPROM();
 #endif
 
-    nv_settings = new NVSettings(&eeprom);
-
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
     Frame *fec_frame = new Frame();  
@@ -93,11 +89,15 @@ int main()
     debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
 
+    // Start the NVRAM logging thread
+    nv_log_thread.start(nv_log_fn);
+
     // Start the mesh protocol thread
     mesh_protocol_thread.start(mesh_protocol_fsm);
 
     // Start the beacon thread
     beacon_thread.start(beacon_fn);
+
 
     int count = 0;
     while (true) {
