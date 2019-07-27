@@ -31,6 +31,7 @@ Serial pc(USBTX, USBRX);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(4096), rx_serial_thread(4096);
 Thread mesh_protocol_thread(4096);
+Thread beacon_thread;
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
@@ -94,6 +95,9 @@ int main()
 
     // Start the mesh protocol thread
     mesh_protocol_thread.start(mesh_protocol_fsm);
+
+    // Start the beacon thread
+    beacon_thread.start(beacon_fn);
 
     int count = 0;
     while (true) {

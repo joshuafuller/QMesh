@@ -38,6 +38,8 @@ extern RadioTiming radio_timing;
 
 void mesh_protocol_fsm(void);
 
+void beacon_fn(void);
+
 
 
 #endif /* MESH_PROTOCOL_HPP */

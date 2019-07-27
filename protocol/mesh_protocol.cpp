@@ -223,3 +223,11 @@ void mesh_protocol_fsm(void) {
     }
 }
 
+
+void beacon_fn(void) {
+    auto beacon_frame_sptr = shared_ptr<Frame>();
+    for(;;) {
+        enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
+        wait(10*60);
+    }
+}
