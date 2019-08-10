@@ -51,6 +51,11 @@ int main()
     tx_serial_thread.start(tx_serial_thread_fn);
     rx_serial_thread.start(rx_serial_thread_fn);
 
+    // Mount the filesystem, load the configuration
+    init_filesystem();
+    load_settings_from_flash();
+    saveSettingsToFlash();
+
     // Start a thread for blinking LEDs
     led1.LEDBlink();
     led2.LEDOff();
@@ -97,7 +102,6 @@ int main()
 
     // Start the beacon thread
     beacon_thread.start(beacon_fn);
-
 
     int count = 0;
     while (true) {

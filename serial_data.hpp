@@ -25,17 +25,6 @@
 #include "nv_settings.hpp"
 #include "json_serial.hpp"
 
-#if (MBED_CONF_APP_LORA_RADIO == SX1272)
-#include "SX1272_LoRaRadio.h"
-extern SX1272_LoRaRadio radio;
-#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-#include "SX1276_LoRaRadio.h"
-extern SX1276_LoRaRadio radio;
-#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
-#include "SX126X_LoRaRadio.h"
-extern SX126X_LoRaRadio radio;
-#endif
-
 static uint8_t enc_buf[512], dec_buf[256];
 
 // Special debug printf. Prepends "[-] " to facilitate using the same

@@ -16,193 +16,130 @@
  */
 
 #include "mbed.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "I2C.h"
+#include "peripherals.hpp"
+#include "FlashIAPBlockDevice.h"
+#include "LittleFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "MbedJSONValue.h"
 
-#define NUM_TEST_ITERS 10
 
-// Read a byte from the EEPROM
-uint8_t EEPROM::readEEPROMByte(uint32_t addr) {
-    // Set the address
-    uint8_t addr_bytes[2];
-    uint8_t top_addr_bit = (addr >> 16 & 0x01);
-    uint8_t dev_addr = 0xA0 | (top_addr_bit << 1);
-    addr_bytes[0] = (uint8_t) ((addr >> 8) & 0x000000FF);
-    addr_bytes[1] = (uint8_t) (addr & 0x000000FF);
-    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) addr_bytes, sizeof(addr_bytes), true) == 0);
-    // Read out the byte
-    dev_addr = 0xA0;
-    uint8_t ret_val = 0xFF;
-    MBED_ASSERT(i2c_dev->read(dev_addr, (char *) &ret_val, 1, false) == 0);
-    return ret_val;
+BlockDevice *bd = new FlashIAPBlockDevice();
+LittleFileSystem fs("fs");
+
+void init_filesystem(void) {
+    debug_printf(DBG_WARN, "Now mounting the filesystem...\r\n");
+    int err = fs.mount(bd);
+    debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
+    if(err) {
+        debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
+        err = fs.reformat(bd);
+        debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
+        MBED_ASSERT(!err);
+    }
 }
 
-
-// Write a byte to the EEPROM
-void EEPROM::writeEEPROMByte(uint32_t addr, uint8_t val) {
-    uint8_t data_bytes[3];
-    uint8_t top_addr_bit = (addr >> 16 & 0x01);
-    uint8_t dev_addr = 0xA0 | (top_addr_bit << 1);
-    data_bytes[0] = (uint8_t) ((addr >> 8) & 0x000000FF);
-    data_bytes[1] = (uint8_t) (addr & 0x000000FF);
-    data_bytes[2] = val;
-    MBED_ASSERT(i2c_dev->write(dev_addr, (char *) data_bytes, 3, false) == 0);
-    // Poll the device until the write operation is complete
-    while(true) {
-        char test_val = 0;
-        i2c_dev->write(dev_addr, (char *) data_bytes, 2, false);
-        if(!i2c_dev->read(dev_addr, &test_val, 1, false)) {
-            break;
+void load_settings_from_flash(void) {
+    debug_printf(DBG_INFO, "Opening settings.json...\r\n");
+    fstream f;
+    f.open("settings.json", ios_base::in);
+    if(!f.is_open()) {
+        debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
+        f.open("settings.json", ios_base::out);
+        radio_cb.mode = MESH_MODE_NORMAL;
+        radio_cb.freq = RADIO_FREQUENCY;
+        radio_cb.bw = RADIO_BANDWIDTH;
+        radio_cb.cr = RADIO_CODERATE;
+        radio_cb.sf = RADIO_SF;
+        MbedJSONValue radio_settings;
+        if(radio_cb.mode == MESH_MODE_NORMAL) {
+            radio_settings["Mode"] = "Mesh Normal";
         }
-    }
-}
-
-
-// Read multiple bytes from the EEPROM into a buffer
-void EEPROM::readEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
-    for(uint32_t idx = addr; idx < addr+size; idx++) {
-        *((uint8_t *)buf+idx) = readEEPROMByte(idx);
-    }
-}
-
-
-// Write multiple bytes from a supplied buffer into the EEPROM
-void EEPROM::writeEEPROMBlock(uint32_t addr, uint32_t size, void *buf) {
-    for(uint32_t idx = addr; idx < addr+size; idx++) {
-        writeEEPROMByte(idx, *((uint8_t *)buf+idx));
-    }
-}
-
-
-// Function that performs some tests on the EEPROM, mainly as a way
-//  of checking out a newly-built EEPROM board.
-void EEPROM::testEEPROM(void) {
-    // Test results variables
-    int num_correct_walking_bits = 0;
-    int num_incorrect_walking_bits = 0;
-    int num_correct_seq = 0;
-    int num_incorrect_seq = 0;
-    debug_printf(DBG_INFO, "EEPROM TESTING\r\n");
-    debug_printf(DBG_INFO, "----------\r\n");
-    debug_printf(DBG_INFO, "Performing walking bits test...\r\n");
-    for(int i = 0; i < NUM_TEST_ITERS; i++) {
-        debug_printf(DBG_INFO, "Writing walking bits iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);
-        uint8_t write_val = i & 0x1 ? 0xAA : 0x55;
-        for(int j = 0; j < (1 << 17); j++) {          
-            if((j & 0x00000FFF) == 0) {
-                debug_printf(DBG_INFO, "Byte %d\r\n", j);
-            }
-            uint8_t test_val = write_val;
-            if(j & 0x100) {
-                test_val ^= 0xFF;
-            }
-            writeEEPROMByte(j, test_val);
+        else if(radio_cb.mode == MESH_MODE_BEACON) {
+            radio_settings["Mode"] = "Mesh Beacon";
         }
-        debug_printf(DBG_INFO, "Reading walking bits iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);        
-        for(int j = 0; j < (1 << 17); j++) {
-            uint8_t test_val = write_val;
-            if(j & 0x100) {
-                test_val ^= 0xFF;
-            }            
-            if(readEEPROMByte(j) == test_val) {
-                num_correct_walking_bits += 1;
-            }
-            else {
-                num_incorrect_walking_bits += 1;
-            }        
-            if((j & 0x00000FFF) == 0) {
-                debug_printf(DBG_INFO, "Byte %d\r\n", j);
-            }
+        else {
+            MBED_ASSERT(false);
         }
-        debug_printf(DBG_INFO, "Iteration %d complete, %d correct, %d incorrect\r\n", 
-                i, num_correct_walking_bits, num_incorrect_walking_bits);
-    }
-    debug_printf(DBG_INFO, "----------\r\n");
-    debug_printf(DBG_INFO, "Performing sequence test...\r\n");    
-    for(int i = 0; i < NUM_TEST_ITERS; i++) {
-        debug_printf(DBG_INFO, "Writing sequence iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);
-        for(int j = 0; j < (1 << 17); j++) {           
-            if((j & 0x00000FFF) == 0) {
-                debug_printf(DBG_INFO, "Byte %d\r\n", j);
-            }
-            writeEEPROMByte(j, (j ^ (j>>8 & 0xFF)) & 0xFF);
-        }
-        debug_printf(DBG_INFO, "Reading sequence iteration %d/%d\r\n", i+1, NUM_TEST_ITERS);
-        for(int j = 0; j < (1 << 17); j++) {         
-            if((j & 0x00000FFF) == 0) {
-                debug_printf(DBG_INFO, "Byte %d\r\n", j);
-            }       
-            if(readEEPROMByte(j) == ((j ^ (j>>8 & 0xFF)) & 0xFF)) {
-                num_correct_seq += 1;
-            }
-            else {
-                num_incorrect_seq += 1;
-            }
-        }
-        debug_printf(DBG_INFO, "Iteration %d complete, %d correct, %d incorrect\r\n", 
-                i, num_correct_seq, num_incorrect_seq);
-    }
-    debug_printf(DBG_INFO, "----------\r\n");   
-    debug_printf(DBG_INFO, "EEPROM test complete!\r\n");
-    debug_printf(DBG_INFO, "\t Walking bits test: %d correct, %d incorrect \r\n", 
-            num_correct_walking_bits, num_incorrect_walking_bits);
-    debug_printf(DBG_INFO, "\t Sequence test: %d correct, %d incorrect \r\n",
-            num_correct_seq, num_incorrect_seq);
+        radio_settings["Frequency"] = (int) radio_cb.freq;
+        radio_settings["Bandwidth"] = (int) radio_cb.bw;
+        radio_settings["Coding Rate"] = (int) radio_cb.cr;
+        radio_settings["Spreading Factor"] = (int) radio_cb.sf;
+        radio_settings["Preamble Length"] = (int) radio_cb.pre_len;
 
-    // Just spin
-    while(true);
+        string settings_str = radio_settings.serialize();
+        f.write(settings_str.c_str(), settings_str.size());
+        f.close();
+    }
+    // Settings file exists, so read it
+    else {
+        string settings_str;
+        string line;
+        while(std::getline(f, line)) {
+            settings_str.append(line);
+        }
+        MbedJSONValue radio_settings(settings_str);
+        radio_cb.freq = radio_settings["Frequency"].get<int>();
+        radio_cb.bw = radio_settings["Bandwidth"].get<int>();
+        radio_cb.cr = radio_settings["Coding Rate"].get<int>();
+        radio_cb.sf = radio_settings["Spreading Factor"].get<int>();
+        radio_cb.pre_len = radio_settings["Preamble Length"].get<int>();
+    }
+    f.close();
 }
 
-
-void NVSettings::loadEEPROM(void) {
-    debug_printf(DBG_INFO, "Reading EEPROM...\r\n");
-    eeprom->readEEPROMBlock(0, sizeof(nv_settings), (void *) &nv_settings);
-    if(nv_settings.magic != (0xFEEDFACE ^ sizeof(nv_settings))) {  // Invalid settings block
-        debug_printf(DBG_INFO, "NOTE: No valid configuration stored in EEPROM.\r\n");
-        debug_printf(DBG_INFO, "Saving default configuration to EEPROM.\r\n");
-        nv_settings.magic = 0xFEEDFACE ^ sizeof(nv_settings);
-        nv_settings.mode = MESH_MODE_NORMAL;
-        nv_settings.freq = 915000000;
-        nv_settings.sf = 9;
-        nv_settings.bw = 7;
-        nv_settings.cr = 4;
-        saveEEPROM();
+void saveSettingsToFlash(void) {
+    debug_printf(DBG_INFO, "Opening settings.json...\r\n");
+    fstream f;
+    f.open("settings.json", ios_base::out); 
+    MBED_ASSERT(f.is_open());
+    MbedJSONValue radio_settings;
+    if(radio_cb.mode == MESH_MODE_NORMAL) {
+        radio_settings["Mode"] = "Mesh Normal";
     }
-    debug_printf(DBG_INFO, "----------\r\n"); 
-    bool node_mode = nv_settings.mode;
-    debug_printf(DBG_INFO, "Mode: %s\r\n", node_mode == MESH_MODE_NORMAL ? "NORMAL":"BEACON");
-    debug_printf(DBG_INFO, "Frequency: %d\r\n", nv_settings.freq);
-    debug_printf(DBG_INFO, "SF: %d\r\n", nv_settings.sf);
-    debug_printf(DBG_INFO, "BW: %d\r\n", nv_settings.bw);
-    debug_printf(DBG_INFO, "CR: %d\r\n", nv_settings.cr);
-    debug_printf(DBG_INFO, "----------\r\n");
-    debug_printf(DBG_INFO, "Configuration loading complete.\r\n");
-}
+    else if(radio_cb.mode == MESH_MODE_BEACON) {
+        radio_settings["Mode"] = "Mesh Beacon";
+    }
+    else {
+        MBED_ASSERT(false);
+    }
+    radio_settings["Frequency"] = (int) radio_cb.freq;
+    radio_settings["Bandwidth"] = (int) radio_cb.bw;
+    radio_settings["Coding Rate"] = (int) radio_cb.cr;
+    radio_settings["Spreading Factor"] = (int) radio_cb.sf;
+    radio_settings["Preamble Length"] = (int) radio_cb.pre_len;
 
-void NVSettings::writeLogVal(log_val_t log_val) {
-    this->eeprom->writeEEPROMBlock(this->log_baseaddr, sizeof(log_val_t), (void *) &log_val);
-    this->log_baseaddr += sizeof(log_val_t);
+    string settings_str = radio_settings.serialize();
+    f.write(settings_str.c_str(), settings_str.size());
+    f.close();
 }
-
-static I2C i2c(PB_9, PB_8);
-static EEPROM eeprom(&i2c);
-NVSettings nv_settings(&eeprom);
 
 void nv_log_fn(void) {
-    uint8_t session_nonce = rand() % 255;
-    for(;;) {
-        auto log_frame = dequeue_mail(nv_logger_mail);
-        log_val_t log_val;
-        log_val.session_nonce = session_nonce;
-        log_frame->getRxStats(&(log_val.rssi), &(log_val.snr), &(log_val.rx_size));
-        log_val.hdr_comp_crc = log_frame->calculateHeaderCrc();
-        log_val.hdr_crc = log_frame->getHeaderCrc();
-        log_val.pld_comp_crc = log_frame->calculatePayloadCrc();
-        log_val.pld_crc = log_frame->getPayloadCrc();
-        nv_settings.writeLogVal(log_val);
+    uint16_t session_nonce = rand() % 65536;
+    stringstream file_name;
+    file_name << "session_" << session_nonce << ".log";
+    fstream f;
+    f.open(file_name.str(), ios_base::out);
+    MBED_ASSERT(f.is_open());
+    for(;;) {        
+        auto log_frame = dequeue_mail(nv_logger_mail);  
+        MbedJSONValue log_json;
+        int16_t rssi;
+        uint16_t rx_size;
+        int8_t snr;
+        log_frame->getRxStats(&rssi, &snr, &rx_size);
+        log_json["RSSI"] = (int) rssi;
+        log_json["SNR"] = (int) snr;
+        log_json["RX Size"] = (int) rx_size;
+        log_json["HDR Computed CRC"] = log_frame->calculateHeaderCrc();
+        log_json["HDR CRC"] = log_frame->getHeaderCrc();
+        log_json["PLD Computed CRC"] = log_frame->calculatePayloadCrc();
+        log_json["PLD CRC"] = log_frame->getPayloadCrc();
+        string log_json_str = log_json.serialize();
+        f.write(log_json_str.c_str(), log_json_str.size());
+        f.flush();
     }
 }

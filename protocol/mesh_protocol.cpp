@@ -26,8 +26,7 @@
 #include "mesh_protocol.hpp"
 #include "radio.hpp"
 
-
-
+const float lora_bw[] = {125e3f, 250e3f, 500e3f};
 static Frame mesh_frame;
 static Timeout rx_mesh_time;
 typedef enum {
@@ -123,11 +122,39 @@ void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr,
     pkt_time_s = n_sym_pkt_f*sym_time_s;
     pkt_time_ms = n_sym_pkt_f*sym_time_s*1e3f;
     pkt_time_us = n_sym_pkt_f*sym_time_s*1e6f;
+
+    // Compute the symbol wait factors
+    sym_frac_s = sym_time_s/SYM_FRAC_DELAY_SLOTS;
+    sym_frac_ms = sym_frac_s*1e3f;
+    sym_frac_us = sym_frac_s*1e6f;
 }
 
-void RadioTiming::waitSlots(size_t num_slots) {
+void RadioTiming::waitFullSlots(size_t num_slots) {
+    uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
+    wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
-    wait_us(pkt_time_us*2-elapsed_us);
+    wait_us(wait_duration_us-elapsed_us);
+}
+
+void RadioTiming::waitRxRemainder(size_t sym_wait, size_t pre_wait) {
+    uint32_t wait_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
+    wait_us += 16*sym_time_us; // 16 symbol padding for right now
+    int elapsed_us = tmr.read_us();
+    wait_us(wait_us-elapsed_us);
+}
+
+void RadioTiming::calcWaitSymbol(void) {
+    sym_wait_factor = rand() & 0x07; // 8 different symbol wait options
+    sym_wait_us = sym_frac_us*sym_wait_factor;
+}
+
+void RadioTiming::calcWaitPreamble(void) {
+    pre_wait_factor = rand() & 0x03; // 4 different preamble wait options
+    pre_wait_us = pre_time_us*pre_wait_factor;
+}
+
+void RadioTiming::waitTx(void) {
+    wait_us(sym_wait_us+pre_wait_us);
 }
 
 void RadioTiming::startTimer(void) {
@@ -135,6 +162,17 @@ void RadioTiming::startTimer(void) {
     tmr.reset();
     tmr.start();
 }
+
+uint32_t RadioFrequency::getWobbledFreq(void) {
+    float wobble_factor = (float) rand() / RAND_MAX;
+    float wobble_amount = wobble_factor * lora_bw[radio_cb.bw] * FREQ_WOBBLE_PROPORTION;
+    int wobble_direction = rand() & 0x1;
+    wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
+    uint32_t wobbled_freq = (int32_t) radio_cb.freq + (int32_t) wobble_amount;
+    return wobbled_freq;   
+}
+
+RadioFrequency radio_frequency;
 
 static enum {
     WAIT_FOR_RX,
@@ -180,9 +218,10 @@ void mesh_protocol_fsm(void) {
                         debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
                     }
                     else {
+                        radio.set_channel(radio_frequency.getWobbledFreq());
                         state = RETRANSMIT_PACKET;
                     }
-                    radio_timing.waitSlots(1);
+                    radio_timing.waitFullSlots(1);
                 }
                 else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
                     state = CHECK_TX_QUEUE;
@@ -193,6 +232,7 @@ void mesh_protocol_fsm(void) {
             case CHECK_TX_QUEUE:
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
+                    radio.set_channel(radio_frequency.getWobbledFreq());
                     state = TX_PACKET;
                 }
                 else {
@@ -205,9 +245,9 @@ void mesh_protocol_fsm(void) {
                 size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size > 256);
                 radio.send(tx_frame_buf, tx_frame_size);
-                radio_timing.waitSlots(1);
+                radio_timing.waitFullSlots(1);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                radio_timing.waitSlots(2);
+                radio_timing.waitFullSlots(2);
                 state = CHECK_TX_QUEUE;
                 }
             break;
@@ -217,7 +257,7 @@ void mesh_protocol_fsm(void) {
                 size_t rx_frame_size = rx_frame_sptr->serialize(tx_frame_buf);
                 MBED_ASSERT(rx_frame_size > 256);
                 radio.send(rx_frame_buf, rx_frame_size);
-                radio_timing.waitSlots(1);
+                radio_timing.waitFullSlots(1);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 state = WAIT_FOR_RX;
                 }

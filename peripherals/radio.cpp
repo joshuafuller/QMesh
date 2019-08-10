@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-//#include "lora_radio_helper.h"
 #include "mbed.h"
 #include "rtos.h"
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <string>
+#include "radio.hpp"
+#include "correct.h"
+
+#define SX1272   0xFF
+#define SX1276   0xEE
+#define SX126X   0xDD
+
 #if (MBED_CONF_APP_LORA_RADIO == SX1272)
 #include "SX1272_LoRaRadio.h"
 #elif (MBED_CONF_APP_LORA_RADIO == SX1276)
@@ -28,16 +34,82 @@
 #elif (MBED_CONF_APP_LORA_RADIO == SX126X)
 #include "SX126X_LoRaRadio.h"
 #endif
-#include "radio.hpp"
-#include "correct.h"
 
 #if (MBED_CONF_APP_LORA_RADIO == SX1272)
-extern SX1272_LoRaRadio radio;
+SX1272_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
+                       MBED_CONF_APP_LORA_SPI_MISO,
+                       MBED_CONF_APP_LORA_SPI_SCLK,
+                       MBED_CONF_APP_LORA_CS,
+                       MBED_CONF_APP_LORA_RESET,
+                       MBED_CONF_APP_LORA_DIO0,
+                       MBED_CONF_APP_LORA_DIO1,
+                       MBED_CONF_APP_LORA_DIO2,
+                       MBED_CONF_APP_LORA_DIO3,
+                       MBED_CONF_APP_LORA_DIO4,
+                       MBED_CONF_APP_LORA_DIO5,
+                       MBED_CONF_APP_LORA_RF_SWITCH_CTL1,
+                       MBED_CONF_APP_LORA_RF_SWITCH_CTL2,
+                       MBED_CONF_APP_LORA_TXCTL,
+                       MBED_CONF_APP_LORA_RXCTL,
+                       MBED_CONF_APP_LORA_ANT_SWITCH,
+                       MBED_CONF_APP_LORA_PWR_AMP_CTL,
+                       MBED_CONF_APP_LORA_TCXO);
+
 #elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-extern SX1276_LoRaRadio radio;
+SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
+                       MBED_CONF_APP_LORA_SPI_MISO,
+                       MBED_CONF_APP_LORA_SPI_SCLK,
+                       MBED_CONF_APP_LORA_CS,
+                       MBED_CONF_APP_LORA_RESET,
+                       MBED_CONF_APP_LORA_DIO0,
+                       MBED_CONF_APP_LORA_DIO1,
+                       MBED_CONF_APP_LORA_DIO2,
+                       MBED_CONF_APP_LORA_DIO3,
+                       MBED_CONF_APP_LORA_DIO4,
+                       MBED_CONF_APP_LORA_DIO5,
+                       MBED_CONF_APP_LORA_RF_SWITCH_CTL1,
+                       MBED_CONF_APP_LORA_RF_SWITCH_CTL2,
+                       MBED_CONF_APP_LORA_TXCTL,
+                       MBED_CONF_APP_LORA_RXCTL,
+                       MBED_CONF_APP_LORA_ANT_SWITCH,
+                       MBED_CONF_APP_LORA_PWR_AMP_CTL,
+                       MBED_CONF_APP_LORA_TCXO);
+
 #elif (MBED_CONF_APP_LORA_RADIO == SX126X)
-extern SX126X_LoRaRadio radio;
+#warning Pins being used for SX1262 Mbed board
+
+#ifdef CDEBYTES_E22
+SX126X_LoRaRadio radio(D11, // PinName mosi
+                       D12, // PinName miso
+                       D13, // PinName sclk
+                       D10,  // PinName nss
+                       D7,  // PinName rxen
+                       D6,  // PinName txen
+                       A0,  // PinName reset
+                       D5,  // PinName dio1
+                       D4,  // PinName dio2
+                       D3,  // PinName nrst
+                       D2);  // PinName busy,
+#else
+#warning Pins being used for Mbed SX1262 board
+SX126X_LoRaRadio radio(D11, // PinName mosi
+                       D12, // PinName miso
+                       D13, // PinName sclk
+                       D7,  // PinName nss
+                       NC,  // PinName rxen
+                       NC,  // PinName txen
+                       A0,  // PinName reset
+                       D5,  // PinName dio1
+                       NC,  // PinName dio2   
+                       NC,  // PinName nrst  
+                       D3);  // PinName busy
 #endif
+
+#else
+#error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"
+#endif
+
+nv_settings_t radio_cb;
 
 // The callbacks used by the LoRa radio driver
 static radio_events_t radio_events;
@@ -63,16 +135,11 @@ void init_radio(void) {
     radio_events.tx_timeout = tx_timeout_cb;
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
-    printf("before unique variable\r\n");
-    radio.primary_active = false;
-    radio.secondary_active = false;
-    printf("after unique variable\r\n");
     radio.init_radio(&radio_events);
-    printf("after init_radio\r\n");
-    uint8_t radio_bw = nv_settings.getBW();
-    uint8_t radio_sf = nv_settings.getSF();
-    uint8_t radio_cr = nv_settings.getCR();
-    uint8_t radio_freq = nv_settings.getFrequency();
+    uint8_t radio_bw = radio_cb.bw;
+    uint8_t radio_sf = radio_cb.sf;
+    uint8_t radio_cr = radio_cb.cr;
+    uint8_t radio_freq = radio_cb.freq;
     Frame tmp_frame;
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);

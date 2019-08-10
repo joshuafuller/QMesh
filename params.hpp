@@ -54,9 +54,14 @@
 #define MAX_FRAME_SIZE 256
 
 // Various parameters for the TDMA meshing
-#define FRAME_PADDING_MS 5 // Amount of padding between frames, in ms
-#define NUM_PREAMBLE_SLOTS 4
-#define NUM_SYM_OFFSETS 4
+#define FRAME_PADDING_SYMS 8 // Amount of padding between frames, in symbols
+#define NUM_PREAMBLE_SLOTS 4 // Number of TDMA slots for the preamble offsets
+
+// Frequency wobble parameters
+#define FREQ_WOBBLE_PROPORTION 0.1f // Fraction of the bandwidth we'll wobble over
+
+// Symbol delay granularity
+#define SYM_FRAC_DELAY_SLOTS 8
 
 // FEC parameters
 #define FEC_CONV

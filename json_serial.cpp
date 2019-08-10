@@ -29,17 +29,14 @@ void rx_serial_thread_fn(void) {
         string type_string;
         json_ser.getType(type_string);
         if(type_string == "Get Settings") {
-            nv_settings_t nv_settings_struct = nv_settings.getNVSettings();
             JSONSerial tx_json_ser;
             auto json_str = make_shared<string>();
-            tx_json_ser.settingsToJSON(nv_settings_struct, *json_str);
+            tx_json_ser.settingsToJSON(radio_cb, *json_str);
             enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
         }
         else if(type_string == "Put Settings") {
             string json_str;
-            nv_settings_t nv_settings_struct;
-            json_ser.getSettings(nv_settings_struct);
-            nv_settings.putNVSettings(nv_settings_struct);
+            json_ser.getSettings(radio_cb);
         }
         else if(type_string == "Status") {
 

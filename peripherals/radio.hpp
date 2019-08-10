@@ -22,20 +22,32 @@
 #include <memory>
 #include <vector>
 
-// Radio settings struct. 
-// Why? Because it makes it easy to save and restore the state to NVRAM
+#if (MBED_CONF_APP_LORA_RADIO == SX1272)
+#include "SX1272_LoRaRadio.h"
+extern SX1272_LoRaRadio radio;
+#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
+#include "SX1276_LoRaRadio.h"
+extern SX1276_LoRaRadio radio;
+#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
+#include "SX126X_LoRaRadio.h"
+extern SX126X_LoRaRadio radio;
+#endif
+
+typedef enum {
+    MESH_MODE_NORMAL,
+    MESH_MODE_BEACON,
+} radio_mode_t;
+
 typedef struct {
-    uint32_t bw;
-    uint32_t sf;
-    uint8_t cr;
+    radio_mode_t mode;
     uint32_t freq;
-} nv_radio_settings_t;
+    uint32_t bw;
+    uint32_t cr;
+    uint32_t sf;
+    uint32_t pre_len;
+} nv_settings_t;
 
-
-union {
-    nv_radio_settings_t radio_settings;
-    uint8_t buf[sizeof(nv_radio_settings_t)];
-} nv_radio_settings_union;
+extern nv_settings_t radio_cb;
 
 // Main thread for working with the LoRa radio
 extern Thread radio_thread;
