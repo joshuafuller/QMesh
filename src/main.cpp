@@ -28,8 +28,8 @@ Serial pc(USBTX, USBRX);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(4096), rx_serial_thread(4096);
 Thread mesh_protocol_thread(4096);
-Thread beacon_thread;
-Thread nv_log_thread;
+Thread beacon_thread(4096);
+Thread nv_log_thread(4096);
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
