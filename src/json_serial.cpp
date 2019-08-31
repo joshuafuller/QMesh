@@ -91,6 +91,7 @@ void JSONSerial::settingsToJSON(nv_settings_t &my_nv_settings, string &json_str)
     json_str = json.serialize();
 }
 
+
 // Creates a JSON-formatted string for the current status
 void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
     json["Type"] = "Status";
@@ -99,17 +100,17 @@ void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
     json_str = json.serialize();
 }
 
+
 // Creates a JSON-formatted string for a debug printf, with the message being
 //  encoded as Base64
 void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
     json["Type"] = "Debug Msg";
     size_t b64_len;
-    MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, 
-            (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);
-    auto b64_buf = make_unique<unsigned char>(b64_len);
-    MBED_ASSERT(mbedtls_base64_encode(b64_buf.get(), b64_len, &b64_len, 
-            (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);
-    json["Message"] = b64_buf.get();
+    mbedtls_base64_encode(NULL, 0, &b64_len, (unsigned char *) dbg_msg.c_str(), dbg_msg.size());
+    vector<unsigned char> b64_buf(b64_len);
+    MBED_ASSERT(mbedtls_base64_encode(b64_buf.data(), b64_len, &b64_len, 
+            (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);  
+    json["Message"] = (char *) b64_buf.data();
     json_str = json.serialize();
 }
 

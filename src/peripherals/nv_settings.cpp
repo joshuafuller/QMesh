@@ -27,16 +27,20 @@
 #include "MbedJSONValue.h"
 
 
-BlockDevice *bd = new FlashIAPBlockDevice();
+//BlockDevice *bd = new FlashIAPBlockDevice();
+HeapBlockDevice bd(16384, 512);
 LittleFileSystem fs("fs");
 
 void init_filesystem(void) {
-    debug_printf(DBG_WARN, "Now mounting the filesystem...\r\n");
-    int err = fs.mount(bd);
+    debug_printf(DBG_INFO, "Now mounting the block device\r\n");
+    bd.init();
+    fs.reformat(&bd);
+    debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
+    int err = fs.mount(&bd);
     debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
     if(err) {
         debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
-        err = fs.reformat(bd);
+        err = fs.reformat(&bd);
         debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
         MBED_ASSERT(!err);
     }

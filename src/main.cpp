@@ -42,24 +42,30 @@ int main()
     set_time(0);
 
     // Start the WDT thread
-    wdt_thread.start(wdt_fn);
+//    wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
-    pc.baud(921600);
+    pc.baud(115200);
+
+    debug_printf(DBG_INFO, "hello\r\n");
 
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
     rx_serial_thread.start(rx_serial_thread_fn);
 
+    debug_printf(DBG_INFO, "serial threads started\r\n");
+
     // Mount the filesystem, load the configuration
     init_filesystem();
-    load_settings_from_flash();
-    saveSettingsToFlash();
+    //load_settings_from_flash();
+    //saveSettingsToFlash();
 
     // Start a thread for blinking LEDs
     led1.LEDBlink();
     led2.LEDOff();
     led3.LEDOff();
+
+while(1);
 
     // Set up and test the EEPROM
 #ifdef TEST_EEPROM

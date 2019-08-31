@@ -237,13 +237,16 @@ void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
 
 template <class T>
 T dequeue_mail(Mail<T, 16> &mail_queue) {
-    T mail_item;
-    { osEvent evt = mail_queue.get();
-    if(evt.status == osEventMessage) {
-        mail_item = *((T *) evt.value.p);
-        mail_queue.free((T *) evt.value.p);
-    }
-    else { MBED_ASSERT(false); } } 
+    T mail_item; 
+    for(;;) {
+        osEvent evt = mail_queue.get();
+        if(evt.status == osEventMail) {
+            mail_item = *((T *) evt.value.p);
+            mail_queue.free((T *) evt.value.p);
+            break;
+        }
+        else { MBED_ASSERT(false); }
+    } 
     return mail_item;
 }
 

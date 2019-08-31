@@ -161,6 +161,7 @@ void Frame::loadFromJSON(MbedJSONValue &json) {
 
 // Save the frame's contents to a JSON object.
 void Frame::saveToJSON(MbedJSONValue &json) {
+    json["Type"] = "Frame";
     json["HDR Pkt Type"] = pkt.hdr.type;
     json["HDR Stream ID"] = pkt.hdr.stream_id;
     json["HDR TTL"] = pkt.hdr.ttl;
