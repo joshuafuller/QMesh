@@ -57,8 +57,8 @@ int main()
 
     // Mount the filesystem, load the configuration
     init_filesystem();
-    //load_settings_from_flash();
-    //saveSettingsToFlash();
+    load_settings_from_flash();
+    saveSettingsToFlash();
 
     // Start a thread for blinking LEDs
     led1.LEDBlink();

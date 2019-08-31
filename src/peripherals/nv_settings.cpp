@@ -27,13 +27,14 @@
 #include "MbedJSONValue.h"
 
 
-//BlockDevice *bd = new FlashIAPBlockDevice();
+//FlashIAPBlockDevice bd;
 HeapBlockDevice bd(16384, 512);
 LittleFileSystem fs("fs");
 
 void init_filesystem(void) {
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
     bd.init();
+
     fs.reformat(&bd);
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
     int err = fs.mount(&bd);
@@ -42,6 +43,8 @@ void init_filesystem(void) {
         debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
         err = fs.reformat(&bd);
         debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
+        MBED_ASSERT(!err);
+        int err = fs.mount(&bd);
         MBED_ASSERT(!err);
     }
 }
@@ -98,7 +101,7 @@ void load_settings_from_flash(void) {
 void saveSettingsToFlash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
     fstream f;
-    f.open("settings.json", ios_base::out); 
+    f.open("/fs/settings.json", ios_base::out); 
     MBED_ASSERT(f.is_open());
     MbedJSONValue radio_settings;
     if(radio_cb.mode == MESH_MODE_NORMAL) {
