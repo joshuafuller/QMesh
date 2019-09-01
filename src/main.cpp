@@ -101,8 +101,6 @@ int main()
     
     print_memory_info();
 
-    while(1);
-
     uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
     uint8_t *fec_dec_buf = new uint8_t[fec->getEncSize(fec_frame->getPktSize())];
     static char test_msg[] = "0123456789\r\n";
@@ -118,13 +116,20 @@ int main()
     init_radio();
 
     // Start the NVRAM logging thread
+    debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);
 
     // Start the mesh protocol thread
+    debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread.start(mesh_protocol_fsm);
 
     // Start the beacon thread
+    debug_printf(DBG_INFO, "Starting the beacon thread\r\n");
     beacon_thread.start(beacon_fn);
+
+    debug_printf(DBG_INFO, "Started all threads\r\n");
+
+    print_memory_info();
 
     int count = 0;
     while (true) {
