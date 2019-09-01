@@ -7,10 +7,10 @@ import base64
 
 # Open the serial port
 serial_port = sys.argv[1]
-ser = serial.Serial(serial_port, baudrate=921600)
+ser = serial.Serial(serial_port, baudrate=115200)
 
 while True:
-    line = ser.getLine()
+    line = ser.readline()
     print(line)
     try: parsed_line = json.loads(line)
     except json.JSONDecodeError:
