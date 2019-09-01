@@ -127,7 +127,7 @@ void saveSettingsToFlash(void) {
 void nv_log_fn(void) {
     uint16_t session_nonce = rand() % 65536;
     stringstream file_name;
-    file_name << "session_" << session_nonce << ".log";
+    file_name << "/fs/session_" << session_nonce << ".log";
     fstream f;
     f.open(file_name.str(), ios_base::out);
     MBED_ASSERT(f.is_open());
