@@ -11,13 +11,15 @@ ser = serial.Serial(serial_port, baudrate=115200)
 
 while True:
     line = ser.readline()
-    print(line)
+    print("\033[1;30;40m" + str(line) + "\033[1;37;40m")
+    parsed_line = {}
+    parsed_line["Type"] = ""
     try: parsed_line = json.loads(line)
-    except json.JSONDecodeError:
+    except Exception as e:
         print("WARNING: Failed to parse line!")
     if parsed_line["Type"] == "Debug Msg":
         msg = base64.b64decode(parsed_line["Message"])
-        print(msg);
+        print("\033[1;32;40m" + str(msg) + "\033[1;37;40m")
     elif parsed_line["Type"] == "Status":
         status = parsed_line["Status"]
         value = parsed_line["Value"]
