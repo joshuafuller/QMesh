@@ -45,7 +45,7 @@ int main()
 //    wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
-    pc.baud(115200);
+    pc.baud(921600);
 
     debug_printf(DBG_INFO, "hello\r\n");
 
@@ -65,18 +65,11 @@ int main()
     led2.LEDOff();
     led3.LEDOff();
 
-while(1);
-
-    // Set up and test the EEPROM
-#ifdef TEST_EEPROM
-    debug_printf(DBG_INFO, "Now testing the EEPROM\r\n");
-    eeprom.testEEPROM();
-#endif
-
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
     Frame *fec_frame = new Frame();  
     debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
+
 #ifdef FEC_CONV
     fec = new FECConv(fec_frame->getPktSize(), 2, 9);
 #elif defined FEC_RSV
@@ -84,8 +77,11 @@ while(1);
 #else
 #error "Need to define either FEC_CONV or FEC_RSV\r\n"
 #endif
+
     fec->benchmark(100);
     delete fec_frame;
+    while(1);
+
     uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
     uint8_t *fec_dec_buf = new uint8_t[fec->getEncSize(fec_frame->getPktSize())];
     static char test_msg[] = "0123456789\r\n";
