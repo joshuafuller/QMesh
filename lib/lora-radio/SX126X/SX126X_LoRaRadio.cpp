@@ -413,7 +413,6 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     _spi.frequency(SPI_FREQUENCY);
     // 100 us wait to settle down
     wait_us(100);
-    printf("messed with SPI\r\n");
 
     radio_reset();
 
