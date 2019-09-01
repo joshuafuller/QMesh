@@ -34,6 +34,24 @@ Thread nv_log_thread(4096);
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
 
+void print_memory_info() {
+    // allocate enough room for every thread's stack statistics
+    int cnt = osThreadGetCount();
+    mbed_stats_stack_t *stats = (mbed_stats_stack_t*) malloc(cnt * sizeof(mbed_stats_stack_t));
+ 
+    cnt = mbed_stats_stack_get_each(stats, cnt);
+    for (int i = 0; i < cnt; i++) {
+        printf("Thread: 0x%lX, Stack size: %lu / %lu\r\n", stats[i].thread_id, stats[i].max_size, stats[i].reserved_size);
+    }
+    free(stats);
+ 
+    // Grab the heap statistics
+    mbed_stats_heap_t heap_stats;
+    mbed_stats_heap_get(&heap_stats);
+    printf("Heap size: %lu / %lu bytes\r\n", heap_stats.current_size, heap_stats.reserved_size);
+}
+
+
 // main() runs in its own thread in the OS
 int main()
 {
@@ -47,7 +65,7 @@ int main()
     // Set the UART comms speed
     pc.baud(921600);
 
-    debug_printf(DBG_INFO, "hello\r\n");
+    debug_printf(DBG_INFO, "Starting serial threads...\r\n"); // Removing this causes a hard fault???
 
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
@@ -80,6 +98,9 @@ int main()
 
     fec->benchmark(100);
     delete fec_frame;
+    
+    print_memory_info();
+
     while(1);
 
     uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
