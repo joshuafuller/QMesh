@@ -17,7 +17,7 @@
 
 #include "mbed.h"
 #include "peripherals.hpp"
-#include "FlashIAPBlockDevice.h"
+#include "SPIFBlockDevice.h"
 #include "LittleFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
@@ -26,12 +26,21 @@
 #include <sstream>
 #include "MbedJSONValue.h"
 
-
-//FlashIAPBlockDevice bd;
+DigitalOut flash_io2(MBED_CONF_APP_FLASH_IO2);
+DigitalOut flash_io3(MBED_CONF_APP_FLASH_IO3);
+#ifdef HEAP_FS
 HeapBlockDevice bd(16384, 512);
+#else
+SPIFBlockDevice bd(MBED_CONF_APP_FLASH_SPI_MOSI, 
+                    MBED_CONF_APP_FLASH_SPI_MISO, 
+                    MBED_CONF_APP_FLASH_SPI_SCLK, 
+                    MBED_CONF_APP_FLASH_SPI_CS);
+#endif
 LittleFileSystem fs("fs");
 
 void init_filesystem(void) {
+    flash_io2 = 0;
+    flash_io3 = 0;
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
     bd.init();
 

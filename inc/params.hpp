@@ -23,7 +23,10 @@
 // Test mode selection
 #define TX_TEST_MODE
 //#define RX_TEST_MODE
-//#define TEST_EEPROM
+
+// Filesystem parameters. If HEAP_FS isn't defined, then use the external
+// SPI flash
+//#define HEAP_FS
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 16
