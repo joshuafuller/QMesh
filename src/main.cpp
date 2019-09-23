@@ -31,6 +31,9 @@ Thread mesh_protocol_thread(4096);
 Thread beacon_thread(4096);
 Thread nv_log_thread(4096);
 
+DigitalOut flash_pwr_ctl(A0);
+DigitalOut radio_pwr_ctl(A1);
+
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
 
@@ -72,6 +75,19 @@ int main()
     rx_serial_thread.start(rx_serial_thread_fn);
 
     debug_printf(DBG_INFO, "serial threads started\r\n");
+
+    // Power cycle the SPI flash chip and the RF module
+    debug_printf(DBG_INFO, "Powering down the SPI flash and LoRa modules...\r\n");
+    flash_pwr_ctl = 0;
+    radio_pwr_ctl = 0;
+    wait(0.25);
+    debug_printf(DBG_INFO, "Powering up the SPI flash...\r\n");
+    flash_pwr_ctl = 1;
+    wait(0.25);
+    debug_printf(DBG_INFO, "Powering up the LoRa module...\r\n");
+    radio_pwr_ctl = 1;
+    wait(0.25);
+    debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
 
     // Mount the filesystem, load the configuration
     init_filesystem();
