@@ -45,7 +45,7 @@ protected:
     MbedJSONValue json;
 public:
 // Creates a JSON-formatted string for a given setting
-void settingsToJSON(nv_settings_t &nv_settings, string &json_str);
+void settingsToJSON(MbedJSONValue &nv_settings, string &json_str);
 
 // Creates a JSON-formatted string for the current status
 void statusToJSON(string &status, string &value, string &json_str);
@@ -61,7 +61,7 @@ void loadJSONStr(string &json_str);
 void getType(string &type_str);
 
 // Loads a setting from the JSON string
-void getSettings(nv_settings_t &nv_setting);
+void getSettings(MbedJSONValue &nv_setting);
 
 // Get the JSON object. Needed to initialize a Frame.
 MbedJSONValue *getJSONObj(void);

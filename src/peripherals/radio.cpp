@@ -109,7 +109,7 @@ SX126X_LoRaRadio radio(D11, // PinName mosi
 #error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"
 #endif
 
-nv_settings_t radio_cb;
+MbedJSONValue radio_cb;
 
 // The callbacks used by the LoRa radio driver
 static radio_events_t radio_events;
@@ -136,10 +136,10 @@ void init_radio(void) {
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
     radio.init_radio(&radio_events);
-    uint8_t radio_bw = radio_cb.bw;
-    uint8_t radio_sf = radio_cb.sf;
-    uint8_t radio_cr = radio_cb.cr;
-    uint8_t radio_freq = radio_cb.freq;
+    uint8_t radio_bw = radio_cb["BW"].get<int>();
+    uint8_t radio_sf = radio_cb["SF"].get<int>();
+    uint8_t radio_cr = radio_cb["CR"].get<int>();
+    uint8_t radio_freq = radio_cb["Freq"].get<int>();
     Frame tmp_frame;
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);

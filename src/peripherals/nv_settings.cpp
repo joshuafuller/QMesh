@@ -65,28 +65,13 @@ void load_settings_from_flash(void) {
     if(!f.is_open()) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
         f.open("settings.json", ios_base::out);
-        radio_cb.mode = MESH_MODE_NORMAL;
-        radio_cb.freq = RADIO_FREQUENCY;
-        radio_cb.bw = RADIO_BANDWIDTH;
-        radio_cb.cr = RADIO_CODERATE;
-        radio_cb.sf = RADIO_SF;
-        MbedJSONValue radio_settings;
-        if(radio_cb.mode == MESH_MODE_NORMAL) {
-            radio_settings["Mode"] = "Mesh Normal";
-        }
-        else if(radio_cb.mode == MESH_MODE_BEACON) {
-            radio_settings["Mode"] = "Mesh Beacon";
-        }
-        else {
-            MBED_ASSERT(false);
-        }
-        radio_settings["Frequency"] = (int) radio_cb.freq;
-        radio_settings["Bandwidth"] = (int) radio_cb.bw;
-        radio_settings["Coding Rate"] = (int) radio_cb.cr;
-        radio_settings["Spreading Factor"] = (int) radio_cb.sf;
-        radio_settings["Preamble Length"] = (int) radio_cb.pre_len;
-
-        string settings_str = radio_settings.serialize();
+        radio_cb["Mode"] = "Mesh Normal";
+        radio_cb["Freq"] = RADIO_FREQUENCY;
+        radio_cb["BW"] = RADIO_BANDWIDTH;
+        radio_cb["CR"] = RADIO_CODERATE;
+        radio_cb["SF"] = RADIO_SF;
+        radio_cb["Preamble Len"] = RADIO_PREAMBLE_LEN;
+        string settings_str = radio_cb.serialize();
         f.write(settings_str.c_str(), settings_str.size());
         f.close();
     }
@@ -97,12 +82,7 @@ void load_settings_from_flash(void) {
         while(std::getline(f, line)) {
             settings_str.append(line);
         }
-        MbedJSONValue radio_settings(settings_str);
-        radio_cb.freq = radio_settings["Frequency"].get<int>();
-        radio_cb.bw = radio_settings["Bandwidth"].get<int>();
-        radio_cb.cr = radio_settings["Coding Rate"].get<int>();
-        radio_cb.sf = radio_settings["Spreading Factor"].get<int>();
-        radio_cb.pre_len = radio_settings["Preamble Length"].get<int>();
+        parse(radio_cb, settings_str.c_str());
     }
     f.close();
 }
@@ -112,23 +92,7 @@ void saveSettingsToFlash(void) {
     fstream f;
     f.open("/fs/settings.json", ios_base::out); 
     MBED_ASSERT(f.is_open());
-    MbedJSONValue radio_settings;
-    if(radio_cb.mode == MESH_MODE_NORMAL) {
-        radio_settings["Mode"] = "Mesh Normal";
-    }
-    else if(radio_cb.mode == MESH_MODE_BEACON) {
-        radio_settings["Mode"] = "Mesh Beacon";
-    }
-    else {
-        MBED_ASSERT(false);
-    }
-    radio_settings["Frequency"] = (int) radio_cb.freq;
-    radio_settings["Bandwidth"] = (int) radio_cb.bw;
-    radio_settings["Coding Rate"] = (int) radio_cb.cr;
-    radio_settings["Spreading Factor"] = (int) radio_cb.sf;
-    radio_settings["Preamble Length"] = (int) radio_cb.pre_len;
-
-    string settings_str = radio_settings.serialize();
+    string settings_str = radio_cb.serialize();
     f.write(settings_str.c_str(), settings_str.size());
     f.close();
 }

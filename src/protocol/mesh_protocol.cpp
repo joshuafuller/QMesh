@@ -165,10 +165,10 @@ void RadioTiming::startTimer(void) {
 
 uint32_t RadioFrequency::getWobbledFreq(void) {
     float wobble_factor = (float) rand() / RAND_MAX;
-    float wobble_amount = wobble_factor * lora_bw[radio_cb.bw] * FREQ_WOBBLE_PROPORTION;
+    float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
     int wobble_direction = rand() & 0x1;
     wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
-    uint32_t wobbled_freq = (int32_t) radio_cb.freq + (int32_t) wobble_amount;
+    uint32_t wobbled_freq = (int32_t) radio_cb["Freq"].get<int>() + (int32_t) wobble_amount;
     return wobbled_freq;   
 }
 

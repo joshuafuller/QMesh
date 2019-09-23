@@ -73,21 +73,13 @@ void rx_serial_thread_fn(void) {
 
 
 // Creates a JSON-formatted string for a given setting
-void JSONSerial::settingsToJSON(nv_settings_t &my_nv_settings, string &json_str) {
+void JSONSerial::settingsToJSON(MbedJSONValue &my_nv_settings, string &json_str) {
     json["Type"] = "Settings";
-    json["Freq"] = (int) my_nv_settings.freq;
-    json["SF"] = (int) my_nv_settings.sf;
-    json["BW"] = (int) my_nv_settings.bw;
-    json["CR"] = (int) my_nv_settings.cr;
-    if(my_nv_settings.mode == MESH_MODE_NORMAL) {
-        json["Mode"] = "MESH_MODE_NORMAL";
-    }
-    else if(my_nv_settings.mode == MESH_MODE_BEACON) {
-        json["Mode"] = "MESH_MODE_BEACON";
-    }
-    else {
-        MBED_ASSERT(false);
-    }
+    json["Freq"] = my_nv_settings["Freq"].get<int>();
+    json["SF"] = my_nv_settings["SF"].get<int>();
+    json["BW"] = my_nv_settings["BW"].get<int>();
+    json["CR"] = my_nv_settings["CR"].get<int>();
+    json["Mode"] = my_nv_settings["Mode"].get<string>();
     json_str = json.serialize();
 }
 
@@ -125,21 +117,12 @@ void JSONSerial::getType(string &type_str) {
 }
 
 // Loads a setting from the JSON string
-void JSONSerial::getSettings(nv_settings_t &nv_setting) {
-    nv_setting.freq = json["Freq"].get<int>();
-    nv_setting.sf = json["SF"].get<int>();
-    nv_setting.bw = json["BW"].get<int>();
-    nv_setting.cr = json["CR"].get<int>();
-    string mode = json["Mode"].get<string>();
-    if(mode == "MESH_MODE_NORMAL") {
-        nv_setting.mode = MESH_MODE_NORMAL;
-    }
-    else if(mode == "MESH_MODE_BEACON") {
-        nv_setting.mode = MESH_MODE_BEACON;
-    }
-    else {
-        MBED_ASSERT(false);
-    }
+void JSONSerial::getSettings(MbedJSONValue &nv_setting) {
+    nv_setting["Freq"] = json["Freq"].get<int>();
+    nv_setting["SF"] = json["SF"].get<int>();
+    nv_setting["BW"] = json["BW"].get<int>();
+    nv_setting["CR"] = json["CR"].get<int>();
+    nv_setting["Mode"] = json["Mode"].get<string>();
 }
 
 // Get the JSON object. Needed to initialize a Frame.

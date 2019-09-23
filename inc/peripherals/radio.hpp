@@ -48,7 +48,7 @@ typedef struct {
     uint32_t pre_len;
 } nv_settings_t;
 
-extern nv_settings_t radio_cb;
+extern MbedJSONValue radio_cb;
 
 // Main thread for working with the LoRa radio
 extern Thread radio_thread;
