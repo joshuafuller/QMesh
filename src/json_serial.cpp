@@ -34,6 +34,7 @@ void tx_serial_thread_fn(void) {
 }
 
 static char rx_str[2048];
+#if 0
 void rx_serial_thread_fn(void) {
     for(;;) {
         if(scanf("%s\r\n", rx_str) != 0) {
@@ -70,6 +71,57 @@ void rx_serial_thread_fn(void) {
         }
     }
 }
+#else
+void rx_serial_thread_fn(void) {
+    for(;;) {
+        if(scanf("%s\r\n", rx_str) != 0) {
+            debug_printf(DBG_WARN, "scanf() in Rx thread returned with error %d\r\n");
+            continue;
+        }
+        MbedJSONValue rx_json;
+        parse(rx_json, rx_str);
+        string type_str(rx_json["Type"].get<string>()); 
+        if(type_str == "Get Settings") {
+            MbedJSONValue settings_json = radio_cb;
+            settings_json["Type"] = "Settings";
+            auto json_str = make_shared<string>(settings_json.serialize());
+            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
+        }
+        else if(type_str == "Put Setting") {
+            string setting = rx_json["Setting"].get<string>();
+            if(setting == "Mode") {
+                radio_cb["Mode"] = rx_json["Mode"].get<string>();
+            }
+            else {
+                radio_cb[setting] = rx_json[setting].get<int>();
+            }
+            MbedJSONValue settings_json = radio_cb;
+            save_settings_to_flash();
+            settings_json["Type"] = "Settings";
+            auto json_str = make_shared<string>(settings_json.serialize());
+            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
+        }
+        else if(type_str == "Get Status") {
+            MbedJSONValue status_json;
+            status_json["Type"] = "Status";
+            status_json["Status"] = "OK";
+            auto json_str = make_shared<string>(status_json.serialize());
+            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);            
+        }
+        else if(type_str == "Debug Msg") {
+            MBED_ASSERT(false);
+        }
+        else if(type_str == "Send Frame") {
+            auto frame = make_shared<Frame>();
+            frame->loadFromJSON(rx_json);
+            enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
+        }
+        else {
+            MBED_ASSERT(false);
+        }
+    }
+}
+#endif
 
 
 // Creates a JSON-formatted string for a given setting

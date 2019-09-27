@@ -32,7 +32,7 @@ void init_filesystem(void);
 
 void load_settings_from_flash(void);
 
-void saveSettingsToFlash(void);
+void save_settings_to_flash(void);
 
 #endif /* NV_SETTINGS_HPP */
 

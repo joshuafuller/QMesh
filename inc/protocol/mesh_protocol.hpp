@@ -78,6 +78,8 @@ extern RadioTiming radio_timing;
 
 void mesh_protocol_fsm(void);
 
+extern string beacon_msg;
+
 void beacon_fn(void);
 
 

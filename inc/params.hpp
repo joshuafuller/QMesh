@@ -60,6 +60,8 @@
 #define FRAME_PADDING_SYMS 8 // Amount of padding between frames, in symbols
 #define NUM_PREAMBLE_SLOTS 4 // Number of TDMA slots for the preamble offsets
 
+#define RADIO_BEACON_MSG "KG5VBY Auto Station\r\n"
+
 // Frequency wobble parameters
 #define FREQ_WOBBLE_PROPORTION 0.1f // Fraction of the bandwidth we'll wobble over
 

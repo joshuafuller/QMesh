@@ -271,8 +271,11 @@ void mesh_protocol_fsm(void) {
 }
 
 
+string beacon_msg;
 void beacon_fn(void) {
     auto beacon_frame_sptr = shared_ptr<Frame>();
+    // TODO: Need to load the configured beacon string
+    beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Msg"].get<string>());
     for(;;) {
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
         wait(10*60);

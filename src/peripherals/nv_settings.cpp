@@ -71,6 +71,7 @@ void load_settings_from_flash(void) {
         radio_cb["CR"] = RADIO_CODERATE;
         radio_cb["SF"] = RADIO_SF;
         radio_cb["Preamble Len"] = RADIO_PREAMBLE_LEN;
+        radio_cb["Beason Msg"] = RADIO_BEACON_MSG;
         string settings_str = radio_cb.serialize();
         f.write(settings_str.c_str(), settings_str.size());
         f.close();
@@ -87,7 +88,7 @@ void load_settings_from_flash(void) {
     f.close();
 }
 
-void saveSettingsToFlash(void) {
+void save_settings_to_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
     fstream f;
     f.open("/fs/settings.json", ios_base::out); 
