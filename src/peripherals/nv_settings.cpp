@@ -71,6 +71,7 @@ void load_settings_from_flash(void) {
         radio_cb["SF"] = RADIO_SF;
         radio_cb["Preamble Len"] = RADIO_PREAMBLE_LEN;
         radio_cb["Beason Msg"] = RADIO_BEACON_MSG;
+        radio_cb["Beason Interval"] = RADIO_BEACON_INTERVAL;
         string settings_str = radio_cb.serialize();
         f.write(settings_str.c_str(), settings_str.size());
         f.close();
