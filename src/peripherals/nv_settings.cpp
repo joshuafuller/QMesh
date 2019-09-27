@@ -17,7 +17,6 @@
 
 #include "mbed.h"
 #include "peripherals.hpp"
-#include "SPIFBlockDevice.h"
 #include "LittleFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"

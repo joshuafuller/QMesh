@@ -17,6 +17,19 @@
 
 #include "mbed.h"
 #include "buttons.hpp"
+#include "serial_data.hpp"
+#include "LittleFileSystem.h"
+
+void reboot_system(void) {
+    debug_printf(DBG_INFO, "Unmounting the filesystem...\r\n");
+    int err = fs.unmount();
+    debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(" : "OK"));
+    bd.sync();
+    debug_printf(DBG_INFO, "Rebooting the system in 1s...\r\n");
+    wait(1.0);
+    debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
+    NVIC_SystemReset();
+}
 
 // Pin name for the button is USER_BUTTON
 PushButton button(USER_BUTTON);
@@ -29,6 +42,7 @@ PushButton::PushButton(PinName button) {
 
 void PushButton::btnInterrupt(void) {
     was_pressed = true;
+    reboot_system();
 }
     
 bool PushButton::getPressed(void) {

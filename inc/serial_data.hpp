@@ -48,6 +48,8 @@ typedef enum {
     PKT_UNITIALIZED,
 } PKT_STATUS_ENUM;
 
+#define BEACON_FRAME 0
+#define PAYLOAD_FRAME 1
 class Frame {
     typedef struct __attribute__((__packed__)) {
         uint32_t type : 2;
@@ -90,6 +92,23 @@ public:
     //  the buffer that's supplied as an argument.
     size_t getPayload(uint8_t *buf) {
         memcpy(buf, pkt.data, FRAME_PAYLOAD_LEN);
+        return FRAME_PAYLOAD_LEN;
+    }
+
+    size_t setBeaconPayload(string &beacon_str) {
+        char buf[FRAME_PAYLOAD_LEN];
+        memset(buf, 0, FRAME_PAYLOAD_LEN);
+        memcpy(buf, beacon_str.c_str(), beacon_str.length());
+        memcpy(pkt.data, buf, FRAME_PAYLOAD_LEN);
+        pkt.hdr.type = BEACON_FRAME;
+        pkt.hdr.stream_id = 0;
+        pkt.hdr.ttl = 0;
+        pkt.hdr.sender = 0;
+        pkt.hdr.pre_offset = 0;
+        pkt.hdr.nsym_offset = 0;
+        pkt.hdr.sym_offset = 0;
+        this->calculateHeaderCrc();
+        this->calculatePayloadCrc();
         return FRAME_PAYLOAD_LEN;
     }
 

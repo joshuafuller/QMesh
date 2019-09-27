@@ -22,7 +22,14 @@
 #include "params.hpp"
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
+#include "SPIFBlockDevice.h"
 #include "MbedJSONValue.h"
+
+#ifdef HEAP_FS
+extern HeapBlockDevice bd;
+#else
+extern SPIFBlockDevice bd;
+#endif
 
 extern LittleFileSystem fs;
 

@@ -18,6 +18,8 @@
 #ifndef BUTTONS_HPP
 #define BUTTONS_HPP
 
+void reboot_system(void);
+
 class PushButton {
 protected:
     bool was_pressed;

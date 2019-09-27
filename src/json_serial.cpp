@@ -72,6 +72,21 @@ void rx_serial_thread_fn(void) {
     }
 }
 #else
+static void send_status(void);
+static void send_status(void) {
+    MbedJSONValue status_json;
+    status_json["Type"] = "Status";
+    status_json["Status"] = "OK";
+    if(tx_frame_mail.full()) {
+        status_json["Tx Frame Queue Full"] = "True";
+    }
+    else {
+        status_json["Tx Frame Queue Full"] = "False";
+    }
+    auto json_str = make_shared<string>(status_json.serialize());
+    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);       
+}  
+
 void rx_serial_thread_fn(void) {
     for(;;) {
         if(scanf("%s\r\n", rx_str) != 0) {
@@ -102,11 +117,7 @@ void rx_serial_thread_fn(void) {
             enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
         }
         else if(type_str == "Get Status") {
-            MbedJSONValue status_json;
-            status_json["Type"] = "Status";
-            status_json["Status"] = "OK";
-            auto json_str = make_shared<string>(status_json.serialize());
-            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);            
+            send_status();      
         }
         else if(type_str == "Debug Msg") {
             MBED_ASSERT(false);
@@ -115,6 +126,12 @@ void rx_serial_thread_fn(void) {
             auto frame = make_shared<Frame>();
             frame->loadFromJSON(rx_json);
             enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
+            send_status();           
+        }
+        else if(type_str == "Reboot") {
+            send_status();
+            debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            reboot_system();
         }
         else {
             MBED_ASSERT(false);
