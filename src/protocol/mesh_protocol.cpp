@@ -198,6 +198,7 @@ void mesh_protocol_fsm(void) {
                 if(rx_radio_event->evt_enum == RX_DONE_EVT) {
                     // Load up the frame
                     radio_timing.startTimer();
+                    led2.LEDSolid();
                     rx_frame_sptr = make_shared<Frame>();
                     PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserialize(rx_radio_event->buf);
                     rx_frame_sptr->incrementTTL();
@@ -242,11 +243,13 @@ void mesh_protocol_fsm(void) {
 
             case TX_PACKET:
                 { radio_timing.startTimer();
+                led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size > 256);
                 radio.send(tx_frame_buf, tx_frame_size);
                 radio_timing.waitFullSlots(1);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                led3.LEDOff();
                 radio_timing.waitFullSlots(2);
                 state = CHECK_TX_QUEUE;
                 }
@@ -254,11 +257,14 @@ void mesh_protocol_fsm(void) {
 
             case RETRANSMIT_PACKET:
                 { radio_timing.startTimer();
+                led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serialize(tx_frame_buf);
                 MBED_ASSERT(rx_frame_size > 256);
                 radio.send(rx_frame_buf, rx_frame_size);
                 radio_timing.waitFullSlots(1);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                led2.LEDOff();
+                led3.LEDOff();
                 state = WAIT_FOR_RX;
                 }
             break;
