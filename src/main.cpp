@@ -101,15 +101,14 @@ int main()
 
     // Wait for 5 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;
-    led1.LEDBlink();
+    led1.LEDFastBlink();
     wait(5);
     while(stay_in_management) {
         wait(5);
     }
     current_mode = RUNNING;
 
-    // Start a thread for blinking LEDs
-    led1.LEDOff();
+    led1.LEDBlink();
     led2.LEDOff();
     led3.LEDOff();
 

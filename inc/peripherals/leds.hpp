@@ -30,6 +30,7 @@ protected:
     DigitalOut *pin;
     Thread thread;
     bool blink_led;
+    float blink_period;
 
 public:
     void blinkFn(void);
@@ -37,6 +38,7 @@ public:
     void LEDSolid(void);
     void LEDOff(void);
     void LEDBlink(void);
+    void LEDFastBlink(void);
     ~IndicatorLED();
 };
 
