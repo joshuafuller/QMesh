@@ -158,7 +158,7 @@ void rx_serial_thread_fn(void) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                fstream f;
+                std::fstream f;
                 f.open("/fs/logfile.json", ios_base::in);
                 string line;
                 while(getline(f, line)) {

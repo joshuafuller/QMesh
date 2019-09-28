@@ -60,7 +60,7 @@ void init_filesystem(void) {
 
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
-    fstream f;
+    std::fstream f;
     f.open("settings.json", ios_base::in);
     if(!f.is_open()) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
@@ -91,7 +91,7 @@ void load_settings_from_flash(void) {
 
 void save_settings_to_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
-    fstream f;
+    std::fstream f;
     f.open("/fs/settings.json", ios_base::out); 
     MBED_ASSERT(f.is_open());
     string settings_str = radio_cb.serialize();
@@ -101,7 +101,7 @@ void save_settings_to_flash(void) {
 
 void nv_log_fn(void) {
     uint16_t session_nonce = rand() % 65536;
-    fstream f;
+    std::fstream f;
     f.open("/fs/logfile.json", ios_base::app);
     MBED_ASSERT(f.is_open());
     for(;;) {

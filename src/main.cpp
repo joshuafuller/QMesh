@@ -47,14 +47,16 @@ void print_memory_info() {
  
     cnt = mbed_stats_stack_get_each(stats, cnt);
     for (int i = 0; i < cnt; i++) {
-        printf("Thread: 0x%lX, Stack size: %lu / %lu\r\n", stats[i].thread_id, stats[i].max_size, stats[i].reserved_size);
+        printf("Thread: 0x%lX, Stack size: %lu / %lu\r\n", (unsigned long) stats[i].thread_id, 
+            (unsigned long) stats[i].max_size, (unsigned long) stats[i].reserved_size);
     }
     free(stats);
  
     // Grab the heap statistics
     mbed_stats_heap_t heap_stats;
     mbed_stats_heap_get(&heap_stats);
-    printf("Heap size: %lu / %lu bytes\r\n", heap_stats.current_size, heap_stats.reserved_size);
+    printf("Heap size: %lu / %lu bytes\r\n", (unsigned long) heap_stats.current_size, 
+        (unsigned long) heap_stats.reserved_size);
 }
 
 
