@@ -105,12 +105,14 @@ void nv_log_fn(void) {
     f.open("/fs/logfile.json", ios_base::app);
     MBED_ASSERT(f.is_open());
     for(;;) {
+        // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
         MbedJSONValue log_json;
         int16_t rssi;
         uint16_t rx_size;
         int8_t snr;
         log_frame->getRxStats(&rssi, &snr, &rx_size);
+        log_json["Timestamp"] = (int) time(NULL);
         log_json["RSSI"] = (int) rssi;
         log_json["SNR"] = (int) snr;
         log_json["RX Size"] = (int) rx_size;
@@ -121,5 +123,15 @@ void nv_log_fn(void) {
         string log_json_str = log_json.serialize();
         f.write(log_json_str.c_str(), log_json_str.size());
         f.flush();
+        // Check whether we've filled up the SPI flash chip. If so,
+        //  delete the file and reopen it as an empty one.
+        struct stat st;
+        stat("/fs/logfile.json", &st);
+        if(st.st_size > 12000000) {
+            debug_printf(DBG_INFO, "Log file is >12MB. Deleting and reopening...\r\n");
+            f.close();
+            f.open("/fs/logfile.json", ios_base::out);
+            MBED_ASSERT(f.is_open());
+        }
     }
 }
