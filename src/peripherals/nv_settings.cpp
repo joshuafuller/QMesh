@@ -37,6 +37,7 @@ SPIFBlockDevice bd(MBED_CONF_APP_FLASH_SPI_MOSI,
 #endif
 LittleFileSystem fs("fs");
 
+
 void init_filesystem(void) {
     flash_io2 = 0;
     flash_io3 = 0;
@@ -100,12 +101,10 @@ void save_settings_to_flash(void) {
 
 void nv_log_fn(void) {
     uint16_t session_nonce = rand() % 65536;
-    stringstream file_name;
-    file_name << "/fs/session_" << session_nonce << ".log";
     fstream f;
-    f.open(file_name.str(), ios_base::out);
+    f.open("/fs/logfile.json", ios_base::app);
     MBED_ASSERT(f.is_open());
-    for(;;) {        
+    for(;;) {
         auto log_frame = dequeue_mail(nv_logger_mail);  
         MbedJSONValue log_json;
         int16_t rssi;

@@ -21,6 +21,15 @@
 #include "mbed.h"
 #include "radio.hpp"
 
+typedef enum {
+    BOOTING,
+    MANAGEMENT,
+    RUNNING
+} system_state_t;
+
+extern system_state_t current_mode;
+extern bool stay_in_management;
+
 // Class that stores the different radio timing values.
 class RadioTiming {
 public:

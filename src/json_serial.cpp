@@ -20,6 +20,7 @@
 #include "MbedJSONValue.h"
 #include <string>
 #include <memory>
+#include <fstream>
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 #include "mesh_protocol.hpp"
@@ -76,7 +77,18 @@ static void send_status(void);
 static void send_status(void) {
     MbedJSONValue status_json;
     status_json["Type"] = "Status";
-    status_json["Status"] = "OK";
+    if(current_mode == BOOTING) {
+        status_json["Status"] = "BOOTING";        
+    }
+    else if(current_mode == MANAGEMENT) {
+        status_json["Status"] = "MANAGEMENT";        
+    }
+    else if(current_mode == RUNNING) {
+        status_json["Status"] = "RUNNING";  
+    }
+    else {
+        MBED_ASSERT(false);
+    }
     if(tx_frame_mail.full()) {
         status_json["Tx Frame Queue Full"] = "True";
     }
@@ -131,6 +143,33 @@ void rx_serial_thread_fn(void) {
         else if(type_str == "Reboot") {
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            reboot_system();
+        }
+        else if(type_str == "Erase Log") {
+            stay_in_management = true;
+            while(current_mode == BOOTING);
+            if(current_mode == MANAGEMENT) {
+                fs.remove("/fs/logfile.json");
+            }
+            send_status();
+            reboot_system();
+        }
+        else if(type_str == "Read Log") {
+            stay_in_management = true;
+            while(current_mode == BOOTING);
+            if(current_mode == MANAGEMENT) {
+                fstream f;
+                f.open("/fs/logfile.json", ios_base::in);
+                string line;
+                while(getline(f, line)) {
+                    MbedJSONValue log_json;
+                    parse(log_json, line.c_str());
+                    log_json["Type"] = "Log Entry";
+                    auto json_str = make_shared<string>(log_json.serialize());
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
+                }  
+            }
+            send_status();
             reboot_system();
         }
         else {

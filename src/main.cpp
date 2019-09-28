@@ -31,6 +31,9 @@ Thread mesh_protocol_thread(4096);
 Thread beacon_thread(4096);
 Thread nv_log_thread(4096);
 
+system_state_t current_mode = BOOTING;
+bool stay_in_management = false;
+
 DigitalOut flash_pwr_ctl(A0);
 DigitalOut radio_pwr_ctl(A1);
 
@@ -58,6 +61,8 @@ void print_memory_info() {
 // main() runs in its own thread in the OS
 int main()
 {
+    led1.LEDSolid();
+
     // Set the RTC to zero. We just use it to track the age of 
     //  the packet tracker.
     set_time(0);
@@ -94,8 +99,17 @@ int main()
     load_settings_from_flash();
     save_settings_to_flash();
 
-    // Start a thread for blinking LEDs
+    // Wait for 5 seconds in MANAGEMENT mode
+    current_mode = MANAGEMENT;
     led1.LEDBlink();
+    wait(5);
+    while(stay_in_management) {
+        wait(5);
+    }
+    current_mode = RUNNING;
+
+    // Start a thread for blinking LEDs
+    led1.LEDOff();
     led2.LEDOff();
     led3.LEDOff();
 
