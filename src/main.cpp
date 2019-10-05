@@ -1,19 +1,20 @@
 /*
- * Copyright (c) 2019, Daniel R. Fay.
- * SPDX-License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+QMesh
+Copyright (C) 2019 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "mbed.h"
 #include "peripherals.hpp"
@@ -23,7 +24,7 @@
 #include "json_serial.hpp"
 #include "mesh_protocol.hpp"
 
-FEC *fec;  
+shared_ptr<FEC> fec;  
 Serial pc(USBTX, USBRX);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(4096), rx_serial_thread(4096);
@@ -116,31 +117,34 @@ int main()
 
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
-    Frame *fec_frame = new Frame();  
+    auto fec_frame = make_shared<Frame>();  
     debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
 
 #ifdef FEC_CONV
-    fec = new FECConv(fec_frame->getPktSize(), 2, 9);
+    fec = make_shared<FECConv>(2, 9);
 #elif defined FEC_RSV
-    fec = new FECRSV(fec_frame->getPktSize(), 2, 9, 8);
+    fec = make_shared<FECConv>(2, 9, 8);
 #else
 #error "Need to define either FEC_CONV or FEC_RSV\r\n"
 #endif
 
     fec->benchmark(100);
-    delete fec_frame;
     
     print_memory_info();
 
-    uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
-    uint8_t *fec_dec_buf = new uint8_t[fec->getEncSize(fec_frame->getPktSize())];
-    static char test_msg[] = "0123456789\r\n";
+    //uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
+    vector<uint8_t> fec_enc_buf;
+    //uint8_t *fec_dec_buf = new uint8_t[fec->getEncSize(fec_frame->getPktSize())];
+    vector<uint8_t> fec_dec_buf;
+    string test_msg = "0123456789\r\n";
+    vector<uint8_t> test_msg_vec(test_msg.begin(), test_msg.end());
     size_t enc_size = fec->getEncSize(13);
     debug_printf(DBG_INFO, "Encoded size is %d\r\n", enc_size);
-    debug_printf(DBG_INFO, "Encoding %s", test_msg);
-    fec->encode((uint8_t *) test_msg, 13, fec_enc_buf);
-    fec->decode(fec_enc_buf, enc_size, fec_dec_buf);
-    debug_printf(DBG_INFO, "Decoded %s", fec_dec_buf);
+    debug_printf(DBG_INFO, "Encoding %s", test_msg.c_str());
+    fec->encode(test_msg_vec, fec_enc_buf);
+    fec->decode(fec_enc_buf, fec_dec_buf);
+    string fec_dec_str(fec_dec_buf.begin(), fec_dec_buf.end());
+    debug_printf(DBG_INFO, "Decoded %s", fec_dec_str.c_str());
 
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing radio\r\n");

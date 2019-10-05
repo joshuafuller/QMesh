@@ -1,19 +1,20 @@
 /*
- * Copyright (c) 2019, Daniel R. Fay.
- * SPDX-License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+QMesh
+Copyright (C) 2019 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <mbed.h>
 #include <ATCmdParser.h>
@@ -29,7 +30,7 @@ extern FEC *fec; // forward error correction block
 Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 // Load the frame with a payload and dummy values.
-void Frame::loadTestFrame(uint8_t *buf) {
+void Frame::loadTestFrame(vector<uint8_t> &buf) {
     pkt.hdr.type = 0;
     pkt.hdr.stream_id = 1;
     pkt.hdr.ttl = 7;
@@ -37,7 +38,7 @@ void Frame::loadTestFrame(uint8_t *buf) {
     pkt.hdr.pre_offset = 0;
     pkt.hdr.nsym_offset = 0;
     pkt.hdr.sym_offset = 0;
-    memcpy(pkt.data, buf, FRAME_PAYLOAD_LEN);
+    data.assign(buf.begin(), buf.end());
     setHeaderCrc();
     setPayloadCrc();
 }
@@ -48,9 +49,14 @@ size_t Frame::getFullPktSize(void) {
 }
 
 // Get an array of bytes of the frame for e.g. transmitting over the air.
-size_t Frame::serialize(uint8_t *buf) {
-    debug_printf(DBG_WARN, "Frame size is now %d\r\n", sizeof(pkt));
-    return fec->encode((uint8_t *) &pkt, sizeof(pkt), buf)/8;
+size_t Frame::serialize(vector<uint8_t> &buf) {
+    debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
+    vector<uint8_t> ser_frame;
+    for(int i = 0; i < sizeof(pkt); i++) {
+        ser_frame.push_back(((uint8_t *) &pkt)[i]);
+    }
+    copy(data.begin(), data.end(), back_inserter(ser_frame));
+    return fec->encode(ser_frame, buf)/8;
 }
 
 // Compute the header CRC.
@@ -66,21 +72,20 @@ uint16_t Frame::calculateHeaderCrc(void) {
 uint16_t Frame::calculatePayloadCrc(void) {
     MbedCRC<POLY_16BIT_CCITT, 16> ct;
     uint32_t crc = 0;
-    ct.compute((void *) &pkt.data, sizeof(pkt.data), &crc);
+    ct.compute((void *) data.data(), data.size(), &crc);
     return crc & 0x0000FFFF;
 }
 
 // Calculate the CRC for the "unique" information.
 // The unique information consists of the type, stream_id, and payload.
 uint32_t Frame::calculateUniqueCrc(void) {
-    const size_t buf_size = sizeof(pkt.data)+sizeof(pkt.hdr);
-    uint8_t buf[buf_size];
-    size_t byte_cnt = 0;
-    memcpy(buf, &pkt.hdr, sizeof(pkt.hdr));
-    memcpy(buf+sizeof(pkt.hdr), &pkt.data, sizeof(pkt.data));
+    vector<uint8_t> buf;
+    buf.push_back((uint8_t) pkt.hdr.type);
+    buf.push_back((uint8_t) pkt.hdr.stream_id);
+    copy(data.begin(), data.end(), back_inserter(buf));
     MbedCRC<POLY_32BIT_ANSI, 32> ct;
     uint32_t crc = 0;
-    ct.compute((void *) buf, buf_size, &crc);
+    ct.compute((void *) buf.data(), buf.size(), &crc);
     return crc;        
 }
 
@@ -93,17 +98,16 @@ uint32_t Frame::calculateUniqueCrc(void) {
 //  4. PKT_FEC_FAIL -- FEC decode failed.
 //  5. PKT_OK -- the received packet data is ok
 PKT_STATUS_ENUM Frame::deserialize(std::shared_ptr<vector<uint8_t>> buf) {
-    uint8_t tmp_buf[256];
     MBED_ASSERT(buf->size() > 256);
-    memcpy(tmp_buf, buf->data(), buf->size());
-    return this->deserialize(tmp_buf, buf->size());
+    vector<uint8_t> tmp_buf(*buf);
+    return this->deserialize(tmp_buf);
 }
 
-PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
+PKT_STATUS_ENUM Frame::deserialize(const vector<uint8_t> &buf) {
     // Step zero: remove the forward error correction
-    static uint8_t dec_buf[512];
-    debug_printf(DBG_WARN, "Received %d bytes\r\n", bytes_rx);
-    ssize_t bytes_dec = fec->decode(buf, bytes_rx, dec_buf);
+    static vector<uint8_t> dec_buf;
+    debug_printf(DBG_WARN, "Received %d bytes\r\n", buf.size());
+    ssize_t bytes_dec = fec->decode(buf, dec_buf);
     debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
     if(bytes_dec == -1) {
         debug_printf(DBG_INFO, "FEC Failed\r\n");
@@ -111,13 +115,15 @@ PKT_STATUS_ENUM Frame::deserialize(const uint8_t *buf, const size_t bytes_rx) {
         return pkt_status;
     }
     // Step one: check the size of the packet
-    if(sizeof(pkt) != bytes_dec) {
+    if(Frame::size() != bytes_dec) {
         debug_printf(DBG_INFO, "Bad packet size\r\n");
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
     }
     // Step two: load the packet data and check the header CRC
-    memcpy(&pkt, dec_buf, sizeof(pkt));
+    memcpy(&pkt, dec_buf.data(), sizeof(pkt));
+    data.clear();
+    copy(dec_buf.begin()+sizeof(pkt), dec_buf.end(), back_inserter(data));
     if(!checkHeaderCrc()) {
         debug_printf(DBG_INFO, "Bad header CRC\r\n");
         pkt_status = PKT_BAD_HDR_CRC;
@@ -144,19 +150,16 @@ void Frame::loadFromJSON(MbedJSONValue &json) {
     pkt.hdr.pre_offset = json["HDR Pre Offset"].get<int>();
     pkt.hdr.nsym_offset = json["HDR Num Sym Offset"].get<int>();
     pkt.hdr.sym_offset = json["HDR Sym Offset"].get<int>();
-    pkt.hdr_crc = json["Header CRC"].get<int>();
-    pkt.data_crc = json["Data CRC"].get<int>();
+    pkt.hdr_crc.crc = json["Header CRC"].get<int>();
+    pkt.data_crc.crc = json["Data CRC"].get<int>();
     string b64_str = json["Data Payload"].get<string>();
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_decode(NULL, 0, &b64_len, 
         (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
-    MBED_ASSERT(b64_len == FRAME_PAYLOAD_LEN);
-    uint8_t *frame_data = new uint8_t[b64_len];
-    MBED_ASSERT(mbedtls_base64_decode(frame_data, b64_len, &b64_len, 
+    MBED_ASSERT(b64_len == radio_cb["Payload Length"].get<int>());
+    data.resize(b64_len);
+    MBED_ASSERT(mbedtls_base64_decode(data.data(), b64_len, &b64_len, 
         (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
-    memcpy(pkt.data, frame_data, FRAME_PAYLOAD_LEN);
-
-    delete [] frame_data;
 }
 
 // Save the frame's contents to a JSON object.
@@ -169,12 +172,12 @@ void Frame::saveToJSON(MbedJSONValue &json) {
     json["HDR Pre Offset"] = pkt.hdr.pre_offset;
     json["HDR Num Sym Offset"] = pkt.hdr.nsym_offset;
     json["HDR Sym Offset"] = pkt.hdr.sym_offset;
-    json["Header CRC"] = pkt.hdr_crc;
-    json["Data CRC"] = pkt.data_crc;
+    json["Header CRC"] = pkt.hdr_crc.crc;
+    json["Data CRC"] = pkt.data_crc.crc;
     size_t b64_len;
-    MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, pkt.data, FRAME_PAYLOAD_LEN) == 0);
+    MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size()) == 0);
     unsigned char *b64_buf = new unsigned char[b64_len];
-    MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, pkt.data, FRAME_PAYLOAD_LEN) == 0);
+    MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, data.data(), data.size()) == 0);
     json["Data Payload"] = b64_buf;
 
     delete [] b64_buf;
@@ -193,11 +196,11 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "CRC: %4x\r\n", pkt.hdr_crc);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
-    for(size_t i = 0; i < FRAME_PAYLOAD_LEN; i++) {
+    for(size_t i = 0; i < data.size(); i++) {
         if(i%16 == 0) {
             debug_printf(dbg_type, "");
         }
-        debug_printf_clean(dbg_type, "%2x ", pkt.data[i]);
+        debug_printf_clean(dbg_type, "%2x ", data[i]);
     }
     debug_printf_clean(dbg_type, "\r\n");
     debug_printf(dbg_type, "CRC: %4x\r\n", pkt.data_crc);

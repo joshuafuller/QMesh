@@ -51,6 +51,10 @@ typedef enum {
 #define BEACON_FRAME 0
 #define PAYLOAD_FRAME 1
 class Frame {
+    typedef union {
+        uint16_t crc;
+        uint8_t crc_bytes[2];
+    } crc16_t;
     typedef struct __attribute__((__packed__)) {
         uint32_t type : 2;
         uint32_t stream_id : 8;
@@ -62,11 +66,11 @@ class Frame {
     } frame_hdr;
     typedef struct __attribute__((__packed__)) {
         frame_hdr hdr;
-        uint16_t hdr_crc;
-        // payload
-        uint8_t data[FRAME_PAYLOAD_LEN];
-        uint16_t data_crc;
+        crc16_t hdr_crc;
+        crc16_t data_crc;
     } frame_pkt;
+    // payload
+    vector<uint8_t> data;
 protected:
     frame_pkt pkt;
     // receive stats
@@ -76,30 +80,43 @@ protected:
     PKT_STATUS_ENUM pkt_status;
 
 public:
+    static size_t size(void) {
+        return radio_cb["Payload Length"].get<int>() + sizeof(pkt.hdr) + 
+            sizeof(pkt.hdr_crc) + sizeof(pkt.data_crc);
+    }
+
+    Frame() {
+        data.resize(radio_cb["Payload Length"].get<int>());
+    }
+
     // Call operator. Just loads the object with the contents
     // of the other object.
     void load(Frame &frame) {
-        memcpy(&pkt, &frame.pkt, sizeof(pkt));
+        memcpy(&pkt.hdr, &frame.pkt.hdr, sizeof(pkt.hdr));
+        pkt.hdr_crc = frame.pkt.hdr_crc;
+        data.resize(radio_cb["Payload Length"].get<int>());
+        copy(data.begin(), data.end(), frame.data.begin());
+        pkt.data_crc = frame.pkt.data_crc;
         rssi = frame.rssi;
         snr = frame.snr;
         rx_size = frame.rx_size;
     }
 
     // Load the frame with a payload and dummy values.
-    void loadTestFrame(uint8_t *buf);
+    void loadTestFrame(vector<uint8_t> &buf);
 
     // Load the payload into a buffer. Returns the number of bytes put into 
     //  the buffer that's supplied as an argument.
-    size_t getPayload(uint8_t *buf) {
-        memcpy(buf, pkt.data, FRAME_PAYLOAD_LEN);
-        return FRAME_PAYLOAD_LEN;
+    size_t getPayload(vector<uint8_t> &buf) {
+        buf.resize(data.size());
+        buf.assign(data.begin(), data.end());
+        return data.size();
     }
 
     size_t setBeaconPayload(string &beacon_str) {
-        char buf[FRAME_PAYLOAD_LEN];
-        memset(buf, 0, FRAME_PAYLOAD_LEN);
-        memcpy(buf, beacon_str.c_str(), beacon_str.length());
-        memcpy(pkt.data, buf, FRAME_PAYLOAD_LEN);
+        data.resize(radio_cb["Payload Length"].get<int>());
+        size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
+        memcpy(data.data(), beacon_str.c_str(), len);        
         pkt.hdr.type = BEACON_FRAME;
         pkt.hdr.stream_id = 0;
         pkt.hdr.ttl = 0;
@@ -109,11 +126,11 @@ public:
         pkt.hdr.sym_offset = 0;
         this->calculateHeaderCrc();
         this->calculatePayloadCrc();
-        return FRAME_PAYLOAD_LEN;
+        return data.size();
     }
 
     // Get an array of bytes of the frame for e.g. transmitting over the air.
-    size_t serialize(uint8_t *buf);
+    size_t serialize(vector<uint8_t> &buf);
 
     // Compute the header CRC.
     uint16_t calculateHeaderCrc(void);
@@ -127,12 +144,12 @@ public:
 
     // Check the header CRC. Returns true if a match, false if not.
     bool checkHeaderCrc(void) {
-        return (pkt.hdr_crc == calculateHeaderCrc());
+        return (pkt.hdr_crc.crc == calculateHeaderCrc());
     }
 
     // Check the payload CRC. Returns true if a match, false if not.
     bool checkPayloadCrc(void) {
-        return (pkt.data_crc == calculatePayloadCrc());
+        return (pkt.data_crc.crc == calculatePayloadCrc());
     }
 
     // Check the integrity of the packet by checking both the header and payload CRCs
@@ -144,7 +161,7 @@ public:
     // Returns the computed CRC.
     uint16_t setHeaderCrc(void) {
         uint16_t crc = calculateHeaderCrc();
-        pkt.hdr_crc = crc;
+        pkt.hdr_crc.crc = crc;
         return crc;
     }
 
@@ -152,7 +169,7 @@ public:
     // Returns the computed CRC.
     uint16_t setPayloadCrc(void) {
         uint16_t crc = calculatePayloadCrc();
-        pkt.data_crc = crc;
+        pkt.data_crc.crc = crc;
         return crc;
     }
 
@@ -165,7 +182,7 @@ public:
     //  4. PKT_FEC_FAIL -- FEC decode failed.
     //  5. PKT_OK -- the received packet data is ok
     PKT_STATUS_ENUM deserialize(shared_ptr<vector<uint8_t>> buf); 
-    PKT_STATUS_ENUM deserialize(const uint8_t *buf, const size_t bytes_rx);
+    PKT_STATUS_ENUM deserialize(const vector<uint8_t> &buf);
 
     // Increment the TTL, updating the header CRC in the process.
     void incrementTTL(void) {
@@ -219,11 +236,11 @@ public:
     }
 
     uint16_t getPayloadCrc(void) {
-        return this->pkt.data_crc;
+        return this->pkt.data_crc.crc;
     }
 
     uint16_t getHeaderCrc(void) {
-        return this->pkt.hdr_crc;
+        return this->pkt.hdr_crc.crc;
     }
 
     // Pretty-print the Frame.
