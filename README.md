@@ -6,3 +6,6 @@ QMesh is a synchronized flooded mesh network designed to stream at a low data ra
 
 In a synchronized, flooded mesh, all nodes retransmit at roughly the same time, creating collisions. LoRa, a form of Chirp Spread Spectrum (CSS), possesses several unique properties that can allow for successful receipt of one packet in the midst of one or more collisions. First, spread spectrum modulations (CSS as well as DSSS and FHSS) spread signal energy such that concurrent transmissions are less likely to overlap and thus interfere. Second, Semtech's LoRa chipsets allow for a per-data-symbol frequency hopping that can further spread concurrent transmissions from each other. This FHSS can also be combined with a form of slotted ALOHA to greatly reduce the probability that packets will collide at all. Third, LoRa is highly resistant to frequency error. Deliberately adding frequency error can spread out concurrent transmissions so that they do not interfere with each other. 
 
+## Licensing.
+
+QMesh is licensed under the GNU GPL License v3; however, a commercial license is also available for entities who do not want to release their source code changes. Please contact Dan Fay at daniel.fay@gmail.com for more information about this.

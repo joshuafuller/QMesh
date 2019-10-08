@@ -67,12 +67,13 @@ void load_settings_from_flash(void) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
         f.open("settings.json", ios_base::out);
         radio_cb["Mode"] = "Mesh Normal";
-        radio_cb["Freq"] = RADIO_FREQUENCY;
+        radio_cb["Frequency"] = RADIO_FREQUENCY;
         radio_cb["BW"] = RADIO_BANDWIDTH;
         radio_cb["CR"] = RADIO_CODERATE;
         radio_cb["SF"] = RADIO_SF;
-        radio_cb["Preamble Len"] = RADIO_PREAMBLE_LEN;
-        radio_cb["Beacon Msg"] = RADIO_BEACON_MSG;
+        radio_cb["Preamble Length"] = RADIO_PREAMBLE_LEN;
+        radio_cb["Preamble Slots"] = RADIO_PREAMBLE_SLOTS;
+        radio_cb["Beacon Message"] = RADIO_BEACON_MSG;
         radio_cb["Beacon Interval"] = RADIO_BEACON_INTERVAL;
         radio_cb["Payload Length"] = FRAME_PAYLOAD_LEN;
         string settings_str = radio_cb.serialize();
