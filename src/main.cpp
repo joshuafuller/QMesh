@@ -120,14 +120,11 @@ int main()
     auto fec_frame = make_shared<Frame>();  
     debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
 
-#ifdef FEC_CONV
     fec = make_shared<FECConv>(2, 9);
-#elif defined FEC_RSV
-    fec = make_shared<FECConv>(2, 9, 8);
-#else
-#error "Need to define either FEC_CONV or FEC_RSV\r\n"
-#endif
-
+    fec->benchmark(100);
+    fec = make_shared<FECRSV>(2, 9, 8);
+    fec->benchmark(100);
+    fec = make_shared<FECPolar>(2*Frame::size(), Frame::size(), 32);
     fec->benchmark(100);
     
     print_memory_info();

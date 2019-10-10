@@ -8,8 +8,10 @@
 
 #include <cstdint>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <stack>          // std::stack
+
+namespace PolarCodeLib {
 
 class PolarCode {
 
@@ -88,6 +90,8 @@ private:
     bool crc_check(uint8_t * info_bits_padded);
 
 };
+
+}
 
 
 #endif //POLARC_POLARCODE_H

@@ -11,7 +11,7 @@
 #include <random>
 #include <algorithm>
 
-
+using namespace PolarCodeLib;
 
 void PolarCode::initialize_frozen_bits() {
     std::vector<double> channel_vec(_block_length);
