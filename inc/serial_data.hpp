@@ -87,7 +87,7 @@ public:
     }
 
     Frame() {
-        data.resize(radio_cb["Payload Length"].get<int>());
+        //data.resize(radio_cb["Payload Length"].get<int>());
     }
 
     // Call operator. Just loads the object with the contents
