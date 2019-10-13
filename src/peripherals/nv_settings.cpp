@@ -41,7 +41,7 @@ LittleFileSystem fs("fs");
 
 void init_filesystem(void) {
     flash_io2 = 0;
-    flash_io3 = 0;
+    flash_io3 = 1;
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
     bd.init();
 
@@ -62,10 +62,10 @@ void init_filesystem(void) {
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
     std::fstream f;
-    f.open("settings.json", ios_base::in);
+    f.open("/fs/settings.json", 'r');
     if(!f.is_open()) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
-        f.open("settings.json", ios_base::out);
+        f.open("/fs/settings.json", 'w');
         radio_cb["Mode"] = "Mesh Normal";
         radio_cb["Frequency"] = RADIO_FREQUENCY;
         radio_cb["BW"] = RADIO_BANDWIDTH;
@@ -78,7 +78,9 @@ void load_settings_from_flash(void) {
         radio_cb["Payload Length"] = FRAME_PAYLOAD_LEN;
         string settings_str = radio_cb.serialize();
         f.write(settings_str.c_str(), settings_str.size());
+        f.flush();
         f.close();
+        f.open("/fs/settings.json", 'r');
     }
     // Settings file exists, so read it
     else {

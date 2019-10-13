@@ -35,8 +35,8 @@ Thread nv_log_thread(4096);
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
 
-DigitalOut flash_pwr_ctl(A0);
-DigitalOut radio_pwr_ctl(A1);
+DigitalOut flash_pwr_ctl(MBED_CONF_APP_FLASH_PWR);
+DigitalOut radio_pwr_ctl(MBED_CONF_APP_RADIO_PWR);
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
