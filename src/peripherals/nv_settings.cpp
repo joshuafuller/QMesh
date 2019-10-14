@@ -21,9 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "LittleFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include "MbedJSONValue.h"
 
 DigitalOut flash_io2(MBED_CONF_APP_FLASH_IO2);
@@ -40,14 +41,17 @@ LittleFileSystem fs("fs");
 
 
 void init_filesystem(void) {
-    flash_io2 = 0;
+    flash_io2 = 1;
     flash_io3 = 1;
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
-    bd.init();
-
-    fs.reformat(&bd);
+    int err = bd.init();
+    debug_printf(DBG_INFO, "bd.init -> %d  \r\n", err);
+    debug_printf(DBG_INFO, "bd size: %llu\n",         bd.size());
+    debug_printf(DBG_INFO, "bd read size: %llu\n",    bd.get_read_size());
+    debug_printf(DBG_INFO, "bd program size: %llu\n", bd.get_program_size());
+    debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd.get_erase_size());
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
-    int err = fs.mount(&bd);
+    err = fs.mount(&bd);
     debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
     if(err) {
         debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
@@ -57,15 +61,40 @@ void init_filesystem(void) {
         int err = fs.mount(&bd);
         MBED_ASSERT(!err);
     }
+
+    // Display the root directory
+    debug_printf(DBG_INFO, "Opening the root directory... ");
+    fflush(stdout);
+    DIR *d = opendir("/fs/");
+    debug_printf(DBG_INFO, "%s\r\n", (!d ? "Fail :(" : "OK"));
+    if (!d) {
+        error("error: %s (%d)\r\n", strerror(errno), -errno);
+    }
+
+    debug_printf(DBG_INFO, "root directory:\r\n");
+    while (true) {
+        struct dirent *e = readdir(d);
+        if (!e) {
+            break;
+        }
+        debug_printf(DBG_INFO, "    %s\r\n", e->d_name);
+    }
+    debug_printf(DBG_INFO, "Closing the root directory... ");
+    fflush(stdout);
+    err = closedir(d);
+    debug_printf(DBG_INFO, "%s\n", (err < 0 ? "Fail :(" : "OK"));
+    if (err < 0) {
+        error("error: %s (%d)\n", strerror(errno), -errno);
+    }
 }
 
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
-    std::fstream f;
-    f.open("/fs/settings.json", 'r');
-    if(!f.is_open()) {
+    FILE *f;
+    f = fopen("/fs/settings.json", "r");
+    if(!f) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
-        f.open("/fs/settings.json", 'w');
+        f = fopen("/fs/settings.json", "w");
         radio_cb["Mode"] = "Mesh Normal";
         radio_cb["Frequency"] = RADIO_FREQUENCY;
         radio_cb["BW"] = RADIO_BANDWIDTH;
@@ -77,38 +106,32 @@ void load_settings_from_flash(void) {
         radio_cb["Beacon Interval"] = RADIO_BEACON_INTERVAL;
         radio_cb["Payload Length"] = FRAME_PAYLOAD_LEN;
         string settings_str = radio_cb.serialize();
-        f.write(settings_str.c_str(), settings_str.size());
-        f.flush();
-        f.close();
-        f.open("/fs/settings.json", 'r');
+        fprintf(f, "%s\r\n", settings_str.c_str());
+        fflush(f);
+        fclose(f);
+        f = fopen("/fs/settings.json", "r");
     }
     // Settings file exists, so read it
     else {
-        string settings_str;
-        string line;
-        while(std::getline(f, line)) {
-            settings_str.append(line);
-        }
-        parse(radio_cb, settings_str.c_str());
+        vector<char> linebuf(4096);
+        linebuf.resize(fread(linebuf.data(), 1, linebuf.size(), f));
+        parse(radio_cb, linebuf.data());
     }
-    f.close();
 }
 
 void save_settings_to_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
-    std::fstream f;
-    f.open("/fs/settings.json", ios_base::out); 
-    MBED_ASSERT(f.is_open());
+    FILE *f = fopen("/fs/settings.json", "w"); 
+    MBED_ASSERT(f != 0);
     string settings_str = radio_cb.serialize();
-    f.write(settings_str.c_str(), settings_str.size());
-    f.close();
+    fwrite(settings_str.c_str(), 1, settings_str.size(), f);
+    fclose(f);
 }
 
 void nv_log_fn(void) {
     uint16_t session_nonce = rand() % 65536;
-    std::fstream f;
-    f.open("/fs/logfile.json", ios_base::app);
-    MBED_ASSERT(f.is_open());
+    FILE *f = fopen("/fs/logfile.json", "w+");
+    MBED_ASSERT(f);
     for(;;) {
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
@@ -126,17 +149,17 @@ void nv_log_fn(void) {
         log_json["PLD Computed CRC"] = log_frame->calculatePayloadCrc();
         log_json["PLD CRC"] = log_frame->getPayloadCrc();
         string log_json_str = log_json.serialize();
-        f.write(log_json_str.c_str(), log_json_str.size());
-        f.flush();
+        fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
+        fflush(f);
         // Check whether we've filled up the SPI flash chip. If so,
         //  delete the file and reopen it as an empty one.
         struct stat st;
         stat("/fs/logfile.json", &st);
         if(st.st_size > 12000000) {
             debug_printf(DBG_INFO, "Log file is >12MB. Deleting and reopening...\r\n");
-            f.close();
-            f.open("/fs/logfile.json", ios_base::out);
-            MBED_ASSERT(f.is_open());
+            fclose(f);
+            fopen("/fs/logfile.json", "w+");
+            MBED_ASSERT(f);
         }
     }
 }
