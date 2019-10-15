@@ -120,6 +120,8 @@ int main()
     auto fec_frame = make_shared<Frame>();  
     debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
 
+    print_memory_info();
+
     fec = make_shared<FECConv>(2, 9);
     fec->benchmark(100);
     fec = make_shared<FECRSV>(2, 9, 8);
@@ -129,10 +131,7 @@ int main()
     
     print_memory_info();
 
-    //uint8_t *fec_enc_buf = new uint8_t[fec_frame->getPktSize()];
-    vector<uint8_t> fec_enc_buf;
-    //uint8_t *fec_dec_buf = new uint8_t[fec->getEncSize(fec_frame->getPktSize())];
-    vector<uint8_t> fec_dec_buf;
+    vector<uint8_t> fec_enc_buf, fec_dec_buf;
     string test_msg = "0123456789\r\n";
     vector<uint8_t> test_msg_vec(test_msg.begin(), test_msg.end());
     size_t enc_size = fec->getEncSize(13);
