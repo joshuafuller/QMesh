@@ -19,6 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PARAMS_HPP
 #define PARAMS_HPP
 
+// Debug parameters
+//#define ERASE_CFG_FILE
+
 // Defines key parameters
 
 // Test mode selection

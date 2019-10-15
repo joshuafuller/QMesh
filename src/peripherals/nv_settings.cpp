@@ -51,6 +51,13 @@ void init_filesystem(void) {
     debug_printf(DBG_INFO, "bd program size: %llu\n", bd.get_program_size());
     debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd.get_erase_size());
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
+#ifdef ERASE_CFG_FILE
+#warning ERASE_CFG_FILE debug option enabled!
+    debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
+    err = fs.reformat(&bd);
+    debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
+    MBED_ASSERT(!err);  
+#endif
     err = fs.mount(&bd);
     debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
     if(err) {
@@ -89,6 +96,10 @@ void init_filesystem(void) {
 }
 
 void load_settings_from_flash(void) {
+    debug_printf(DBG_INFO, "Stats on settings.json\r\n");
+    struct stat file_stat;
+    stat("/fs/settings.json", &file_stat);
+    debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     debug_printf(DBG_INFO, "Opening settings.json...\r\n");
     FILE *f;
     f = fopen("/fs/settings.json", "r");
@@ -110,13 +121,23 @@ void load_settings_from_flash(void) {
         fflush(f);
         fclose(f);
         f = fopen("/fs/settings.json", "r");
+        MBED_ASSERT(f);
     }
-    // Settings file exists, so read it
-    else {
-        vector<char> linebuf(4096);
-        linebuf.resize(fread(linebuf.data(), 1, linebuf.size(), f));
-        parse(radio_cb, linebuf.data());
-    }
+    debug_printf(DBG_INFO, "Now reading from the settings file...\r\n");
+    vector<char> linebuf(4096);
+    linebuf.resize(fread(linebuf.data(), 1, linebuf.size(), f));
+    debug_printf(DBG_INFO, "Read from file: %s\r\n", linebuf.data());
+    parse(radio_cb, linebuf.data());
+    debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());
+    debug_printf(DBG_INFO, "Frequency: %d\r\n", radio_cb["Frequency"].get<int>());
+    debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb["BW"].get<int>());
+    debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb["CR"].get<int>());
+    debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb["SF"].get<int>());
+    debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb["Preamble Length"].get<int>());
+    debug_printf(DBG_INFO, "Preamble Slots: %d\r\n", radio_cb["Preamble Slots"].get<int>());
+    debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb["Beacon Message"].get<string>().c_str());
+    debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb["Beacon Interval"].get<int>());
+    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb["Payload Length"].get<int>());
 }
 
 void save_settings_to_flash(void) {
