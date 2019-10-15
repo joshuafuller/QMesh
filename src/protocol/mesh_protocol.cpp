@@ -281,7 +281,7 @@ void mesh_protocol_fsm(void) {
 string beacon_msg;
 void beacon_fn(void) {
     auto beacon_frame_sptr = shared_ptr<Frame>();
-    beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Msg"].get<string>());
+    beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
     for(;;) {
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
         wait(radio_cb["Beacon Interval"].get<int>());
