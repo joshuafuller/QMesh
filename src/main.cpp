@@ -126,11 +126,15 @@ int main()
     fec->benchmark(100);
     fec = make_shared<FECRSV>(2, 9, 8);
     fec->benchmark(100);
+#if 0
     fec = make_shared<FECPolar>(2*Frame::size(), Frame::size(), 32);
+    debug_printf(DBG_INFO, "Set up polar codes\r\n");
     fec->benchmark(100);
-    
+#endif
+
     print_memory_info();
 
+#if 0
     vector<uint8_t> fec_enc_buf, fec_dec_buf;
     string test_msg = "0123456789\r\n";
     vector<uint8_t> test_msg_vec(test_msg.begin(), test_msg.end());
@@ -141,6 +145,7 @@ int main()
     fec->decode(fec_enc_buf, fec_dec_buf);
     string fec_dec_str(fec_dec_buf.begin(), fec_dec_buf.end());
     debug_printf(DBG_INFO, "Decoded %s", fec_dec_str.c_str());
+#endif
 
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing radio\r\n");
