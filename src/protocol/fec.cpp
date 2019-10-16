@@ -78,6 +78,7 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) {
 void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
+    debug_printf(DBG_INFO, "Current frame size is %d\r\n", Frame::size());
     vector<uint8_t> msg_data(Frame::size());
     vector<uint8_t> enc_data(Frame::size());
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");

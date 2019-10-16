@@ -83,21 +83,21 @@ public:
 
     static float getBER(const float snr);
 
-    size_t getEncSize(const size_t msg_len) {
+    virtual size_t getEncSize(const size_t msg_len) {
         return msg_len;
     }
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    virtual size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
         enc_msg = msg;
         return msg.size();
     }
 
-    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    virtual ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
         dec_msg = enc_msg;
         return dec_msg.size();
     }
  
-    ssize_t decodeSoft(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg, const float snr) {
+    virtual ssize_t decodeSoft(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg, const float snr) {
         return decode(enc_msg, dec_msg);
     }
 
@@ -193,7 +193,7 @@ public:
 
     size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
         enc_msg.resize(getEncSize(msg.size()));
-        return correct_convolutional_encode(corr_con, msg.data(), msg.size(), enc_msg.data());
+        return correct_convolutional_encode(corr_con, msg.data(), msg.size(), enc_msg.data())/8;
     }
 
     ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
@@ -211,9 +211,10 @@ protected:
     vector<uint8_t> rs_buf;
 
 public:
-    FECRSV(const size_t inv_rate, const size_t order, const size_t rs_corr_bytes) 
+    FECRSV(const size_t inv_rate, const size_t order, const size_t my_rs_corr_bytes) 
         : FECConv(inv_rate, order) {
         name = "RSV";
+        rs_corr_bytes = my_rs_corr_bytes;
         rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
                                                   1, 1, rs_corr_bytes);
         rs_buf.resize(getEncSize(Frame::size()));
@@ -229,7 +230,8 @@ public:
         enc_msg.resize(getEncSize(msg.size()));
         vector<uint8_t> rs_buf(getEncSize(msg.size()));
         size_t conv_len = FECConv::encode(msg, rs_buf);
-        return correct_reed_solomon_encode(rs_con, rs_buf.data(), conv_len, enc_msg.data());
+        size_t rs_size = correct_reed_solomon_encode(rs_con, rs_buf.data(), conv_len, enc_msg.data());
+        return rs_size;
     }
 
     ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
