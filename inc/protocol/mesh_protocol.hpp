@@ -62,12 +62,12 @@ public:
 
     Timer tmr;
 
-void computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, 
-        uint32_t n_pre_sym, uint8_t n_pld_bytes);
+void computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
+        const uint32_t n_pre_sym, uint8_t n_pld_bytes);
 
-void waitFullSlots(size_t num_slots);
+void waitFullSlots(const size_t num_slots);
 
-void waitRxRemainder(size_t sym_wait, size_t pre_wait);
+void waitRxRemainder(const size_t sym_wait, const size_t pre_wait);
 
 void calcWaitSymbol(void);
 

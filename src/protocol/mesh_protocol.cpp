@@ -84,8 +84,8 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
     return ret_val;
 }
 
-void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, 
-        uint32_t n_pre_sym, uint8_t n_pld_bytes) {
+void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
+        const uint32_t n_pre_sym, const uint8_t n_pld_bytes) {
     float bw_f = bw;
     float sf_f = sf;
     float cr_f = cr;
@@ -130,14 +130,14 @@ void RadioTiming::computeTimes(uint32_t bw, uint8_t sf, uint8_t cr,
     sym_frac_us = sym_frac_s*1e6f;
 }
 
-void RadioTiming::waitFullSlots(size_t num_slots) {
+void RadioTiming::waitFullSlots(const size_t num_slots) {
     uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
     wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
     wait_us(wait_duration_us-elapsed_us);
 }
 
-void RadioTiming::waitRxRemainder(size_t sym_wait, size_t pre_wait) {
+void RadioTiming::waitRxRemainder(const size_t sym_wait, const size_t pre_wait) {
     uint32_t wait_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
     wait_us += 16*sym_time_us; // 16 symbol padding for right now
     int elapsed_us = tmr.read_us();
