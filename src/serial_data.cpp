@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "fec.hpp"
 #include "json_serial.hpp"
 
-extern FEC *fec; // forward error correction block
 Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 // Load the frame with a payload and dummy values.
@@ -56,7 +55,7 @@ size_t Frame::serialize(vector<uint8_t> &buf) {
         ser_frame.push_back(((uint8_t *) &pkt)[i]);
     }
     copy(data.begin(), data.end(), back_inserter(ser_frame));
-    return fec->encode(ser_frame, buf)/8;
+    return fec->encode(ser_frame, buf);
 }
 
 // Compute the header CRC.
@@ -238,7 +237,6 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    //int ret_val = printf("[+] %s -- %s", msg_type.c_str(), tmp_str);
     string dbg_str;
     char dbg_str_data[sizeof(tmp_str)+32];
     sprintf(dbg_str_data, "[+] %s -- %s", msg_type.c_str(), tmp_str);

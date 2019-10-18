@@ -231,6 +231,7 @@ static void rx_error_cb(void)
 static void fhss_change_channel_cb(uint8_t current_channel) {
     int32_t new_channel = hopping_channels[current_channel % 
                 (sizeof(hopping_channels)/sizeof(uint32_t))];
-    uint32_t new_frequency = new_channel*HOP_CHANNEL_SIZE + 915000000;
+#warning This is likely to be slow in a place where speed matters!
+    uint32_t new_frequency = new_channel*HOP_CHANNEL_SIZE + radio_cb["Freq"].get<int>();
     radio.set_channel(new_frequency);
 }

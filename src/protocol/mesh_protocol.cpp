@@ -179,9 +179,6 @@ static enum {
     WAIT_FOR_RX,
     CHECK_TX_QUEUE,
     TX_PACKET,
-    WAIT_TWO_SLOTS,
-    PROCESS_PACKET,
-    WAIT_ONE_SLOT,
     RETRANSMIT_PACKET,
 } state = WAIT_FOR_RX;
 
@@ -195,8 +192,11 @@ void mesh_protocol_fsm(void) {
     for(;;) {
         switch(state) {
             case WAIT_FOR_RX:
+                debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
+                radio.receive();
                 rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
                 if(rx_radio_event->evt_enum == RX_DONE_EVT) {
+                    debug_printf(DBG_INFO, "Received a packet\r\n");
                     // Load up the frame
                     radio_timing.startTimer();
                     led2.LEDSolid();
@@ -226,12 +226,14 @@ void mesh_protocol_fsm(void) {
                     radio_timing.waitFullSlots(1);
                 }
                 else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
+                    debug_printf(DBG_INFO, "Rx timed out\r\n");
                     state = CHECK_TX_QUEUE;
                 }
                 else { MBED_ASSERT(false); }
             break;
 
             case CHECK_TX_QUEUE:
+                debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
                     radio.set_channel(radio_frequency.getWobbledFreq());
@@ -243,6 +245,7 @@ void mesh_protocol_fsm(void) {
             break;
 
             case TX_PACKET:
+                debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { radio_timing.startTimer();
                 led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
@@ -257,6 +260,7 @@ void mesh_protocol_fsm(void) {
             break;
 
             case RETRANSMIT_PACKET:
+                debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { radio_timing.startTimer();
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serialize(tx_frame_buf);

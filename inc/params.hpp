@@ -20,17 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PARAMS_HPP
 
 // Debug parameters
-//#define ERASE_CFG_FILE
+#define ERASE_CFG_FILE
 
 // Defines key parameters
 
 // Test mode selection
 #define TX_TEST_MODE
 //#define RX_TEST_MODE
-
-// Filesystem parameters. If HEAP_FS isn't defined, then use the external
-// SPI flash
-//#define HEAP_FS
 
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 16
@@ -41,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_FREQ_HOP false
 #define RADIO_CRC_ON false
 #define RADIO_FIXED_LEN true
-#define RADIO_SYM_TIMEOUT 512
+#define RADIO_SYM_TIMEOUT 8
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
 #define RADIO_BANDWIDTH 1
@@ -52,7 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_POWER 22
 // Transmit timeout, in ms
 #define RADIO_TX_TIMEOUT 3000
-#define RADIO_FREQUENCY 915000000
+#define RADIO_FREQUENCY 433000000
 #define HOP_CHANNEL_SIZE 12500
 // Number of past packets to check the current packet against
 #define PKT_CHK_HISTORY 32
@@ -64,7 +60,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define FRAME_PADDING_SYMS 8 // Amount of padding between frames, in symbols
 #define RADIO_PREAMBLE_SLOTS 4 // Number of TDMA slots for the preamble offsets
 
-#define RADIO_BEACON_INTERVAL 600
+#define RADIO_BEACON_INTERVAL 10
 #define RADIO_BEACON_MSG "KG5VBY Auto Station\r\n"
 
 // Frequency wobble parameters

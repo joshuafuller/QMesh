@@ -18,7 +18,7 @@ class PolarCode {
 
 public:
 
-    PolarCode(uint8_t num_layers, uint16_t info_length, double epsilon, uint16_t crc_size) :
+    PolarCode(uint8_t num_layers, uint16_t info_length, float epsilon, uint16_t crc_size) :
             _n(num_layers), _info_length(info_length), _design_epsilon(epsilon),
             _crc_size(crc_size), _llr_based_computation(true)
     {
@@ -30,10 +30,10 @@ public:
     }
 
     std::vector<uint8_t> encode(std::vector<uint8_t> info_bits);
-    std::vector<uint8_t> decode_scl_p1(std::vector<double> p1, std::vector<double> p0, uint16_t list_size);
-    std::vector<uint8_t> decode_scl_llr(std::vector<double> llr, uint16_t list_size);
+    std::vector<uint8_t> decode_scl_p1(std::vector<float> p1, std::vector<float> p0, uint16_t list_size);
+    std::vector<uint8_t> decode_scl_llr(std::vector<float> llr, uint16_t list_size);
 
-    std::vector<std::vector<double>> get_bler_quick(std::vector<double> ebno_vec, std::vector<uint8_t> list_size);
+    std::vector<std::vector<float>> get_bler_quick(std::vector<float> ebno_vec, std::vector<uint8_t> list_size);
 
 private:
 
@@ -42,7 +42,7 @@ private:
     uint16_t _block_length;
     uint16_t _crc_size;
 
-    double _design_epsilon;
+    float _design_epsilon;
 
     std::vector<uint8_t> _frozen_bits;
     std::vector<uint16_t> _channel_order_descending;
@@ -55,14 +55,14 @@ private:
     std::vector<uint8_t> decode_scl();
     bool _llr_based_computation;
 
-    std::vector<std::vector<double *>> _arrayPointer_LLR;
-    std::vector<double> _pathMetric_LLR;
+    std::vector<std::vector<float *>> _arrayPointer_LLR;
+    std::vector<float> _pathMetric_LLR;
 
     uint16_t _list_size;
 
     std::stack<uint16_t> _inactivePathIndices;
     std::vector<uint16_t > _activePath;
-    std::vector<std::vector<double *>> _arrayPointer_P;
+    std::vector<std::vector<float *>> _arrayPointer_P;
     std::vector<std::vector<uint8_t *>> _arrayPointer_C;
     std::vector<uint8_t *> _arrayPointer_Info;
     std::vector<std::vector<uint16_t>> _pathIndexToArrayIndex;
@@ -74,8 +74,8 @@ private:
     uint16_t clonePath(uint16_t);
     void killPath(uint16_t l);
 
-    double * getArrayPointer_P(uint16_t lambda, uint16_t  l);
-    double * getArrayPointer_LLR(uint16_t lambda, uint16_t  l);
+    float * getArrayPointer_P(uint16_t lambda, uint16_t  l);
+    float * getArrayPointer_LLR(uint16_t lambda, uint16_t  l);
     uint8_t * getArrayPointer_C(uint16_t lambda, uint16_t  l);
 
     void recursivelyCalcP(uint16_t lambda, uint16_t phi);

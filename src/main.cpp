@@ -122,13 +122,18 @@ int main()
 
     print_memory_info();
 
+    fec = make_shared<FEC>();
+    fec->benchmark(25);
+    fec = make_shared<FECInterleave>();
+    fec->benchmark(25);
     fec = make_shared<FECConv>(2, 9);
-    fec->benchmark(100);
+    fec->benchmark(25);
     fec = make_shared<FECRSV>(2, 9, 8);
-    fec->benchmark(100);
+    fec->benchmark(25);
 #if 0
-    fec = make_shared<FECPolar>(2*Frame::size(), Frame::size(), 32);
+    fec = make_shared<FECPolar>(6, Frame::size(), 32);
     debug_printf(DBG_INFO, "Set up polar codes\r\n");
+    print_memory_info();
     fec->benchmark(100);
 #endif
 

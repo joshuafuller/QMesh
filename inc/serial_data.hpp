@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include "nv_settings.hpp"
 #include "json_serial.hpp"
+#include "fec.hpp"
 
 static uint8_t enc_buf[512], dec_buf[256];
 
@@ -79,6 +80,7 @@ protected:
     int8_t snr;
     uint16_t rx_size;
     PKT_STATUS_ENUM pkt_status;
+    shared_ptr<FEC> fec;
 
 public:
     static size_t size(void) {
@@ -86,21 +88,10 @@ public:
             sizeof(pkt.hdr_crc) + sizeof(pkt.data_crc);
     }
 
-    Frame() {
-        //data.resize(radio_cb["Payload Length"].get<int>());
-    }
+    Frame() : Frame(make_shared<FEC>()){ }
 
-    // Call operator. Just loads the object with the contents
-    // of the other object.
-    void load(Frame &frame) {
-        memcpy(&pkt.hdr, &frame.pkt.hdr, sizeof(pkt.hdr));
-        pkt.hdr_crc = frame.pkt.hdr_crc;
-        data.resize(radio_cb["Payload Length"].get<int>());
-        copy(data.begin(), data.end(), frame.data.begin());
-        pkt.data_crc = frame.pkt.data_crc;
-        rssi = frame.rssi;
-        snr = frame.snr;
-        rx_size = frame.rx_size;
+    Frame(shared_ptr<FEC> my_fec) {
+        fec = my_fec;
     }
 
     // Load the frame with a payload and dummy values.
@@ -224,13 +215,13 @@ public:
     }
 
     // Get/set the receive stats
-    void getRxStats(int16_t *rssi, int8_t *snr, uint16_t *rx_size) {
-        *rssi = this->rssi;
-        *snr = this->snr;
-        *rx_size = this->rx_size;
+    void getRxStats(int16_t &rssi, int8_t &snr, uint16_t &rx_size) {
+        rssi = this->rssi;
+        snr = this->snr;
+        rx_size = this->rx_size;
     }
 
-    void setRxStats(int16_t rssi, int8_t snr, uint16_t rx_size) {
+    void setRxStats(const int16_t rssi, const int8_t snr, const uint16_t rx_size) {
         this->rssi = rssi;
         this->snr = snr;
         this->rx_size = rx_size;
@@ -269,7 +260,12 @@ template <class T>
 void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
     auto mail_item = mail_queue.alloc();
     *mail_item = val;
-    mail_queue.put(mail_item);
+    if(!mail_queue.full()) {
+        mail_queue.put(mail_item);
+    }
+    else {
+        debug_printf(DBG_WARN, "Mail queue is full!\r\n");
+    }
 }
 
 template <class T>
@@ -286,7 +282,5 @@ T dequeue_mail(Mail<T, 16> &mail_queue) {
     } 
     return mail_item;
 }
-
-
 
 #endif /* SERIAL_DATA_HPP */

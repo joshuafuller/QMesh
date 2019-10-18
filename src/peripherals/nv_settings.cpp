@@ -29,14 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 DigitalOut flash_io2(MBED_CONF_APP_FLASH_IO2);
 DigitalOut flash_io3(MBED_CONF_APP_FLASH_IO3);
-#ifdef HEAP_FS
-HeapBlockDevice bd(16384, 512);
-#else
 SPIFBlockDevice bd(MBED_CONF_APP_FLASH_SPI_MOSI, 
                     MBED_CONF_APP_FLASH_SPI_MISO, 
                     MBED_CONF_APP_FLASH_SPI_SCLK, 
                     MBED_CONF_APP_FLASH_SPI_CS);
-#endif
 LittleFileSystem fs("fs");
 
 
@@ -160,7 +156,7 @@ void nv_log_fn(void) {
         int16_t rssi;
         uint16_t rx_size;
         int8_t snr;
-        log_frame->getRxStats(&rssi, &snr, &rx_size);
+        log_frame->getRxStats(rssi, snr, rx_size);
         log_json["Timestamp"] = (int) time(NULL);
         log_json["RSSI"] = (int) rssi;
         log_json["SNR"] = (int) snr;

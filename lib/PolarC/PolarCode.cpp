@@ -4,7 +4,7 @@
 
 #include "PolarCode.h"
 #include <iostream>
-#include <cmath>       /* log */
+#include <cmath>       /* logf */
 #include <sstream>      // std::stringstream
 #include <fstream>
 #include <iomanip>      // std::setprecision
@@ -14,7 +14,7 @@
 using namespace PolarCodeLib;
 
 void PolarCode::initialize_frozen_bits() {
-    std::vector<double> channel_vec(_block_length);
+    std::vector<float> channel_vec(_block_length);
 
     for (uint16_t i = 0; i < _block_length; ++i) {
         channel_vec.at(i) = _design_epsilon;
@@ -23,8 +23,8 @@ void PolarCode::initialize_frozen_bits() {
         uint16_t  increment = 1 << iteration;
         for (uint16_t j = 0; j < increment; j +=  1) {
             for (uint16_t i = 0; i < _block_length; i += 2 * increment) {
-                double c1 = channel_vec.at(i + j);
-                double c2 = channel_vec.at(i + j + increment);
+                float c1 = channel_vec.at(i + j);
+                float c2 = channel_vec.at(i + j + increment);
                 channel_vec.at(i + j) = c1 + c2 - c1*c2;
                 channel_vec.at(i + j + increment) = c1*c2;
             }
@@ -106,7 +106,7 @@ bool PolarCode::crc_check(uint8_t * info_bit_padded) {
     return crc_pass;
 }
 
-std::vector<uint8_t> PolarCode::decode_scl_p1(std::vector<double> p1, std::vector<double> p0, uint16_t list_size) {
+std::vector<uint8_t> PolarCode::decode_scl_p1(std::vector<float> p1, std::vector<float> p0, uint16_t list_size) {
 
     _list_size = list_size;
     _llr_based_computation = false;
@@ -115,18 +115,18 @@ std::vector<uint8_t> PolarCode::decode_scl_p1(std::vector<double> p1, std::vecto
 
     uint16_t  l = assignInitialPath();
 
-    double * p_0 = getArrayPointer_P(0, l);
+    float * p_0 = getArrayPointer_P(0, l);
 
     for (uint16_t beta = 0; beta < _block_length; ++beta ) {
-        p_0[2*beta] = (double) p0.at(beta);
-        p_0[2*beta + 1] = (double) p1.at(beta);
+        p_0[2*beta] = (float) p0.at(beta);
+        p_0[2*beta + 1] = (float) p1.at(beta);
     }
 
     return decode_scl();
 
 }
 
-std::vector<uint8_t> PolarCode::decode_scl_llr(std::vector<double> llr, uint16_t list_size) {
+std::vector<uint8_t> PolarCode::decode_scl_llr(std::vector<float> llr, uint16_t list_size) {
 
     _list_size = list_size;
 
@@ -136,7 +136,7 @@ std::vector<uint8_t> PolarCode::decode_scl_llr(std::vector<double> llr, uint16_t
 
     uint16_t  l = assignInitialPath();
 
-    double * llr_0 = getArrayPointer_LLR(0, l);
+    float * llr_0 = getArrayPointer_LLR(0, l);
 
     for (uint16_t beta = 0; beta < _block_length; ++beta ) {
         llr_0[beta] = llr.at(beta);
@@ -235,10 +235,10 @@ void PolarCode::initializeDataStructures() {
         _arrayPointer_Info.at(s) = new uint8_t[_block_length]();
         for (uint16_t lambda = 0; lambda < _n + 1; ++lambda) {
             if (_llr_based_computation) {
-                _arrayPointer_LLR.at(lambda).at(s) = new double[(1 << (_n - lambda))]();
+                _arrayPointer_LLR.at(lambda).at(s) = new float[(1 << (_n - lambda))]();
             }
             else {
-                _arrayPointer_P.at(lambda).at(s) = new double[2 * (1 << (_n - lambda))]();
+                _arrayPointer_P.at(lambda).at(s) = new float[2 * (1 << (_n - lambda))]();
             }
             _arrayPointer_C.at(lambda).at(s) = new uint8_t[2 * (1 << (_n - lambda))]();
             _arrayReferenceCount.at(lambda).at(s) = 0;
@@ -301,7 +301,7 @@ void PolarCode::killPath(uint16_t l) {
     }
 }
 
-double * PolarCode::getArrayPointer_P(uint16_t lambda, uint16_t  l) {
+float * PolarCode::getArrayPointer_P(uint16_t lambda, uint16_t  l) {
     uint16_t  s = _pathIndexToArrayIndex.at(lambda).at(l);
     uint16_t s_p;
     if (_arrayReferenceCount.at(lambda).at(s) == 1) {
@@ -322,7 +322,7 @@ double * PolarCode::getArrayPointer_P(uint16_t lambda, uint16_t  l) {
     return _arrayPointer_P.at(lambda).at(s_p);
 }
 
-double * PolarCode::getArrayPointer_LLR(uint16_t lambda, uint16_t  l) {
+float * PolarCode::getArrayPointer_LLR(uint16_t lambda, uint16_t  l) {
     uint16_t  s = _pathIndexToArrayIndex.at(lambda).at(l);
     uint16_t s_p;
     if (_arrayReferenceCount.at(lambda).at(s) == 1) {
@@ -378,12 +378,12 @@ void PolarCode::recursivelyCalcP(uint16_t lambda, uint16_t phi) {
     if ( (phi % 2) == 0)
         recursivelyCalcP(lambda -1, psi);
 
-    double sigma = 0.0f;
+    float sigma = 0.0f;
     for (uint16_t l = 0; l < _list_size; ++l) {
         if (_activePath.at(l) == 0)
             continue;
-        double * p_lambda = getArrayPointer_P(lambda, l);
-        double * p_lambda_1 = getArrayPointer_P(lambda - 1, l);
+        float * p_lambda = getArrayPointer_P(lambda, l);
+        float * p_lambda_1 = getArrayPointer_P(lambda - 1, l);
 
         uint8_t * c_lambda = getArrayPointer_C(lambda, l);
         for (uint16_t beta = 0; beta < (1 << (_n - lambda)); ++beta) {
@@ -410,7 +410,7 @@ void PolarCode::recursivelyCalcP(uint16_t lambda, uint16_t phi) {
             break;
         if (_activePath.at(l) == 0)
             continue;
-        double *p_lambda = getArrayPointer_P(lambda, l);
+        float *p_lambda = getArrayPointer_P(lambda, l);
         for (uint16_t beta = 0; beta < (1 << (_n - lambda)); ++beta) {
             p_lambda[2 * beta] = p_lambda[2 * beta] / sigma;
             p_lambda[2 * beta + 1] = p_lambda[2 * beta + 1] / sigma;
@@ -428,20 +428,20 @@ void PolarCode::recursivelyCalcLLR(uint16_t lambda, uint16_t phi) {
     for (uint16_t l = 0; l < _list_size; ++l) {
         if (_activePath.at(l) == 0)
             continue;
-        double * llr_lambda = getArrayPointer_LLR(lambda, l);
-        double * llr_lambda_1 = getArrayPointer_LLR(lambda - 1, l);
+        float * llr_lambda = getArrayPointer_LLR(lambda, l);
+        float * llr_lambda_1 = getArrayPointer_LLR(lambda - 1, l);
 
         uint8_t * c_lambda = getArrayPointer_C(lambda, l);
         for (uint16_t beta = 0; beta < (1 << (_n - lambda)); ++beta) {
             if ( (phi %2) == 0 ){
-                if (40 > std::max(std::abs(llr_lambda_1[2 * beta]), std::abs(llr_lambda_1[2 * beta + 1]))){
-                    llr_lambda[beta] = std::log ( (exp(llr_lambda_1[2 * beta] + llr_lambda_1[2 * beta + 1]) + 1) /
-                                                  (exp(llr_lambda_1[2*beta]) + exp(llr_lambda_1[2*beta+1])));
+                if (40 > std::max(fabs(llr_lambda_1[2 * beta]), fabs(llr_lambda_1[2 * beta + 1]))){
+                    llr_lambda[beta] = std::logf ( (expf(llr_lambda_1[2 * beta] + llr_lambda_1[2 * beta + 1]) + 1) /
+                                                  (expf(llr_lambda_1[2*beta]) + expf(llr_lambda_1[2*beta+1])));
                 }
                 else {
-                    llr_lambda[beta] = (double)  ((llr_lambda_1[2 * beta] < 0) ? -1 : (llr_lambda_1[2 * beta] > 0)) *
+                    llr_lambda[beta] = (float)  ((llr_lambda_1[2 * beta] < 0) ? -1 : (llr_lambda_1[2 * beta] > 0)) *
                                        ((llr_lambda_1[2 * beta + 1] < 0) ? -1 : (llr_lambda_1[2 * beta + 1] > 0)) *
-                                       std::min( std::abs(llr_lambda_1[2 * beta]), std::abs(llr_lambda_1[2 * beta + 1]));
+                                       fmin( std::abs(llr_lambda_1[2 * beta]), fabs(llr_lambda_1[2 * beta + 1]));
                 }
             }
             else {
@@ -478,8 +478,8 @@ void PolarCode::continuePaths_FrozenBit(uint16_t phi) {
         uint8_t  * c_m = getArrayPointer_C(_n, l);
         c_m[(phi % 2)] = 0; // frozen value assumed to be zero
         if (_llr_based_computation) {
-            double *llr_p = getArrayPointer_LLR(_n, l);
-            _pathMetric_LLR.at(l) += log(1 + exp(-llr_p[0]));
+            float *llr_p = getArrayPointer_LLR(_n, l);
+            _pathMetric_LLR.at(l) += logf(1 + expf(-llr_p[0]));
         }
         _arrayPointer_Info.at(l)[phi] = 0;
     }
@@ -487,8 +487,8 @@ void PolarCode::continuePaths_FrozenBit(uint16_t phi) {
 
 void PolarCode::continuePaths_UnfrozenBit(uint16_t phi) {
 
-    std::vector<double>  probForks((unsigned long) (2 * _list_size));
-    std::vector<double> probabilities;
+    std::vector<float>  probForks((unsigned long) (2 * _list_size));
+    std::vector<float> probabilities;
     std::vector<uint8_t>  contForks((unsigned long) (2 * _list_size));
 
 
@@ -500,12 +500,12 @@ void PolarCode::continuePaths_UnfrozenBit(uint16_t phi) {
         }
         else {
             if (_llr_based_computation ) {
-                double *llr_p = getArrayPointer_LLR(_n, l);
-                probForks.at(2 * l) =  - (_pathMetric_LLR.at(l) + log(1 + exp(-llr_p[0])));
-                probForks.at(2 * l + 1) = -  (_pathMetric_LLR.at(l) + log(1 + exp(llr_p[0])));
+                float *llr_p = getArrayPointer_LLR(_n, l);
+                probForks.at(2 * l) =  - (_pathMetric_LLR.at(l) + logf(1 + expf(-llr_p[0])));
+                probForks.at(2 * l + 1) = -  (_pathMetric_LLR.at(l) + logf(1 + expf(llr_p[0])));
             }
             else {
-                double *p_m = getArrayPointer_P(_n, l);
+                float *p_m = getArrayPointer_P(_n, l);
                 probForks.at(2 * l) = p_m[0];
                 probForks.at(2 * l + 1) = p_m[1];
             }
@@ -524,9 +524,9 @@ void PolarCode::continuePaths_UnfrozenBit(uint16_t phi) {
     for (uint8_t l = 0; l < 2 * _list_size; ++l) {
         contForks.at(l) = 0;
     }
-    std::sort(probabilities.begin(), probabilities.end(), std::greater<double>());
+    std::sort(probabilities.begin(), probabilities.end(), std::greater<float>());
 
-    double threshold = probabilities.at((unsigned long) (rho - 1));
+    float threshold = probabilities.at((unsigned long) (rho - 1));
     uint16_t num_paths_continued = 0;
 
     for (uint8_t l = 0; l < 2 * _list_size; ++l) {
@@ -575,10 +575,10 @@ void PolarCode::continuePaths_UnfrozenBit(uint16_t phi) {
             _arrayPointer_Info.at(l_p)[phi] = 1;
 
             if (_llr_based_computation ) {
-                double *llr_p = getArrayPointer_LLR(_n, l);
-                _pathMetric_LLR.at(l) += log(1 + exp(-llr_p[0]));
+                float *llr_p = getArrayPointer_LLR(_n, l);
+                _pathMetric_LLR.at(l) += logf(1 + expf(-llr_p[0]));
                 llr_p = getArrayPointer_LLR(_n, l_p);
-                _pathMetric_LLR.at(l_p) += log(1 + exp(llr_p[0]));
+                _pathMetric_LLR.at(l_p) += logf(1 + expf(llr_p[0]));
             }
 
         }
@@ -588,16 +588,16 @@ void PolarCode::continuePaths_UnfrozenBit(uint16_t phi) {
                 _arrayPointer_Info.at(l)[phi] = 0;
 
                 if (_llr_based_computation ) {
-                    double *llr_p = getArrayPointer_LLR(_n, l);
-                    _pathMetric_LLR.at(l) += log(1 + exp(-llr_p[0]));
+                    float *llr_p = getArrayPointer_LLR(_n, l);
+                    _pathMetric_LLR.at(l) += logf(1 + expf(-llr_p[0]));
                 }
             }
             else {
                 c_m[(phi%2)] = 1;
                 _arrayPointer_Info.at(l)[phi] = 1;
                 if (_llr_based_computation ) {
-                    double *llr_p = getArrayPointer_LLR(_n, l);
-                    _pathMetric_LLR.at(l) += log(1 + exp(llr_p[0]));
+                    float *llr_p = getArrayPointer_LLR(_n, l);
+                    _pathMetric_LLR.at(l) += logf(1 + expf(llr_p[0]));
                 }
             }
         }
@@ -608,8 +608,8 @@ void PolarCode::continuePaths_UnfrozenBit(uint16_t phi) {
 uint16_t PolarCode::findMostProbablePath(bool check_crc) {
 
     uint16_t  l_p = 0;
-    double p_p1 = 0;
-    double p_llr = std::numeric_limits<double>::max();
+    float p_p1 = 0;
+    float p_llr = std::numeric_limits<float>::max();
     bool path_with_crc_pass = false;
     for (uint16_t l = 0; l < _list_size; ++l) {
 
@@ -629,7 +629,7 @@ uint16_t PolarCode::findMostProbablePath(bool check_crc) {
         }
         else {
             uint8_t * c_m = getArrayPointer_C(_n, l);
-            double * p_m = getArrayPointer_P(_n, l);
+            float * p_m = getArrayPointer_P(_n, l);
             if ( p_p1 < p_m[c_m[1]]) {
                 l_p = l;
                 p_p1 = p_m[c_m[1]];
