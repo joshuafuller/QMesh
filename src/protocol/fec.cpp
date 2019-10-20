@@ -113,6 +113,30 @@ void FEC::benchmark(size_t num_iters) {
 }
 
 
+size_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) {
+    MBED_ASSERT(getEncSize(msg.size()) <= 256);
+    vector<uint8_t> rs_enc_msg(msg.size()+rs_corr_bytes);
+    size_t rs_size = correct_reed_solomon_encode(rs_con, msg.data(), msg.size(), rs_enc_msg.data());
+    rsv_enc_msg.resize(FECConv::getEncSize(rs_enc_msg.size()));
+    size_t conv_len = FECConv::encode(rs_enc_msg, rsv_enc_msg);
+    MBED_ASSERT(rsv_enc_msg.size() == conv_len);
+    return conv_len;
+}
+
+
+ssize_t FECRSV::decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) {
+    vector<uint8_t> rs_enc_msg(rsv_enc_msg.size());
+    size_t conv_bytes = FECConv::decode(rsv_enc_msg, rs_enc_msg);
+    MBED_ASSERT(conv_bytes != -1);
+    rs_enc_msg.resize(conv_bytes);
+    dec_msg.resize(rs_enc_msg.size()-rs_corr_bytes);
+    size_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg.size(), 
+                        dec_msg.data());
+    MBED_ASSERT(dec_msg.size() == rs_len);
+    return dec_msg.size();
+}
+
+
 // Equation 4 in https://arxiv.org/pdf/1705.05899.pdf shows how to 
 // calculate the BER from the SNR and LoRa parameters (SF and CR)
 // The basic equation is: log 10(BER(SNRdB)) =α*exp (β*SNRdB)

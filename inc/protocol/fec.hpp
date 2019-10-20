@@ -248,7 +248,7 @@ public:
     }
 
     size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-        enc_msg.resize(getEncSize(msg.size()));
+        enc_msg.resize(FECConv::getEncSize(msg.size()));
         vector<uint8_t> msg_int(msg.size());
         interleaveBits(msg, msg_int);
         return correct_convolutional_encode(corr_con, msg_int.data(), msg_int.size(), enc_msg.data())/8;
@@ -288,28 +288,9 @@ public:
         correct_reed_solomon_destroy(rs_con);
     }
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) {
-        MBED_ASSERT(getEncSize(msg.size()) <= 256);
-        vector<uint8_t> rs_enc_msg(msg.size()+rs_corr_bytes);
-        size_t rs_size = correct_reed_solomon_encode(rs_con, msg.data(), msg.size(), rs_enc_msg.data());
-        MBED_ASSERT(rs_enc_msg.size() == rs_size);
-        rsv_enc_msg.resize(getEncSize(msg.size()));
-        size_t conv_len = FECConv::encode(rs_enc_msg, rsv_enc_msg);
-        MBED_ASSERT(rsv_enc_msg.size() == conv_len);
-        return conv_len;
-    }
+    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg);
 
-    ssize_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) {
-        vector<uint8_t> rs_enc_msg(rsv_enc_msg.size());
-        size_t conv_bytes = FECConv::decode(rsv_enc_msg, rs_enc_msg);
-        MBED_ASSERT(conv_bytes != -1);
-        rs_enc_msg.resize(conv_bytes);
-        dec_msg.resize(rs_enc_msg.size()-rs_corr_bytes);
-        size_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg.size(), 
-                            dec_msg.data());
-        MBED_ASSERT(dec_msg.size() == rs_len);
-        return dec_msg.size();
-    }
+    ssize_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg);
 
     size_t getEncSize(const size_t msg_len) {
         size_t enc_size = FECConv::getEncSize(msg_len+rs_corr_bytes);
