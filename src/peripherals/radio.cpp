@@ -28,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SX1276   0xEE
 #define SX126X   0xDD
 
+#define CDEBYTES_E22
+
 #if (MBED_CONF_APP_LORA_RADIO == SX1272)
 #include "SX1272_LoRaRadio.h"
 #elif (MBED_CONF_APP_LORA_RADIO == SX1276)
@@ -77,7 +79,7 @@ SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
                        MBED_CONF_APP_LORA_TCXO);
 
 #elif (MBED_CONF_APP_LORA_RADIO == SX126X)
-#warning Pins being used for SX1262 Mbed board
+#warning Using SX1262
 
 #ifdef CDEBYTES_E22
 SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
@@ -141,7 +143,29 @@ void init_radio(void) {
     uint8_t radio_sf = radio_cb["SF"].get<int>();
     uint8_t radio_cr = radio_cb["CR"].get<int>();
     uint8_t radio_freq = radio_cb["Freq"].get<int>();
-    Frame tmp_frame;
+    string fec_algo = radio_cb["FEC Algorithm"].get<string>();
+    shared_ptr<FEC> fec;
+    if(fec_algo == "None") {
+        fec = make_shared<FEC>();
+    }
+    else if(fec_algo == "Interleave") {
+        fec = make_shared<FECInterleave>();
+    }
+    else if(fec_algo == "Convolutional") {
+        int conv_rate = radio_cb["Conv Rate"].get<int>();
+        int conv_order = radio_cb["Conv Order"].get<int>();
+        fec = make_shared<FECConv>(conv_rate, conv_order);
+    }
+    else if(fec_algo == "RSV") {
+        int conv_rate = radio_cb["Conv Rate"].get<int>();
+        int conv_order = radio_cb["Conv Order"].get<int>();
+        int rs_roots = radio_cb["RS Num Roots"].get<int>();
+        fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
+    }
+    else {
+        MBED_ASSERT(false);
+    }
+    Frame tmp_frame(fec);
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
     radio.set_rx_config(MODEM_LORA, RADIO_BANDWIDTH,
@@ -150,7 +174,7 @@ void init_radio(void) {
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
-                            RADIO_INVERT_IQ, false);
+                            RADIO_INVERT_IQ, true);
     radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
                             RADIO_BANDWIDTH, RADIO_SF,
                             RADIO_CODERATE, RADIO_PREAMBLE_LEN,
@@ -189,7 +213,7 @@ static void tx_done_cb(void)
     MBED_ASSERT(!tx_radio_evt_mail.full());
     radio.set_channel(RADIO_FREQUENCY);
     tx_radio_evt_mail.put(&radio_event);
-    debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");
+    //debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");
 }
 
 static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)

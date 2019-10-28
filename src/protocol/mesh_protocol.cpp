@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "radio.hpp"
 
 const float lora_bw[] = {125e3f, 250e3f, 500e3f};
-static Frame mesh_frame;
 static Timeout rx_mesh_time;
 typedef enum {
     TX,
@@ -185,6 +184,30 @@ static enum {
 RadioTiming radio_timing;
 
 void mesh_protocol_fsm(void) {
+    shared_ptr<FEC> fec;
+    string fec_algo = radio_cb["FEC Algorithm"].get<string>();
+    wait(0.25);
+    debug_printf(DBG_INFO, "%s FEC was chosen\r\n", fec_algo.c_str());
+    if(fec_algo == "None") {
+        fec = make_shared<FEC>();
+    }
+    else if(fec_algo == "Interleave") {
+        fec = make_shared<FECInterleave>();
+    }
+    else if(fec_algo == "Convolutional") {
+        int conv_rate = radio_cb["Conv Rate"].get<int>();
+        int conv_order = radio_cb["Conv Order"].get<int>();
+        fec = make_shared<FECConv>(conv_rate, conv_order);
+    }
+    else if(fec_algo == "RSV") {
+        int conv_rate = radio_cb["Conv Rate"].get<int>();
+        int conv_order = radio_cb["Conv Order"].get<int>();
+        int rs_roots = radio_cb["RS Num Roots"].get<int>();
+        fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
+    }
+    else {
+        MBED_ASSERT(false);
+    }
     std::shared_ptr<RadioEvent> rx_radio_event, tx_radio_event;
     std::shared_ptr<Frame> tx_frame_sptr;
     std::shared_ptr<Frame> rx_frame_sptr;
@@ -192,50 +215,49 @@ void mesh_protocol_fsm(void) {
     for(;;) {
         switch(state) {
             case WAIT_FOR_RX:
-                debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
+                //debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
                 radio.receive();
-                rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
-                if(rx_radio_event->evt_enum == RX_DONE_EVT) {
-                    debug_printf(DBG_INFO, "Received a packet\r\n");
-                    // Load up the frame
-                    radio_timing.startTimer();
-                    led2.LEDSolid();
-                    rx_frame_sptr = make_shared<Frame>();
-                    PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserialize(rx_radio_event->buf);
-                    rx_frame_sptr->incrementTTL();
-                    if(!nv_logger_mail.full()) {
+                if(!rx_radio_evt_mail.empty()) {
+                    rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
+                    if(rx_radio_event->evt_enum == RX_DONE_EVT) {
+                        debug_printf(DBG_INFO, "Received a packet\r\n");
+                        // Load up the frame
+                        radio_timing.startTimer();
+                        led2.LEDSolid();
+                        rx_frame_sptr = make_shared<Frame>(fec);
+                        PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserialize(rx_radio_event->buf);
+                        rx_frame_sptr->incrementTTL();
                         enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
-                    }
-                    else {
-                        debug_printf(DBG_WARN, "NV Logging Queue full, dropping frame\r\n");
-                    }
-                    if(!rx_frame_mail.full()) {
                         enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
+                        if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
+                            debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
+                            state = WAIT_FOR_RX;
+                        }
+                        else if(pkt_status != PKT_OK) {
+                            debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
+                        }
+                        else {
+                            radio.set_channel(radio_frequency.getWobbledFreq());
+                            state = RETRANSMIT_PACKET;
+                        }
+                        radio_timing.waitFullSlots(1);
                     }
-                    if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
-                        debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
-                        state = WAIT_FOR_RX;
+                    else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
+                        debug_printf(DBG_INFO, "Rx timed out\r\n");
+                        state = CHECK_TX_QUEUE;
                     }
-                    else if(pkt_status != PKT_OK) {
-                        debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
-                    }
-                    else {
-                        radio.set_channel(radio_frequency.getWobbledFreq());
-                        state = RETRANSMIT_PACKET;
-                    }
-                    radio_timing.waitFullSlots(1);
+                    else { MBED_ASSERT(false); }
                 }
-                else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
-                    debug_printf(DBG_INFO, "Rx timed out\r\n");
+                else {
                     state = CHECK_TX_QUEUE;
                 }
-                else { MBED_ASSERT(false); }
             break;
 
             case CHECK_TX_QUEUE:
-                debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
+                //debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
+                    tx_frame_sptr->fec = fec;
                     radio.set_channel(radio_frequency.getWobbledFreq());
                     state = TX_PACKET;
                 }
@@ -249,12 +271,15 @@ void mesh_protocol_fsm(void) {
                 { radio_timing.startTimer();
                 led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
-                MBED_ASSERT(tx_frame_size > 256);
+                MBED_ASSERT(tx_frame_size < 256);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
-                radio_timing.waitFullSlots(1);
+                debug_printf(DBG_INFO, "Waiting one slot\r\n");
+                //radio_timing.waitFullSlots(1);
+                debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff();
-                radio_timing.waitFullSlots(2);
+                //radio_timing.waitFullSlots(2);
                 state = CHECK_TX_QUEUE;
                 }
             break;

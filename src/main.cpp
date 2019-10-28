@@ -138,6 +138,7 @@ int main()
 #endif
 
     print_memory_info();
+    wait(0.25);
 
 #if 0
     vector<uint8_t> fec_enc_buf, fec_dec_buf;

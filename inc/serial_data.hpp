@@ -80,9 +80,10 @@ protected:
     int8_t snr;
     uint16_t rx_size;
     PKT_STATUS_ENUM pkt_status;
-    shared_ptr<FEC> fec;
 
 public:
+    shared_ptr<FEC> fec;
+
     static size_t size(void) {
         return radio_cb["Payload Length"].get<int>() + sizeof(pkt.hdr) + 
             sizeof(pkt.hdr_crc) + sizeof(pkt.data_crc);

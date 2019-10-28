@@ -68,6 +68,27 @@ static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257,
                                                                                    0351};
 static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627,
                                                                                    0675};                        
+class NibbleArray {
+    protected:
+        vector<uint8_t> bytes;
+    public:
+        uint8_t getNibble(int idx) {
+            uint8_t byte = bytes[idx >> 1];
+            uint8_t sub_idx = idx & 0x1;
+            return (uint8_t) ((byte >> 4*sub_idx) & 0x0F);
+        }
+
+        void setNibble(int idx, uint8_t val) {
+            uint8_t byte = bytes[idx >> 1];
+            if(!(idx & 0x1)) {
+                byte &= 0xF0;
+                byte |= (val & 0xF0);
+            }
+            else {
+                
+            }
+        }
+};
 
 
 // This class provides a way to magically apply forward error correction to 

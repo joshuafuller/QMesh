@@ -60,7 +60,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define FRAME_PADDING_SYMS 8 // Amount of padding between frames, in symbols
 #define RADIO_PREAMBLE_SLOTS 4 // Number of TDMA slots for the preamble offsets
 
-#define RADIO_BEACON_INTERVAL 10
+#define RADIO_BEACON_INTERVAL 1
 #define RADIO_BEACON_MSG "KG5VBY Auto Station\r\n"
 
 // Frequency wobble parameters
@@ -72,6 +72,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // FEC parameters
 #define FEC_CONV
 //#define FEC_RSV
+
+#define FEC_ALGORITHM "None"
+#define FEC_CONV_RATE 2
+#define FEC_CONV_ORDER 9
+#define FEC_RS_NUM_ROOTS 8
 
 #define LOG_BASEADDR 1024
 
