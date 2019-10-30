@@ -29,7 +29,7 @@ void IndicatorLED::blinkFn(void) {
         if(led_state == LED_BLINK) {
             *pin = !*pin;
         }
-        wait(blink_period);
+        ThisThread::sleep_for(blink_period);
     }
 }
 

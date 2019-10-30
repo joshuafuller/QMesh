@@ -186,7 +186,6 @@ RadioTiming radio_timing;
 void mesh_protocol_fsm(void) {
     shared_ptr<FEC> fec;
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
-    wait(0.25);
     debug_printf(DBG_INFO, "%s FEC was chosen\r\n", fec_algo.c_str());
     if(fec_algo == "None") {
         fec = make_shared<FEC>();
@@ -313,6 +312,6 @@ void beacon_fn(void) {
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
     for(;;) {
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
-        wait(radio_cb["Beacon Interval"].get<int>());
+        ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>());
     }
 }

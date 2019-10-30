@@ -88,14 +88,12 @@ int main()
     debug_printf(DBG_INFO, "Powering down the SPI flash and LoRa modules...\r\n");
     flash_pwr_ctl = 0;
     radio_pwr_ctl = 0;
-    wait(0.25);
     debug_printf(DBG_INFO, "Powering up the SPI flash...\r\n");
     flash_pwr_ctl = 1;
-    wait(0.25);
     debug_printf(DBG_INFO, "Powering up the LoRa module...\r\n");
     radio_pwr_ctl = 1;
-    wait(0.25);
     debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
+    ThisThread::sleep_for(1);
 
     // Mount the filesystem, load the configuration
     init_filesystem();
@@ -105,9 +103,9 @@ int main()
     // Wait for 5 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;
     led1.LEDFastBlink();
-    wait(5);
+    ThisThread::sleep_for(5);
     while(stay_in_management) {
-        wait(5);
+        ThisThread::sleep_for(5);
     }
     current_mode = RUNNING;
 
@@ -137,8 +135,8 @@ int main()
     fec->benchmark(100);
 #endif
 
-    print_memory_info();
-    wait(0.25);
+//    print_memory_info();
+//    ThisThread::sleep_for(0.25);
 
 #if 0
     vector<uint8_t> fec_enc_buf, fec_dec_buf;
@@ -175,7 +173,8 @@ int main()
 
     int count = 0;
     while (true) {
-        wait_ms(SLEEP_TIME);
+        ThisThread::sleep_for(1.0);
+        //wait_ms(SLEEP_TIME);
     }
 }
 

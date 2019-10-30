@@ -168,21 +168,21 @@ void init_radio(void) {
     Frame tmp_frame(fec);
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
-    radio.set_rx_config(MODEM_LORA, RADIO_BANDWIDTH,
-                            RADIO_SF, RADIO_CODERATE,
+    radio.set_rx_config(MODEM_LORA, radio_bw,
+                            radio_sf, radio_cr,
                             0, RADIO_PREAMBLE_LEN,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
     radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
-                            RADIO_BANDWIDTH, RADIO_SF,
-                            RADIO_CODERATE, RADIO_PREAMBLE_LEN,
+                            radio_bw, radio_sf,
+                            radio_cr, RADIO_PREAMBLE_LEN,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
-    radio.set_channel(RADIO_FREQUENCY);
-    radio_timing.computeTimes(RADIO_BANDWIDTH, RADIO_SF, RADIO_CODERATE, RADIO_PREAMBLE_LEN, full_pkt_len);
+    radio.set_channel(radio_freq);
+    radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, RADIO_PREAMBLE_LEN, full_pkt_len);
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {
