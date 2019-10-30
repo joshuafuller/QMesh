@@ -15,19 +15,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import serial
+#!/usr/bin/python3
+
 import sys, os
-import logging
+import time
 import json
 import base64
+import pika
 
-
-# Open the serial port
-serial_port = sys.argv[1]
-ser = serial.Serial(serial_port, baudrate=921600)
-
-while True:
-    line = ser.readline().decode('utf-8')
+def dbg_process(ch, method, properties, body):
+    line = body.decode('utf-8')
     parsed_line = {}
     parsed_line["Type"] = ""
     try: 
@@ -58,3 +55,12 @@ while True:
         frame["Header CRC"] = parsed_line["Header CRC"]
         frame["Data CRC"] = parsed_line["Data CRC"]
         frame["Data Payload"] = base64.base64decode(frame["Data Payload"])
+
+# Set up the RabbitMQ connection
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+channel = connection.channel()
+channel.queue_declare(queue='board_output')
+channel.basic_consume(queue='board_output', auto_ack=True, \
+        on_message_callback=dbg_process)
+channel.start_consuming()
+while True: time.sleep(60)

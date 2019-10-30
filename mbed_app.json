@@ -10,26 +10,28 @@
         "lora-spi-miso":       { "value": "D12" },
         "lora-spi-sclk":       { "value": "D13" },
         "lora-cs":             { "value": "D10" },
-        "lora-reset":          { "value": "A0" },
-        "lora-dio0":           { "value": "D2" },
-        "lora-dio1":           { "value": "D3" },
+        "lora-reset":          { "value": "D3" },
+        "lora-busy":           { "value": "D2" },
+        "lora-dio1":           { "value": "D5" },
         "lora-dio2":           { "value": "D4" },
-        "lora-dio3":           { "value": "D5" },
-        "lora-dio4":           { "value": "NC" },
-        "lora-dio5":           { "value": "NC" },
-        "lora-rf-switch-ctl1": { "value": "NC" },
-        "lora-rf-switch-ctl2": { "value": "NC" },
-        "lora-txctl":          { "value": "NC" },
-        "lora-rxctl":          { "value": "NC" },
-        "lora-ant-switch":     { "value": "NC" },
-        "lora-pwr-amp-ctl":    { "value": "NC" },
-        "lora-tcxo":           { "value": "NC" }
+        "lora-txctl":          { "value": "D6" },
+        "lora-rxctl":          { "value": "D7" },
+        "flash-spi-mosi":      { "value": "D11" },
+        "flash-spi-miso":      { "value": "D12" },
+        "flash-spi-sclk":      { "value": "D13" },
+        "flash-spi-cs":        { "value": "D8" },
+        "flash-io2":           { "value": "D9" },
+        "flash-io3":           { "value": "A2" },
+        "flash-pwr":           { "value": "A0" },
+        "radio-pwr":           { "value": "A1" }
     },
     "target_overrides": {
         "*": {
+            "target.features_add": ["STORAGE"],
+            "target.components_add": ["SPIF"],
             "platform.stdio-convert-newlines": true,
-            "platform.stdio-baud-rate": 115200,
-            "platform.default-serial-baud-rate": 115200,
+            "platform.stdio-baud-rate": 921600,
+            "platform.default-serial-baud-rate": 921600,
             "lora.over-the-air-activation": true,
             "lora.duty-cycle-on": true,
             "lora.phy": "EU868",
@@ -237,5 +239,8 @@
             "lora-tcxo":           "RF_TCXO_EN"
         }
     },
-    "macros": ["MBEDTLS_USER_CONFIG_FILE=\"mbedtls_lora_config.h\""]
+    "macros": ["MBEDTLS_USER_CONFIG_FILE=\"mbedtls_lora_config.h\"",
+        "MBED_HEAP_STATS_ENABLED=1",
+        "MBED_STACK_STATS_ENABLED=1",
+        "MBED_MEM_TRACING_ENABLED=1"]
 }

@@ -1,41 +1,33 @@
- /*
- * Copyright (c) 2019, Daniel R. Fay.
- * SPDX-License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/*
+QMesh
+Copyright (C) 2019 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef SERIAL_DATA_HPP
 #define SERIAL_DATA_HPP
 
 #include "mbed.h"
+#include "MbedJSONValue.h"
+#include <string>
 #include "params.hpp"
 #include "nv_settings.hpp"
+#include "json_serial.hpp"
+#include "fec.hpp"
 
-#if (MBED_CONF_APP_LORA_RADIO == SX1272)
-#include "SX1272_LoRaRadio.h"
-extern SX1272_LoRaRadio radio;
-#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-#include "SX1276_LoRaRadio.h"
-extern SX1276_LoRaRadio radio;
-#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
-#include "SX126X_LoRaRadio.h"
-extern SX126X_LoRaRadio radio;
-#endif
-
-extern NVSettings *nv_settings;
 static uint8_t enc_buf[512], dec_buf[256];
-
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
 //  UART for both AT commands as well as debug commands.
@@ -58,23 +50,29 @@ typedef enum {
     PKT_UNITIALIZED,
 } PKT_STATUS_ENUM;
 
+#define BEACON_FRAME 0
+#define PAYLOAD_FRAME 1
 class Frame {
+    typedef union {
+        uint16_t crc;
+        uint8_t crc_bytes[2];
+    } crc16_t;
     typedef struct __attribute__((__packed__)) {
-        uint8_t type;
-        uint16_t stream_id;
-        uint8_t ttl;
-        uint8_t sender;
-        uint8_t pre_offset;
-        uint8_t nsym_offset;
-        uint8_t sym_offset;
+        uint32_t type : 2;
+        uint32_t stream_id : 8;
+        uint32_t ttl : 3;
+        uint32_t sender : 4;
+        uint32_t pre_offset : 3;
+        uint32_t nsym_offset : 3;
+        uint32_t sym_offset : 3;
     } frame_hdr;
     typedef struct __attribute__((__packed__)) {
         frame_hdr hdr;
-        uint16_t hdr_crc;
-        // payload
-        uint8_t data[FRAME_PAYLOAD_LEN];
-        uint16_t data_crc;
+        crc16_t hdr_crc;
+        crc16_t data_crc;
     } frame_pkt;
+    // payload
+    vector<uint8_t> data;
 protected:
     frame_pkt pkt;
     // receive stats
@@ -84,27 +82,48 @@ protected:
     PKT_STATUS_ENUM pkt_status;
 
 public:
-    // Call operator. Just loads the object with the contents
-    // of the other object.
-    void load(Frame &frame) {
-        memcpy(&pkt, &frame.pkt, sizeof(pkt));
-        rssi = frame.rssi;
-        snr = frame.snr;
-        rx_size = frame.rx_size;
+    shared_ptr<FEC> fec;
+
+    static size_t size(void) {
+        return radio_cb["Payload Length"].get<int>() + sizeof(pkt.hdr) + 
+            sizeof(pkt.hdr_crc) + sizeof(pkt.data_crc);
+    }
+
+    Frame() : Frame(make_shared<FEC>()){ }
+
+    Frame(shared_ptr<FEC> my_fec) {
+        fec = my_fec;
     }
 
     // Load the frame with a payload and dummy values.
-    void loadTestFrame(uint8_t *buf);
+    void loadTestFrame(vector<uint8_t> &buf);
 
     // Load the payload into a buffer. Returns the number of bytes put into 
     //  the buffer that's supplied as an argument.
-    size_t getPayload(uint8_t *buf) {
-        memcpy(buf, pkt.data, FRAME_PAYLOAD_LEN);
-        return FRAME_PAYLOAD_LEN;
+    size_t getPayload(vector<uint8_t> &buf) {
+        buf.resize(data.size());
+        buf.assign(data.begin(), data.end());
+        return data.size();
+    }
+
+    size_t setBeaconPayload(string &beacon_str) {
+        data.resize(radio_cb["Payload Length"].get<int>());
+        size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
+        memcpy(data.data(), beacon_str.c_str(), len);        
+        pkt.hdr.type = BEACON_FRAME;
+        pkt.hdr.stream_id = 0;
+        pkt.hdr.ttl = 0;
+        pkt.hdr.sender = 0;
+        pkt.hdr.pre_offset = 0;
+        pkt.hdr.nsym_offset = 0;
+        pkt.hdr.sym_offset = 0;
+        this->calculateHeaderCrc();
+        this->calculatePayloadCrc();
+        return data.size();
     }
 
     // Get an array of bytes of the frame for e.g. transmitting over the air.
-    size_t serialize(uint8_t *buf);
+    size_t serialize(vector<uint8_t> &buf);
 
     // Compute the header CRC.
     uint16_t calculateHeaderCrc(void);
@@ -118,12 +137,12 @@ public:
 
     // Check the header CRC. Returns true if a match, false if not.
     bool checkHeaderCrc(void) {
-        return (pkt.hdr_crc == calculateHeaderCrc());
+        return (pkt.hdr_crc.crc == calculateHeaderCrc());
     }
 
     // Check the payload CRC. Returns true if a match, false if not.
     bool checkPayloadCrc(void) {
-        return (pkt.data_crc == calculatePayloadCrc());
+        return (pkt.data_crc.crc == calculatePayloadCrc());
     }
 
     // Check the integrity of the packet by checking both the header and payload CRCs
@@ -135,7 +154,7 @@ public:
     // Returns the computed CRC.
     uint16_t setHeaderCrc(void) {
         uint16_t crc = calculateHeaderCrc();
-        pkt.hdr_crc = crc;
+        pkt.hdr_crc.crc = crc;
         return crc;
     }
 
@@ -143,7 +162,7 @@ public:
     // Returns the computed CRC.
     uint16_t setPayloadCrc(void) {
         uint16_t crc = calculatePayloadCrc();
-        pkt.data_crc = crc;
+        pkt.data_crc.crc = crc;
         return crc;
     }
 
@@ -155,7 +174,8 @@ public:
     //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
     //  4. PKT_FEC_FAIL -- FEC decode failed.
     //  5. PKT_OK -- the received packet data is ok
-    PKT_STATUS_ENUM deserialize(const uint8_t *buf, const size_t bytes_rx);
+    PKT_STATUS_ENUM deserialize(shared_ptr<vector<uint8_t>> buf); 
+    PKT_STATUS_ENUM deserialize(const vector<uint8_t> &buf);
 
     // Increment the TTL, updating the header CRC in the process.
     void incrementTTL(void) {
@@ -196,59 +216,72 @@ public:
     }
 
     // Get/set the receive stats
-    void getRxStats(int16_t *rssi, int8_t *snr, uint16_t *rx_size) {
-        *rssi = this->rssi;
-        *snr = this->snr;
-        *rx_size = this->rx_size;
+    void getRxStats(int16_t &rssi, int8_t &snr, uint16_t &rx_size) {
+        rssi = this->rssi;
+        snr = this->snr;
+        rx_size = this->rx_size;
     }
 
-    void setRxStats(int16_t rssi, int8_t snr, uint16_t rx_size) {
+    void setRxStats(const int16_t rssi, const int8_t snr, const uint16_t rx_size) {
         this->rssi = rssi;
         this->snr = snr;
         this->rx_size = rx_size;
     }
 
+    uint16_t getPayloadCrc(void) {
+        return this->pkt.data_crc.crc;
+    }
+
+    uint16_t getHeaderCrc(void) {
+        return this->pkt.hdr_crc.crc;
+    }
+
     // Pretty-print the Frame.
     void prettyPrint(const enum DBG_TYPES dbg_type);
 
-};
+    // Load the frame with a parsed JSON object
+    void loadFromJSON(MbedJSONValue &json);
 
-class FrameQueue {
-    protected:
-        Mail<Frame, 32> queue;
-    public:
-        // Enqueue a frame. Returns true if enqueue was successful,
-        //  false if unsuccessful due to overflow
-        bool enqueue(Frame &enq_frame);
-        bool enqueue(uint8_t *buf, const size_t buf_size);
-
-        // Dequeue a frame. Copies the dequeued data into the frame if successful,
-        //  returning true. Returns false if unsuccessful (queue is empty).
-        bool dequeue(Frame &frame);
-
-        // Returns whether queue is empty
-        bool getEmpty(void);
-
-        // Returns whether queue is full
-        bool getFull(void);
+    // Save the frame's contents to a JSON object.
+    void saveToJSON(MbedJSONValue &json);
 };
 
 
-class ATSettings {
-protected:
-    char cmd[32];
-    ATCmdParser *at;
-    Thread parser_thread;
-    NVSettings *nv_settings;
-public:
-    ATSettings(Serial *ser_port, NVSettings *settings);
-    void processATCmds(void);
-    void threadFn(void);
-    ~ATSettings(void);
-};
+extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 
+template <class T> 
+void enqueue_mail(Mail<T, 16> &mail_queue, T val);
+
+template <class T>
+T dequeue_mail(Mail<T, 16> &mail_queue);
 
 
+template <class T> 
+void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
+    auto mail_item = mail_queue.alloc();
+    *mail_item = val;
+    if(!mail_queue.full()) {
+        mail_queue.put(mail_item);
+    }
+    else {
+        debug_printf(DBG_WARN, "Mail queue is full!\r\n");
+    }
+}
+
+template <class T>
+T dequeue_mail(Mail<T, 16> &mail_queue) {
+    T mail_item; 
+    for(;;) {
+        osEvent evt = mail_queue.get();
+        if(evt.status == osEventMail) {
+            mail_item = *((T *) evt.value.p);
+            mail_queue.free((T *) evt.value.p);
+            break;
+        }
+        else { MBED_ASSERT(false); }
+    } 
+    return mail_item;
+}
 
 #endif /* SERIAL_DATA_HPP */
