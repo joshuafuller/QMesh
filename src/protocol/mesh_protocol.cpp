@@ -137,10 +137,10 @@ void RadioTiming::waitFullSlots(const size_t num_slots) {
 }
 
 void RadioTiming::waitRxRemainder(const size_t sym_wait, const size_t pre_wait) {
-    uint32_t wait_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
-    wait_us += 16*sym_time_us; // 16 symbol padding for right now
+    uint32_t wait_duration_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
+    wait_duration_us += 16*sym_time_us; // 16 symbol padding for right now
     int elapsed_us = tmr.read_us();
-    wait_us(wait_us-elapsed_us);
+    wait_us(wait_duration_us-elapsed_us);
 }
 
 void RadioTiming::calcWaitSymbol(void) {
