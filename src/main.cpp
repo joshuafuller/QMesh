@@ -155,19 +155,29 @@ int main()
     debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
 
+    wait(0.25);
+
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);
+
+    wait(0.25);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread.start(mesh_protocol_fsm);
 
+    wait(0.25);
+
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon thread\r\n");
     beacon_thread.start(beacon_fn);
 
+    wait(0.25);
+
     debug_printf(DBG_INFO, "Started all threads\r\n");
+
+    while(true);
 
     print_memory_info();
 

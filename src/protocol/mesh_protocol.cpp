@@ -236,7 +236,7 @@ void mesh_protocol_fsm(void) {
                             debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
                         }
                         else {
-                            radio.set_channel(radio_frequency.getWobbledFreq());
+                            //radio.set_channel(radio_frequency.getWobbledFreq());
                             state = RETRANSMIT_PACKET;
                         }
                         radio_timing.waitFullSlots(1);
@@ -257,7 +257,7 @@ void mesh_protocol_fsm(void) {
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
                     tx_frame_sptr->fec = fec;
-                    radio.set_channel(radio_frequency.getWobbledFreq());
+                    //radio.set_channel(radio_frequency.getWobbledFreq());
                     state = TX_PACKET;
                 }
                 else {
@@ -271,6 +271,7 @@ void mesh_protocol_fsm(void) {
                 led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
+                debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
                 debug_printf(DBG_INFO, "Waiting one slot\r\n");
                 //radio_timing.waitFullSlots(1);
@@ -312,6 +313,6 @@ void beacon_fn(void) {
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
     for(;;) {
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
-        ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>());
+        ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>()*1000);
     }
 }

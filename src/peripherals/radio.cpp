@@ -82,6 +82,7 @@ SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
 #warning Using SX1262
 
 #ifdef CDEBYTES_E22
+#warning Using CDEBYTES E22
 SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_SPI_MISO, // PinName miso
                        MBED_CONF_APP_LORA_SPI_SCLK, // PinName sclk
@@ -92,8 +93,10 @@ SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_DIO1,  // PinName dio1
                        MBED_CONF_APP_LORA_DIO2,  // PinName dio2
                        MBED_CONF_APP_LORA_RESET,  // PinName nrst
-                       MBED_CONF_APP_LORA_BUSY);  // PinName busy,
+                       MBED_CONF_APP_LORA_BUSY,
+                       MBED_CONF_APP_RADIO_PWR);  // PinName busy,
 #else
+
 #warning Pins being used for Mbed SX1262 board
 SX126X_LoRaRadio radio(D11, // PinName mosi
                        D12, // PinName miso

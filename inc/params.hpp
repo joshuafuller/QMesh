@@ -40,7 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_SYM_TIMEOUT 8
 #define RADIO_PREAMBLE_LEN 12
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
-#define RADIO_BANDWIDTH 1
+#define RADIO_BANDWIDTH 2
 #define RADIO_SF 12
 // 1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8
 #define RADIO_CODERATE 1

@@ -63,7 +63,8 @@ public:
                        PinName dio1,
                        PinName dio2,
                        PinName nrst,
-                       PinName busy);
+                       PinName busy,
+                       PinName pwrctl);
 
     virtual ~SX126X_LoRaRadio();
 
@@ -306,6 +307,9 @@ private:
 
     // module rest control
     mbed::DigitalInOut _reset_ctl;
+
+    // module power control
+    mbed::DigitalOut _pwr_ctl;
 
     // Interrupt controls
     mbed::InterruptIn _dio1_ctl;;

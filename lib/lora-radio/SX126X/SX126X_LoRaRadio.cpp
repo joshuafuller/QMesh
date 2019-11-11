@@ -94,14 +94,16 @@ SX126X_LoRaRadio::SX126X_LoRaRadio(PinName mosi,
                                     PinName dio1,
                                     PinName dio2,
                                     PinName nrst,
-                                    PinName busy)
+                                    PinName busy,
+                                    PinName pwrctl)
     : _spi(mosi, miso, sclk),
       _chip_select(nss, 1),
       _reset_ctl(reset),
       _dio1_ctl(dio1, PullNone),
       _busy(busy, PullNone),
       _rxen(rxen),
-      _txen(txen)
+      _txen(txen),
+      _pwr_ctl(pwrctl)
 #ifdef MBED_CONF_RTOS_PRESENT
         , irq_thread(osPriorityRealtime, 1024, NULL, "LR-SX126X")
 #endif
@@ -504,6 +506,12 @@ uint32_t SX126X_LoRaRadio::time_on_air(radio_modems_t modem, uint8_t pkt_len)
 
 void SX126X_LoRaRadio::radio_reset()
 {
+    // Power cycle the module
+    _pwr_ctl = 0;
+    wait_ms(1000);
+    _pwr_ctl = 1;
+    wait_ms(1000);
+    // Do the reset
     _reset_ctl.output();
     _reset_ctl = 0;
     // should be enough, required is 50-100 us
