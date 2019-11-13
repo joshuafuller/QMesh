@@ -169,6 +169,7 @@ uint32_t RadioFrequency::getWobbledFreq(void) {
     int wobble_direction = rand() & 0x1;
     wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
     uint32_t wobbled_freq = (int32_t) radio_cb["Freq"].get<int>() + (int32_t) wobble_amount;
+    debug_printf(DBG_INFO, "Wobbled freq is %d\r\n", wobbled_freq);
     return wobbled_freq;   
 }
 
@@ -236,7 +237,7 @@ void mesh_protocol_fsm(void) {
                             debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
                         }
                         else {
-                            //radio.set_channel(radio_frequency.getWobbledFreq());
+                            radio.set_channel(radio_frequency.getWobbledFreq());
                             state = RETRANSMIT_PACKET;
                         }
                         radio_timing.waitFullSlots(1);
@@ -257,7 +258,7 @@ void mesh_protocol_fsm(void) {
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
                     tx_frame_sptr->fec = fec;
-                    //radio.set_channel(radio_frequency.getWobbledFreq());
+                    radio.set_channel(radio_frequency.getWobbledFreq());
                     state = TX_PACKET;
                 }
                 else {
