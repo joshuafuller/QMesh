@@ -38,9 +38,19 @@ def dbg_process(ch, method, properties, body):
         print("Preamble Length: " + str(parsed_line["Preamble Length"]))
         print("Num Preamble Slots: " + str(parsed_line["Preamble Slots"]))
         print("Payload Length: " + str(parsed_line["Payload Length"]))
-        print("Beacon Period (s): " + str(parsed_line["Beacon Interval"]))
+        print("Beacon Interval (s): " + str(parsed_line["Beacon Interval"]))
         msg = base64.b64decode(parsed_line["Beacon Message"]).decode('utf-8')
         print("Beacon Message: " + str(msg))
+		print("FEC Algorithm: " + str(parsed_line"FEC Algorithm"))
+		print("Convolution Rate: " + str(parsed_line["Conv Rate"]))
+		print("Convolution Order: " + str(parsed_line["Conv Order"]))
+		print("Reed-Solomon Number of Roots: " + str(parsed_line["RS Num Roots"]))
+		
+		# Save the settings to a file
+		settings_file = open("board_settings.json", "w")
+		settings_file.write(parsed_line)
+		settings_file.close()
+		
         sys.exit(0)
 
 # Set up the RabbitMQ connection
