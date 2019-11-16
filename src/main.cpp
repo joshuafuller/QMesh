@@ -124,6 +124,8 @@ int main()
     fec->benchmark(25);
     fec = make_shared<FECInterleave>();
     fec->benchmark(25);
+    fec = make_shared<FECGolay>();
+    fec->benchmark(25);
     fec = make_shared<FECConv>(2, 9);
     fec->benchmark(25);
     fec = make_shared<FECRSV>(2, 9, 8);

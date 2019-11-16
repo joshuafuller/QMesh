@@ -85,7 +85,9 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
 
 void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
         const uint32_t n_pre_sym, const uint8_t n_pld_bytes) {
-    float bw_f = bw;
+    // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
+    const float bw_idx_bw_f[] = {125e3f, 250e3f, 500e3f};
+    float bw_f = bw_idx_bw_f[bw];
     float sf_f = sf;
     float cr_f = cr;
     float n_pre_sym_f = n_pre_sym;
