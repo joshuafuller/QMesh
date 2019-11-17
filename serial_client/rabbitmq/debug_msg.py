@@ -24,7 +24,10 @@ import base64
 import pika
 
 def dbg_process(ch, method, properties, body):
-    line = body.decode('utf-8')
+    try:
+        line = body.decode('utf-8')
+    except Exception as e: 
+        return
     parsed_line = {}
     parsed_line["Type"] = ""
     try: 
