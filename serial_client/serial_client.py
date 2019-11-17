@@ -20,14 +20,31 @@ import sys, os
 import logging
 import json
 import base64
+import time
 
 
 # Open the serial port
 serial_port = sys.argv[1]
-ser = serial.Serial(serial_port, baudrate=921600)
 
 while True:
-    line = ser.readline().decode('utf-8')
+	try: 
+		ser = serial.Serial(serial_port, baudrate=921600)
+		break
+	except serial.serialutil.SerialException:
+		print("Failed to open port. Trying again in 1s...")
+		time.sleep(1)
+
+while True:
+    try:
+        line = ser.readline().decode('utf-8')
+    except serial.serialutil.SerialException:
+        print("Lost serial connection. Reconnecting in 1s...")
+        time.sleep(1)
+        try: ser = serial.Serial(serial_port, baudrate=921600)
+        except serial.serialutil.SerialException:
+            time.sleep(1)
+            continue
+			
     parsed_line = {}
     parsed_line["Type"] = ""
     try: 
