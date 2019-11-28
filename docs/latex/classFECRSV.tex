@@ -1,0 +1,56 @@
+\hypertarget{classFECRSV}{}\section{F\+E\+C\+R\+SV Class Reference}
+\label{classFECRSV}\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
+
+
+Inheritance diagram for F\+E\+C\+R\+SV\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=139pt]{classFECRSV__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for F\+E\+C\+R\+SV\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=139pt]{classFECRSV__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECRSV_ac7d8897c02cdb41a46d895b14bfb976f}\label{classFECRSV_ac7d8897c02cdb41a46d895b14bfb976f}} 
+{\bfseries F\+E\+C\+R\+SV} (const size\+\_\+t inv\+\_\+rate, const size\+\_\+t order, const size\+\_\+t my\+\_\+rs\+\_\+corr\+\_\+bytes)
+\item 
+\mbox{\Hypertarget{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}\label{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}} 
+size\+\_\+t {\bfseries encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&rsv\+\_\+enc\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFECRSV_a4781900bd59579d7a380687c59179ae5}\label{classFECRSV_a4781900bd59579d7a380687c59179ae5}} 
+ssize\+\_\+t {\bfseries decode} (const vector$<$ uint8\+\_\+t $>$ \&rsv\+\_\+enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}\label{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}} 
+size\+\_\+t {\bfseries get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECRSV_abb99cf759979bc02ce129a4ba59206d3}\label{classFECRSV_abb99cf759979bc02ce129a4ba59206d3}} 
+size\+\_\+t {\bfseries rs\+\_\+corr\+\_\+bytes}
+\item 
+\mbox{\Hypertarget{classFECRSV_a6032e72eb4d7e2256009769bba63b9b7}\label{classFECRSV_a6032e72eb4d7e2256009769bba63b9b7}} 
+correct\+\_\+reed\+\_\+solomon $\ast$ {\bfseries rs\+\_\+con}
+\item 
+\mbox{\Hypertarget{classFECRSV_a3bab792933973acef7689ea4dd490af5}\label{classFECRSV_a3bab792933973acef7689ea4dd490af5}} 
+vector$<$ uint8\+\_\+t $>$ {\bfseries rs\+\_\+buf}
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/protocol/fec.\+hpp\item 
+src/protocol/fec.\+cpp\end{DoxyCompactItemize}

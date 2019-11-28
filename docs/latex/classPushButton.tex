@@ -1,0 +1,60 @@
+\hypertarget{classPushButton}{}\section{Push\+Button Class Reference}
+\label{classPushButton}\index{Push\+Button@{Push\+Button}}
+
+
+{\ttfamily \#include $<$buttons.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classPushButton_a1635369b8e71436a0b1238c6c751972a}{Push\+Button} (Pin\+Name button)
+\item 
+\mbox{\Hypertarget{classPushButton_ae1bce4edf2a02c4e0c8214b759a7949c}\label{classPushButton_ae1bce4edf2a02c4e0c8214b759a7949c}} 
+void \hyperlink{classPushButton_ae1bce4edf2a02c4e0c8214b759a7949c}{btn\+Interrupt} (void)
+\begin{DoxyCompactList}\small\item\em Interrupt handler that gets called on a button press. \end{DoxyCompactList}\item 
+bool \hyperlink{classPushButton_af56d1fde8fcbb9e1c4cfceb56be5b467}{get\+Pressed} (void)
+\item 
+\mbox{\Hypertarget{classPushButton_a3aafdb682ce6d00513583e3983f3ed44}\label{classPushButton_a3aafdb682ce6d00513583e3983f3ed44}} 
+\hyperlink{classPushButton_a3aafdb682ce6d00513583e3983f3ed44}{$\sim$\+Push\+Button} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPushButton_a9b612743b8a4c85ba9dc99808507a053}\label{classPushButton_a9b612743b8a4c85ba9dc99808507a053}} 
+bool {\bfseries was\+\_\+pressed}
+\item 
+\mbox{\Hypertarget{classPushButton_a744bc19b3b7f510f83ba92999a0b408e}\label{classPushButton_a744bc19b3b7f510f83ba92999a0b408e}} 
+Interrupt\+In $\ast$ {\bfseries btn}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class that provides useful functionality around the board\textquotesingle{}s pushbuttons. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPushButton_a1635369b8e71436a0b1238c6c751972a}\label{classPushButton_a1635369b8e71436a0b1238c6c751972a}} 
+\index{Push\+Button@{Push\+Button}!Push\+Button@{Push\+Button}}
+\index{Push\+Button@{Push\+Button}!Push\+Button@{Push\+Button}}
+\subsubsection{\texorpdfstring{Push\+Button()}{PushButton()}}
+{\footnotesize\ttfamily Push\+Button\+::\+Push\+Button (\begin{DoxyParamCaption}\item[{Pin\+Name}]{button }\end{DoxyParamCaption})}
+
+Constructor. 
+\begin{DoxyParams}{Parameters}
+{\em button} & The pin controlled by the pushbutton. \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classPushButton_af56d1fde8fcbb9e1c4cfceb56be5b467}\label{classPushButton_af56d1fde8fcbb9e1c4cfceb56be5b467}} 
+\index{Push\+Button@{Push\+Button}!get\+Pressed@{get\+Pressed}}
+\index{get\+Pressed@{get\+Pressed}!Push\+Button@{Push\+Button}}
+\subsubsection{\texorpdfstring{get\+Pressed()}{getPressed()}}
+{\footnotesize\ttfamily bool Push\+Button\+::get\+Pressed (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Determine whether button was pressed between now and the last time \hyperlink{classPushButton_af56d1fde8fcbb9e1c4cfceb56be5b467}{get\+Pressed()} was called. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/peripherals/buttons.\+hpp\item 
+src/peripherals/buttons.\+cpp\end{DoxyCompactItemize}

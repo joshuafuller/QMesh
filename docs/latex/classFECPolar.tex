@@ -1,0 +1,61 @@
+\hypertarget{classFECPolar}{}\section{F\+E\+C\+Polar Class Reference}
+\label{classFECPolar}\index{F\+E\+C\+Polar@{F\+E\+C\+Polar}}
+
+
+Inheritance diagram for F\+E\+C\+Polar\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=139pt]{classFECPolar__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for F\+E\+C\+Polar\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=139pt]{classFECPolar__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECPolar_a7c62c4474b6a7ecd9dc897329e864096}\label{classFECPolar_a7c62c4474b6a7ecd9dc897329e864096}} 
+{\bfseries F\+E\+C\+Polar} (const size\+\_\+t my\+\_\+block\+\_\+length, const size\+\_\+t my\+\_\+info\+\_\+length, const size\+\_\+t my\+\_\+list\+\_\+size)
+\item 
+\mbox{\Hypertarget{classFECPolar_a8589865e91e8ef0eed7bb440a445eb99}\label{classFECPolar_a8589865e91e8ef0eed7bb440a445eb99}} 
+size\+\_\+t {\bfseries get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
+\item 
+\mbox{\Hypertarget{classFECPolar_ab5662e1c2d45aa924936969261eb6faf}\label{classFECPolar_ab5662e1c2d45aa924936969261eb6faf}} 
+size\+\_\+t {\bfseries encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFECPolar_adcf71d5e725bffa9b6e4c776eb8d4760}\label{classFECPolar_adcf71d5e725bffa9b6e4c776eb8d4760}} 
+ssize\+\_\+t {\bfseries decode} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFECPolar_a897d3f06d446bf82f553d966a4725e6c}\label{classFECPolar_a897d3f06d446bf82f553d966a4725e6c}} 
+ssize\+\_\+t {\bfseries decode\+Soft} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg, const float snr)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECPolar_aa919bab40c4d8d1c2fe86dea70b6e73b}\label{classFECPolar_aa919bab40c4d8d1c2fe86dea70b6e73b}} 
+shared\+\_\+ptr$<$ Polar\+Code\+Lib\+::\+Polar\+Code $>$ {\bfseries polar\+\_\+code}
+\item 
+\mbox{\Hypertarget{classFECPolar_ab7147d119e70f8544871358e5520ac3f}\label{classFECPolar_ab7147d119e70f8544871358e5520ac3f}} 
+size\+\_\+t {\bfseries block\+\_\+length}
+\item 
+\mbox{\Hypertarget{classFECPolar_ae2639cda67ff123d5b523ac6a2c242a0}\label{classFECPolar_ae2639cda67ff123d5b523ac6a2c242a0}} 
+size\+\_\+t {\bfseries info\+\_\+length}
+\item 
+\mbox{\Hypertarget{classFECPolar_a84f2200d4fa1b44d67ae5c06d03116bc}\label{classFECPolar_a84f2200d4fa1b44d67ae5c06d03116bc}} 
+size\+\_\+t {\bfseries list\+\_\+size}
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+inc/protocol/fec.\+hpp\end{DoxyCompactItemize}

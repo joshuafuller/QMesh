@@ -1,0 +1,79 @@
+\hypertarget{classIndicatorLED}{}\section{Indicator\+L\+ED Class Reference}
+\label{classIndicatorLED}\index{Indicator\+L\+ED@{Indicator\+L\+ED}}
+
+
+{\ttfamily \#include $<$leds.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_a753a81e2d6745aff7aff3e716a3edb3a}\label{classIndicatorLED_a753a81e2d6745aff7aff3e716a3edb3a}} 
+void \hyperlink{classIndicatorLED_a753a81e2d6745aff7aff3e716a3edb3a}{blink\+Fn} (void)
+\begin{DoxyCompactList}\small\item\em Function resonsible for blinking the L\+ED. \end{DoxyCompactList}\item 
+\hyperlink{classIndicatorLED_a1d1b6a18ce8abab30013f650587dcfe6}{Indicator\+L\+ED} (Pin\+Name led\+\_\+pin\+\_\+name)
+\item 
+\mbox{\Hypertarget{classIndicatorLED_ae59857a2a4e9ec9f78220203a73a189e}\label{classIndicatorLED_ae59857a2a4e9ec9f78220203a73a189e}} 
+void \hyperlink{classIndicatorLED_ae59857a2a4e9ec9f78220203a73a189e}{L\+E\+D\+Solid} (void)
+\begin{DoxyCompactList}\small\item\em Set the L\+ED to solid. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classIndicatorLED_aba3ab5956e1c1cbfa1c7984c7c858c54}\label{classIndicatorLED_aba3ab5956e1c1cbfa1c7984c7c858c54}} 
+void \hyperlink{classIndicatorLED_aba3ab5956e1c1cbfa1c7984c7c858c54}{L\+E\+D\+Off} (void)
+\begin{DoxyCompactList}\small\item\em Turn the L\+ED off. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classIndicatorLED_a04b4859fa0dd98be3bd454ab1cd6d19e}\label{classIndicatorLED_a04b4859fa0dd98be3bd454ab1cd6d19e}} 
+void \hyperlink{classIndicatorLED_a04b4859fa0dd98be3bd454ab1cd6d19e}{L\+E\+D\+Blink} (void)
+\begin{DoxyCompactList}\small\item\em Blink the L\+ED. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classIndicatorLED_ac566d7708a4b46cd1abe853f320defb0}\label{classIndicatorLED_ac566d7708a4b46cd1abe853f320defb0}} 
+void \hyperlink{classIndicatorLED_ac566d7708a4b46cd1abe853f320defb0}{L\+E\+D\+Fast\+Blink} (void)
+\begin{DoxyCompactList}\small\item\em Blink the L\+ED quickly. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classIndicatorLED_ac97893513aa6527e43e86adcd58b2b2d}\label{classIndicatorLED_ac97893513aa6527e43e86adcd58b2b2d}} 
+\hyperlink{classIndicatorLED_ac97893513aa6527e43e86adcd58b2b2d}{$\sim$\+Indicator\+L\+ED} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_a4f5c468fe07af641779e7b7c6976b5ab}\label{classIndicatorLED_a4f5c468fe07af641779e7b7c6976b5ab}} 
+enum \{ {\bfseries L\+E\+D\+\_\+\+O\+FF}, 
+{\bfseries L\+E\+D\+\_\+\+S\+O\+L\+ID}, 
+{\bfseries L\+E\+D\+\_\+\+B\+L\+I\+NK}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_ae1ad69ec5e05d79873b5ba9e3b1b6c87}\label{classIndicatorLED_ae1ad69ec5e05d79873b5ba9e3b1b6c87}} 
+enum Indicator\+L\+E\+D\+:: \{ ... \}  {\bfseries led\+\_\+state}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_a3a81835df63916bf2412f1f4d976062f}\label{classIndicatorLED_a3a81835df63916bf2412f1f4d976062f}} 
+Digital\+Out $\ast$ {\bfseries pin}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_ae369c8ca69f2adf6d4477cb08f733f3a}\label{classIndicatorLED_ae369c8ca69f2adf6d4477cb08f733f3a}} 
+Thread {\bfseries thread}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_a11d9a1d0f8545efeeea73e4f7daed1f5}\label{classIndicatorLED_a11d9a1d0f8545efeeea73e4f7daed1f5}} 
+bool {\bfseries blink\+\_\+led}
+\item 
+\mbox{\Hypertarget{classIndicatorLED_a742e1af0fb722acd6de7c130177e1027}\label{classIndicatorLED_a742e1af0fb722acd6de7c130177e1027}} 
+float {\bfseries blink\+\_\+period}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class that wraps the board\textquotesingle{}s L\+E\+Ds, and provides basic features for turning L\+E\+Ds on, off, and for blinking them at different rates. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classIndicatorLED_a1d1b6a18ce8abab30013f650587dcfe6}\label{classIndicatorLED_a1d1b6a18ce8abab30013f650587dcfe6}} 
+\index{Indicator\+L\+ED@{Indicator\+L\+ED}!Indicator\+L\+ED@{Indicator\+L\+ED}}
+\index{Indicator\+L\+ED@{Indicator\+L\+ED}!Indicator\+L\+ED@{Indicator\+L\+ED}}
+\subsubsection{\texorpdfstring{Indicator\+L\+E\+D()}{IndicatorLED()}}
+{\footnotesize\ttfamily Indicator\+L\+E\+D\+::\+Indicator\+L\+ED (\begin{DoxyParamCaption}\item[{Pin\+Name}]{led\+\_\+pin\+\_\+name }\end{DoxyParamCaption})}
+
+Constructor. 
+\begin{DoxyParams}{Parameters}
+{\em led\+\_\+pin\+\_\+name} & Pin that controls the L\+ED. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/peripherals/leds.\+hpp\item 
+src/peripherals/leds.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,56 @@
+\hypertarget{classFECConv}{}\section{F\+E\+C\+Conv Class Reference}
+\label{classFECConv}\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+
+
+Inheritance diagram for F\+E\+C\+Conv\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=139pt]{classFECConv__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for F\+E\+C\+Conv\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=139pt]{classFECConv__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECConv_a884d27178ca0484f4692b78fa31fd898}\label{classFECConv_a884d27178ca0484f4692b78fa31fd898}} 
+{\bfseries F\+E\+C\+Conv} (const size\+\_\+t inv\+\_\+rate, const size\+\_\+t order)
+\item 
+\mbox{\Hypertarget{classFECConv_a3b49acf69440d2677e3181513b9f3592}\label{classFECConv_a3b49acf69440d2677e3181513b9f3592}} 
+size\+\_\+t {\bfseries get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
+\item 
+\mbox{\Hypertarget{classFECConv_ae3e796d0e026dca718ed6384653a4564}\label{classFECConv_ae3e796d0e026dca718ed6384653a4564}} 
+size\+\_\+t {\bfseries encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFECConv_afd897d6756bbbe4874942654e91a95e3}\label{classFECConv_afd897d6756bbbe4874942654e91a95e3}} 
+ssize\+\_\+t {\bfseries decode} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECConv_adbb15dc1ad17f9613559aa2527892be1}\label{classFECConv_adbb15dc1ad17f9613559aa2527892be1}} 
+size\+\_\+t {\bfseries inv\+\_\+rate}
+\item 
+\mbox{\Hypertarget{classFECConv_aeb8954d7d5bd977494cca5a6a35a9dbc}\label{classFECConv_aeb8954d7d5bd977494cca5a6a35a9dbc}} 
+size\+\_\+t {\bfseries order}
+\item 
+\mbox{\Hypertarget{classFECConv_a0978a376b15f30e89b8db481e229e0c7}\label{classFECConv_a0978a376b15f30e89b8db481e229e0c7}} 
+correct\+\_\+convolutional $\ast$ {\bfseries corr\+\_\+con}
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/protocol/fec.\+hpp\item 
+src/protocol/fec.\+cpp\end{DoxyCompactItemize}

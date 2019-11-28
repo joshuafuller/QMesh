@@ -1,0 +1,104 @@
+\hypertarget{classRadioTiming}{}\section{Radio\+Timing Class Reference}
+\label{classRadioTiming}\index{Radio\+Timing@{Radio\+Timing}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a8889214bcfb05975e8ed121a59ffb06c}\label{classRadioTiming_a8889214bcfb05975e8ed121a59ffb06c}} 
+void {\bfseries compute\+Times} (const uint32\+\_\+t bw, const uint8\+\_\+t sf, const uint8\+\_\+t cr, const uint32\+\_\+t n\+\_\+pre\+\_\+sym, uint8\+\_\+t n\+\_\+pld\+\_\+bytes)
+\item 
+\mbox{\Hypertarget{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}\label{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}} 
+void {\bfseries wait\+Full\+Slots} (const size\+\_\+t num\+\_\+slots)
+\item 
+\mbox{\Hypertarget{classRadioTiming_ab794bed8927778ed17a9cbbfe1cf4a5f}\label{classRadioTiming_ab794bed8927778ed17a9cbbfe1cf4a5f}} 
+void {\bfseries wait\+Rx\+Remainder} (const size\+\_\+t sym\+\_\+wait, const size\+\_\+t pre\+\_\+wait)
+\item 
+\mbox{\Hypertarget{classRadioTiming_a763af2aa098f7b311c149dbf062d40a2}\label{classRadioTiming_a763af2aa098f7b311c149dbf062d40a2}} 
+void {\bfseries calc\+Wait\+Symbol} (void)
+\item 
+\mbox{\Hypertarget{classRadioTiming_ab88cd62548731862e0a24c986bf095bf}\label{classRadioTiming_ab88cd62548731862e0a24c986bf095bf}} 
+void {\bfseries calc\+Wait\+Preamble} (void)
+\item 
+\mbox{\Hypertarget{classRadioTiming_a8451969371826cd733288652f5323053}\label{classRadioTiming_a8451969371826cd733288652f5323053}} 
+void {\bfseries wait\+Tx} (void)
+\item 
+\mbox{\Hypertarget{classRadioTiming_a20de4c0e271dcab020ab6fa999570855}\label{classRadioTiming_a20de4c0e271dcab020ab6fa999570855}} 
+void {\bfseries start\+Timer} (void)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classRadioTiming_aefbdd2b026a1a79309d6aeeefdaf40b8}\label{classRadioTiming_aefbdd2b026a1a79309d6aeeefdaf40b8}} 
+float {\bfseries sym\+\_\+time\+\_\+s}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ad19e65dbeeb639eb6ee649866e89e536}\label{classRadioTiming_ad19e65dbeeb639eb6ee649866e89e536}} 
+float {\bfseries pre\+\_\+time\+\_\+s}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ac36b1fb03c10f93b24d056874ac51a45}\label{classRadioTiming_ac36b1fb03c10f93b24d056874ac51a45}} 
+float {\bfseries pld\+\_\+time\+\_\+s}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a184adafe6bf2be6dfcf82ca2a0a5637e}\label{classRadioTiming_a184adafe6bf2be6dfcf82ca2a0a5637e}} 
+float {\bfseries pkt\+\_\+time\+\_\+s}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a81443aaabc3c0c3b78ed3043b17d5806}\label{classRadioTiming_a81443aaabc3c0c3b78ed3043b17d5806}} 
+float {\bfseries sym\+\_\+frac\+\_\+s}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ab5b6fbb40a3a6cbc106c8a11b1b0ad3c}\label{classRadioTiming_ab5b6fbb40a3a6cbc106c8a11b1b0ad3c}} 
+uint32\+\_\+t {\bfseries sym\+\_\+time\+\_\+ms}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a684ff61587b4e602d68e368828d5e0fd}\label{classRadioTiming_a684ff61587b4e602d68e368828d5e0fd}} 
+uint32\+\_\+t {\bfseries pre\+\_\+time\+\_\+ms}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a7844f4062af12e888c4518a077c5b71e}\label{classRadioTiming_a7844f4062af12e888c4518a077c5b71e}} 
+uint32\+\_\+t {\bfseries pld\+\_\+time\+\_\+ms}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a55dfaed2581c0a80e77a74bed7e4a8aa}\label{classRadioTiming_a55dfaed2581c0a80e77a74bed7e4a8aa}} 
+uint32\+\_\+t {\bfseries pkt\+\_\+time\+\_\+ms}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ae05d86854591a70740408ed065326693}\label{classRadioTiming_ae05d86854591a70740408ed065326693}} 
+uint32\+\_\+t {\bfseries sym\+\_\+frac\+\_\+ms}
+\item 
+\mbox{\Hypertarget{classRadioTiming_aa03e719ed43539a05e1c7cef92fc8f22}\label{classRadioTiming_aa03e719ed43539a05e1c7cef92fc8f22}} 
+uint32\+\_\+t {\bfseries sym\+\_\+time\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a08dd97045580ced34fc273ea4a70b5a5}\label{classRadioTiming_a08dd97045580ced34fc273ea4a70b5a5}} 
+uint32\+\_\+t {\bfseries pre\+\_\+time\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ab5e0df9c2b1eda8fdc63c871c005ea92}\label{classRadioTiming_ab5e0df9c2b1eda8fdc63c871c005ea92}} 
+uint32\+\_\+t {\bfseries pld\+\_\+time\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a754e188f6b7f7c35758a2772921b2772}\label{classRadioTiming_a754e188f6b7f7c35758a2772921b2772}} 
+uint32\+\_\+t {\bfseries pkt\+\_\+time\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_adb8ac7bfc6a47573783f81e2e73f6f19}\label{classRadioTiming_adb8ac7bfc6a47573783f81e2e73f6f19}} 
+uint32\+\_\+t {\bfseries sym\+\_\+frac\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_aaf4435d9eea1188f33cc4ee721d50aca}\label{classRadioTiming_aaf4435d9eea1188f33cc4ee721d50aca}} 
+uint32\+\_\+t {\bfseries n\+\_\+sym\+\_\+pre}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a45c73aab6fb2f5c99f7976719f645abf}\label{classRadioTiming_a45c73aab6fb2f5c99f7976719f645abf}} 
+uint32\+\_\+t {\bfseries n\+\_\+sym\+\_\+pld}
+\item 
+\mbox{\Hypertarget{classRadioTiming_af93a55972434e013e09fadcd311381ab}\label{classRadioTiming_af93a55972434e013e09fadcd311381ab}} 
+uint32\+\_\+t {\bfseries n\+\_\+sym\+\_\+pkt}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a67b79a8285adbcaf5dbc816dbf744f2b}\label{classRadioTiming_a67b79a8285adbcaf5dbc816dbf744f2b}} 
+uint32\+\_\+t {\bfseries sym\+\_\+wait\+\_\+factor}
+\item 
+\mbox{\Hypertarget{classRadioTiming_aba1eba0435a7dc3d3103e40a30086b9e}\label{classRadioTiming_aba1eba0435a7dc3d3103e40a30086b9e}} 
+uint32\+\_\+t {\bfseries sym\+\_\+wait\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a63d388c95d8eff525d12c199d6bd59fe}\label{classRadioTiming_a63d388c95d8eff525d12c199d6bd59fe}} 
+uint32\+\_\+t {\bfseries pre\+\_\+wait\+\_\+factor}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ae1c4611a8d342a27c11d7b6f7adcb6a9}\label{classRadioTiming_ae1c4611a8d342a27c11d7b6f7adcb6a9}} 
+uint32\+\_\+t {\bfseries pre\+\_\+wait\+\_\+us}
+\item 
+\mbox{\Hypertarget{classRadioTiming_a682b2b5c537f20be8668d76dbed42db9}\label{classRadioTiming_a682b2b5c537f20be8668d76dbed42db9}} 
+Timer {\bfseries tmr}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/protocol/mesh\+\_\+protocol.\+hpp\item 
+src/protocol/mesh\+\_\+protocol.\+cpp\end{DoxyCompactItemize}

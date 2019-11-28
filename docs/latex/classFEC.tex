@@ -1,0 +1,60 @@
+\hypertarget{classFEC}{}\section{F\+EC Class Reference}
+\label{classFEC}\index{F\+EC@{F\+EC}}
+
+
+Inheritance diagram for F\+EC\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=319pt]{classFEC__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFEC_a6504a5f7d5e1344538c25ed5481d0adb}\label{classFEC_a6504a5f7d5e1344538c25ed5481d0adb}} 
+virtual size\+\_\+t {\bfseries get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
+\item 
+\mbox{\Hypertarget{classFEC_abc86f45390c50b3cd90cade73a137355}\label{classFEC_abc86f45390c50b3cd90cade73a137355}} 
+virtual size\+\_\+t {\bfseries encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFEC_aec87f2d9c2305283d226197bf76891cf}\label{classFEC_aec87f2d9c2305283d226197bf76891cf}} 
+virtual ssize\+\_\+t {\bfseries decode} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+\item 
+\mbox{\Hypertarget{classFEC_a04ba63e1dac24bed00f448f9198e34b5}\label{classFEC_a04ba63e1dac24bed00f448f9198e34b5}} 
+virtual ssize\+\_\+t {\bfseries decode\+Soft} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg, const float snr)
+\item 
+\mbox{\Hypertarget{classFEC_aaccc10a6d38eb005f1f287119bdaecd8}\label{classFEC_aaccc10a6d38eb005f1f287119bdaecd8}} 
+void {\bfseries benchmark} (size\+\_\+t num\+\_\+iters)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFEC_aaf1d4259c61fe117e086ad07871d22a3}\label{classFEC_aaf1d4259c61fe117e086ad07871d22a3}} 
+static float {\bfseries get\+B\+ER} (const float snr)
+\item 
+\mbox{\Hypertarget{classFEC_a92c9959e49decd014767e50404b7d168}\label{classFEC_a92c9959e49decd014767e50404b7d168}} 
+static bool {\bfseries get\+Bit} (const vector$<$ uint8\+\_\+t $>$ \&bytes, const size\+\_\+t pos)
+\item 
+\mbox{\Hypertarget{classFEC_aa04c28eb445a68ef068632734126529c}\label{classFEC_aa04c28eb445a68ef068632734126529c}} 
+static void {\bfseries set\+Bit} (const bool bit, const size\+\_\+t pos, vector$<$ uint8\+\_\+t $>$ \&bytes)
+\item 
+\mbox{\Hypertarget{classFEC_a485fba806c7ca5fe2834e97e21aae0d5}\label{classFEC_a485fba806c7ca5fe2834e97e21aae0d5}} 
+static void {\bfseries interleave\+Bits} (const vector$<$ uint8\+\_\+t $>$ \&bytes, vector$<$ uint8\+\_\+t $>$ \&int\+\_\+bytes)
+\item 
+\mbox{\Hypertarget{classFEC_ae2d118ea33372eae137b01915b465b3f}\label{classFEC_ae2d118ea33372eae137b01915b465b3f}} 
+static void {\bfseries deinterleave\+Bits} (const vector$<$ uint8\+\_\+t $>$ \&int\+\_\+bytes, vector$<$ uint8\+\_\+t $>$ \&bytes)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFEC_abb6d143bc35d00ea0d302b1f70af9851}\label{classFEC_abb6d143bc35d00ea0d302b1f70af9851}} 
+string {\bfseries name}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/protocol/fec.\+hpp\item 
+src/protocol/fec.\+cpp\end{DoxyCompactItemize}
