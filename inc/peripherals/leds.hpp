@@ -21,6 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mbed.h"
 
+/**
+ * Class that wraps the board's LEDs, and provides basic features
+ * for turning LEDs on, off, and for blinking them at different 
+ * rates.
+ */
 class IndicatorLED {
 protected:    
     enum {
@@ -34,12 +39,22 @@ protected:
     float blink_period;
 
 public:
+    /// Function resonsible for blinking the LED.
     void blinkFn(void);
+    /**
+     * Constructor.
+     * @param led_pin_name Pin that controls the LED.
+     */
     IndicatorLED(PinName led_pin_name);
+    /// Set the LED to solid
     void LEDSolid(void);
+    /// Turn the LED off
     void LEDOff(void);
+    /// Blink the LED
     void LEDBlink(void);
+    /// Blink the LED quickly
     void LEDFastBlink(void);
+    /// Destructor
     ~IndicatorLED();
 };
 

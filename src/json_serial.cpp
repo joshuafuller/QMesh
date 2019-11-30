@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 Mail<std::shared_ptr<string>, 16> tx_ser_queue;
+
 void tx_serial_thread_fn(void) {
     for(;;) {
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
@@ -36,44 +37,9 @@ void tx_serial_thread_fn(void) {
 }
 
 static char rx_str[2048];
-#if 0
-void rx_serial_thread_fn(void) {
-    for(;;) {
-        if(scanf("%s\r\n", rx_str) != 0) {
-            debug_printf(DBG_WARN, "scanf() in Rx thread returned with error %d\r\n");
-            continue;
-        }
-        string rx_string(rx_str);
-        JSONSerial json_ser;
-        json_ser.loadJSONStr(rx_string);
-        string type_string;
-        json_ser.getType(type_string);
-        if(type_string == "Get Settings") {
-            JSONSerial tx_json_ser;
-            auto json_str = make_shared<string>();
-            tx_json_ser.settingsToJSON(radio_cb, *json_str);
-            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
-        }
-        else if(type_string == "Put Settings") {
-            string json_str;
-            json_ser.getSettings(radio_cb);
-        }
-        else if(type_string == "Status") {
-
-        }
-        else if(type_string == "Debug Msg") {
-            MBED_ASSERT(false);
-        }
-        else if(type_string == "Frame") {
-            Frame frame;
-            frame.loadFromJSON(*(json_ser.getJSONObj()));
-        }
-        else {
-            MBED_ASSERT(false);
-        }
-    }
-}
-#else
+/**
+ * Sends the current status.
+ */
 static void send_status(void);
 static void send_status(void) {
     MbedJSONValue status_json;
@@ -178,10 +144,7 @@ void rx_serial_thread_fn(void) {
         }
     }
 }
-#endif
 
-
-// Creates a JSON-formatted string for a given setting
 void JSONSerial::settingsToJSON(MbedJSONValue &my_nv_settings, string &json_str) {
     json["Type"] = "Settings";
     json["Frequency"] = my_nv_settings["Frequency"].get<int>();
@@ -192,8 +155,6 @@ void JSONSerial::settingsToJSON(MbedJSONValue &my_nv_settings, string &json_str)
     json_str = json.serialize();
 }
 
-
-// Creates a JSON-formatted string for the current status
 void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
     json["Type"] = "Status";
     json["Status"] = status;
@@ -201,9 +162,6 @@ void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
     json_str = json.serialize();
 }
 
-
-// Creates a JSON-formatted string for a debug printf, with the message being
-//  encoded as Base64
 void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
     json["Type"] = "Debug Msg";
     json["Timestamp"] = (int) time(NULL);
@@ -216,17 +174,15 @@ void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
     json_str = json.serialize();
 }
 
-// Loads a JSON-formatted string into the internal data structures
 void JSONSerial::loadJSONStr(string &json_str) {
     parse(json, json_str.c_str());
 }
 
-// Returns the type of the message
 void JSONSerial::getType(string &type_str) {
     type_str = json["Type"].get<string>();
 }
 
-// Loads a setting from the JSON string
+#warning Needs more work, need to add more settings
 void JSONSerial::getSettings(MbedJSONValue &nv_setting) {
     nv_setting["Freq"] = json["Freq"].get<int>();
     nv_setting["SF"] = json["SF"].get<int>();
@@ -235,8 +191,4 @@ void JSONSerial::getSettings(MbedJSONValue &nv_setting) {
     nv_setting["Mode"] = json["Mode"].get<string>();
 }
 
-// Get the JSON object. Needed to initialize a Frame.
-MbedJSONValue *JSONSerial::getJSONObj(void) {
-    return &json;
-}
 

@@ -59,6 +59,11 @@ void txCallback(void) {
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
+/**
+ * Checks to see if this Frame has been seen before. Returns a bool
+ * of whether it has. 
+ * @param rx_frame The frame to check.
+ */
 static bool checkRedundantPkt(shared_ptr<Frame> rx_frame);
 static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
     uint32_t crc = rx_frame->calculateUniqueCrc();

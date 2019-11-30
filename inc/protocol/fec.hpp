@@ -62,46 +62,28 @@ static correct_convolutional_polynomial_t conv_r12_7_polynomial[] = {0161, 0127}
 static correct_convolutional_polynomial_t conv_r12_8_polynomial[] = {0225, 0373};
 static correct_convolutional_polynomial_t conv_r12_9_polynomial[] = {0767, 0545};
 static correct_convolutional_polynomial_t conv_r13_6_polynomial[] = {053, 075, 047};
-static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153,
-                                                                                   0121};
-static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257,
-                                                                                   0351};
-static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627,
-                                                                                   0675};                        
-class NibbleArray {
-    protected:
-        vector<uint8_t> bytes;
-    public:
-        uint8_t getNibble(int idx) {
-            uint8_t byte = bytes[idx >> 1];
-            uint8_t sub_idx = idx & 0x1;
-            return (uint8_t) ((byte >> 4*sub_idx) & 0x0F);
-        }
+static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153, 0121};
+static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257, 0351};
+static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};                        
 
-        void setNibble(int idx, uint8_t val) {
-            uint8_t byte = bytes[idx >> 1];
-            if(!(idx & 0x1)) {
-                byte &= 0xF0;
-                byte |= (val & 0xF0);
-            }
-            else {
-                
-            }
-        }
-};
-
-
-// This class provides a way to magically apply forward error correction to 
-//  a character array provided.
+/**
+ * Base class for Forward Error Correction. Provides some generically-useful functions,
+ * like interleaving, but otherwise just functions as a dummy FEC class.
+ */
 class FEC {
 protected:
     string name;
 
 public:
+    /// Constructor.
     FEC(void) {
         name = "Dummy FEC";
     }
 
+    /**
+     * Takes the LoRa packet SNR and returns a corresponding a bit error rate.
+     * @param snr The LoRa SNR.
+     */
     static float getBER(const float snr);
 
     static bool getBit(const vector<uint8_t> &bytes, const size_t pos) {
@@ -140,20 +122,42 @@ public:
         }
     }
 
+    /**
+     * Get the encoded size.
+     * @param msg_len The unencoded size of the message.
+     */
     virtual size_t getEncSize(const size_t msg_len) {
         return msg_len;
     }
 
+    /**
+     * Apply the FEC coding. Returns the encoded size, in bytes.
+     * @param msg Byte vector of data to be encoded.
+     * @param enc_msg Byte vector of encoded data.
+     */
     virtual size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
         enc_msg = msg;
         return msg.size();
     }
 
+    /**
+     * Decode FEC-coded data. Returns the decoded data size, in bytes.
+     * @param enc_msg Byte vector of encoded data.
+     * @param dec_msg Byte vector of decoded data.
+     */
     virtual ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
         dec_msg = enc_msg;
         return dec_msg.size();
     }
  
+    /**
+     * Basic soft decoding. This soft decoding uses the whole-packet SNR to get a BER and thus
+     * fake some sort of soft decoding from this information. Should modestly improve the coding
+     * gain vs. hard decoding (roughly 0.2-0.3dB).
+     * @param enc_msg Byte vector of encoded data.
+     * @param dec_msg Byte vector of decoded data.
+     * @param snr LoRa whole-packet signal-to-noise ratio (SNR).
+     */
     virtual ssize_t decodeSoft(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg, const float snr) {
         return decode(enc_msg, dec_msg);
     }
@@ -162,6 +166,9 @@ public:
 };
 
 
+/**
+ * Derived class that just applies/removes the interleaving from the data.
+ */
 class FECInterleave : public FEC {
 public:
     FECInterleave(void) {
@@ -180,74 +187,9 @@ public:
 };
 
 
-class FECPolar : public FEC {
-protected:
-    shared_ptr<PolarCodeLib::PolarCode> polar_code;
-    size_t block_length;
-    size_t info_length;
-    size_t list_size;
-public:
-    FECPolar(const size_t my_block_length, const size_t my_info_length, const size_t my_list_size) {
-        name = "Polar Codes";
-        block_length = my_block_length;
-        info_length = my_info_length;
-        list_size = my_list_size;
-        polar_code = make_shared<PolarCodeLib::PolarCode>(PolarCodeLib::PolarCode(block_length, info_length, 0.32, 2));
-    }
-
-    size_t getEncSize(const size_t msg_len) {
-        return (1 << block_length);
-    }
-
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-        //std::vector<uint8_t> encode(std::vector<uint8_t> info_bits);
-        enc_msg = polar_code->encode(msg);
-        return enc_msg.size();
-    }
-
-    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
-        vector<float> p0, p1;
-        for(vector<uint8_t>::const_iterator iter = enc_msg.begin(); iter != enc_msg.end(); iter++) {
-            uint8_t my_byte = *iter;
-            for(int i = 0; i < 8; i++) {
-                if(my_byte & 0x1) {
-                    p0.push_back(0.0);
-                    p1.push_back(1.0);
-                }
-                else {
-                    p0.push_back(1.0);
-                    p1.push_back(0.0);
-                }
-                my_byte >>= 1;
-            }
-        }
-        //int list_size = radio_cb["Polar List Size"].get<int>();
-        dec_msg = polar_code->decode_scl_p1(p1, p0, list_size);
-        return dec_msg.size();
-    }
-
-    ssize_t decodeSoft(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg, const float snr) {
-        vector<float> p0, p1;
-        for(vector<uint8_t>::const_iterator iter = enc_msg.begin(); iter != enc_msg.end(); iter++) {
-            uint8_t my_byte = *iter;
-            for(int i = 0; i < 8; i++) {
-                if(my_byte & 0x1) {
-                    p0.push_back(0.0);
-                    p1.push_back(1.0);
-                }
-                else {
-                    p0.push_back(1.0);
-                    p1.push_back(0.0);
-                }
-                my_byte >>= 1;
-            }
-        }
-        dec_msg = polar_code->decode_scl_p1(p1, p0, list_size);
-        return dec_msg.size();
-    }
-};
-
-
+/**
+ * Derived class that uses convolutional coding.
+ */
 class FECConv: public FEC {
 protected:
     // Convolutional coding parameters
@@ -256,10 +198,19 @@ protected:
     correct_convolutional *corr_con;    
 
 public:    
+    /** 
+     * Default constructor. Creates an FECConv object with 1/2 rate and n=9.
+     */
     FECConv(void) : FECConv(2, 9) { }
 
+    /**
+     * Constructor parameterizable with coding rate and order.
+     * @param inv_rate Coding rate. 2 and 3 are currently the only rates implemented.
+     * @param order Order of the coder. Values supported are 6, 7, 8, and 9.
+     */
     FECConv(const size_t inv_rate, const size_t order);
 
+    /// Destructor.
     ~FECConv(void) {
         correct_convolutional_destroy(corr_con);
     }
@@ -288,6 +239,12 @@ public:
 };
 
 
+/**
+ * Derived class that implements Reed-Solomon-Viterbi (RSV)
+ * forward error correction. The convolutional coding is the same as 
+ * implemented in the FECConv class, and the Reed-Solomon outer code
+ * is a (256,223) code.
+ */
 class FECRSV: public FECConv {
 protected:
     size_t rs_corr_bytes;
@@ -295,6 +252,12 @@ protected:
     vector<uint8_t> rs_buf;
 
 public:
+    /**
+     * Constructor. 
+     * @param inv_rate Convolutional coding rate.
+     * @param order Convolutional coding order.
+     * @param my_rs_corr_bytes Number of Reed-Solomon correction bytes.
+     */
     FECRSV(const size_t inv_rate, const size_t order, const size_t my_rs_corr_bytes) 
         : FECConv(inv_rate, order) {
         name = "RSV";
@@ -303,9 +266,15 @@ public:
                                                   1, 1, rs_corr_bytes);
     }
 
+    /**
+     * Default constructor. Initializes with a convolutional coding rate of 2,
+     * n=9, and 32 Reed-Solomon correction bytes.
+     */
     FECRSV(void) : FECRSV(2, 9, 32) { };
 
-    ~FECRSV(void ) {
+    /// Destructor.
+    ~FECRSV(void) {
+        FECConv::~FECConv();
         correct_reed_solomon_destroy(rs_con);
     }
 

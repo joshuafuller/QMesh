@@ -37,8 +37,18 @@ enum DBG_TYPES {
     DBG_ERR,
 };
 
+/**
+ * Pretty-print a message to the debug output.
+ * @param dbg_type Debug type.
+ * @fmt The printf()-formatted string to be printed..
+ */
 int debug_printf(const enum DBG_TYPES, const char *fmt, ...);
 
+/**
+ * Pretty-print a message to the debug output.
+ * @param dbg_type Debug type.
+ * @fmt The printf()-formatted string to be printed..
+ */
 int debug_printf_clean(const enum DBG_TYPES, const char *fmt, ...);
 
 typedef enum {
@@ -52,6 +62,15 @@ typedef enum {
 
 #define BEACON_FRAME 0
 #define PAYLOAD_FRAME 1
+/**
+ * This class implements the QMesh Frame. It provides both the storage
+ * of Frame data fields as well as various methods for performing
+ * various functionality needed for QMesh, such as:
+ * - Checksum (CRC) calculations
+ * - Time-to-Live (TTL) handling
+ * - FEC encoding/decoding
+ * - Serialization/deserialization
+ */
 class Frame {
     typedef union {
         uint16_t crc;
@@ -84,28 +103,47 @@ protected:
 public:
     shared_ptr<FEC> fec;
 
+    /**
+    * Get the combined, un-FEC'd size of the Frame.
+    */
     static size_t size(void) {
         return radio_cb["Payload Length"].get<int>() + sizeof(pkt.hdr) + 
             sizeof(pkt.hdr_crc) + sizeof(pkt.data_crc);
     }
 
+    /**
+    * Default constructor. Constructs with a default FEC (one that does nothing).
+    */
     Frame() : Frame(make_shared<FEC>()){ }
 
+    /**
+    * Constructor that loads a specific FEC.
+    * @param my_fec shared_ptr to the FEC object.
+    */
     Frame(shared_ptr<FEC> my_fec) {
         fec = my_fec;
     }
 
-    // Load the frame with a payload and dummy values.
+    /**
+    * Create a frame with basic test values and load it into the Frame's data structure.
+    * @param buf The payload bytes.
+    */
     void loadTestFrame(vector<uint8_t> &buf);
 
-    // Load the payload into a buffer. Returns the number of bytes put into 
-    //  the buffer that's supplied as an argument.
+    /**
+    * Get the payload. Returns the number of bytes in the payload.
+    * @param buf Where the payload bytes are put.
+    */
     size_t getPayload(vector<uint8_t> &buf) {
         buf.resize(data.size());
         buf.assign(data.begin(), data.end());
         return data.size();
     }
 
+    /**
+    * Set the beacon string. Returns the size of the beacon string.
+    * @param beacon_str The beacon string.
+    */
     size_t setBeaconPayload(string &beacon_str) {
         data.resize(radio_cb["Payload Length"].get<int>());
         size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
@@ -122,141 +160,211 @@ public:
         return data.size();
     }
 
-    // Get an array of bytes of the frame for e.g. transmitting over the air.
+    /**
+    * FEC-encode the Frame, and provide the encoded bytes. Returns size in
+    * bytes of the FEC-encoded Frame.
+    * @param buf The vector that will hold the encoded Frame.
+    */
     size_t serialize(vector<uint8_t> &buf);
 
-    // Compute the header CRC.
+    /**
+    * Calculate the CRC of the header.
+    */
     uint16_t calculateHeaderCrc(void);
 
-    // Compute the payload CRC.
+    /**
+    * Calculate the CRC of the payload.
+    */
     uint16_t calculatePayloadCrc(void);
 
-    // Calculate the CRC for the "unique" information.
-    // The unique information consists of the type, stream_id, and payload.
+    /**
+    * Calculate the CRC for the "unique" information.
+    * The unique information consists of the type, stream_id, and payload.
+    * This method is primarily used to provide a unique "hash" for Frames
+    * in order to determine whether the QMesh node has seen them before.
+    */
     uint32_t calculateUniqueCrc(void);
 
-    // Check the header CRC. Returns true if a match, false if not.
+    /**
+     * Check the header CRC, returning True if a match, False if not.
+     */
     bool checkHeaderCrc(void) {
         return (pkt.hdr_crc.crc == calculateHeaderCrc());
     }
 
-    // Check the payload CRC. Returns true if a match, false if not.
+    /**
+     * Check the payload CRC, returning True if a match, False if not.
+     */
     bool checkPayloadCrc(void) {
         return (pkt.data_crc.crc == calculatePayloadCrc());
     }
 
-    // Check the integrity of the packet by checking both the header and payload CRCs
+    /**
+     * Check the integrity of the packet by checking both the header and payload CRCs
+     */
     bool checkIntegrity(void) {
         return (checkHeaderCrc() & checkPayloadCrc());
     }
 
-    // Set the header CRC, by computing it based on the current header data.
-    // Returns the computed CRC.
+    /**
+     * Sets the header CRC by computing it based on the curent header data.
+     * Also returns the computed CRC.
+     */
     uint16_t setHeaderCrc(void) {
         uint16_t crc = calculateHeaderCrc();
         pkt.hdr_crc.crc = crc;
         return crc;
     }
 
-    // Set the payload CRC, by computing it based on the current payload data.
-    // Returns the computed CRC.
+    /**
+     * Sets the payload CRC by computing it based on the curent payload data.
+     * Also returns the computed CRC.
+     */
     uint16_t setPayloadCrc(void) {
         uint16_t crc = calculatePayloadCrc();
         pkt.data_crc.crc = crc;
         return crc;
     }
 
-    // Take an array of bytes and unpack it into the object's internal data structures.
-    // In the process of doing this, it checks the packet for various things, returning
-    // the following:
-    //  1. PKT_BAD_HDR_CRC -- the header CRC is bad.
-    //  2. PKT_BAD_PLD_CRC -- the payload CRC is bad.
-    //  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
-    //  4. PKT_FEC_FAIL -- FEC decode failed.
-    //  5. PKT_OK -- the received packet data is ok
+    /**
+    * Takes a vector of bytes and loads it into the Frame's internal
+    * data structures. This is designed to take bytes received off the
+    * air, so it performs FEC decoding, and will return a PKT_STATUS_ENUM
+    * with the results (testing stuff out): \n
+    *  - PKT_FEC_FAIL -- FEC decoding failed \n
+    *  - PKT_BAD_SIZE -- Packet size is inconsistent with bytes decoded \n
+    *  - PKT_BAD_HDR_CRC -- Bad packet header CRC \n
+    *  - PKT_BAD_PLD_CRC -- Bad packet payload CRC \n
+    *  - PKT_OK -- Packet decoded successfully \n
+    *
+    * @param buf shared_ptr to a vector of received, encoded bytes to decode
+    */
     PKT_STATUS_ENUM deserialize(shared_ptr<vector<uint8_t>> buf); 
-    PKT_STATUS_ENUM deserialize(const vector<uint8_t> &buf);
 
-    // Increment the TTL, updating the header CRC in the process.
+    /**
+     * Increment the TTL, updating the header CRC in the process.
+     */
     void incrementTTL(void) {
         pkt.hdr.ttl += 1;
         setHeaderCrc();
     }
 
-    // Get the frame's current TTL value
+    /**
+     * Return the frame's current TTL value
+     */
     uint8_t getTTL(void) {
         return pkt.hdr.ttl;
     }
 
-    // Get the size of a packet
+    /** 
+     * Returns the the size of a packet
+     */
     static size_t getPktSize(void) {
         return sizeof(frame_pkt);
     }
 
-    // Get the size of a packet header
+    /**
+     * Returns the size of a packet header
+     */
     static size_t getHdrSize(void) {
         return sizeof(frame_hdr);
     }
 
-    // Get the size of a packet with fec
+    /**
+    * Get the size, in bytes, of a Frame after FEC encoding.
+    */
     size_t getFullPktSize(void);
 
-    // Get the offsets from the packet header
+    /** 
+     * Get the offsets from the packet header
+     * @param pre_offset Number of preamble-length offsets
+     * @param nsym_offset Number of symbol-length offsets
+     * @param sym_offset Intra-symbol offset.
+     */
     void getOffsets(uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset) {
         *pre_offset = pkt.hdr.pre_offset;
         *nsym_offset = pkt.hdr.nsym_offset;
         *sym_offset = pkt.hdr.sym_offset;
     }
 
-    // Set the offsets to the packet header
+    /** 
+     * Get the offsets in the packet header
+     * @param pre_offset Number of preamble-length offsets
+     * @param nsym_offset Number of symbol-length offsets
+     * @param sym_offset Intra-symbol offset.
+     */
     void setOffsets(const uint8_t *pre_offset, const uint8_t *nsym_offset, const uint8_t *sym_offset) {
         pkt.hdr.pre_offset = *pre_offset;
         pkt.hdr.nsym_offset = *nsym_offset;
         pkt.hdr.sym_offset = *sym_offset;
     }
 
-    // Get/set the receive stats
+    /**
+     * Get the receive statistics
+     * @param rssi Full-packet RSSI
+     * @param snr Full-packet SNR
+     * @param rx_size Number of bytes received
+     */
     void getRxStats(int16_t &rssi, int8_t &snr, uint16_t &rx_size) {
         rssi = this->rssi;
         snr = this->snr;
         rx_size = this->rx_size;
     }
 
+    /**
+     * Set the receive statistics
+     * @param rssi Full-packet RSSI
+     * @param snr Full-packet SNR
+     * @param rx_size Number of bytes received
+     */
     void setRxStats(const int16_t rssi, const int8_t snr, const uint16_t rx_size) {
         this->rssi = rssi;
         this->snr = snr;
         this->rx_size = rx_size;
     }
 
+    /**
+     * Returns the payload CRC stored within the Frame object.
+     */
     uint16_t getPayloadCrc(void) {
         return this->pkt.data_crc.crc;
     }
 
+    /**
+     * Returns the header CRC stored within the Frame object.
+     */
     uint16_t getHeaderCrc(void) {
         return this->pkt.hdr_crc.crc;
     }
 
-    // Pretty-print the Frame.
+    /**
+    * Pretty-print the Frame's fields to the debug output.
+    * @param dbg_type Debug type to use with the calls to debug_printf().
+    */
     void prettyPrint(const enum DBG_TYPES dbg_type);
 
-    // Load the frame with a parsed JSON object
+    /**
+    * Load the frame's fields from a parsed JSON object
+    * @param json MbedJSONValue holding Frame's parameters.
+    */
     void loadFromJSON(MbedJSONValue &json);
 
-    // Save the frame's contents to a JSON object.
+    /**
+    * Load the JSON object with the Frame's fields.
+    * @param json MbedJSONValue holding Frame's parameters.
+    */
     void saveToJSON(MbedJSONValue &json);
 };
 
 
 extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
-
-template <class T> 
-void enqueue_mail(Mail<T, 16> &mail_queue, T val);
-
-template <class T>
-T dequeue_mail(Mail<T, 16> &mail_queue);
-
-
+/** 
+ * Enqueues a value onto an Mbed OS mailbox.
+ * @param mail_queue The mailbox.
+ * @param T The type of the value to be enqueued.
+ * @param val The value to be enqueued.
+ */
 template <class T> 
 void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
     auto mail_item = mail_queue.alloc();
@@ -269,6 +377,11 @@ void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
     }
 }
 
+/** 
+ * Dequeues a value from an Mbed OS mailbox. Returns the dequeued value.
+ * @param mail_queue The mailbox.
+ * @param T The type of the value to be dequeued.
+ */
 template <class T>
 T dequeue_mail(Mail<T, 16> &mail_queue) {
     T mail_item; 

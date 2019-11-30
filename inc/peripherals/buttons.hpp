@@ -21,17 +21,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void reboot_system(void);
 
+/**
+ * Class that provides useful functionality around the board's
+ * pushbuttons.
+ */
 class PushButton {
 protected:
     bool was_pressed;
     InterruptIn *btn;
 public:
+    /**
+     * Constructor.
+     * @param button The pin controlled by the pushbutton.
+     */
     PushButton(PinName button);
 
+    /// Interrupt handler that gets called on a button press.
     void btnInterrupt(void);
     
+    /// Determine whether button was pressed between now and 
+    /// the last time getPressed() was called.
     bool getPressed(void);
 
+    /// Destructor.
     ~PushButton();
 };
 

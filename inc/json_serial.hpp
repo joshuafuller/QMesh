@@ -38,34 +38,60 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mesh_protocol.hpp"
 
 extern Mail<std::shared_ptr<string>, 16> tx_ser_queue;
+/// Produces an MbedJSONValue with the current status and queues it for transmission.
 void tx_serial_thread_fn(void);
+/// Serial thread function that receives serial data, and processes it accordingly.
 void rx_serial_thread_fn(void);
 
+/**
+ * Class that converts various data types into JSON-formatted strings for 
+ * storage and/or transmission over the serial port.
+ */
 class JSONSerial {
 protected:
     MbedJSONValue json;
 public:
-// Creates a JSON-formatted string for a given setting
+/** 
+* Converts an MbedJSONValue settings variable into a JSON-formatted string.
+* @param my_nv_settings Settings variable input.
+* @param json_str JSON-formatted output string.
+*/
 void settingsToJSON(MbedJSONValue &nv_settings, string &json_str);
 
-// Creates a JSON-formatted string for the current status
+/** 
+* Creates a JSON-formatted string for the current status 
+* @param status Name of status value.
+* @param value Status value.
+* @param json_str JSON-formatted output string.
+*/
 void statusToJSON(string &status, string &value, string &json_str);
 
-// Creates a JSON-formatted string for a debug printf, with the message being
-//  encoded as Base64
+/**
+ * Creates a JSON-formatted string for the debug_printf() function. 
+ * The message is encoded as Base64.
+ * @param dbg_msg Plaintext debug message (input), as a string
+ * @param json_str JSON-formatted debug message (output), as a string
+ */
 void dbgPrintfToJSON(string &dbg_msg, string &json_str);
 
-// Loads a JSON-formatted string into the internal data structures
+/**
+ * Loads a JSON-formatted string into the internal data structures
+ * @param json_str The JSON-formatted input string.
+ */
 void loadJSONStr(string &json_str);
 
-// Returns the type of the message
+/**
+ * Get the type of the JSONSerial block.
+ * @param type_str The string where the type is put.
+ */
 void getType(string &type_str);
 
-// Loads a setting from the JSON string
+/**
+ * Get the type of the JSONSerial block.
+ * @param nv_setting MbedJSONValue with the settings loaded into it.
+ */
 void getSettings(MbedJSONValue &nv_setting);
 
-// Get the JSON object. Needed to initialize a Frame.
-MbedJSONValue *getJSONObj(void);
 };
 
 extern JSONSerial tx_json_ser;

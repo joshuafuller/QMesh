@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
-// Load the frame with a payload and dummy values.
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
     pkt.hdr.type = 0;
     pkt.hdr.stream_id = 1;
@@ -42,12 +41,11 @@ void Frame::loadTestFrame(vector<uint8_t> &buf) {
     setPayloadCrc();
 }
 
-// Get the size of a packet with fec
+
 size_t Frame::getFullPktSize(void) {
     return fec->getEncSize(getPktSize());
 }
 
-// Get an array of bytes of the frame for e.g. transmitting over the air.
 size_t Frame::serialize(vector<uint8_t> &buf) {
     debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
     vector<uint8_t> ser_frame;
@@ -58,7 +56,6 @@ size_t Frame::serialize(vector<uint8_t> &buf) {
     return fec->encode(ser_frame, buf);
 }
 
-// Compute the header CRC.
 uint16_t Frame::calculateHeaderCrc(void) {
     // Header
     MbedCRC<POLY_16BIT_CCITT, 16> ct;
@@ -67,7 +64,6 @@ uint16_t Frame::calculateHeaderCrc(void) {
     return crc & 0x0000FFFF;
 }
 
-// Compute the payload CRC.
 uint16_t Frame::calculatePayloadCrc(void) {
     MbedCRC<POLY_16BIT_CCITT, 16> ct;
     uint32_t crc = 0;
@@ -75,8 +71,6 @@ uint16_t Frame::calculatePayloadCrc(void) {
     return crc & 0x0000FFFF;
 }
 
-// Calculate the CRC for the "unique" information.
-// The unique information consists of the type, stream_id, and payload.
 uint32_t Frame::calculateUniqueCrc(void) {
     vector<uint8_t> buf;
     buf.push_back((uint8_t) pkt.hdr.type);
@@ -88,25 +82,11 @@ uint32_t Frame::calculateUniqueCrc(void) {
     return crc;        
 }
 
-// Take an array of bytes and unpack it into the object's internal data structures.
-// In the process of doing this, it checks the packet for various things, returning
-// the following:
-//  1. PKT_BAD_HDR_CRC -- the header CRC is bad.
-//  2. PKT_BAD_PLD_CRC -- the payload CRC is bad.
-//  3. PKT_BAD_SIZE -- the received bytes do not match the packet size.
-//  4. PKT_FEC_FAIL -- FEC decode failed.
-//  5. PKT_OK -- the received packet data is ok
-PKT_STATUS_ENUM Frame::deserialize(std::shared_ptr<vector<uint8_t>> buf) {
-    MBED_ASSERT(buf->size() > 256);
-    vector<uint8_t> tmp_buf(*buf);
-    return this->deserialize(tmp_buf);
-}
-
-PKT_STATUS_ENUM Frame::deserialize(const vector<uint8_t> &buf) {
+PKT_STATUS_ENUM Frame::deserialize(const std::shared_ptr<vector<uint8_t>> buf) {
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
-    debug_printf(DBG_WARN, "Received %d bytes\r\n", buf.size());
-    ssize_t bytes_dec = fec->decode(buf, dec_buf);
+    debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
+    ssize_t bytes_dec = fec->decode(*buf, dec_buf);
     debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
     if(bytes_dec == -1) {
         debug_printf(DBG_INFO, "FEC Failed\r\n");
@@ -140,7 +120,6 @@ PKT_STATUS_ENUM Frame::deserialize(const vector<uint8_t> &buf) {
     return pkt_status;
 }
 
-// Load the frame with a parsed JSON object
 void Frame::loadFromJSON(MbedJSONValue &json) {
     pkt.hdr.type = json["HDR Pkt Type"].get<int>();
     pkt.hdr.stream_id = json["HDR Stream ID"].get<int>();
@@ -161,7 +140,6 @@ void Frame::loadFromJSON(MbedJSONValue &json) {
         (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
 }
 
-// Save the frame's contents to a JSON object.
 void Frame::saveToJSON(MbedJSONValue &json) {
     json["Type"] = "Frame";
     json["HDR Pkt Type"] = pkt.hdr.type;
@@ -182,7 +160,6 @@ void Frame::saveToJSON(MbedJSONValue &json) {
     delete [] b64_buf;
 }
 
-// Pretty-print the Frame.
 void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "==========\r\n");
     debug_printf(dbg_type, "Frame Info\r\n");
@@ -207,9 +184,6 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
 }
 
-
-// Special debug printf. Prepends "[-] " to facilitate using the same
-//  UART for both AT commands as well as debug commands.
 int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
