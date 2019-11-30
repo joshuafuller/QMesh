@@ -1,5 +1,9 @@
 \hypertarget{classJSONSerial}{}\section{J\+S\+O\+N\+Serial Class Reference}
 \label{classJSONSerial}\index{J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}}
+
+
+{\ttfamily \#include $<$json\+\_\+serial.\+hpp$>$}
+
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
@@ -14,8 +18,6 @@ void \hyperlink{classJSONSerial_a21379660c361f4d26f0fd42a4734662e}{load\+J\+S\+O
 void \hyperlink{classJSONSerial_ace1745d4308eef3f8734186cf55496e2}{get\+Type} (string \&type\+\_\+str)
 \item 
 void \hyperlink{classJSONSerial_a7f12c4a3d58ff26825fbaf8694b7a795}{get\+Settings} (Mbed\+J\+S\+O\+N\+Value \&nv\+\_\+setting)
-\item 
-Mbed\+J\+S\+O\+N\+Value $\ast$ \hyperlink{classJSONSerial_a80f901fa66a7d4e5ed91c01493e5adfe}{get\+J\+S\+O\+N\+Obj} (void)
 \end{DoxyCompactItemize}
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
@@ -24,6 +26,9 @@ Mbed\+J\+S\+O\+N\+Value $\ast$ \hyperlink{classJSONSerial_a80f901fa66a7d4e5ed91c
 Mbed\+J\+S\+O\+N\+Value {\bfseries json}
 \end{DoxyCompactItemize}
 
+
+\subsection{Detailed Description}
+Class that converts various data types into J\+S\+O\+N-\/formatted strings for storage and/or transmission over the serial port. 
 
 \subsection{Member Function Documentation}
 \mbox{\Hypertarget{classJSONSerial_a6070c03a5caca84d5bd4237db0bd28c4}\label{classJSONSerial_a6070c03a5caca84d5bd4237db0bd28c4}} 
@@ -39,13 +44,7 @@ Creates a J\+S\+O\+N-\/formatted string for the debug\+\_\+printf() function. Th
 {\em json\+\_\+str} & J\+S\+O\+N-\/formatted debug message (output), as a string \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classJSONSerial_a80f901fa66a7d4e5ed91c01493e5adfe}\label{classJSONSerial_a80f901fa66a7d4e5ed91c01493e5adfe}} 
-\index{J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}!get\+J\+S\+O\+N\+Obj@{get\+J\+S\+O\+N\+Obj}}
-\index{get\+J\+S\+O\+N\+Obj@{get\+J\+S\+O\+N\+Obj}!J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}}
-\subsubsection{\texorpdfstring{get\+J\+S\+O\+N\+Obj()}{getJSONObj()}}
-{\footnotesize\ttfamily Mbed\+J\+S\+O\+N\+Value $\ast$ J\+S\+O\+N\+Serial\+::get\+J\+S\+O\+N\+Obj (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
-
-Get a pointer to the J\+S\+ON object itself. \mbox{\Hypertarget{classJSONSerial_a7f12c4a3d58ff26825fbaf8694b7a795}\label{classJSONSerial_a7f12c4a3d58ff26825fbaf8694b7a795}} 
+\mbox{\Hypertarget{classJSONSerial_a7f12c4a3d58ff26825fbaf8694b7a795}\label{classJSONSerial_a7f12c4a3d58ff26825fbaf8694b7a795}} 
 \index{J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}!get\+Settings@{get\+Settings}}
 \index{get\+Settings@{get\+Settings}!J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}}
 \subsubsection{\texorpdfstring{get\+Settings()}{getSettings()}}
@@ -73,16 +72,16 @@ Get the type of the \hyperlink{classJSONSerial}{J\+S\+O\+N\+Serial} block.
 \subsubsection{\texorpdfstring{load\+J\+S\+O\+N\+Str()}{loadJSONStr()}}
 {\footnotesize\ttfamily void J\+S\+O\+N\+Serial\+::load\+J\+S\+O\+N\+Str (\begin{DoxyParamCaption}\item[{string \&}]{json\+\_\+str }\end{DoxyParamCaption})}
 
-Loads a J\+S\+O\+N-\/formatted string into the internal data structures of the object. 
+Loads a J\+S\+O\+N-\/formatted string into the internal data structures 
 \begin{DoxyParams}{Parameters}
-{\em json\+\_\+str} & A J\+S\+O\+N-\/formatted string. \\
+{\em json\+\_\+str} & The J\+S\+O\+N-\/formatted input string. \\
 \hline
 \end{DoxyParams}
 \mbox{\Hypertarget{classJSONSerial_a32f2b8eddfbe137c61b77352445e1e09}\label{classJSONSerial_a32f2b8eddfbe137c61b77352445e1e09}} 
 \index{J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}!settings\+To\+J\+S\+ON@{settings\+To\+J\+S\+ON}}
 \index{settings\+To\+J\+S\+ON@{settings\+To\+J\+S\+ON}!J\+S\+O\+N\+Serial@{J\+S\+O\+N\+Serial}}
 \subsubsection{\texorpdfstring{settings\+To\+J\+S\+O\+N()}{settingsToJSON()}}
-{\footnotesize\ttfamily void J\+S\+O\+N\+Serial\+::settings\+To\+J\+S\+ON (\begin{DoxyParamCaption}\item[{Mbed\+J\+S\+O\+N\+Value \&}]{my\+\_\+nv\+\_\+settings,  }\item[{string \&}]{json\+\_\+str }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void J\+S\+O\+N\+Serial\+::settings\+To\+J\+S\+ON (\begin{DoxyParamCaption}\item[{Mbed\+J\+S\+O\+N\+Value \&}]{nv\+\_\+settings,  }\item[{string \&}]{json\+\_\+str }\end{DoxyParamCaption})}
 
 Converts an Mbed\+J\+S\+O\+N\+Value settings variable into a J\+S\+O\+N-\/formatted string. 
 \begin{DoxyParams}{Parameters}

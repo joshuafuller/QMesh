@@ -2,8 +2,11 @@
 \label{classFECConv}\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}}
 
 
-Inheritance diagram for F\+E\+C\+Conv\+:
-\nopagebreak
+{\ttfamily \#include $<$fec.\+hpp$>$}
+
+
+
+Inheritance diagram for F\+E\+C\+Conv\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -12,8 +15,7 @@ Inheritance diagram for F\+E\+C\+Conv\+:
 \end{figure}
 
 
-Collaboration diagram for F\+E\+C\+Conv\+:
-\nopagebreak
+Collaboration diagram for F\+E\+C\+Conv\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -23,17 +25,18 @@ Collaboration diagram for F\+E\+C\+Conv\+:
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classFECConv_a884d27178ca0484f4692b78fa31fd898}\label{classFECConv_a884d27178ca0484f4692b78fa31fd898}} 
-{\bfseries F\+E\+C\+Conv} (const size\+\_\+t inv\+\_\+rate, const size\+\_\+t order)
+\hyperlink{classFECConv_ac0159362b45b9f7840e3bf7223cd6e48}{F\+E\+C\+Conv} (void)
 \item 
-\mbox{\Hypertarget{classFECConv_a3b49acf69440d2677e3181513b9f3592}\label{classFECConv_a3b49acf69440d2677e3181513b9f3592}} 
-size\+\_\+t {\bfseries get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
+\hyperlink{classFECConv_a884d27178ca0484f4692b78fa31fd898}{F\+E\+C\+Conv} (const size\+\_\+t inv\+\_\+rate, const size\+\_\+t order)
 \item 
-\mbox{\Hypertarget{classFECConv_ae3e796d0e026dca718ed6384653a4564}\label{classFECConv_ae3e796d0e026dca718ed6384653a4564}} 
-size\+\_\+t {\bfseries encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\mbox{\Hypertarget{classFECConv_a021d8db3fb79146d02b99015e4678ba4}\label{classFECConv_a021d8db3fb79146d02b99015e4678ba4}} 
+\hyperlink{classFECConv_a021d8db3fb79146d02b99015e4678ba4}{$\sim$\+F\+E\+C\+Conv} (void)
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+size\+\_\+t \hyperlink{classFECConv_a3b49acf69440d2677e3181513b9f3592}{get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
 \item 
-\mbox{\Hypertarget{classFECConv_afd897d6756bbbe4874942654e91a95e3}\label{classFECConv_afd897d6756bbbe4874942654e91a95e3}} 
-ssize\+\_\+t {\bfseries decode} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+size\+\_\+t \hyperlink{classFECConv_ae3e796d0e026dca718ed6384653a4564}{encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\item 
+ssize\+\_\+t \hyperlink{classFECConv_afd897d6756bbbe4874942654e91a95e3}{decode} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
 \end{DoxyCompactItemize}
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
@@ -48,6 +51,95 @@ size\+\_\+t {\bfseries order}
 correct\+\_\+convolutional $\ast$ {\bfseries corr\+\_\+con}
 \end{DoxyCompactItemize}
 \subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Derived class that uses convolutional coding. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classFECConv_ac0159362b45b9f7840e3bf7223cd6e48}\label{classFECConv_ac0159362b45b9f7840e3bf7223cd6e48}} 
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\subsubsection{\texorpdfstring{F\+E\+C\+Conv()}{FECConv()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily F\+E\+C\+Conv\+::\+F\+E\+C\+Conv (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Default constructor. Creates an \hyperlink{classFECConv}{F\+E\+C\+Conv} object with 1/2 rate and n=9. \mbox{\Hypertarget{classFECConv_a884d27178ca0484f4692b78fa31fd898}\label{classFECConv_a884d27178ca0484f4692b78fa31fd898}} 
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\subsubsection{\texorpdfstring{F\+E\+C\+Conv()}{FECConv()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily F\+E\+C\+Conv\+::\+F\+E\+C\+Conv (\begin{DoxyParamCaption}\item[{const size\+\_\+t}]{inv\+\_\+rate,  }\item[{const size\+\_\+t}]{order }\end{DoxyParamCaption})}
+
+Constructor parameterizable with coding rate and order. 
+\begin{DoxyParams}{Parameters}
+{\em inv\+\_\+rate} & Coding rate. 2 and 3 are currently the only rates implemented. \\
+\hline
+{\em order} & Order of the coder. Values supported are 6, 7, 8, and 9. \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classFECConv_afd897d6756bbbe4874942654e91a95e3}\label{classFECConv_afd897d6756bbbe4874942654e91a95e3}} 
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!decode@{decode}}
+\index{decode@{decode}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\subsubsection{\texorpdfstring{decode()}{decode()}}
+{\footnotesize\ttfamily ssize\+\_\+t F\+E\+C\+Conv\+::decode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{dec\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Decode F\+E\+C-\/coded data. Returns the decoded data size, in bytes. 
+\begin{DoxyParams}{Parameters}
+{\em enc\+\_\+msg} & Byte vector of encoded data. \\
+\hline
+{\em dec\+\_\+msg} & Byte vector of decoded data. \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{classFEC_aec87f2d9c2305283d226197bf76891cf}{F\+EC}.
+
+
+
+Reimplemented in \hyperlink{classFECRSV_a4781900bd59579d7a380687c59179ae5}{F\+E\+C\+R\+SV}.
+
+\mbox{\Hypertarget{classFECConv_ae3e796d0e026dca718ed6384653a4564}\label{classFECConv_ae3e796d0e026dca718ed6384653a4564}} 
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!encode@{encode}}
+\index{encode@{encode}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\subsubsection{\texorpdfstring{encode()}{encode()}}
+{\footnotesize\ttfamily size\+\_\+t F\+E\+C\+Conv\+::encode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Apply the \hyperlink{classFEC}{F\+EC} coding. Returns the encoded size, in bytes. 
+\begin{DoxyParams}{Parameters}
+{\em msg} & Byte vector of data to be encoded. \\
+\hline
+{\em enc\+\_\+msg} & Byte vector of encoded data. \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{classFEC_abc86f45390c50b3cd90cade73a137355}{F\+EC}.
+
+
+
+Reimplemented in \hyperlink{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}{F\+E\+C\+R\+SV}.
+
+\mbox{\Hypertarget{classFECConv_a3b49acf69440d2677e3181513b9f3592}\label{classFECConv_a3b49acf69440d2677e3181513b9f3592}} 
+\index{F\+E\+C\+Conv@{F\+E\+C\+Conv}!get\+Enc\+Size@{get\+Enc\+Size}}
+\index{get\+Enc\+Size@{get\+Enc\+Size}!F\+E\+C\+Conv@{F\+E\+C\+Conv}}
+\subsubsection{\texorpdfstring{get\+Enc\+Size()}{getEncSize()}}
+{\footnotesize\ttfamily size\+\_\+t F\+E\+C\+Conv\+::get\+Enc\+Size (\begin{DoxyParamCaption}\item[{const size\+\_\+t}]{msg\+\_\+len }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Get the encoded size. 
+\begin{DoxyParams}{Parameters}
+{\em msg\+\_\+len} & The unencoded size of the message. \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{classFEC_a6504a5f7d5e1344538c25ed5481d0adb}{F\+EC}.
+
+
+
+Reimplemented in \hyperlink{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}{F\+E\+C\+R\+SV}.
+
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}

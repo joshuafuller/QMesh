@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['nv_5fsettings_5ft',['nv_settings_t',['../structnv__settings__t.html',1,'']]]
+  ['mbed_5fsettings',['mbed_settings',['../namespacembed__settings.html',1,'']]]
 ];

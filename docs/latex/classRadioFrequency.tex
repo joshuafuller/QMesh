@@ -1,12 +1,19 @@
 \hypertarget{classRadioFrequency}{}\section{Radio\+Frequency Class Reference}
 \label{classRadioFrequency}\index{Radio\+Frequency@{Radio\+Frequency}}
+
+
+{\ttfamily \#include $<$mesh\+\_\+protocol.\+hpp$>$}
+
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
 \mbox{\Hypertarget{classRadioFrequency_af98f36e60d90b65ef009767fc1af4d79}\label{classRadioFrequency_af98f36e60d90b65ef009767fc1af4d79}} 
-uint32\+\_\+t {\bfseries get\+Wobbled\+Freq} (void)
-\end{DoxyCompactItemize}
+uint32\+\_\+t \hyperlink{classRadioFrequency_af98f36e60d90b65ef009767fc1af4d79}{get\+Wobbled\+Freq} (void)
+\begin{DoxyCompactList}\small\item\em Get a wobbled frequency. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
+
+\subsection{Detailed Description}
+This class handles \char`\"{}wobbling\char`\"{} the frequency. Wobbling the frequency involves randomly changing the center frequency to some value that stays within the frequency error tolerance of Lo\+Ra (roughly +/-\/ 20\% of the modulated bandwidth). The goal of frequency wobbling is to reduce the amount of overlap between concurrent transmissions in order to increase the likelihood of successful capture of one of the transmissions. 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 

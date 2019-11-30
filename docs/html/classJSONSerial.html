@@ -66,6 +66,8 @@ $(function() {
 <div class="title">JSONSerial Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="json__serial_8hpp_source.html">json_serial.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -81,8 +83,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ace1745d4308eef3f8734186cf55496e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f12c4a3d58ff26825fbaf8694b7a795"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classJSONSerial.html#a7f12c4a3d58ff26825fbaf8694b7a795">getSettings</a> (MbedJSONValue &amp;nv_setting)</td></tr>
 <tr class="separator:a7f12c4a3d58ff26825fbaf8694b7a795"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80f901fa66a7d4e5ed91c01493e5adfe"><td class="memItemLeft" align="right" valign="top">MbedJSONValue *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classJSONSerial.html#a80f901fa66a7d4e5ed91c01493e5adfe">getJSONObj</a> (void)</td></tr>
-<tr class="separator:a80f901fa66a7d4e5ed91c01493e5adfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -90,7 +90,9 @@ Protected Attributes</h2></td></tr>
 MbedJSONValue&#160;</td><td class="memItemRight" valign="bottom"><b>json</b></td></tr>
 <tr class="separator:a2331c7c7da1ee32488b9c73821703c8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Class that converts various data types into JSON-formatted strings for storage and/or transmission over the serial port. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a6070c03a5caca84d5bd4237db0bd28c4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6070c03a5caca84d5bd4237db0bd28c4">&#9670;&nbsp;</a></span>dbgPrintfToJSON()</h2>
 
@@ -123,25 +125,6 @@ MbedJSONValue&#160;</td><td class="memItemRight" valign="bottom"><b>json</b></td
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a80f901fa66a7d4e5ed91c01493e5adfe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a80f901fa66a7d4e5ed91c01493e5adfe">&#9670;&nbsp;</a></span>getJSONObj()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">MbedJSONValue * JSONSerial::getJSONObj </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Get a pointer to the JSON object itself. </p>
 
 </div>
 </div>
@@ -208,9 +191,9 @@ MbedJSONValue&#160;</td><td class="memItemRight" valign="bottom"><b>json</b></td
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Loads a JSON-formatted string into the internal data structures of the object. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Loads a JSON-formatted string into the internal data structures </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">json_str</td><td>A JSON-formatted string. </td></tr>
+    <tr><td class="paramname">json_str</td><td>The JSON-formatted input string. </td></tr>
   </table>
   </dd>
 </dl>
@@ -227,7 +210,7 @@ MbedJSONValue&#160;</td><td class="memItemRight" valign="bottom"><b>json</b></td
           <td class="memname">void JSONSerial::settingsToJSON </td>
           <td>(</td>
           <td class="paramtype">MbedJSONValue &amp;&#160;</td>
-          <td class="paramname"><em>my_nv_settings</em>, </td>
+          <td class="paramname"><em>nv_settings</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
