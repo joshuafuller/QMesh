@@ -36,6 +36,7 @@ extern SX1276_LoRaRadio radio;
 extern SX126X_LoRaRadio radio;
 #endif
 
+/// Two modes: normal mesh mode, and beacon mode.
 typedef enum {
     MESH_MODE_NORMAL,
     MESH_MODE_BEACON,

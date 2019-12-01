@@ -1,0 +1,9 @@
+Q\+Mesh is a synchronized flooded mesh network designed to stream at a low data rate. While the data rate is slow, it should suffice for e.\+g. Codec2 voice data. This initial Proof-\/of-\/\+Concept leverages the A\+RM Mbed framework, the S\+T\+M32 Nucleo series of S\+T\+M32 development boards, and Arduino and Mbed shields.
+
+\subsection*{Mitigating the collision/broadcast storm problem}
+
+In a synchronized, flooded mesh, all nodes retransmit at roughly the same time, creating collisions. Lo\+Ra, a form of Chirp Spread Spectrum (C\+SS), possesses several unique properties that can allow for successful receipt of one packet in the midst of one or more collisions. First, spread spectrum modulations (C\+SS as well as D\+S\+SS and F\+H\+SS) spread signal energy such that concurrent transmissions are less likely to overlap and thus interfere. Second, Semtech\textquotesingle{}s Lo\+Ra chipsets allow for a per-\/data-\/symbol frequency hopping that can further spread concurrent transmissions from each other. This F\+H\+SS can also be combined with a form of slotted A\+L\+O\+HA to greatly reduce the probability that packets will collide at all. Third, Lo\+Ra is highly resistant to frequency error. Deliberately adding frequency error can spread out concurrent transmissions so that they do not interfere with each other.
+
+\subsection*{Licensing.}
+
+Q\+Mesh is licensed under the G\+NU G\+PL License v3; however, a commercial license is also available for entities who do not want to release their source code changes. Please contact Dan Fay at \href{mailto:daniel.fay@gmail.com}{\tt daniel.\+fay@gmail.\+com} for more information about this. 
