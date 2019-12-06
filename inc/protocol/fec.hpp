@@ -274,7 +274,6 @@ public:
 
     /// Destructor.
     ~FECRSV(void) {
-        FECConv::~FECConv();
         correct_reed_solomon_destroy(rs_con);
     }
 
