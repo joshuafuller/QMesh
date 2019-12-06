@@ -47,13 +47,6 @@ void init_filesystem(void) {
     debug_printf(DBG_INFO, "bd program size: %llu\n", bd.get_program_size());
     debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd.get_erase_size());
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
-#ifdef ERASE_CFG_FILE
-#warning ERASE_CFG_FILE debug option enabled!
-    debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
-    err = fs.reformat(&bd);
-    debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
-    MBED_ASSERT(!err);  
-#endif
     err = fs.mount(&bd);
     debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
     if(err) {
@@ -113,9 +106,10 @@ void load_settings_from_flash(void) {
         radio_cb["Beacon Interval"] = RADIO_BEACON_INTERVAL;
         radio_cb["Payload Length"] = FRAME_PAYLOAD_LEN;
         radio_cb["FEC Algorithm"] = FEC_ALGORITHM;
-        radio_cb["Conv Rate"] = FEC_CONV_RATE;
-        radio_cb["Conv Order"] = FEC_CONV_ORDER;
-        radio_cb["RS Num Roots"] = FEC_RS_NUM_ROOTS;
+        radio_cb["Convolutional Rate"] = FEC_CONV_RATE;
+        radio_cb["Convolutional Order"] = FEC_CONV_ORDER;
+        radio_cb["Reed-Solomon Number Roots"] = FEC_RS_NUM_ROOTS;
+	radio_cb["TX Power"] = RADIO_POWER;
         string settings_str = radio_cb.serialize();
         fprintf(f, "%s\r\n", settings_str.c_str());
         fflush(f);
