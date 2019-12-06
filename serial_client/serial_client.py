@@ -36,7 +36,8 @@ while True:
 
 while True:
     try:
-        line = ser.readline().decode('utf-8')
+        try: line = ser.readline().decode('utf-8')
+        except Exception as e: continue
     except serial.serialutil.SerialException:
         print("Lost serial connection. Reconnecting in 1s...")
         time.sleep(1)
@@ -52,8 +53,10 @@ while True:
     except Exception as e:
         print("\033[1;31;40m" + str(line[:-2]) + "\033[1;37;40m")
     if parsed_line["Type"] == "Debug Msg":
-        msg = base64.b64decode(parsed_line["Message"]).decode('utf-8')
-        print("\033[1;32;40m" + str(msg[:-2]) + "\033[1;37;40m")
+        try: 
+            msg = base64.b64decode(parsed_line["Message"]).decode('utf-8')
+            print("\033[1;32;40m" + str(msg[:-2]) + "\033[1;37;40m")
+        except Exception as e: pass
     elif parsed_line["Type"] == "Status":
         status = parsed_line["Status"]
         value = parsed_line["Value"]
