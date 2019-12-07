@@ -36,7 +36,7 @@ void IndicatorLED::blinkFn(void) {
 IndicatorLED::IndicatorLED(PinName led_pin_name) {
     led_state = LED_OFF;
     blink_led = false;
-    blink_period = 0.5;
+    blink_period = 250;
     pin = new DigitalOut(led_pin_name);
     *pin = 0;
     thread.start(callback(this, &IndicatorLED::blinkFn));
@@ -62,7 +62,7 @@ void IndicatorLED::LEDBlink(void) {
 
 void IndicatorLED::LEDFastBlink(void) {
     led_state = LED_BLINK;
-    blink_period = 0.125;
+    blink_period = 125;
     blink_led = true;
 }
 

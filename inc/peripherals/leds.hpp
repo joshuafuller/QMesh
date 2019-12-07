@@ -36,7 +36,7 @@ protected:
     DigitalOut *pin;
     Thread thread;
     bool blink_led;
-    float blink_period;
+    int blink_period;
 
 public:
     /// Function resonsible for blinking the LED.
