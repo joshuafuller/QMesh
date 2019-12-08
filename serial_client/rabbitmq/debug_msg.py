@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # QMesh
 # Copyright (C) 2019 Daniel R. Fay
 
@@ -15,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#!/usr/bin/python3
 
 import sys, os
 import time
@@ -61,8 +62,11 @@ def dbg_process(ch, method, properties, body):
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
-channel.queue_declare(queue='board_output')
-channel.basic_consume(queue='board_output', auto_ack=True, \
+channel.exchange_declare(exchange='board_output', exchange_type='fanout')
+result = channel.queue_declare(queue='', exclusive=True)
+queue_name = result.method.queue
+channel.queue_bind(exchange='board_output', queue=queue_name)
+channel.basic_consume(queue=queue_name, auto_ack=True, \
         on_message_callback=dbg_process)
 channel.start_consuming()
 while True: time.sleep(60)

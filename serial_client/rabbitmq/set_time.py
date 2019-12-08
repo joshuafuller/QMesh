@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # QMesh
 # Copyright (C) 2019 Daniel R. Fay
 
@@ -14,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#!/usr/bin/python3
 
 import sys, os
 import time
@@ -43,9 +44,11 @@ def dbg_process(ch, method, properties, body):
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
-channel.queue_declare(queue='board_input')
-channel.queue_declare(queue='board_output')
-channel.basic_consume(queue='board_output', auto_ack=True, \
+channel.exchange_declare(exchange='board_output', exchange_type='fanout')
+result = channel.queue_declare(queue='', exclusive=True)
+queue_name = result.method.queue
+channel.queue_bind(exchange='board_output', queue=queue_name)
+channel.basic_consume(queue=queue_name, auto_ack=True, \
         on_message_callback=dbg_process)
 
 # Check what mode the board is currently in
@@ -53,10 +56,11 @@ cur_status = "None"
 print("Now checking the status of the board...")
 msg_req = {}
 msg_req["Type"] = "Get Status"
-msg_req_str = json.dumps(msg_req) + "\r\n\0"
+msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\r\n")
 print(msg_req_str)
 channel.basic_publish(exchange='', routing_key='board_input', \
-        body=msg_req_str)
+        body=bytes(msg_req_str.encode()))
 channel.start_consuming()
 
 # Set the time

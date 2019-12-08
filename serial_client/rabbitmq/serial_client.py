@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # QMesh
 # Copyright (C) 2019 Daniel R. Fay
 
@@ -14,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#!/usr/bin/python3
 
 import serial
 import pika
@@ -28,7 +29,7 @@ ser = None
 def input_cb(ch, method, properties, body):
     global ser
     print(body)
-    ser.writelines(str(body) + str("\r\n\0"))
+    ser.writelines(body)
 
 def output_thread_fn():
     # Set up the RabbitMQ connections
@@ -43,7 +44,7 @@ def output_thread_fn():
 def input_thread_fn():
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
-    channel.queue_declare(queue='board_output')
+    channel.exchange_declare(exchange='board_output', exchange_type='fanout')
     global ser
     while True:
         try:
@@ -57,7 +58,7 @@ def input_thread_fn():
             continue
 
         print(line)
-        channel.basic_publish(exchange='', routing_key='board_output', body=line)
+        channel.basic_publish(exchange='board_output', routing_key='', body=line)
 
 
 if __name__ == "__main__":
@@ -72,11 +73,17 @@ if __name__ == "__main__":
             print("Failed to open port. Trying again in 1s...")
             time.sleep(1)
 
-    threading.Thread(target=input_thread_fn).start()
-    threading.Thread(target=output_thread_fn).start()
+    input_thread = threading.Thread(target=input_thread_fn)
+    input_thread.start()
+    output_thread = threading.Thread(target=output_thread_fn)
+    output_thread.start()
 
     while True: 
-        time.sleep(60)
+        try: time.sleep(1)
+        except (KeyboardInterrupt, SystemExit):
+            input_thread.join()
+            output_thread.join()
+            sys.exit(0)
 
 
 
