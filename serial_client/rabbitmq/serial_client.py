@@ -24,6 +24,8 @@ import time
 import threading
 
 ser = None
+params = pika.ConnectionParameters('localhost', heartbeat=600, 
+        blocked_connection_timeout=300)
 
 # Callback whenever new received messages come in from the broker
 def input_cb(ch, method, properties, body):
@@ -34,7 +36,7 @@ def input_cb(ch, method, properties, body):
 
 def output_thread_fn():
     # Set up the RabbitMQ connections
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_declare(queue='board_input')
     channel.basic_consume(queue='board_input', auto_ack=True, \
@@ -43,7 +45,7 @@ def output_thread_fn():
 
 
 def input_thread_fn():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.exchange_declare(exchange='board_output', exchange_type='fanout')
     global ser

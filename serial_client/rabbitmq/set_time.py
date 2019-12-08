@@ -58,7 +58,6 @@ msg_req = {}
 msg_req["Type"] = "Get Status"
 msg_req_str = json.dumps(msg_req)
 msg_req_str += str("\n")
-print(msg_req_str)
 channel.basic_publish(exchange='', routing_key='board_input', \
         body=bytes(msg_req_str.encode('ascii')))
 channel.start_consuming()
@@ -66,17 +65,19 @@ channel.start_consuming()
 # Set the time
 msg_req = {}
 msg_req["Type"] = "Set Time"
-msg_req["Time"] = str(time.time())
+msg_req["Time"] = str(int(time.time()))
 msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
-        body=msg_req_str)
+        body=bytes(msg_req_str.encode('ascii')))
 channel.start_consuming()
 
 # Reboot the board
 msg_req = {}
 msg_req["Type"] = "Reboot"
 msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
-        body=msg_req_str)
+        body=bytes(msg_req_str.encode('ascii')))
 channel.start_consuming()
 

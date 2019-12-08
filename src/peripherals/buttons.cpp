@@ -26,9 +26,8 @@ void reboot_system(void) {
     int err = fs.unmount();
     debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(" : "OK"));
     bd.sync();
-    debug_printf(DBG_INFO, "Rebooting the system in 1s...\r\n");
-    ThisThread::sleep_for(1.0);
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
+    ThisThread::sleep_for(3000);
     NVIC_SystemReset();
 }
 

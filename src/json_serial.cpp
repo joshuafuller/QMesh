@@ -116,11 +116,9 @@ void rx_serial_thread_fn(void) {
     for(;;) {
         int rx_buf_idx = dequeue_mail<int>(rx_data_rdy);
         string rx_str(rx_bufs[rx_buf_idx]);
-        debug_printf(DBG_INFO, "Raw %s\r\n", rx_bufs[rx_buf_idx]);
         debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
         parse(rx_json, rx_str.c_str());
-        debug_printf(DBG_INFO, "Parsed\r\n");
         string type_str(rx_json["Type"].get<string>()); 
         if(type_str == "Get Settings") {
             MbedJSONValue settings_json = radio_cb;
@@ -168,8 +166,6 @@ void rx_serial_thread_fn(void) {
         }
         else if(type_str == "Reboot") {
             send_status();
-            debug_printf(DBG_WARN, "Now rebooting...\r\n");
-            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else if(type_str == "Erase Log") {
