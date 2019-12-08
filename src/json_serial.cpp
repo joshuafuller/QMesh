@@ -168,11 +168,11 @@ void rx_serial_thread_fn(void) {
             send_status();
             reboot_system();
         }
-        else if(type_str == "Erase Log") {
+        else if(type_str == "Erase Log File") {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                fs.remove("/fs/logfile.json");
+                fs.remove("logfile.json");
             }
             ThisThread::sleep_for(100);
             send_status();
@@ -184,7 +184,7 @@ void rx_serial_thread_fn(void) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                fs.remove("/fs/settings.json");
+                fs.remove("settings.json");
             }
             ThisThread::sleep_for(100);
             send_status();

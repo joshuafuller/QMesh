@@ -94,15 +94,14 @@ int main()
     debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
     ThisThread::sleep_for(1000);
 
-    while(true);
-
     // Mount the filesystem, load the configuration
+    current_mode = MANAGEMENT;
     init_filesystem();
     load_settings_from_flash();
+    while(true);
     save_settings_to_flash();
 
     // Wait for 2 seconds in MANAGEMENT mode
-    current_mode = MANAGEMENT;
     led1.LEDFastBlink();
     ThisThread::sleep_for(2000);
     while(stay_in_management) {
@@ -114,8 +113,7 @@ int main()
     led2.LEDOff();
     led3.LEDOff();
 
-    while(true);
-
+#if 0
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
     auto fec_frame = make_shared<Frame>();  
@@ -133,15 +131,19 @@ int main()
     auto fec_test_rsv = make_shared<FECRSV>(2, 9, 8);
     fec_test_rsv->benchmark(25);
     } 
-
-    // Set up the radio
-    init_radio();
-    ThisThread::sleep_for(250);
-
+#endif
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);
 
+    ThisThread::sleep_for(250);
+
+    while(true) {
+        ThisThread::sleep_for(250);
+    }
+
+    // Set up the radio
+    init_radio();
     ThisThread::sleep_for(250);
 
     // Start the mesh protocol thread

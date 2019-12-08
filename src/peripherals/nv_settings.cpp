@@ -57,7 +57,7 @@ void init_filesystem(void) {
         int err = fs.mount(&bd);
         MBED_ASSERT(!err);
     }
-
+#if 0
     // Display the root directory
     debug_printf(DBG_INFO, "Opening the root directory... ");
     fflush(stdout);
@@ -66,7 +66,6 @@ void init_filesystem(void) {
     if (!d) {
         error("error: %s (%d)\r\n", strerror(errno), -errno);
     }
-
     debug_printf(DBG_INFO, "root directory:\r\n");
     while (true) {
         struct dirent *e = readdir(d);
@@ -82,14 +81,11 @@ void init_filesystem(void) {
     if (err < 0) {
         error("error: %s (%d)\n", strerror(errno), -errno);
     }
+#endif
 }
 
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Stats on settings.json\r\n");
-    struct stat file_stat;
-    stat("/fs/settings.json", &file_stat);
-    debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
-    debug_printf(DBG_INFO, "Opening settings.json...\r\n");
     FILE *f;
     f = fopen("/fs/settings.json", "r");
     if(!f) {
@@ -109,7 +105,7 @@ void load_settings_from_flash(void) {
         radio_cb["Convolutional Rate"] = FEC_CONV_RATE;
         radio_cb["Convolutional Order"] = FEC_CONV_ORDER;
         radio_cb["Reed-Solomon Number Roots"] = FEC_RS_NUM_ROOTS;
-	radio_cb["TX Power"] = RADIO_POWER;
+	    radio_cb["TX Power"] = RADIO_POWER;
         string settings_str = radio_cb.serialize();
         fprintf(f, "%s\r\n", settings_str.c_str());
         fflush(f);
@@ -117,11 +113,15 @@ void load_settings_from_flash(void) {
         f = fopen("/fs/settings.json", "r");
         MBED_ASSERT(f);
     }
-    debug_printf(DBG_INFO, "Now reading from the settings file...\r\n");
+    struct stat file_stat;
+    stat("/fs/settings.json", &file_stat);
+    debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     vector<char> linebuf(4096);
     linebuf.resize(fread(linebuf.data(), 1, linebuf.size(), f));
     debug_printf(DBG_INFO, "Read from file: %s\r\n", linebuf.data());
     parse(radio_cb, linebuf.data());
+    fflush(f);
+    fclose(f);
     debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());
     debug_printf(DBG_INFO, "Frequency: %d\r\n", radio_cb["Frequency"].get<int>());
     debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb["BW"].get<int>());
