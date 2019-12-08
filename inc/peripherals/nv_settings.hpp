@@ -26,12 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SPIFBlockDevice.h"
 #include "MbedJSONValue.h"
 
-#ifdef HEAP_FS
-extern HeapBlockDevice bd;
-#else
 extern SPIFBlockDevice bd;
-#endif
-
 extern LittleFileSystem fs;
 
 void nv_log_fn(void);

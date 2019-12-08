@@ -39,8 +39,7 @@ def dbg_process(ch, method, properties, body):
         print("\033[1;32;40m" + str(msg[:-2]) + "\033[1;37;40m")
     elif parsed_line["Type"] == "Status":
         status = parsed_line["Status"]
-        value = parsed_line["Value"]
-        print("Status Msg: %s, %s" % (status, value))
+        print("Status Msg: %s" % (status))
     elif parsed_line["Type"] == "Settings":
         freq = parsed_line["Freq"]
         sf = parsed_line["SF"]

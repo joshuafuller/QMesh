@@ -131,56 +131,68 @@ static void rx_timeout_cb(void);
 static void rx_error_cb(void);
 static void fhss_change_channel_cb(uint8_t current_channel);
 
+shared_ptr<FEC> frame_fec;  
+
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
 void init_radio(void) {
     // Initialize Radio driver
+    debug_printf(DBG_INFO, "Now initializing the radio\r\n");
     radio_events.tx_done = tx_done_cb;
     radio_events.rx_done = rx_done_cb;
     radio_events.rx_error = rx_error_cb;
     radio_events.tx_timeout = tx_timeout_cb;
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
+    ThisThread::sleep_for(250);
     radio.init_radio(&radio_events);
-    uint8_t radio_bw = radio_cb["BW"].get<int>();
-    uint8_t radio_sf = radio_cb["SF"].get<int>();
-    uint8_t radio_cr = radio_cb["CR"].get<int>();
-    uint8_t radio_freq = radio_cb["Freq"].get<int>();
+    int radio_bw = radio_cb["BW"].get<int>();
+    debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_bw);
+    int radio_sf = radio_cb["SF"].get<int>();
+    debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_sf);
+    int radio_cr = radio_cb["CR"].get<int>();
+    debug_printf(DBG_INFO, "Radio CR is %d\r\n", radio_cr);
+    int radio_freq = radio_cb["Freq"].get<int>();
+    debug_printf(DBG_INFO, "Radio Frequency is %d\r\n", radio_freq);
+    int radio_pwr = radio_cb["TX Power"].get<int>();
+    debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_pwr);    
+    int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
+    debug_printf(DBG_INFO, "Radio Preamble Length is %d\r\n", radio_preamble_len); 
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
-    shared_ptr<FEC> fec;
+    debug_printf(DBG_INFO, "FEC algorithm is %s\r\n", fec_algo.c_str()); 
     if(fec_algo == "None") {
-        fec = make_shared<FEC>();
+        frame_fec = make_shared<FEC>();
     }
     else if(fec_algo == "Interleave") {
-        fec = make_shared<FECInterleave>();
+        frame_fec = make_shared<FECInterleave>();
     }
     else if(fec_algo == "Convolutional") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
-        fec = make_shared<FECConv>(conv_rate, conv_order);
+        frame_fec = make_shared<FECConv>(conv_rate, conv_order);
     }
     else if(fec_algo == "RSV") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
         int rs_roots = radio_cb["RS Num Roots"].get<int>();
-        fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
+        frame_fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
     }
     else {
         MBED_ASSERT(false);
     }
-    Frame tmp_frame(fec);
+    Frame tmp_frame(frame_fec);
     uint8_t full_pkt_len = tmp_frame.getFullPktSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,
-                            0, RADIO_PREAMBLE_LEN,
+                            0, radio_preamble_len,
                             RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
-    radio.set_tx_config(MODEM_LORA, RADIO_POWER, 0,
+    radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
                             radio_bw, radio_sf,
-                            radio_cr, RADIO_PREAMBLE_LEN,
+                            radio_cr, radio_preamble_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);

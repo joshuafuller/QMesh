@@ -184,7 +184,10 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
 }
 
+
+static Mutex dbg_printf_mutex;
 int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
+    dbg_printf_mutex.lock();
     va_list args;
     va_start(args, fmt);
     char tmp_str[512];
@@ -224,6 +227,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     tx_ser_queue.put(tx_str_sptr);
 
     va_end(args);
+    dbg_printf_mutex.unlock();
     return 0;
 }
 
@@ -261,7 +265,7 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
     auto tx_str_sptr = tx_ser_queue.alloc();
     *tx_str_sptr = tx_str;
-    MBED_ASSERT(tx_ser_queue.full() == false);
+    while(tx_ser_queue.full() == true);
     tx_ser_queue.put(tx_str_sptr);
 
     va_end(args);

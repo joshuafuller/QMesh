@@ -26,17 +26,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbedtls/base64.h"
 #include "mesh_protocol.hpp"
 
-
 Mail<std::shared_ptr<string>, 16> tx_ser_queue;
 
+extern RawSerial pc, pc2;
+
+void print_memory_info();
 void tx_serial_thread_fn(void) {
     for(;;) {
+        //print_memory_info();
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
-        printf("%s\r\n", str_sptr->c_str());
+        str_sptr->push_back('\r');
+        str_sptr->push_back('\n');
+        for(int i = 0; i < str_sptr->length(); i++) {
+            while(!pc.writeable());
+            pc.putc(str_sptr->c_str()[i]);
+        }
     }
 }
 
-static char rx_str[2048];
 /**
  * Sends the current status.
  */
@@ -62,18 +69,57 @@ static void send_status(void) {
     else {
         status_json["Tx Frame Queue Full"] = "False";
     }
+    status_json["Time"] = to_string(time(NULL));
     auto json_str = make_shared<string>(status_json.serialize());
     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);       
 }  
 
-void rx_serial_thread_fn(void) {
-    for(;;) {
-        if(scanf("%s\r\n", rx_str) != 0) {
-            debug_printf(DBG_WARN, "scanf() in Rx thread returned with error %d\r\n");
-            continue;
+static void ser_rx_isr(void);
+static char rx_bufs[4][2048];
+static Mail<int, 16> rx_data_rdy;
+static bool led2_val, led3_val = false;
+static int my_buf = 0;
+static int my_buf_idx = 0;
+static void ser_rx_isr(void) {
+    if(led2_val) {
+        led2.LEDSolid();
+        led2_val = false;
+    }
+    else {
+        led2.LEDOff();
+        led2_val = true;
+    }
+    while(pc2.readable()) {
+        char my_char = pc2.getc();
+        rx_bufs[my_buf][my_buf_idx++] = my_char;
+        if(my_char == '\n' || my_char == '\r') {
+            if(led3_val) {
+                led3.LEDSolid();
+                led3_val = false;
+            }
+            else {
+                led3.LEDOff();
+                led3_val = true;
+            }
+            rx_bufs[my_buf][my_buf_idx++] = '\0';
+            enqueue_mail_nonblocking<int>(rx_data_rdy, my_buf);
+            my_buf += 1;
+            my_buf_idx = 0;
+            my_buf %= 4;
         }
+    } 
+}
+
+
+void rx_serial_thread_fn(void) {
+    pc2.attach(ser_rx_isr, mbed::SerialBase::RxIrq);
+    for(;;) {
+        int rx_buf_idx = dequeue_mail<int>(rx_data_rdy);
+        string rx_str(rx_bufs[rx_buf_idx]);
+        debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
-        parse(rx_json, rx_str);
+        parse(rx_json, rx_str.c_str());
+        debug_printf(DBG_INFO, "Parsed\r\n");
         string type_str(rx_json["Type"].get<string>()); 
         if(type_str == "Get Settings") {
             MbedJSONValue settings_json = radio_cb;
@@ -96,10 +142,22 @@ void rx_serial_thread_fn(void) {
             enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
         }
         else if(type_str == "Get Status") {
+            ThisThread::sleep_for(100);
             send_status();      
         }
+        else if(type_str == "Set Time") {
+            string new_time = rx_json["Time"].get<string>();
+            set_time((unsigned int) stoul(new_time));
+            ThisThread::sleep_for(100);
+            send_status();
+        }
+        else if(type_str == "Stay in Management") {
+            stay_in_management = true;
+            ThisThread::sleep_for(100);            
+            send_status();
+        }
         else if(type_str == "Debug Msg") {
-            MBED_ASSERT(false);
+            //MBED_ASSERT(false);
         }
         else if(type_str == "Send Frame") {
             auto frame = make_shared<Frame>();
@@ -110,6 +168,7 @@ void rx_serial_thread_fn(void) {
         else if(type_str == "Reboot") {
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else if(type_str == "Erase Log") {
@@ -118,7 +177,22 @@ void rx_serial_thread_fn(void) {
             if(current_mode == MANAGEMENT) {
                 fs.remove("/fs/logfile.json");
             }
+            ThisThread::sleep_for(100);
             send_status();
+            debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            ThisThread::sleep_for(1000);
+            reboot_system();
+        }
+        else if(type_str == "Erase Cfg File") {
+            stay_in_management = true;
+            while(current_mode == BOOTING);
+            if(current_mode == MANAGEMENT) {
+                fs.remove("/fs/settings.json");
+            }
+            ThisThread::sleep_for(100);
+            send_status();
+            debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else if(type_str == "Read Log") {
@@ -137,10 +211,12 @@ void rx_serial_thread_fn(void) {
                 }  
             }
             send_status();
+            debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else {
-            MBED_ASSERT(false);
+            continue;
         }
     }
 }

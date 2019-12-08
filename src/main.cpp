@@ -24,8 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "json_serial.hpp"
 #include "mesh_protocol.hpp"
 
-shared_ptr<FEC> fec;  
-Serial pc(USBTX, USBRX);
+RawSerial pc(USBTX, USBRX);
+RawSerial pc2(NC, PA_12);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(4096), rx_serial_thread(4096);
 Thread mesh_protocol_thread(4096);
@@ -66,15 +66,14 @@ int main()
 {
     led1.LEDSolid();
 
-    // Set the RTC to zero. We just use it to track the age of 
-    //  the packet tracker.
-    set_time(0);
-
     // Start the WDT thread
-//    wdt_thread.start(wdt_fn);
+    //wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
-    pc.baud(921600);
+    pc.baud(9600);
+    pc2.baud(9600);
+
+    ThisThread::sleep_for(1000);
 
     debug_printf(DBG_INFO, "Starting serial threads...\r\n"); // Removing this causes a hard fault???
 
@@ -93,25 +92,29 @@ int main()
     debug_printf(DBG_INFO, "Powering up the LoRa module...\r\n");
     radio_pwr_ctl = 1;
     debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
-    ThisThread::sleep_for(1);
+    ThisThread::sleep_for(1000);
+
+    while(true);
 
     // Mount the filesystem, load the configuration
     init_filesystem();
     load_settings_from_flash();
     save_settings_to_flash();
 
-    // Wait for 5 seconds in MANAGEMENT mode
+    // Wait for 2 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;
     led1.LEDFastBlink();
-    ThisThread::sleep_for(5);
+    ThisThread::sleep_for(2000);
     while(stay_in_management) {
-        ThisThread::sleep_for(5);
+        ThisThread::sleep_for(5000);
     }
     current_mode = RUNNING;
 
     led1.LEDBlink();
     led2.LEDOff();
     led3.LEDOff();
+
+    while(true);
 
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
@@ -120,71 +123,39 @@ int main()
 
     print_memory_info();
 
-    fec = make_shared<FEC>();
-    fec->benchmark(25);
-    fec = make_shared<FECInterleave>();
-    fec->benchmark(25);
-    fec = make_shared<FECConv>(2, 9);
-    fec->benchmark(25);
-    fec = make_shared<FECRSV>(2, 9, 8);
-    fec->benchmark(25);
-#if 0
-    fec = make_shared<FECPolar>(6, Frame::size(), 32);
-    debug_printf(DBG_INFO, "Set up polar codes\r\n");
-    print_memory_info();
-    fec->benchmark(100);
-#endif
-
-//    print_memory_info();
-//    ThisThread::sleep_for(0.25);
-
-#if 0
-    vector<uint8_t> fec_enc_buf, fec_dec_buf;
-    string test_msg = "0123456789\r\n";
-    vector<uint8_t> test_msg_vec(test_msg.begin(), test_msg.end());
-    size_t enc_size = fec->getEncSize(13);
-    debug_printf(DBG_INFO, "Encoded size is %d\r\n", enc_size);
-    debug_printf(DBG_INFO, "Encoding %s", test_msg.c_str());
-    fec->encode(test_msg_vec, fec_enc_buf);
-    fec->decode(fec_enc_buf, fec_dec_buf);
-    string fec_dec_str(fec_dec_buf.begin(), fec_dec_buf.end());
-    debug_printf(DBG_INFO, "Decoded %s", fec_dec_str.c_str());
-#endif
+    {
+    auto fec_test_fec = make_shared<FEC>();
+    fec_test_fec->benchmark(25);
+    auto fec_test_interleave = make_shared<FECInterleave>();
+    fec_test_interleave->benchmark(25);
+    auto fec_test_conv = make_shared<FECConv>(2, 9);
+    fec_test_conv->benchmark(25);
+    auto fec_test_rsv = make_shared<FECRSV>(2, 9, 8);
+    fec_test_rsv->benchmark(25);
+    } 
 
     // Set up the radio
-    debug_printf(DBG_INFO, "Initializing radio\r\n");
     init_radio();
-
-    wait(0.25);
+    ThisThread::sleep_for(250);
 
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);
 
-    wait(0.25);
+    ThisThread::sleep_for(250);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread.start(mesh_protocol_fsm);
 
-    wait(0.25);
+    ThisThread::sleep_for(250);
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon thread\r\n");
     beacon_thread.start(beacon_fn);
 
-    wait(0.25);
+    ThisThread::sleep_for(250);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
-
-    while(true);
-
-    print_memory_info();
-
-    int count = 0;
-    while (true) {
-        ThisThread::sleep_for(1.0);
-        //wait_ms(SLEEP_TIME);
-    }
 }
 

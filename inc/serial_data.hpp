@@ -367,14 +367,29 @@ extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
  */
 template <class T> 
 void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
-    auto mail_item = mail_queue.alloc();
+    auto mail_item = mail_queue.alloc_for(osWaitForever);
+    MBED_ASSERT(mail_item != NULL);
     *mail_item = val;
-    if(!mail_queue.full()) {
-        mail_queue.put(mail_item);
+    while(mail_queue.full());
+    mail_queue.put(mail_item);
+}
+
+
+/** 
+ * Enqueues a value onto an Mbed OS mailbox. Quietly drops the 
+ * request if the queue is full.
+ * @param mail_queue The mailbox.
+ * @param T The type of the value to be enqueued.
+ * @param val The value to be enqueued.
+ */
+template <class T> 
+void enqueue_mail_nonblocking(Mail<T, 16> &mail_queue, T val) {
+    auto mail_item = mail_queue.alloc();
+    if(mail_item == NULL) {
+        return;
     }
-    else {
-        debug_printf(DBG_WARN, "Mail queue is full!\r\n");
-    }
+    *mail_item = val;
+    mail_queue.put(mail_item);
 }
 
 /** 
