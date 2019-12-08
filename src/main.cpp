@@ -70,8 +70,8 @@ int main()
     //wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
-    pc.baud(9600);
-    pc2.baud(9600);
+    pc.baud(230400);
+    pc2.baud(230400);
 
     ThisThread::sleep_for(1000);
 

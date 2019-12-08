@@ -54,7 +54,7 @@ def input_thread_fn():
             line = ser.readline();
         except serial.serialutil.SerialException:
             try:
-                ser = serial.Serial(serial_port, baudrate=9600)
+                ser = serial.Serial(serial_port, baudrate=230400)
             except serial.serialutil.SerialException:
                 print("Failed to open port. Trying again in 1s...")
                 time.sleep(1)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     serial_port = sys.argv[1]
     while True:
         try:
-            ser = serial.Serial(serial_port, baudrate=9600)
+            ser = serial.Serial(serial_port, baudrate=230400)
             break
         except serial.serialutil.SerialException:
             print("Failed to open port. Trying again in 1s...")
