@@ -26,7 +26,7 @@ import pika
 
 def dbg_process(ch, method, properties, body):
     try:
-        line = body.decode('utf-8')
+        line = body.decode('ascii')
     except Exception as e: 
         return
     parsed_line = {}

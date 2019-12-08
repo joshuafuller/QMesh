@@ -116,6 +116,7 @@ void rx_serial_thread_fn(void) {
     for(;;) {
         int rx_buf_idx = dequeue_mail<int>(rx_data_rdy);
         string rx_str(rx_bufs[rx_buf_idx]);
+        debug_printf(DBG_INFO, "Raw %s\r\n", rx_bufs[rx_buf_idx]);
         debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
         parse(rx_json, rx_str.c_str());
@@ -240,7 +241,7 @@ void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
 
 void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
     json["Type"] = "Debug Msg";
-    json["Timestamp"] = (int) time(NULL);
+    json["Timestamp"] = 0;
     size_t b64_len;
     mbedtls_base64_encode(NULL, 0, &b64_len, (unsigned char *) dbg_msg.c_str(), dbg_msg.size());
     vector<unsigned char> b64_buf(b64_len);

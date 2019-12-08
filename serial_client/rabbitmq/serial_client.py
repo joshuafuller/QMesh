@@ -29,7 +29,8 @@ ser = None
 def input_cb(ch, method, properties, body):
     global ser
     print(body)
-    ser.writelines(body)
+    ser.write(body)
+
 
 def output_thread_fn():
     # Set up the RabbitMQ connections

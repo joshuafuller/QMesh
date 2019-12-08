@@ -57,10 +57,10 @@ print("Now checking the status of the board...")
 msg_req = {}
 msg_req["Type"] = "Get Status"
 msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\r\n")
+msg_req_str += str("\n")
 print(msg_req_str)
 channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode()))
+        body=bytes(msg_req_str.encode('ascii')))
 channel.start_consuming()
 
 # Set the time
