@@ -39,7 +39,8 @@ def dbg_process(ch, method, properties, body):
         cur_status = parsed_line["Status"]
         print("Current status is " + parsed_line["Status"])
         print("Current time is " + str(parsed_line["Time"]))
-        ch.stop_consuming()
+        if parsed_line["Status"] == "MANAGEMENT":
+            ch.stop_consuming()
 
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
@@ -52,6 +53,14 @@ channel.basic_consume(queue=queue_name, auto_ack=True, \
         on_message_callback=dbg_process)
 
 # Reboot the board
+msg_req = {}
+msg_req["Type"] = "Reboot"
+msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
+channel.basic_publish(exchange='', routing_key='board_input', \
+        body=bytes(msg_req_str.encode('ascii')))
+channel.start_consuming()
+
 msg_req = {}
 msg_req["Type"] = "Erase Log File"
 msg_req_str = json.dumps(msg_req)

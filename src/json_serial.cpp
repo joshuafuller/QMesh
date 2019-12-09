@@ -47,8 +47,8 @@ void tx_serial_thread_fn(void) {
 /**
  * Sends the current status.
  */
-static void send_status(void);
-static void send_status(void) {
+void send_status(void);
+void send_status(void) {
     MbedJSONValue status_json;
     status_json["Type"] = "Status";
     if(current_mode == BOOTING) {

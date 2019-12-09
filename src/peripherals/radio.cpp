@@ -152,7 +152,7 @@ void init_radio(void) {
     debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_sf);
     int radio_cr = radio_cb["CR"].get<int>();
     debug_printf(DBG_INFO, "Radio CR is %d\r\n", radio_cr);
-    int radio_freq = radio_cb["Freq"].get<int>();
+    int radio_freq = radio_cb["Frequency"].get<int>();
     debug_printf(DBG_INFO, "Radio Frequency is %d\r\n", radio_freq);
     int radio_pwr = radio_cb["TX Power"].get<int>();
     debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_pwr);    

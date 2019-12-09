@@ -41,6 +41,8 @@ DigitalOut radio_pwr_ctl(MBED_CONF_APP_RADIO_PWR);
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
 
+void send_status(void);
+
 void print_memory_info() {
     // allocate enough room for every thread's stack statistics
     int cnt = osThreadGetCount();
@@ -80,13 +82,14 @@ int main()
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
     rx_serial_thread.start(rx_serial_thread_fn);
-
-    debug_printf(DBG_INFO, "serial threads started\r\n");
+    debug_printf(DBG_INFO, "Serial threads started\r\n");
+    send_status();
 
     // Power cycle the SPI flash chip and the RF module
     debug_printf(DBG_INFO, "Powering down the SPI flash and LoRa modules...\r\n");
     flash_pwr_ctl = 0;
     radio_pwr_ctl = 0;
+    ThisThread::sleep_for(250);
     debug_printf(DBG_INFO, "Powering up the SPI flash...\r\n");
     flash_pwr_ctl = 1;
     debug_printf(DBG_INFO, "Powering up the LoRa module...\r\n");
@@ -95,19 +98,20 @@ int main()
     ThisThread::sleep_for(1000);
 
     // Mount the filesystem, load the configuration
-    current_mode = MANAGEMENT;
     init_filesystem();
     load_settings_from_flash();
-    while(true);
     save_settings_to_flash();
 
     // Wait for 2 seconds in MANAGEMENT mode
+    current_mode = MANAGEMENT;
+    send_status();
     led1.LEDFastBlink();
     ThisThread::sleep_for(2000);
     while(stay_in_management) {
         ThisThread::sleep_for(5000);
     }
     current_mode = RUNNING;
+    send_status();
 
     led1.LEDBlink();
     led2.LEDOff();
@@ -138,13 +142,15 @@ int main()
 
     ThisThread::sleep_for(250);
 
+    // Set up the radio
+    debug_printf(DBG_INFO, "Initializing the Radio\r\n");
+    init_radio();
+    ThisThread::sleep_for(250);
+
+    debug_printf(DBG_INFO, "Time to chill...\r\n");
     while(true) {
         ThisThread::sleep_for(250);
     }
-
-    // Set up the radio
-    init_radio();
-    ThisThread::sleep_for(250);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
