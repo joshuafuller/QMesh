@@ -218,12 +218,21 @@ void mesh_protocol_fsm(void) {
     std::shared_ptr<Frame> rx_frame_sptr;
     static vector<uint8_t> tx_frame_buf(256), rx_frame_buf(256);
     for(;;) {
+#if 0
+        while(true) {
+            ThisThread::sleep_for(1000);
+        }
+#endif
         switch(state) {
             case WAIT_FOR_RX:
-                //debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
+                debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
                 radio.receive();
+                debug_printf(DBG_INFO, "Received\r\n");
+                ThisThread::sleep_for(250);
                 if(!rx_radio_evt_mail.empty()) {
                     rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
+                    debug_printf(DBG_INFO, "Received2\r\n");
+                    ThisThread::sleep_for(250);
                     if(rx_radio_event->evt_enum == RX_DONE_EVT) {
                         debug_printf(DBG_INFO, "Received a packet\r\n");
                         // Load up the frame
@@ -259,7 +268,7 @@ void mesh_protocol_fsm(void) {
             break;
 
             case CHECK_TX_QUEUE:
-                //debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
+                debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
                     tx_frame_sptr->fec = fec;

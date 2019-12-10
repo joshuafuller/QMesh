@@ -147,14 +147,12 @@ int main()
     init_radio();
     ThisThread::sleep_for(250);
 
-    debug_printf(DBG_INFO, "Time to chill...\r\n");
-    while(true) {
-        ThisThread::sleep_for(250);
-    }
-
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread.start(mesh_protocol_fsm);
+
+    
+    debug_printf(DBG_INFO, "Time to chill...\r\n");
 
     ThisThread::sleep_for(250);
 
@@ -165,5 +163,9 @@ int main()
     ThisThread::sleep_for(250);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
+
+    while(true) {
+        ThisThread::sleep_for(250);
+    }
 }
 

@@ -224,18 +224,18 @@ static void tx_done_cb(void)
     // If we just finished transmitting a local frame
     //  check to see if another frame's sitting in the queue
     //  if so, grab another frame and set it up to be sent one time unit in the future
+    debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");    
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
-    radio.set_channel(RADIO_FREQUENCY);
+    //radio.set_channel(RADIO_FREQUENCY);
     tx_radio_evt_mail.put(&radio_event);
-    //debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");
 }
 
 static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!rx_radio_evt_mail.full());
-    radio.set_channel(RADIO_FREQUENCY);
+    //radio.set_channel(RADIO_FREQUENCY);
     rx_radio_evt_mail.put(&radio_event);
     debug_printf(DBG_INFO, "RX Done interrupt generated\r\n");    
 }
@@ -244,7 +244,7 @@ static void tx_timeout_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
-    radio.set_channel(RADIO_FREQUENCY);
+    //radio.set_channel(RADIO_FREQUENCY);
     tx_radio_evt_mail.put(&radio_event);    
     debug_printf(DBG_ERR, "Tx Timeout\r\n");
 }
@@ -253,7 +253,7 @@ static void rx_timeout_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!rx_radio_evt_mail.full());
-    radio.set_channel(RADIO_FREQUENCY);
+    //radio.set_channel(RADIO_FREQUENCY);
     rx_radio_evt_mail.put(&radio_event);   
     debug_printf(DBG_ERR, "Rx Timeout\r\n");
 }
@@ -262,15 +262,17 @@ static void rx_error_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
     MBED_ASSERT(!rx_radio_evt_mail.full());
-    radio.set_channel(RADIO_FREQUENCY);
+    //radio.set_channel(RADIO_FREQUENCY);
     rx_radio_evt_mail.put(&radio_event);   
     debug_printf(DBG_ERR, "Rx Error\r\n");
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) {
+#if 0
     int32_t new_channel = hopping_channels[current_channel % 
                 (sizeof(hopping_channels)/sizeof(uint32_t))];
 #warning This is likely to be slow in a place where speed matters!
     uint32_t new_frequency = new_channel*HOP_CHANNEL_SIZE + radio_cb["Freq"].get<int>();
     radio.set_channel(new_frequency);
+#endif
 }
