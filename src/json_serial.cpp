@@ -131,14 +131,14 @@ void rx_serial_thread_fn(void) {
             if(setting == "Mode") {
                 radio_cb["Mode"] = rx_json["Mode"].get<string>();
             }
+            else if(setting == "FEC Algorithm") {
+                 radio_cb["FEC Algorithm"] = rx_json["FEC Algorithm"].get<string>();               
+            }
             else {
                 radio_cb[setting] = rx_json[setting].get<int>();
             }
-            MbedJSONValue settings_json = radio_cb;
             save_settings_to_flash();
-            settings_json["Type"] = "Settings";
-            auto json_str = make_shared<string>(settings_json.serialize());
-            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
+			send_status();
         }
         else if(type_str == "Get Status") {
             ThisThread::sleep_for(100);

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # QMesh
 # Copyright (C) 2019 Daniel R. Fay
 
@@ -13,8 +15,6 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-#!/usr/bin/python3
 
 import sys, os
 import time
@@ -32,7 +32,7 @@ settings["SF"] = 12
 settings["Preamble Length"] = 12
 settings["Preamble Slots"] = 1
 beacon_str = "KG5VBY Beacon Test"
-settings["Beacon Message"] = base64.b64encode(beacon_str)
+settings["Beacon Message"] = str(base64.b64encode(beacon_str.encode('ascii')))
 settings["Beacon Interval"] = 10
 settings["Payload Length"] = len(beacon_str)
 settings["FEC Algorithm"] = "None"
@@ -41,111 +41,69 @@ settings["Convolutional Order"] = 9
 settings["Reed-Solomon Number Roots"] = 32
 settings["TX Power"] = 22
 
-settings_rx = False
-cur_status = "None"
-
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')
     parsed_line = {}
     parsed_line["Type"] = ""
     try: parsed_line = json.loads(line)
     except Exception as e: pass
-    if parsed_line["Type"] == "Settings":
-        print("----------CONFIGURATION----------")
-        print("Frequency: " + str(parsed_line["Freq"]))
-        print("Coding Rate: " + str(parsed_line["CR"]))
-        print("Spreading Factor: " + str(parsed_line["SF"]))
-        print("Bandwidth: " + str(parsed_line["BW"]))
-        print("Mode: " + str(parsed_line["Mode"]))
-        print("Preamble Length: " + str(parsed_line["Preamble Length"]))
-        print("Num Preamble Slots: " + str(parsed_line["Preamble Slots"]))
-        print("Payload Length: " + str(parsed_line["Payload Length"]))
-        print("Beacon Interval (s): " + str(parsed_line["Beacon Interval"]))
-        msg = base64.b64decode(parsed_line["Beacon Message"]).decode('utf-8')
-        print("Beacon Message: " + str(msg))
-		print("FEC Algorithm: " + str(parsed_line"FEC Algorithm"))
-	print("Convolution Rate: " + str(parsed_line["Convolutional Rate"]))
-	print("Convolution Order: " + str(parsed_line["Convolutional Order"]))
-	print("Reed-Solomon Number of Roots: " + \ 
-                str(parsed_line["Reed-Solomon Number Roots"]))
-        print("Transmit power: " + str(parsed_line["TX Power"]))
-        # Save the settings to a file
-	settings_file = open("board_settings.json", "w")
-	settings_file.write(parsed_line)
-	settings_file.close()		
-        settings_rx = True
-    elif parsed_line["Type"] == "Status":
+    #print(parsed_line)
+    if parsed_line["Type"] == "Status":
         cur_status = parsed_line["Status"]
         print("Current status is " + parsed_line["Status"])
-        print("Current time is " + str(parsed_line["Time"])
+        print("Current time is " + str(parsed_line["Time"]))
+        if parsed_line["Status"] == "MANAGEMENT":
+            print("Consuming done!\r\n")
+            ch.stop_consuming()
 
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
-channel.queue_declare(queue='board_input')
-channel.queue_declare(queue='board_output')
-channel.basic_consume(queue='board_output', auto_ack=True, \
+channel.exchange_declare(exchange='board_output', exchange_type='fanout')
+result = channel.queue_declare(queue='', exclusive=True)
+queue_name = result.method.queue
+channel.queue_bind(exchange='board_output', queue=queue_name)
+channel.basic_consume(queue=queue_name, auto_ack=True, \
         on_message_callback=dbg_process)
-channel.start_consuming()
-
-
-# Check what mode the board is currently in
-cur_status = "None"
-print("Now checking the status of the board...")
-msg_req["Type"] = "Get Status"
-msg_req_str = json.dumps(msg_req)
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=msg_req_str)
-while cur_status != "MANAGEMENT":
-    if cur_status == "BOOTING":
-        print("Board is BOOTING. Waiting for it to go into MANAGEMENT...")
-    elif cur_status == "RUNNING":
-        print("Board is RUNNING. Rebooting...")
-        msg_req["Type"] = "Reboot"
-        msg_req_str = json.dumps(msg_req)
-        channel.basic_publish(exchange='', routing_key='board_input', \
-                body=msg_req_str)
-    elif cur_status == "MANAGEMENT":
-        print("Board is in MANAGEMENT")
-        msg_req["Type"] = "Stay in Management"
-        msg_req_str = json.dumps(msg_req)
-        channel.basic_publish(exchange='', routing_key='board_input', \
-                body=msg_req_str)
-    else:
-        print("Board is in unknown mode! Rebooting...")
-        msg_req["Type"] = "Reboot"
-        msg_req_str = json.dumps(msg_req)
-        channel.basic_publish(exchange='', routing_key='board_input', \
-                body=msg_req_str)
-    cur_status = "None"
-    msg_req["Type"] = "Get Status"
-    msg_req_str = json.dumps(msg_req)
-    channel.basic_publish(exchange='', routing_key='board_input', \
-            body=msg_req_str)
-
-# Get the current configuration
-settings_rx = False
-msg_req = {}
-msg_req["Type"] = "Config Req"
-msg_req_str = json.dumps(msg_req)
-channel.basic_publish(exchange='', routing_key='board_input', body=msg_req_str)
-
-# Load up the settings
-for setting_name, setting in settings:
-    while !settings_rx: 
-        pass
-    settings_rx = False
-    msg_req = {}
-    msg_req["Type"] = "Put Setting"
-    msg_req["Setting"] = setting_name
-    msg_req[setting_name] = setting
-    msg_req_str = json.dumps(msg_req)
-    channel.basic_publish(exchange='', routing_key='board_input', \
-            body=msg_req_str)
 
 # Reboot the board
+msg_req = {}
 msg_req["Type"] = "Reboot"
 msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
-        body=msg_req_str)
+        body=bytes(msg_req_str.encode('ascii')))
+channel.start_consuming()
+
+msg_req = {}
+msg_req["Type"] = "Stay in Management"
+msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
+channel.basic_publish(exchange='', routing_key='board_input', \
+        body=bytes(msg_req_str.encode('ascii')))
+channel.start_consuming()
+
+for (setting_name, setting_value) in settings.items():
+	msg_req = {}
+	msg_req["Type"] = "Put Setting"
+	msg_req["Setting"] = str(setting_name)
+	msg_req[str(setting_name)] = setting_value
+	msg_req_str = json.dumps(msg_req)
+	msg_req_str += str("\n")
+	channel.basic_publish(exchange='', routing_key='board_input', \
+			body=bytes(msg_req_str.encode('ascii')))
+	print(msg_req_str)
+	channel.basic_consume(queue=queue_name, auto_ack=True, \
+        on_message_callback=dbg_process)
+	channel.start_consuming()
+	
+# Reboot the board
+msg_req = {}
+msg_req["Type"] = "Reboot"
+msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
+channel.basic_publish(exchange='', routing_key='board_input', \
+        body=bytes(msg_req_str.encode('ascii')))
+
+
 
