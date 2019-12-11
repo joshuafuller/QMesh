@@ -33,13 +33,14 @@ settings["Preamble Length"] = 12
 settings["Preamble Slots"] = 1
 beacon_str = "KG5VBY Beacon Test"
 settings["Beacon Message"] = str(base64.b64encode(beacon_str.encode('ascii')))
-settings["Beacon Interval"] = 10
+settings["Beacon Interval"] = 1
 settings["Payload Length"] = len(beacon_str)
 settings["FEC Algorithm"] = "None"
 settings["Convolutional Rate"] = 2
 settings["Convolutional Order"] = 9
 settings["Reed-Solomon Number Roots"] = 32
 settings["TX Power"] = 22
+settings["CW Test Mode"] = 0 # 1 to enable CW test mode
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

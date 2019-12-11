@@ -198,6 +198,15 @@ void init_radio(void) {
     radio.set_public_network(false);
     radio.set_channel(radio_freq);
     radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, RADIO_PREAMBLE_LEN, full_pkt_len);
+
+    int cw_test_mode = radio_cb["CW Test Mode"].get<int>();
+    if(cw_test_mode == 1) { 
+        debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
+        radio.set_tx_continuous_wave(0, 0, 0);
+        while(true) {
+            ThisThread::sleep_for(1000);
+        }
+    }
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {

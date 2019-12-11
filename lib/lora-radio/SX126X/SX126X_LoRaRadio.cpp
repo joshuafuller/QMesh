@@ -237,10 +237,19 @@ bool SX126X_LoRaRadio::check_rf_frequency(uint32_t frequency)
     return true;
 }
 
-void SX126X_LoRaRadio::set_tx_continuous_wave(uint32_t freq, int8_t power,
-                                              uint16_t time)
+void SX126X_LoRaRadio::set_tx_continuous_wave(uint32_t freq, int8_t power, uint16_t time)
 {
-    // This is useless. We even removed the support from our MAC layer.
+    set_tx_power(_tx_power);
+
+    if(_rxen.is_connected()) {
+        _rxen = 0;
+    }
+    if(_txen.is_connected()) {
+        _txen = 1;
+    }
+
+    write_opmode_command((uint8_t) RADIO_SET_TXCONTINUOUSWAVE, NULL, 0);
+
 }
 
 void SX126X_LoRaRadio::handle_dio1_irq()
