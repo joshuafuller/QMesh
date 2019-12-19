@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include <cmath>
 #include <map>
-#include "PolarCode.h"
 #include <string>
 #include "peripherals.hpp"
 
