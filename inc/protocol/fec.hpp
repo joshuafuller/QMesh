@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include "PolarCode.h"
 #include <string>
+#include "peripherals.hpp"
 
 
 // Convolutional Codes
@@ -67,6 +68,11 @@ static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257,
 static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};                        
 
 /**
+ * Performs some testing of the different Forward Error Correction algorithms.
+ */
+void testFEC(void);
+
+/**
  * Base class for Forward Error Correction. Provides some generically-useful functions,
  * like interleaving, but otherwise just functions as a dummy FEC class.
  */
@@ -78,6 +84,11 @@ public:
     /// Constructor.
     FEC(void) {
         name = "Dummy FEC";
+    }
+
+    /// Gets the name of the FEC.
+    string getName(void) {
+        return name;
     }
 
     /**
@@ -100,6 +111,8 @@ public:
 
     static void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &int_bytes) {
         int_bytes.resize(bytes.size());
+        int_bytes = bytes;
+        return;
         size_t non_int_pos = 0;
         for(size_t cur_bit = 0; cur_bit < 8; cur_bit++) {
             for(size_t cur_byte = 0; cur_byte < bytes.size(); cur_byte++) {
@@ -112,6 +125,8 @@ public:
 
     static void deinterleaveBits(const vector<uint8_t> &int_bytes, vector<uint8_t> &bytes) {
         bytes.resize(int_bytes.size());
+        bytes = int_bytes;
+        return;
         size_t non_int_pos = 0;
         for(size_t cur_bit = 0; cur_bit < 8; cur_bit++) {
             for(size_t cur_byte = 0; cur_byte < bytes.size(); cur_byte++) {
@@ -215,27 +230,11 @@ public:
         correct_convolutional_destroy(corr_con);
     }
 
-    size_t getEncSize(const size_t msg_len) {
-        return correct_convolutional_encode_len(corr_con, msg_len)/8;
-    }
+    size_t getEncSize(const size_t msg_len);
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-        enc_msg.resize(FECConv::getEncSize(msg.size()));
-        vector<uint8_t> msg_int(msg.size());
-        interleaveBits(msg, msg_int);
-        return correct_convolutional_encode(corr_con, msg_int.data(), msg_int.size(), enc_msg.data())/8;
-    }
+    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
 
-    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
-        dec_msg.resize(enc_msg.size());
-        vector<uint8_t> dec_msg_int(dec_msg.size());
-        size_t dec_size = correct_convolutional_decode(corr_con, enc_msg.data(), 
-                                enc_msg.size()*8, dec_msg_int.data());
-        dec_msg.resize(dec_size);
-        deinterleaveBits(dec_msg_int, dec_msg);
-        return dec_size;
-    }
-
+    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
 };
 
 
@@ -270,7 +269,7 @@ public:
      * Default constructor. Initializes with a convolutional coding rate of 2,
      * n=9, and 32 Reed-Solomon correction bytes.
      */
-    FECRSV(void) : FECRSV(2, 9, 32) { };
+    FECRSV(void) : FECRSV(2, 9, 8) { };
 
     /// Destructor.
     ~FECRSV(void) {

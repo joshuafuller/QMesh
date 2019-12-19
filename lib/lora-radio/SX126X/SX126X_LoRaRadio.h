@@ -283,6 +283,9 @@ public:
      */
     virtual void set_tx_continuous_wave(uint32_t freq, int8_t power, uint16_t time);
 
+    /** Sets the radio in continuous preamble transmission mode */
+    virtual void set_tx_continuous_preamble(void);
+
     /**
      * Acquire exclusive access
      */

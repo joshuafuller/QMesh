@@ -252,6 +252,21 @@ void SX126X_LoRaRadio::set_tx_continuous_wave(uint32_t freq, int8_t power, uint1
 
 }
 
+void SX126X_LoRaRadio::set_tx_continuous_preamble(void)
+{
+    set_tx_power(_tx_power);
+
+    if(_rxen.is_connected()) {
+        _rxen = 0;
+    }
+    if(_txen.is_connected()) {
+        _txen = 1;
+    }
+
+    write_opmode_command((uint8_t) RADIO_SET_TXCONTINUOUSPREAMBLE, NULL, 0);
+
+}
+
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();

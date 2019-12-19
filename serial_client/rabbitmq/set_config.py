@@ -38,9 +38,11 @@ settings["Payload Length"] = len(beacon_str)
 settings["FEC Algorithm"] = "None"
 settings["Convolutional Rate"] = 2
 settings["Convolutional Order"] = 9
-settings["Reed-Solomon Number Roots"] = 32
+settings["Reed-Solomon Number Roots"] = 8
 settings["TX Power"] = 22
 settings["CW Test Mode"] = 0 # 1 to enable CW test mode
+settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
+settings["Test FEC"] = 1 # 1 to enable an FEC test
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

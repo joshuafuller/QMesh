@@ -200,12 +200,25 @@ void init_radio(void) {
     radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, RADIO_PREAMBLE_LEN, full_pkt_len);
 
     int cw_test_mode = radio_cb["CW Test Mode"].get<int>();
+    int pre_test_mode = radio_cb["Preamble Test Mode"].get<int>();
+    int fec_test_mode = radio_cb["Test FEC"].get<int>();
     if(cw_test_mode == 1) { 
         debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
         radio.set_tx_continuous_wave(0, 0, 0);
         while(true) {
             ThisThread::sleep_for(1000);
         }
+    }
+    else if(pre_test_mode == 1) {
+        debug_printf(DBG_WARN, "Starting continuous preamble output...\r\n");
+        radio.set_tx_continuous_preamble();
+        while(true) {
+            ThisThread::sleep_for(1000);
+        }
+    }
+    else if(fec_test_mode == 1) {
+        debug_printf(DBG_WARN, "Starting the FEC testing...\r\n");
+        testFEC();
     }
 }
 

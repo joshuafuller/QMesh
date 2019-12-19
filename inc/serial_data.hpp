@@ -114,7 +114,7 @@ public:
     /**
     * Default constructor. Constructs with a default FEC (one that does nothing).
     */
-    Frame() : Frame(make_shared<FEC>()){ }
+    Frame() : Frame(make_shared<FEC>()) { }
 
     /**
     * Constructor that loads a specific FEC.
@@ -122,6 +122,32 @@ public:
     */
     Frame(shared_ptr<FEC> my_fec) {
         fec = my_fec;
+    }
+
+    void getRawSerialized(vector<uint8_t> &ser_frame) {
+        for(int i = 0; i < sizeof(pkt); i++) {
+            ser_frame.push_back(((uint8_t *) &pkt)[i]);
+        }
+        copy(data.begin(), data.end(), back_inserter(ser_frame));
+    }
+
+    /// Equality operator for Frames
+    bool operator == (const Frame &L) {
+        auto L_cpy = make_shared<Frame>(L);
+        auto R_cpy = make_shared<Frame>(*this);
+        //debug_printf(DBG_INFO, "Setting up the comparison\r\n");
+        //ThisThread::sleep_for(1000); 
+        vector<uint8_t> l_ser_data, r_ser_data;
+        L_cpy->getRawSerialized(l_ser_data);
+        R_cpy->getRawSerialized(r_ser_data);
+        //debug_printf(DBG_INFO, "Getting serialized data\r\n");
+        //ThisThread::sleep_for(1000); 
+        return (l_ser_data == r_ser_data);
+    }
+
+    /// Inequality operator for Frames
+    bool operator != (const Frame &L) {
+        return !(*this == L);
     }
 
     /**
@@ -260,7 +286,7 @@ public:
      * Returns the the size of a packet
      */
     static size_t getPktSize(void) {
-        return sizeof(frame_pkt);
+        return sizeof(frame_pkt) + radio_cb["Payload Length"].get<int>();
     }
 
     /**

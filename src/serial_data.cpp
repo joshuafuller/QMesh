@@ -41,13 +41,12 @@ void Frame::loadTestFrame(vector<uint8_t> &buf) {
     setPayloadCrc();
 }
 
-
 size_t Frame::getFullPktSize(void) {
     return fec->getEncSize(getPktSize());
 }
 
 size_t Frame::serialize(vector<uint8_t> &buf) {
-    debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
+    //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
     vector<uint8_t> ser_frame;
     for(int i = 0; i < sizeof(pkt); i++) {
         ser_frame.push_back(((uint8_t *) &pkt)[i]);
@@ -85,17 +84,17 @@ uint32_t Frame::calculateUniqueCrc(void) {
 PKT_STATUS_ENUM Frame::deserialize(const std::shared_ptr<vector<uint8_t>> buf) {
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
-    debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
+    //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
     ssize_t bytes_dec = fec->decode(*buf, dec_buf);
-    debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
+    //debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
     if(bytes_dec == -1) {
-        debug_printf(DBG_INFO, "FEC Failed\r\n");
+        //debug_printf(DBG_INFO, "FEC Failed\r\n");
         pkt_status = PKT_FEC_FAIL;
         return pkt_status;
     }
     // Step one: check the size of the packet
     if(Frame::size() != bytes_dec) {
-        debug_printf(DBG_INFO, "Bad packet size\r\n");
+        //debug_printf(DBG_INFO, "Bad packet size\r\n");
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
     }
@@ -104,18 +103,18 @@ PKT_STATUS_ENUM Frame::deserialize(const std::shared_ptr<vector<uint8_t>> buf) {
     data.clear();
     copy(dec_buf.begin()+sizeof(pkt), dec_buf.end(), back_inserter(data));
     if(!checkHeaderCrc()) {
-        debug_printf(DBG_INFO, "Bad header CRC\r\n");
+        //debug_printf(DBG_INFO, "Bad header CRC\r\n");
         pkt_status = PKT_BAD_HDR_CRC;
         return pkt_status;
     }
     // Step three: check the payload CRC
     if(!checkPayloadCrc()) {
-        debug_printf(DBG_INFO, "Bad payload CRC\r\n");
+        //debug_printf(DBG_INFO, "Bad payload CRC\r\n");
         pkt_status = PKT_BAD_PLD_CRC;
         return pkt_status;
     }
     // Size checked out, CRCs checked out, so return OK
-    debug_printf(DBG_INFO, "Packet OK\r\n");
+    //debug_printf(DBG_INFO, "Packet OK\r\n");
     pkt_status = PKT_OK;
     return pkt_status;
 }

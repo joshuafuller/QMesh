@@ -106,6 +106,9 @@ void load_settings_from_flash(void) {
         radio_cb["Convolutional Order"] = FEC_CONV_ORDER;
         radio_cb["Reed-Solomon Number Roots"] = FEC_RS_NUM_ROOTS;
 	    radio_cb["TX Power"] = RADIO_POWER;
+        radio_cb["CW Test Mode"] = 0;
+        radio_cb["Preamble Test Mode"] = 0;
+        radio_cb["Test FEC"] = 0;
         string settings_str = radio_cb.serialize();
         fprintf(f, "%s\r\n", settings_str.c_str());
         fflush(f);
