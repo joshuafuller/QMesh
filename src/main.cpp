@@ -69,7 +69,7 @@ int main()
     led1.LEDSolid();
 
     // Start the WDT thread
-    //wdt_thread.start(wdt_fn);
+    wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
     pc.baud(230400);
@@ -97,10 +97,11 @@ int main()
     debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
     ThisThread::sleep_for(1000);
 
-    // Mount the filesystem, load the configuration
+    // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
     load_settings_from_flash();
     save_settings_to_flash();
+    log_boot();
 
     // Wait for 2 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;

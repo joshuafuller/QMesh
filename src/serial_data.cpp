@@ -25,55 +25,67 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include "fec.hpp"
 #include "json_serial.hpp"
+#include <random>
 
 Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
-    pkt.hdr.type = 0;
-    pkt.hdr.stream_id = 1;
-    pkt.hdr.ttl = 7;
-    pkt.hdr.sender = 0xB;
-    pkt.hdr.pre_offset = 0;
-    pkt.hdr.nsym_offset = 0;
-    pkt.hdr.sym_offset = 0;
+    hdr.type = 0;
+    hdr.stream_id = 1;
+    hdr.ttl = 7;
+    hdr.sender = 0xB;
+    hdr.pre_offset = 0;
+    hdr.nsym_offset = 0;
+    hdr.sym_offset = 0;
     data.assign(buf.begin(), buf.end());
-    setHeaderCrc();
-    setPayloadCrc();
+    setCRC();
 }
 
-size_t Frame::getFullPktSize(void) {
-    return fec->getEncSize(getPktSize());
+size_t Frame::codedSize(void) {
+    return fec->getEncSize(size());
 }
 
-size_t Frame::serialize(vector<uint8_t> &buf) {
-    //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
-    vector<uint8_t> ser_frame;
-    for(int i = 0; i < sizeof(pkt); i++) {
-        ser_frame.push_back(((uint8_t *) &pkt)[i]);
+void Frame::serialize(vector<uint8_t> &ser_frame) {
+    for(int i = 0; i < sizeof(hdr); i++) {
+        ser_frame.push_back(((uint8_t *) &hdr)[i]);
     }
     copy(data.begin(), data.end(), back_inserter(ser_frame));
-    return fec->encode(ser_frame, buf);
+    for(int i = 0; i < sizeof(crc); i++) {
+        ser_frame.push_back(crc.b[i]);
+    }
 }
 
-uint16_t Frame::calculateHeaderCrc(void) {
-    // Header
+void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed) {
+    mt19937 rand_gen(seed);
+    for(vector<uint8_t>::const_iterator iter = buf.begin(); iter != buf.end(); iter++) {
+        uint8_t rand_byte = rand_gen();
+        wht_buf.push_back(*iter ^ rand_byte);
+    }
+}
+
+size_t Frame::serializeCoded(vector<uint8_t> &buf) {
+    //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
+    vector<uint8_t> ser_buf;
+    serialize(ser_buf);
+    return fec->encode(ser_buf, buf);
+}
+
+uint16_t Frame::calcCRC(void) {
     MbedCRC<POLY_16BIT_CCITT, 16> ct;
     uint32_t crc = 0;
-    ct.compute((void *) &pkt.hdr, sizeof(pkt.hdr), &crc);
+    vector<uint8_t> crc_buf;
+    for(int i = 0; i < sizeof(hdr); i++) {
+        crc_buf.push_back(((uint8_t *) &hdr)[i]);
+    }
+    copy(data.begin(), data.end(), back_inserter(crc_buf));
+    ct.compute((void *) crc_buf.data(), crc_buf.size(), &crc);
     return crc & 0x0000FFFF;
 }
 
-uint16_t Frame::calculatePayloadCrc(void) {
-    MbedCRC<POLY_16BIT_CCITT, 16> ct;
-    uint32_t crc = 0;
-    ct.compute((void *) data.data(), data.size(), &crc);
-    return crc & 0x0000FFFF;
-}
-
-uint32_t Frame::calculateUniqueCrc(void) {
+uint32_t Frame::calcUniqueCRC(void) {
     vector<uint8_t> buf;
-    buf.push_back((uint8_t) pkt.hdr.type);
-    buf.push_back((uint8_t) pkt.hdr.stream_id);
+    buf.push_back((uint8_t) hdr.type);
+    buf.push_back((uint8_t) hdr.stream_id);
     copy(data.begin(), data.end(), back_inserter(buf));
     MbedCRC<POLY_32BIT_ANSI, 32> ct;
     uint32_t crc = 0;
@@ -81,7 +93,7 @@ uint32_t Frame::calculateUniqueCrc(void) {
     return crc;        
 }
 
-PKT_STATUS_ENUM Frame::deserialize(const std::shared_ptr<vector<uint8_t>> buf) {
+PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
     //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
@@ -99,18 +111,16 @@ PKT_STATUS_ENUM Frame::deserialize(const std::shared_ptr<vector<uint8_t>> buf) {
         return pkt_status;
     }
     // Step two: load the packet data and check the header CRC
-    memcpy(&pkt, dec_buf.data(), sizeof(pkt));
+    memcpy(&hdr, dec_buf.data(), sizeof(hdr));
     data.clear();
-    copy(dec_buf.begin()+sizeof(pkt), dec_buf.end(), back_inserter(data));
-    if(!checkHeaderCrc()) {
-        //debug_printf(DBG_INFO, "Bad header CRC\r\n");
-        pkt_status = PKT_BAD_HDR_CRC;
-        return pkt_status;
+    copy(dec_buf.begin()+sizeof(hdr), dec_buf.end()-sizeof(crc), back_inserter(data));
+    for(int i = 0; i < sizeof(crc); i++) {
+        crc.b[i] = *(dec_buf.begin()+sizeof(hdr)+data.size()+i);
     }
     // Step three: check the payload CRC
-    if(!checkPayloadCrc()) {
+    if(!checkCRC()) {
         //debug_printf(DBG_INFO, "Bad payload CRC\r\n");
-        pkt_status = PKT_BAD_PLD_CRC;
+        pkt_status = PKT_BAD_CRC;
         return pkt_status;
     }
     // Size checked out, CRCs checked out, so return OK
@@ -120,15 +130,14 @@ PKT_STATUS_ENUM Frame::deserialize(const std::shared_ptr<vector<uint8_t>> buf) {
 }
 
 void Frame::loadFromJSON(MbedJSONValue &json) {
-    pkt.hdr.type = json["HDR Pkt Type"].get<int>();
-    pkt.hdr.stream_id = json["HDR Stream ID"].get<int>();
-    pkt.hdr.ttl = json["HDR TTL"].get<int>();
-    pkt.hdr.sender = json["HDR Sender"].get<int>();
-    pkt.hdr.pre_offset = json["HDR Pre Offset"].get<int>();
-    pkt.hdr.nsym_offset = json["HDR Num Sym Offset"].get<int>();
-    pkt.hdr.sym_offset = json["HDR Sym Offset"].get<int>();
-    pkt.hdr_crc.crc = json["Header CRC"].get<int>();
-    pkt.data_crc.crc = json["Data CRC"].get<int>();
+    hdr.type = json["HDR Pkt Type"].get<int>();
+    hdr.stream_id = json["HDR Stream ID"].get<int>();
+    hdr.ttl = json["HDR TTL"].get<int>();
+    hdr.sender = json["HDR Sender"].get<int>();
+    hdr.pre_offset = json["HDR Pre Offset"].get<int>();
+    hdr.nsym_offset = json["HDR Num Sym Offset"].get<int>();
+    hdr.sym_offset = json["HDR Sym Offset"].get<int>();
+    crc.s = json["CRC"].get<int>();
     string b64_str = json["Data Payload"].get<string>();
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_decode(NULL, 0, &b64_len, 
@@ -141,15 +150,14 @@ void Frame::loadFromJSON(MbedJSONValue &json) {
 
 void Frame::saveToJSON(MbedJSONValue &json) {
     json["Type"] = "Frame";
-    json["HDR Pkt Type"] = pkt.hdr.type;
-    json["HDR Stream ID"] = pkt.hdr.stream_id;
-    json["HDR TTL"] = pkt.hdr.ttl;
-    json["HDR Sender"] = pkt.hdr.sender;
-    json["HDR Pre Offset"] = pkt.hdr.pre_offset;
-    json["HDR Num Sym Offset"] = pkt.hdr.nsym_offset;
-    json["HDR Sym Offset"] = pkt.hdr.sym_offset;
-    json["Header CRC"] = pkt.hdr_crc.crc;
-    json["Data CRC"] = pkt.data_crc.crc;
+    json["HDR Pkt Type"] = hdr.type;
+    json["HDR Stream ID"] = hdr.stream_id;
+    json["HDR TTL"] = hdr.ttl;
+    json["HDR Sender"] = hdr.sender;
+    json["HDR Pre Offset"] = hdr.pre_offset;
+    json["HDR Num Sym Offset"] = hdr.nsym_offset;
+    json["HDR Sym Offset"] = hdr.sym_offset;
+    json["CRC"] = crc.s;
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size()) == 0);
     unsigned char *b64_buf = new unsigned char[b64_len];
@@ -164,11 +172,10 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "Frame Info\r\n");
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "HEADER\r\n");
-    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", pkt.hdr.type, pkt.hdr.stream_id);
-    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", pkt.hdr.ttl, pkt.hdr.sender);
+    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", hdr.type, hdr.stream_id);
+    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", hdr.ttl, hdr.sender);
     debug_printf(dbg_type, "Offsets -- %2d (pre), %2d (nsym), %2d (sym)\r\n", 
-        pkt.hdr.pre_offset, pkt.hdr.nsym_offset, pkt.hdr.sym_offset);
-    debug_printf(dbg_type, "CRC: %4x\r\n", pkt.hdr_crc);
+        hdr.pre_offset, hdr.nsym_offset, hdr.sym_offset);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
     for(size_t i = 0; i < data.size(); i++) {
@@ -178,7 +185,7 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
         debug_printf_clean(dbg_type, "%2x ", data[i]);
     }
     debug_printf_clean(dbg_type, "\r\n");
-    debug_printf(dbg_type, "CRC: %4x\r\n", pkt.data_crc);
+    debug_printf(dbg_type, "CRC: %4x\r\n", crc.s);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
 }

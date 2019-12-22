@@ -180,6 +180,18 @@ void rx_serial_thread_fn(void) {
             ThisThread::sleep_for(1000);
             reboot_system();
         }
+        else if(type_str == "Erase Boot Log File") {
+            stay_in_management = true;
+            while(current_mode == BOOTING);
+            if(current_mode == MANAGEMENT) {
+                fs.remove("boot_log.json");
+            }
+            ThisThread::sleep_for(100);
+            send_status();
+            debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            ThisThread::sleep_for(1000);
+            reboot_system();
+        }
         else if(type_str == "Erase Cfg File") {
             stay_in_management = true;
             while(current_mode == BOOTING);
@@ -198,11 +210,33 @@ void rx_serial_thread_fn(void) {
             if(current_mode == MANAGEMENT) {
                 std::fstream f;
                 f.open("/fs/logfile.json", ios_base::in);
+                MBED_ASSERT(f);
                 string line;
                 while(getline(f, line)) {
                     MbedJSONValue log_json;
                     parse(log_json, line.c_str());
                     log_json["Type"] = "Log Entry";
+                    auto json_str = make_shared<string>(log_json.serialize());
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
+                }  
+            }
+            send_status();
+            debug_printf(DBG_WARN, "Now rebooting...\r\n");
+            ThisThread::sleep_for(1000);
+            reboot_system();
+        }
+        else if(type_str == "Read Boot Log") {
+            stay_in_management = true;
+            while(current_mode == BOOTING);
+            if(current_mode == MANAGEMENT) {
+                std::fstream f;
+                f.open("/fs/boot_log.json", ios_base::in);
+                MBED_ASSERT(f);
+                string line;
+                while(getline(f, line)) {
+                    MbedJSONValue log_json;
+                    parse(log_json, line.c_str());
+                    log_json["Type"] = "Boot Log Entry";
                     auto json_str = make_shared<string>(log_json.serialize());
                     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
                 }  

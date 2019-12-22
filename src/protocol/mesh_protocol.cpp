@@ -66,7 +66,7 @@ static map<uint32_t, time_t> past_timestamp;
  */
 static bool checkRedundantPkt(shared_ptr<Frame> rx_frame);
 static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
-    uint32_t crc = rx_frame->calculateUniqueCrc();
+    uint32_t crc = rx_frame->calcUniqueCRC();
     bool ret_val = false;
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         ret_val = true;
@@ -239,7 +239,7 @@ void mesh_protocol_fsm(void) {
                         radio_timing.startTimer();
                         led2.LEDSolid();
                         rx_frame_sptr = make_shared<Frame>(fec);
-                        PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserialize(rx_radio_event->buf);
+                        PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(rx_radio_event->buf);
                         rx_frame_sptr->incrementTTL();
                         enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                         enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
@@ -284,7 +284,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { radio_timing.startTimer();
                 led3.LEDSolid();
-                size_t tx_frame_size = tx_frame_sptr->serialize(tx_frame_buf);
+                size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
@@ -303,7 +303,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { radio_timing.startTimer();
                 led3.LEDSolid();
-                size_t rx_frame_size = rx_frame_sptr->serialize(tx_frame_buf);
+                size_t rx_frame_size = rx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(rx_frame_size > 256);
                 radio.send(rx_frame_buf.data(), rx_frame_size);
                 radio_timing.waitFullSlots(1);

@@ -54,8 +54,7 @@ int debug_printf_clean(const enum DBG_TYPES, const char *fmt, ...);
 typedef enum {
     PKT_OK = 0,
     PKT_FEC_FAIL,
-    PKT_BAD_HDR_CRC,
-    PKT_BAD_PLD_CRC,
+    PKT_BAD_CRC,
     PKT_BAD_SIZE,
     PKT_UNITIALIZED,
 } PKT_STATUS_ENUM;
@@ -72,9 +71,10 @@ typedef enum {
  * - Serialization/deserialization
  */
 class Frame {
+public:
     typedef union {
-        uint16_t crc;
-        uint8_t crc_bytes[2];
+        uint16_t s;
+        uint8_t b[2];
     } crc16_t;
     typedef struct __attribute__((__packed__)) {
         uint32_t type : 2;
@@ -85,15 +85,12 @@ class Frame {
         uint32_t nsym_offset : 3;
         uint32_t sym_offset : 3;
     } frame_hdr;
-    typedef struct __attribute__((__packed__)) {
-        frame_hdr hdr;
-        crc16_t hdr_crc;
-        crc16_t data_crc;
-    } frame_pkt;
-    // payload
+    shared_ptr<FEC> fec;
+private:
+    frame_hdr hdr;
     vector<uint8_t> data;
+    crc16_t crc;
 protected:
-    frame_pkt pkt;
     // receive stats
     int16_t rssi;
     int8_t snr;
@@ -101,14 +98,12 @@ protected:
     PKT_STATUS_ENUM pkt_status;
 
 public:
-    shared_ptr<FEC> fec;
-
     /**
     * Get the combined, un-FEC'd size of the Frame.
     */
     static size_t size(void) {
-        return radio_cb["Payload Length"].get<int>() + sizeof(pkt.hdr) + 
-            sizeof(pkt.hdr_crc) + sizeof(pkt.data_crc);
+        return radio_cb["Payload Length"].get<int>() + sizeof(hdr) + 
+            sizeof(crc);
     }
 
     /**
@@ -124,12 +119,7 @@ public:
         fec = my_fec;
     }
 
-    void getRawSerialized(vector<uint8_t> &ser_frame) {
-        for(int i = 0; i < sizeof(pkt); i++) {
-            ser_frame.push_back(((uint8_t *) &pkt)[i]);
-        }
-        copy(data.begin(), data.end(), back_inserter(ser_frame));
-    }
+    void serialize(vector<uint8_t> &ser_frame);
 
     /// Equality operator for Frames
     bool operator == (const Frame &L) {
@@ -138,8 +128,8 @@ public:
         //debug_printf(DBG_INFO, "Setting up the comparison\r\n");
         //ThisThread::sleep_for(1000); 
         vector<uint8_t> l_ser_data, r_ser_data;
-        L_cpy->getRawSerialized(l_ser_data);
-        R_cpy->getRawSerialized(r_ser_data);
+        L_cpy->serialize(l_ser_data);
+        R_cpy->serialize(r_ser_data);
         //debug_printf(DBG_INFO, "Getting serialized data\r\n");
         //ThisThread::sleep_for(1000); 
         return (l_ser_data == r_ser_data);
@@ -161,9 +151,8 @@ public:
     * @param buf Where the payload bytes are put.
     */
     size_t getPayload(vector<uint8_t> &buf) {
-        buf.resize(data.size());
-        buf.assign(data.begin(), data.end());
-        return data.size();
+        buf = data;
+        return buf.size();
     }
 
     /**
@@ -174,34 +163,30 @@ public:
         data.resize(radio_cb["Payload Length"].get<int>());
         size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
         memcpy(data.data(), beacon_str.c_str(), len);        
-        pkt.hdr.type = BEACON_FRAME;
-        pkt.hdr.stream_id = 0;
-        pkt.hdr.ttl = 0;
-        pkt.hdr.sender = 0;
-        pkt.hdr.pre_offset = 0;
-        pkt.hdr.nsym_offset = 0;
-        pkt.hdr.sym_offset = 0;
-        this->calculateHeaderCrc();
-        this->calculatePayloadCrc();
+        hdr.type = BEACON_FRAME;
+        hdr.stream_id = 0;
+        hdr.ttl = 0;
+        hdr.sender = 0;
+        hdr.pre_offset = 0;
+        hdr.nsym_offset = 0;
+        hdr.sym_offset = 0;
+        this->calcCRC();
         return data.size();
     }
+
+    void whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed);
 
     /**
     * FEC-encode the Frame, and provide the encoded bytes. Returns size in
     * bytes of the FEC-encoded Frame.
     * @param buf The vector that will hold the encoded Frame.
     */
-    size_t serialize(vector<uint8_t> &buf);
-
-    /**
-    * Calculate the CRC of the header.
-    */
-    uint16_t calculateHeaderCrc(void);
+    size_t serializeCoded(vector<uint8_t> &buf);
 
     /**
     * Calculate the CRC of the payload.
     */
-    uint16_t calculatePayloadCrc(void);
+    uint16_t calcCRC(void);
 
     /**
     * Calculate the CRC for the "unique" information.
@@ -209,47 +194,23 @@ public:
     * This method is primarily used to provide a unique "hash" for Frames
     * in order to determine whether the QMesh node has seen them before.
     */
-    uint32_t calculateUniqueCrc(void);
-
-    /**
-     * Check the header CRC, returning True if a match, False if not.
-     */
-    bool checkHeaderCrc(void) {
-        return (pkt.hdr_crc.crc == calculateHeaderCrc());
-    }
+    uint32_t calcUniqueCRC(void);
 
     /**
      * Check the payload CRC, returning True if a match, False if not.
      */
-    bool checkPayloadCrc(void) {
-        return (pkt.data_crc.crc == calculatePayloadCrc());
-    }
-
-    /**
-     * Check the integrity of the packet by checking both the header and payload CRCs
-     */
-    bool checkIntegrity(void) {
-        return (checkHeaderCrc() & checkPayloadCrc());
-    }
-
-    /**
-     * Sets the header CRC by computing it based on the curent header data.
-     * Also returns the computed CRC.
-     */
-    uint16_t setHeaderCrc(void) {
-        uint16_t crc = calculateHeaderCrc();
-        pkt.hdr_crc.crc = crc;
-        return crc;
+    bool checkCRC(void) {
+        return (crc.s == calcCRC());
     }
 
     /**
      * Sets the payload CRC by computing it based on the curent payload data.
      * Also returns the computed CRC.
      */
-    uint16_t setPayloadCrc(void) {
-        uint16_t crc = calculatePayloadCrc();
-        pkt.data_crc.crc = crc;
-        return crc;
+    uint16_t setCRC(void) {
+        uint16_t calc_crc = calcCRC();
+        crc.s = calc_crc;
+        return calc_crc;
     }
 
     /**
@@ -259,47 +220,39 @@ public:
     * with the results (testing stuff out): \n
     *  - PKT_FEC_FAIL -- FEC decoding failed \n
     *  - PKT_BAD_SIZE -- Packet size is inconsistent with bytes decoded \n
-    *  - PKT_BAD_HDR_CRC -- Bad packet header CRC \n
-    *  - PKT_BAD_PLD_CRC -- Bad packet payload CRC \n
+    *  - PKT_BAD_CRC -- Bad packet payload CRC \n
     *  - PKT_OK -- Packet decoded successfully \n
     *
     * @param buf shared_ptr to a vector of received, encoded bytes to decode
     */
-    PKT_STATUS_ENUM deserialize(shared_ptr<vector<uint8_t>> buf); 
+    PKT_STATUS_ENUM deserializeCoded(const shared_ptr<vector<uint8_t>> buf);
 
     /**
      * Increment the TTL, updating the header CRC in the process.
      */
     void incrementTTL(void) {
-        pkt.hdr.ttl += 1;
-        setHeaderCrc();
+        hdr.ttl += 1;
+        setCRC();
     }
 
     /**
      * Return the frame's current TTL value
      */
     uint8_t getTTL(void) {
-        return pkt.hdr.ttl;
-    }
-
-    /** 
-     * Returns the the size of a packet
-     */
-    static size_t getPktSize(void) {
-        return sizeof(frame_pkt) + radio_cb["Payload Length"].get<int>();
+        return hdr.ttl;
     }
 
     /**
      * Returns the size of a packet header
      */
-    static size_t getHdrSize(void) {
-        return sizeof(frame_hdr);
+    static size_t hdrSize(void) {
+        return sizeof(hdr);
     }
 
     /**
     * Get the size, in bytes, of a Frame after FEC encoding.
     */
-    size_t getFullPktSize(void);
+    size_t codedSize(void);
 
     /** 
      * Get the offsets from the packet header
@@ -308,9 +261,9 @@ public:
      * @param sym_offset Intra-symbol offset.
      */
     void getOffsets(uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset) {
-        *pre_offset = pkt.hdr.pre_offset;
-        *nsym_offset = pkt.hdr.nsym_offset;
-        *sym_offset = pkt.hdr.sym_offset;
+        *pre_offset = hdr.pre_offset;
+        *nsym_offset = hdr.nsym_offset;
+        *sym_offset = hdr.sym_offset;
     }
 
     /** 
@@ -320,9 +273,9 @@ public:
      * @param sym_offset Intra-symbol offset.
      */
     void setOffsets(const uint8_t *pre_offset, const uint8_t *nsym_offset, const uint8_t *sym_offset) {
-        pkt.hdr.pre_offset = *pre_offset;
-        pkt.hdr.nsym_offset = *nsym_offset;
-        pkt.hdr.sym_offset = *sym_offset;
+        hdr.pre_offset = *pre_offset;
+        hdr.nsym_offset = *nsym_offset;
+        hdr.sym_offset = *sym_offset;
     }
 
     /**
@@ -352,15 +305,8 @@ public:
     /**
      * Returns the payload CRC stored within the Frame object.
      */
-    uint16_t getPayloadCrc(void) {
-        return this->pkt.data_crc.crc;
-    }
-
-    /**
-     * Returns the header CRC stored within the Frame object.
-     */
-    uint16_t getHeaderCrc(void) {
-        return this->pkt.hdr_crc.crc;
+    uint16_t getCRC(void) {
+        return crc.s;
     }
 
     /**

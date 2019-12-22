@@ -31,6 +31,8 @@ extern LittleFileSystem fs;
 
 void nv_log_fn(void);
 
+void log_boot(void);
+
 void init_filesystem(void);
 
 void load_settings_from_flash(void);

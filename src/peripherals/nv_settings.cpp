@@ -57,31 +57,6 @@ void init_filesystem(void) {
         int err = fs.mount(&bd);
         MBED_ASSERT(!err);
     }
-#if 0
-    // Display the root directory
-    debug_printf(DBG_INFO, "Opening the root directory... ");
-    fflush(stdout);
-    DIR *d = opendir("/fs/");
-    debug_printf(DBG_INFO, "%s\r\n", (!d ? "Fail :(" : "OK"));
-    if (!d) {
-        error("error: %s (%d)\r\n", strerror(errno), -errno);
-    }
-    debug_printf(DBG_INFO, "root directory:\r\n");
-    while (true) {
-        struct dirent *e = readdir(d);
-        if (!e) {
-            break;
-        }
-        debug_printf(DBG_INFO, "    %s\r\n", e->d_name);
-    }
-    debug_printf(DBG_INFO, "Closing the root directory... ");
-    fflush(stdout);
-    err = closedir(d);
-    debug_printf(DBG_INFO, "%s\n", (err < 0 ? "Fail :(" : "OK"));
-    if (err < 0) {
-        error("error: %s (%d)\n", strerror(errno), -errno);
-    }
-#endif
 }
 
 void load_settings_from_flash(void) {
@@ -146,8 +121,20 @@ void save_settings_to_flash(void) {
     fclose(f);
 }
 
+void log_boot(void) {
+    FILE *f = fopen("/fs/boot_log.json", "w+");
+    MBED_ASSERT(f);
+    MbedJSONValue log_json;
+    log_json["Unix Time"] = (int) time(NULL);
+    time_t my_time = time(NULL);
+    char *time_str = ctime(&my_time);
+    log_json["Time String"] = string(time_str);
+    string log_json_str = log_json.serialize();
+    fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
+    fflush(f);
+}
+
 void nv_log_fn(void) {
-    uint16_t session_nonce = rand() % 65536;
     FILE *f = fopen("/fs/logfile.json", "w+");
     MBED_ASSERT(f);
     for(;;) {
@@ -162,10 +149,8 @@ void nv_log_fn(void) {
         log_json["RSSI"] = (int) rssi;
         log_json["SNR"] = (int) snr;
         log_json["RX Size"] = (int) rx_size;
-        log_json["HDR Computed CRC"] = log_frame->calculateHeaderCrc();
-        log_json["HDR CRC"] = log_frame->getHeaderCrc();
-        log_json["PLD Computed CRC"] = log_frame->calculatePayloadCrc();
-        log_json["PLD CRC"] = log_frame->getPayloadCrc();
+        log_json["Computed CRC"] = log_frame->calcCRC();
+        log_json["CRC"] = log_frame->getCRC();
         string log_json_str = log_json.serialize();
         fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
         fflush(f);

@@ -181,7 +181,7 @@ void init_radio(void) {
         MBED_ASSERT(false);
     }
     Frame tmp_frame(frame_fec);
-    uint8_t full_pkt_len = tmp_frame.getFullPktSize();
+    uint8_t full_pkt_len = tmp_frame.codedSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,

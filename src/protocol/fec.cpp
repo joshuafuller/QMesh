@@ -55,9 +55,9 @@ void testFEC(void) {
             auto test_frame = make_shared<Frame>(*iter);
             test_frame->loadTestFrame(rand_data);
             auto serialized_data = make_shared<vector<uint8_t>>();
-            test_frame->serialize(*serialized_data);         
+            test_frame->serializeCoded(*serialized_data);         
             auto test_output_frame = make_shared<Frame>(*iter);           
-            test_output_frame->deserialize(serialized_data);     
+            test_output_frame->deserializeCoded(serialized_data);     
             if(*test_frame != *test_output_frame) {
                 fec_fail += 1;
             }
@@ -72,11 +72,11 @@ void testFEC(void) {
         debug_printf(DBG_INFO, "Now testing %s for bit error resilience...\r\n", iter->get()->getName().c_str());
         ThisThread::sleep_for(1000);
         Frame size_frame(*iter);
-        debug_printf(DBG_INFO, "Size of frame is %d\r\n", size_frame.getFullPktSize());
+        debug_printf(DBG_INFO, "Size of frame is %d\r\n", size_frame.size());
         fec_success = 0;
         fec_fail = 0;
         fec_total = 0;
-        for(int i = 0; i < size_frame.getFullPktSize(); i++) {
+        for(int i = 0; i < size_frame.size(); i++) {
             for(int j = 0; j < 10; j++) {
                 int pld_len = radio_cb["Payload Length"].get<int>();
                 vector<uint8_t> rand_data(pld_len);
@@ -84,11 +84,11 @@ void testFEC(void) {
                 auto test_frame = make_shared<Frame>(*iter);
                 test_frame->loadTestFrame(rand_data);
                 vector<uint8_t> serialized_data;
-                test_frame->serialize(serialized_data);
+                test_frame->serializeCoded(serialized_data);
                 serialized_data[i] = rand();
                 auto test_output_frame = make_shared<Frame>(*iter);
                 auto deserialized_data = make_shared<vector<uint8_t>>(serialized_data);
-                test_output_frame->deserialize(deserialized_data);
+                test_output_frame->deserializeCoded(deserialized_data);
                 if(*test_frame != *test_output_frame) {
                     fec_fail += 1;
                 }
@@ -106,13 +106,104 @@ void testFEC(void) {
     }
 }
 
+size_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    enc_msg.resize(msg.size());
+    copy(msg.begin(), msg.end(), enc_msg.begin());
+    Frame::crc16_t seed;
+    for(int i = 0; i < sizeof(seed); i++) {
+        seed.b[sizeof(seed)-1-i] = *(enc_msg.end()-1);
+        enc_msg.pop_back();
+    }
+    FEC::whitenData(enc_msg, seed.s);
+    for(int i = 0; i < sizeof(seed); i++) {
+        enc_msg.push_back(seed.b[i]);
+    }
+    //FEC::interleaveBits(enc_msg);
+    return enc_msg.size();
+}
+
+ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    dec_msg.resize(enc_msg.size());
+    copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
+    //FEC::deinterleaveBits(dec_msg);
+    Frame::crc16_t seed;
+    for(int i = 0; i < sizeof(seed); i++) {
+        seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
+        dec_msg.pop_back();
+    }
+    FEC::whitenData(dec_msg, seed.s);
+    for(int i = 0; i < sizeof(seed); i++) {
+        dec_msg.push_back(seed.b[i]);
+    }        
+    return dec_msg.size();
+}  
+    
+void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
+    mt19937 rand_gen(seed);
+    uniform_int_distribution<uint8_t> dist(0, 255);  
+    for(int i = 0; i < buf.size(); i++) {
+        buf[i] = buf[i] ^ dist(rand_gen);
+    }
+}
+
+void FEC::createInterleavingMatrix(void) {
+    int enc_size = getEncSize(Frame::size());
+    list<int> vals;
+    for(int i = 0; i < enc_size*8; i++) {
+        vals.push_back(i);
+    }
+    mt19937 rand_gen(6731);
+    pair<int, int> swap_idx;
+    while(vals.size() != 0) {
+        uniform_int_distribution<int> dist0(0, vals.size()-1);
+        int list_idx0 = dist0(rand_gen);
+        list<int>::iterator it0 = vals.begin();
+        advance(it0, list_idx0);
+        swap_idx.first = *it0;
+        vals.erase(it0);
+            
+        uniform_int_distribution<int> dist1(0, vals.size()-1);
+        int list_idx1 = dist1(rand_gen);
+        list<int>::iterator it1 = vals.begin();
+        advance(it1, list_idx1);
+        swap_idx.second = *it1;
+        vals.erase(it1);
+
+        interleave_matrix.push_back(swap_idx);
+    }
+}
+
+void FEC::interleaveBits(vector<uint8_t> &bytes) {
+    for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
+        bool bit0 = getBit(bytes, it->first);
+        bool bit1 = getBit(bytes, it->second);
+        bool swap = bit0;
+        bit0 = bit1;
+        bit1 = swap;
+        setBit(it->first, bit0, bytes);
+        setBit(it->second, bit1, bytes);
+    }
+}
+
+void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
+    for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
+        bool bit0 = getBit(bytes, it->second);
+        bool bit1 = getBit(bytes, it->first);
+        bool swap = bit0;
+        bit0 = bit1;
+        bit1 = swap;
+        setBit(it->second, bit0, bytes);
+        setBit(it->first, bit1, bytes);
+    }
+}
+
 size_t FECConv::getEncSize(const size_t msg_len) {
     int conv_len = correct_convolutional_encode_len(corr_con, msg_len);
     //debug_printf(DBG_INFO, "conv len is %d\r\n", conv_len);
     return (size_t) ceilf((float) correct_convolutional_encode_len(corr_con, msg_len)/8.0f);
 }
 
-FECConv::FECConv(const size_t inv_rate, const size_t order) {
+FECConv::FECConv(const size_t inv_rate, const size_t order) : FEC() {
     name = "Convolutional Coding";
     // Set up the convolutional outer code
     this->inv_rate = inv_rate;
@@ -160,31 +251,42 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) {
     corr_con = correct_convolutional_create(inv_rate, order, poly);
 }
 
-
 size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     enc_msg.resize(FECConv::getEncSize(msg.size()));
     vector<uint8_t> msg_int(msg.size());
-    //interleaveBits(msg, msg_int);
-    msg_int = msg;
+    copy(msg.begin(), msg.end(), msg_int.begin());
+    Frame::crc16_t seed;
+    for(int i = 0; i < sizeof(seed); i++) {
+        seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
+        msg_int.pop_back();
+    }
+    whitenData(msg_int, seed.s);
+    for(int i = 0; i < sizeof(seed); i++) {
+        msg_int.push_back(seed.b[i]);
+    }
     size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, msg_int.data(), 
             msg_int.size(), enc_msg.data())/8.0f);
-    //debug_printf(DBG_INFO, "Encode length is %d bytes\r\n", enc_len);
+    interleaveBits(enc_msg);   
     size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
-    //debug_printf(DBG_INFO, "Encode length is %d bits\r\n", enc_msg_size_bits);
     return enc_len;
 }
 
-
 ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     dec_msg.resize(Frame::size());
-    vector<uint8_t> dec_msg_int(dec_msg.size(), 0);
+    copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
+    deinterleaveBits(dec_msg);   
     size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
     size_t dec_size = correct_convolutional_decode(corr_con, enc_msg.data(), 
-                            enc_msg_size_bits, dec_msg_int.data());
-    //debug_printf(DBG_INFO, "Decode length is %d bytes\r\n", dec_size);
-    //debug_printf(DBG_INFO, "Decode length is %d bits\r\n", enc_msg_size_bits);
-    //deinterleaveBits(dec_msg_int, dec_msg);
-    dec_msg = dec_msg_int;
+                            enc_msg_size_bits, dec_msg.data());
+    Frame::crc16_t seed;
+    for(int i = 0; i < sizeof(seed); i++) {
+        seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
+        dec_msg.pop_back();
+    }
+    whitenData(dec_msg, seed.s);
+    for(int i = 0; i < sizeof(seed); i++) {
+        dec_msg.push_back(seed.b[i]);
+    }
     return dec_size;
 }
 
@@ -228,32 +330,46 @@ void FEC::benchmark(size_t num_iters) {
 
 size_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) {
     MBED_ASSERT(getEncSize(msg.size()) <= 256);
-    vector<uint8_t> rs_enc_msg(msg.size()+rs_corr_bytes);
-    size_t rs_size = correct_reed_solomon_encode(rs_con, msg.data(), msg.size(), rs_enc_msg.data());
+    Frame::crc16_t seed;
+    vector<uint8_t> msg_int(msg.size());
+    copy(msg.begin(), msg.end(), msg_int.begin());
+    for(int i = 0; i < sizeof(seed); i++) {
+        seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
+        msg_int.pop_back();
+    }
+    whitenData(msg_int, seed.s);
+    for(int i = 0; i < sizeof(seed); i++) {
+        msg_int.push_back(seed.b[i]);
+    }
+    vector<uint8_t> rs_enc_msg(msg_int.size()+rs_corr_bytes);
+    size_t rs_size = correct_reed_solomon_encode(rs_con, msg_int.data(), msg_int.size(), rs_enc_msg.data());
     rsv_enc_msg.resize(FECConv::getEncSize(rs_enc_msg.size()));
     size_t conv_len = FECConv::encode(rs_enc_msg, rsv_enc_msg);
-    //debug_printf(DBG_INFO, "conv_len %d, rsv_enc_msg.size %d\r\n", conv_len, rsv_enc_msg.size());
+    interleaveBits(rsv_enc_msg);
     MBED_ASSERT(rsv_enc_msg.size() == conv_len);
     return conv_len;
 }
 
 
 ssize_t FECRSV::decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) {
-    //debug_printf(DBG_INFO, "Now RSV decoding...\r\n");
-    vector<uint8_t> rs_enc_msg(rsv_enc_msg.size());
-    //debug_printf(DBG_INFO, "Now rsv_enc_msg.size...%d\r\n", rsv_enc_msg.size());
-    size_t conv_bytes = correct_convolutional_decode(corr_con, rsv_enc_msg.data(), 
-                            rsv_enc_msg.size()*8, rs_enc_msg.data());
-    //debug_printf(DBG_INFO, "Now conv decoded...%d %d\r\n", conv_bytes, rs_enc_msg.size());
-    //MBED_ASSERT(conv_bytes != -1);
-    //rs_enc_msg.resize(conv_bytes);
-    dec_msg.resize(conv_bytes-rs_corr_bytes);
-    //debug_printf(DBG_INFO, "Now rs decoding\r\n");    
+    vector<uint8_t> rsv_enc_msg_int(rsv_enc_msg.size());
+    copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), rsv_enc_msg_int.begin());
+    deinterleaveBits(rsv_enc_msg_int);   
+    vector<uint8_t> rs_enc_msg(rsv_enc_msg_int.size());
+    size_t conv_bytes = correct_convolutional_decode(corr_con, rsv_enc_msg_int.data(), 
+                            rsv_enc_msg_int.size()*8, rs_enc_msg.data());
+    dec_msg.resize(conv_bytes-rs_corr_bytes);  
     size_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), conv_bytes, 
                         dec_msg.data());
-    //debug_printf(DBG_INFO, "conv_len %d, dec_msg.size %d\r\n", rs_len, dec_msg.size());
-    //ThisThread::sleep_for(250);                       
-    //MBED_ASSERT(dec_msg.size() == rs_len);
+    Frame::crc16_t seed;
+    for(int i = 0; i < sizeof(seed); i++) {
+        seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
+        dec_msg.pop_back();
+    }
+    whitenData(dec_msg, seed.s);
+    for(int i = 0; i < sizeof(seed); i++) {
+        dec_msg.push_back(seed.b[i]);
+    }
     return dec_msg.size();
 }
 

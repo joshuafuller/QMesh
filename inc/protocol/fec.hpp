@@ -25,6 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #include <map>
 #include <string>
+#include <random>
+#include <list>
+#include <algorithm>
 #include "peripherals.hpp"
 
 
@@ -78,11 +81,15 @@ void testFEC(void);
 class FEC {
 protected:
     string name;
+    vector<pair<int, int> > interleave_matrix;
+    void createInterleavingMatrix(void);
+    static void whitenData(vector<uint8_t> &buf, uint16_t seed);
 
 public:
     /// Constructor.
     FEC(void) {
         name = "Dummy FEC";
+        createInterleavingMatrix();
     }
 
     /// Gets the name of the FEC.
@@ -108,33 +115,9 @@ public:
         bytes[pos/8] |= (my_bit << pos);
     }
 
-    static void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &int_bytes) {
-        int_bytes.resize(bytes.size());
-        int_bytes = bytes;
-        return;
-        size_t non_int_pos = 0;
-        for(size_t cur_bit = 0; cur_bit < 8; cur_bit++) {
-            for(size_t cur_byte = 0; cur_byte < bytes.size(); cur_byte++) {
-                bool bit = getBit(bytes, non_int_pos);
-                setBit(bit, cur_byte*8+cur_bit, int_bytes);
-                non_int_pos += 1;
-            }
-        }
-    }
+    void interleaveBits(vector<uint8_t> &bytes);
 
-    static void deinterleaveBits(const vector<uint8_t> &int_bytes, vector<uint8_t> &bytes) {
-        bytes.resize(int_bytes.size());
-        bytes = int_bytes;
-        return;
-        size_t non_int_pos = 0;
-        for(size_t cur_bit = 0; cur_bit < 8; cur_bit++) {
-            for(size_t cur_byte = 0; cur_byte < bytes.size(); cur_byte++) {
-                bool bit = getBit(int_bytes, cur_byte*8+cur_bit);
-                setBit(bit, non_int_pos, bytes);
-                non_int_pos += 1;
-            }
-        }
-    }
+    void deinterleaveBits(vector<uint8_t> &bytes);
 
     /**
      * Get the encoded size.
@@ -186,18 +169,12 @@ public:
 class FECInterleave : public FEC {
 public:
     FECInterleave(void) {
-        name = "Dummy Interleaver";   
+        name = "Dummy Interleaver and Whitener";   
     }
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-        FEC::interleaveBits(msg, enc_msg);
-        return enc_msg.size();
-    }
+    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
 
-    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
-        FEC::deinterleaveBits(enc_msg, dec_msg);
-        return dec_msg.size();
-    }  
+    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
 };
 
 
