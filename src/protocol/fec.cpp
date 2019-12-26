@@ -24,19 +24,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include "mem_trace.hpp"
 
 void testFEC(void) {
+    //print_memory_info();
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
     fec_sptr = make_shared<FEC>();
+    //print_memory_info();    
     test_fecs.push_back(fec_sptr);
     fec_sptr = make_shared<FECInterleave>();
+    //print_memory_info();    
     test_fecs.push_back(fec_sptr);
     fec_sptr = make_shared<FECConv>();
     test_fecs.push_back(fec_sptr);
+    //print_memory_info();
     fec_sptr = make_shared<FECRSV>();
     test_fecs.push_back(fec_sptr);
-    
     debug_printf(DBG_INFO, "Initialized FEC objects\r\n");
     ThisThread::sleep_for(1000);
 
@@ -118,14 +122,14 @@ size_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_ms
     for(int i = 0; i < sizeof(seed); i++) {
         enc_msg.push_back(seed.b[i]);
     }
-    //FEC::interleaveBits(enc_msg);
+    interleaveBits(enc_msg);
     return enc_msg.size();
 }
 
 ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     dec_msg.resize(enc_msg.size());
     copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
-    //FEC::deinterleaveBits(dec_msg);
+    interleaveBits(dec_msg);
     Frame::crc16_t seed;
     for(int i = 0; i < sizeof(seed); i++) {
         seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
@@ -147,7 +151,9 @@ void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
 }
 
 void FEC::createInterleavingMatrix(void) {
-    int enc_size = getEncSize(Frame::size());
+    interleave_matrix.clear();
+    int enc_size = this->getEncSize(Frame::size());
+    debug_printf(DBG_INFO, "Enc size is %d\r\n", enc_size);
     list<int> vals;
     for(int i = 0; i < enc_size*8; i++) {
         vals.push_back(i);
@@ -171,6 +177,7 @@ void FEC::createInterleavingMatrix(void) {
 
         interleave_matrix.push_back(swap_idx);
     }
+    debug_printf(DBG_INFO, "created interleaving matrix of size %d\r\n", interleave_matrix.size());
 }
 
 void FEC::interleaveBits(vector<uint8_t> &bytes) {
@@ -180,8 +187,8 @@ void FEC::interleaveBits(vector<uint8_t> &bytes) {
         bool swap = bit0;
         bit0 = bit1;
         bit1 = swap;
-        setBit(it->first, bit0, bytes);
-        setBit(it->second, bit1, bytes);
+        setBit(bit0, it->first, bytes);
+        setBit(bit1, it->second, bytes);
     }
 }
 
@@ -203,7 +210,7 @@ size_t FECConv::getEncSize(const size_t msg_len) {
     return (size_t) ceilf((float) correct_convolutional_encode_len(corr_con, msg_len)/8.0f);
 }
 
-FECConv::FECConv(const size_t inv_rate, const size_t order) : FEC() {
+FECConv::FECConv(const size_t inv_rate, const size_t order) {
     name = "Convolutional Coding";
     // Set up the convolutional outer code
     this->inv_rate = inv_rate;
@@ -249,32 +256,45 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) : FEC() {
         break;
     }
     corr_con = correct_convolutional_create(inv_rate, order, poly);
+    createInterleavingMatrix();
 }
 
 size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-    enc_msg.resize(FECConv::getEncSize(msg.size()));
     vector<uint8_t> msg_int(msg.size());
+    //debug_printf(DBG_INFO, "Hello2, %d\r\n", msg_int.size());
     copy(msg.begin(), msg.end(), msg_int.begin());
+    //debug_printf(DBG_INFO, "Hello3\r\n");
     Frame::crc16_t seed;
     for(int i = 0; i < sizeof(seed); i++) {
+		//debug_printf(DBG_INFO, "Hello3x %d\r\n", sizeof(seed));
         seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
         msg_int.pop_back();
     }
+    //debug_printf(DBG_INFO, "Hello4\r\n");
     whitenData(msg_int, seed.s);
+    //debug_printf(DBG_INFO, "Hello5\r\n");
+	//ThisThread::sleep_for(250);
     for(int i = 0; i < sizeof(seed); i++) {
         msg_int.push_back(seed.b[i]);
     }
+    //debug_printf(DBG_INFO, "Hello6\r\n");
+	enc_msg.resize(getEncSize(msg_int.size()));
+	//debug_printf(DBG_INFO, "Hello6x %d %d \r\n", enc_msg.size(), msg_int.size());
+	//ThisThread::sleep_for(250);
     size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, msg_int.data(), 
             msg_int.size(), enc_msg.data())/8.0f);
+    debug_printf(DBG_INFO, "Hello %d %d\r\n", enc_msg.size(), interleave_matrix.size());        
+	ThisThread::sleep_for(250);
     interleaveBits(enc_msg);   
-    size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
+    debug_printf(DBG_INFO, "Hello8\r\n");
+	ThisThread::sleep_for(250);
     return enc_len;
 }
 
 ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     dec_msg.resize(Frame::size());
     copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
-    deinterleaveBits(dec_msg);   
+    interleaveBits(dec_msg);   
     size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
     size_t dec_size = correct_convolutional_decode(corr_con, enc_msg.data(), 
                             enc_msg_size_bits, dec_msg.data());
@@ -354,7 +374,7 @@ size_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) 
 ssize_t FECRSV::decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) {
     vector<uint8_t> rsv_enc_msg_int(rsv_enc_msg.size());
     copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), rsv_enc_msg_int.begin());
-    deinterleaveBits(rsv_enc_msg_int);   
+    interleaveBits(rsv_enc_msg_int);   
     vector<uint8_t> rs_enc_msg(rsv_enc_msg_int.size());
     size_t conv_bytes = correct_convolutional_decode(corr_con, rsv_enc_msg_int.data(), 
                             rsv_enc_msg_int.size()*8, rs_enc_msg.data());

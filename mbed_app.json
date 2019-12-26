@@ -4,7 +4,7 @@
             "help": "Which radio to use (options: SX1272,SX1276,SX126X)",
             "value": "SX126X"
         },
-        "main_stack_size":     { "value": 4096 },
+        "main_stack_size":     { "value": 8192 },
 
         "lora-spi-mosi":       { "value": "D11" },
         "lora-spi-miso":       { "value": "D12" },

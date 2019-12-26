@@ -105,14 +105,15 @@ public:
 
     static bool getBit(const vector<uint8_t> &bytes, const size_t pos) {
         uint8_t byte = bytes[pos/8];
-        uint8_t byte_pos = pos % 8;
-        return ((1 << byte_pos) & byte) == 0 ? false : true;
+        size_t byte_pos = pos % 8;
+        return ((((1 << byte_pos) & byte) == 0) ? false : true);
     }
 
     static void setBit(const bool bit, const size_t pos, vector<uint8_t> &bytes) {
-        bytes[pos/8] &= ~(1 << pos);
-        uint8_t my_bit = bit == false ? 0 : 1;
-        bytes[pos/8] |= (my_bit << pos);
+		size_t byte_pos = pos % 8;
+        bytes[pos/8] &= ~(1 << byte_pos);
+        uint8_t my_bit = (bit == false) ? 0 : 1;
+        bytes[pos/8] |= (my_bit << byte_pos);
     }
 
     void interleaveBits(vector<uint8_t> &bytes);
@@ -169,7 +170,8 @@ public:
 class FECInterleave : public FEC {
 public:
     FECInterleave(void) {
-        name = "Dummy Interleaver and Whitener";   
+        name = "Dummy Interleaver and Whitener";
+        createInterleavingMatrix();
     }
 
     size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
@@ -239,6 +241,7 @@ public:
         rs_corr_bytes = my_rs_corr_bytes;
         rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
                                                   1, 1, rs_corr_bytes);
+        createInterleavingMatrix();
     }
 
     /**
