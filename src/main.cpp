@@ -50,7 +50,7 @@ int main()
     led1.LEDSolid();
 
     // Start the WDT thread
-    wdt_thread.start(wdt_fn);
+    //wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
     pc.baud(230400);

@@ -30,12 +30,14 @@ void testFEC(void) {
     //print_memory_info();
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
+#if 0	
     fec_sptr = make_shared<FEC>();
     //print_memory_info();    
     test_fecs.push_back(fec_sptr);
     fec_sptr = make_shared<FECInterleave>();
-    //print_memory_info();    
+    //print_memory_info();   
     test_fecs.push_back(fec_sptr);
+#endif	
     fec_sptr = make_shared<FECConv>();
     test_fecs.push_back(fec_sptr);
     //print_memory_info();
@@ -52,16 +54,21 @@ void testFEC(void) {
         int fec_success = 0;
         int fec_fail = 0;
         int fec_total = 0;
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < 10; i++) {
             int pld_len = radio_cb["Payload Length"].get<int>();
             vector<uint8_t> rand_data(pld_len);
             std::generate_n(rand_data.begin(), pld_len, rand);
             auto test_frame = make_shared<Frame>(*iter);
+			debug_printf(DBG_INFO, "Loading test frame\r\n");
             test_frame->loadTestFrame(rand_data);
             auto serialized_data = make_shared<vector<uint8_t>>();
-            test_frame->serializeCoded(*serialized_data);         
+            test_frame->serializeCoded(*serialized_data);
+			debug_printf(DBG_INFO, "Serialized\r\n");	
+			ThisThread::sleep_for(250);
             auto test_output_frame = make_shared<Frame>(*iter);           
-            test_output_frame->deserializeCoded(serialized_data);     
+ 			debug_printf(DBG_INFO, "Made new frame\r\n");	
+			ThisThread::sleep_for(250);
+			test_output_frame->deserializeCoded(serialized_data);     
             if(*test_frame != *test_output_frame) {
                 fec_fail += 1;
             }
@@ -293,10 +300,11 @@ size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
 
 ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     dec_msg.resize(Frame::size());
-    copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
-    interleaveBits(dec_msg);   
+	vector<uint8_t> deint_msg(enc_msg.size());
+    copy(enc_msg.begin(), enc_msg.end(), deint_msg.begin());
+    interleaveBits(deint_msg);   
     size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
-    size_t dec_size = correct_convolutional_decode(corr_con, enc_msg.data(), 
+    size_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             enc_msg_size_bits, dec_msg.data());
     Frame::crc16_t seed;
     for(int i = 0; i < sizeof(seed); i++) {

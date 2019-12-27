@@ -64,9 +64,10 @@ void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const u
 }
 
 size_t Frame::serializeCoded(vector<uint8_t> &buf) {
-    //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
+    debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
     vector<uint8_t> ser_buf;
     serialize(ser_buf);
+	debug_printf(DBG_WARN, "Serialized frame size is now %d\r\n", ser_buf.size());
     return fec->encode(ser_buf, buf);
 }
 
@@ -96,17 +97,17 @@ uint32_t Frame::calcUniqueCRC(void) {
 PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
-    //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
+    debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
     ssize_t bytes_dec = fec->decode(*buf, dec_buf);
-    //debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
+    debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
     if(bytes_dec == -1) {
-        //debug_printf(DBG_INFO, "FEC Failed\r\n");
+        debug_printf(DBG_INFO, "FEC Failed\r\n");
         pkt_status = PKT_FEC_FAIL;
         return pkt_status;
     }
     // Step one: check the size of the packet
     if(Frame::size() != bytes_dec) {
-        //debug_printf(DBG_INFO, "Bad packet size\r\n");
+        debug_printf(DBG_INFO, "Bad packet size\r\n");
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
     }
@@ -119,12 +120,12 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     }
     // Step three: check the payload CRC
     if(!checkCRC()) {
-        //debug_printf(DBG_INFO, "Bad payload CRC\r\n");
+        debug_printf(DBG_INFO, "Bad payload CRC\r\n");
         pkt_status = PKT_BAD_CRC;
         return pkt_status;
     }
     // Size checked out, CRCs checked out, so return OK
-    //debug_printf(DBG_INFO, "Packet OK\r\n");
+    debug_printf(DBG_INFO, "Packet OK\r\n");
     pkt_status = PKT_OK;
     return pkt_status;
 }
