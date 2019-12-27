@@ -27,20 +27,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 
 void testFEC(void) {
-    //print_memory_info();
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
-#if 0	
-    fec_sptr = make_shared<FEC>();
-    //print_memory_info();    
+    fec_sptr = make_shared<FEC>();   
     test_fecs.push_back(fec_sptr);
     fec_sptr = make_shared<FECInterleave>();
-    //print_memory_info();   
     test_fecs.push_back(fec_sptr);
-#endif	
     fec_sptr = make_shared<FECConv>();
     test_fecs.push_back(fec_sptr);
-    //print_memory_info();
     fec_sptr = make_shared<FECRSV>();
     test_fecs.push_back(fec_sptr);
     debug_printf(DBG_INFO, "Initialized FEC objects\r\n");
@@ -54,20 +48,15 @@ void testFEC(void) {
         int fec_success = 0;
         int fec_fail = 0;
         int fec_total = 0;
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 100; i++) {
             int pld_len = radio_cb["Payload Length"].get<int>();
             vector<uint8_t> rand_data(pld_len);
             std::generate_n(rand_data.begin(), pld_len, rand);
             auto test_frame = make_shared<Frame>(*iter);
-			//debug_printf(DBG_INFO, "Loading test frame\r\n");
             test_frame->loadTestFrame(rand_data);
             auto serialized_data = make_shared<vector<uint8_t>>();
             test_frame->serializeCoded(*serialized_data);
-			//debug_printf(DBG_INFO, "Serialized\r\n");	
-			//ThisThread::sleep_for(250);
             auto test_output_frame = make_shared<Frame>(*iter);           
- 			//debug_printf(DBG_INFO, "Made new frame\r\n");	
-			//ThisThread::sleep_for(250);
 			test_output_frame->deserializeCoded(serialized_data);     
             if(*test_frame != *test_output_frame) {
                 fec_fail += 1;
@@ -284,6 +273,7 @@ size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
 }
 
 ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+	MBED_ASSERT(getEncSize(enc_msg.size()) <= 256);
     dec_msg.resize(Frame::size());
 	vector<uint8_t> deint_msg(enc_msg.size());
     copy(enc_msg.begin(), enc_msg.end(), deint_msg.begin());
@@ -356,11 +346,12 @@ size_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) 
     }
     vector<uint8_t> rs_enc_msg(msg_int.size()+rs_corr_bytes);
     size_t rs_size = correct_reed_solomon_encode(rs_con, msg_int.data(), msg_int.size(), rs_enc_msg.data());
-    rsv_enc_msg.resize(FECConv::getEncSize(rs_enc_msg.size()));
-    size_t conv_len = FECConv::encode(rs_enc_msg, rsv_enc_msg);
+	rsv_enc_msg.resize(getEncSize(msg_int.size()));
+    size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
+            rs_enc_msg.size(), rsv_enc_msg.data())/8.0f);
     interleaveBits(rsv_enc_msg);
-    MBED_ASSERT(rsv_enc_msg.size() == conv_len);
-    return conv_len;
+	MBED_ASSERT(enc_len == rsv_enc_msg.size());
+    return enc_len;
 }
 
 
