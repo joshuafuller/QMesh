@@ -59,15 +59,15 @@ void testFEC(void) {
             vector<uint8_t> rand_data(pld_len);
             std::generate_n(rand_data.begin(), pld_len, rand);
             auto test_frame = make_shared<Frame>(*iter);
-			debug_printf(DBG_INFO, "Loading test frame\r\n");
+			//debug_printf(DBG_INFO, "Loading test frame\r\n");
             test_frame->loadTestFrame(rand_data);
             auto serialized_data = make_shared<vector<uint8_t>>();
             test_frame->serializeCoded(*serialized_data);
-			debug_printf(DBG_INFO, "Serialized\r\n");	
-			ThisThread::sleep_for(250);
+			//debug_printf(DBG_INFO, "Serialized\r\n");	
+			//ThisThread::sleep_for(250);
             auto test_output_frame = make_shared<Frame>(*iter);           
- 			debug_printf(DBG_INFO, "Made new frame\r\n");	
-			ThisThread::sleep_for(250);
+ 			//debug_printf(DBG_INFO, "Made new frame\r\n");	
+			//ThisThread::sleep_for(250);
 			test_output_frame->deserializeCoded(serialized_data);     
             if(*test_frame != *test_output_frame) {
                 fec_fail += 1;
@@ -160,7 +160,6 @@ void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
 void FEC::createInterleavingMatrix(void) {
     interleave_matrix.clear();
     int enc_size = this->getEncSize(Frame::size());
-    debug_printf(DBG_INFO, "Enc size is %d\r\n", enc_size);
     list<int> vals;
     for(int i = 0; i < enc_size*8; i++) {
         vals.push_back(i);
@@ -184,7 +183,6 @@ void FEC::createInterleavingMatrix(void) {
 
         interleave_matrix.push_back(swap_idx);
     }
-    debug_printf(DBG_INFO, "created interleaving matrix of size %d\r\n", interleave_matrix.size());
 }
 
 void FEC::interleaveBits(vector<uint8_t> &bytes) {
@@ -268,33 +266,20 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) {
 
 size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     vector<uint8_t> msg_int(msg.size());
-    //debug_printf(DBG_INFO, "Hello2, %d\r\n", msg_int.size());
     copy(msg.begin(), msg.end(), msg_int.begin());
-    //debug_printf(DBG_INFO, "Hello3\r\n");
     Frame::crc16_t seed;
     for(int i = 0; i < sizeof(seed); i++) {
-		//debug_printf(DBG_INFO, "Hello3x %d\r\n", sizeof(seed));
         seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
         msg_int.pop_back();
     }
-    //debug_printf(DBG_INFO, "Hello4\r\n");
     whitenData(msg_int, seed.s);
-    //debug_printf(DBG_INFO, "Hello5\r\n");
-	//ThisThread::sleep_for(250);
     for(int i = 0; i < sizeof(seed); i++) {
         msg_int.push_back(seed.b[i]);
     }
-    //debug_printf(DBG_INFO, "Hello6\r\n");
 	enc_msg.resize(getEncSize(msg_int.size()));
-	//debug_printf(DBG_INFO, "Hello6x %d %d \r\n", enc_msg.size(), msg_int.size());
-	//ThisThread::sleep_for(250);
     size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, msg_int.data(), 
             msg_int.size(), enc_msg.data())/8.0f);
-    debug_printf(DBG_INFO, "Hello %d %d\r\n", enc_msg.size(), interleave_matrix.size());        
-	ThisThread::sleep_for(250);
     interleaveBits(enc_msg);   
-    debug_printf(DBG_INFO, "Hello8\r\n");
-	ThisThread::sleep_for(250);
     return enc_len;
 }
 
