@@ -36,6 +36,13 @@ SPIFBlockDevice bd(MBED_CONF_APP_FLASH_SPI_MOSI,
 LittleFileSystem fs("fs");
 
 
+void rescue_filesystem(void) {
+    flash_io2 = 1;
+    flash_io3 = 1;
+    int err = bd.init();
+	err = fs.reformat(&bd);
+}
+
 void init_filesystem(void) {
     flash_io2 = 1;
     flash_io3 = 1;
@@ -94,9 +101,9 @@ void load_settings_from_flash(void) {
     struct stat file_stat;
     stat("/fs/settings.json", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
-    vector<char> linebuf(4096);
-    linebuf.resize(fread(linebuf.data(), 1, linebuf.size(), f));
-    debug_printf(DBG_INFO, "Read from file: %s\r\n", linebuf.data());
+	vector<char> linebuf(file_stat.st_size);
+	fread(linebuf.data(), 1, file_stat.st_size, f);
+	debug_printf(DBG_INFO, "Read from file: %s\r\n", linebuf.data());
     parse(radio_cb, linebuf.data());
     fflush(f);
     fclose(f);

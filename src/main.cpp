@@ -44,13 +44,24 @@ DigitalOut radio_pwr_ctl(MBED_CONF_APP_RADIO_PWR);
 
 void send_status(void);
 
+DigitalIn user_button(USER_BUTTON);
+
 // main() runs in its own thread in the OS
 int main()
 {
-    led1.LEDSolid();
-
+    led1.LEDBlink();
+	ThisThread::sleep_for(1000);
+	if(user_button) {
+		led1.LEDFastBlink();
+		ThisThread::sleep_for(1000);
+		if(user_button) {
+			rescue_filesystem();
+		}
+	}
+	led1.LEDSolid();
+	
     // Start the WDT thread
-    //wdt_thread.start(wdt_fn);
+    wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
     pc.baud(230400);
