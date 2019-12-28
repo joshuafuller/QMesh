@@ -47,6 +47,6 @@ public:
     ~PushButton();
 };
 
-extern PushButton button;
+//extern PushButton button;
 
 #endif /* BUTTONS_HPP */
