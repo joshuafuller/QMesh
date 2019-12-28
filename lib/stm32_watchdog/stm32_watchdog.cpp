@@ -138,7 +138,7 @@ void wdt_fn(void) {
     wdt.Configure(70);
     for(;;) {
         wdt.Service();
-        wait(60);
+        ThisThread::sleep_for(30000);
     }
 }
 
