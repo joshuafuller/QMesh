@@ -270,14 +270,15 @@ void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
 }
 
 void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
-    json["Type"] = "Debug Msg";
-    json["Timestamp"] = 0;
     size_t b64_len;
     mbedtls_base64_encode(NULL, 0, &b64_len, (unsigned char *) dbg_msg.c_str(), dbg_msg.size());
     vector<unsigned char> b64_buf(b64_len);
     MBED_ASSERT(mbedtls_base64_encode(b64_buf.data(), b64_len, &b64_len, 
             (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);  
     json["Message"] = (char *) b64_buf.data();
+	json["Type"] = "Debug Msg";
+	time_t my_time = time(NULL);
+    json["Timestamp"] = ctime(&my_time);
     json_str = json.serialize();
 }
 
