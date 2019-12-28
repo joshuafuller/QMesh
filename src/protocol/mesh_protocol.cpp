@@ -173,7 +173,7 @@ uint32_t RadioFrequency::getWobbledFreq(void) {
     float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
     int wobble_direction = rand() & 0x1;
     wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
-    uint32_t wobbled_freq = (int32_t) radio_cb["Freq"].get<int>() + (int32_t) wobble_amount;
+    uint32_t wobbled_freq = (int32_t) radio_cb["Frequency"].get<int>() + (int32_t) wobble_amount;
     debug_printf(DBG_INFO, "Wobbled freq is %d\r\n", wobbled_freq);
     return wobbled_freq;   
 }
