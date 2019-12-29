@@ -21,10 +21,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "serial_data.hpp"
 #include "LittleFileSystem.h"
 
+extern Thread tx_serial_thread, rx_serial_thread;
+extern Thread mesh_protocol_thread;
+extern Thread beacon_thread;
+extern Thread nv_log_thread;
+
+volatile bool rebooting = false;
+
 void reboot_system(void) {
+	rebooting = true;
+	mesh_protocol_thread.join();
+	beacon_thread.join();
     debug_printf(DBG_INFO, "Unmounting the filesystem...\r\n");
     int err = fs.unmount();
-    debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(" : "OK"));
+    debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(\r\n" : "OK\r\n"));
     bd.sync();
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
     ThisThread::sleep_for(3000);

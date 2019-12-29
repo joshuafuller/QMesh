@@ -86,6 +86,7 @@ public:
         uint32_t sym_offset : 3;
     } frame_hdr;
     shared_ptr<FEC> fec;
+	bool tx_frame;
 private:
     frame_hdr hdr;
     vector<uint8_t> data;

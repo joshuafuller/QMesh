@@ -64,6 +64,23 @@ void init_filesystem(void) {
         int err = fs.mount(&bd);
         MBED_ASSERT(!err);
     }
+	// Display the root directory
+    debug_printf(DBG_INFO, "Opening the root directory... \r\n");
+    fflush(stdout);
+    DIR *d = opendir("/fs/");
+    debug_printf(DBG_INFO, "%s\n", (!d ? "Fail :(\r\n" : "OK\r\n"));
+    if (!d) {
+        error("error: %s (%d)\n", strerror(errno), -errno);
+    }
+	for(;;) {
+		struct dirent *dir_val = readdir(d);
+		if(dir_val == NULL) {
+			break;
+		}
+		struct stat file_stat;
+		fs.stat(dir_val->d_name, &file_stat);
+		debug_printf(DBG_INFO, "%s, Size: %d\r\n", dir_val->d_name, file_stat.st_size);
+	}
 }
 
 void load_settings_from_flash(void) {
@@ -129,7 +146,7 @@ void save_settings_to_flash(void) {
 }
 
 void log_boot(void) {
-    FILE *f = fopen("/fs/boot_log.json", "w+");
+    FILE *f = fopen("/fs/boot_log.json", "a+");
     MBED_ASSERT(f);
     MbedJSONValue log_json;
     log_json["Unix Time"] = (int) time(NULL);
@@ -137,14 +154,17 @@ void log_boot(void) {
     char *time_str = ctime(&my_time);
     log_json["Time String"] = string(time_str);
     string log_json_str = log_json.serialize();
+	debug_printf(DBG_INFO, "Wrote %s\r\n", log_json_str.c_str());
     fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
     fflush(f);
+	fclose(f);
 }
 
 void nv_log_fn(void) {
-    FILE *f = fopen("/fs/logfile.json", "w+");
-    MBED_ASSERT(f);
+
     for(;;) {
+		FILE *f = fopen("/fs/logfile.json", "a+");
+		MBED_ASSERT(f);
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
         MbedJSONValue log_json;
@@ -152,7 +172,8 @@ void nv_log_fn(void) {
         uint16_t rx_size;
         int8_t snr;
         log_frame->getRxStats(rssi, snr, rx_size);
-        log_json["Timestamp"] = (int) time(NULL);
+		time_t my_time = time(NULL);
+		log_json["Timestamp"] = ctime(&my_time);
         log_json["RSSI"] = (int) rssi;
         log_json["SNR"] = (int) snr;
         log_json["RX Size"] = (int) rx_size;
@@ -161,6 +182,7 @@ void nv_log_fn(void) {
         string log_json_str = log_json.serialize();
         fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
         fflush(f);
+		fclose(f);
         // Check whether we've filled up the SPI flash chip. If so,
         //  delete the file and reopen it as an empty one.
         struct stat st;

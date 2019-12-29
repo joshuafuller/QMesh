@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BUTTONS_HPP
 #define BUTTONS_HPP
 
+extern volatile bool rebooting;
+
 void reboot_system(void);
 
 /**

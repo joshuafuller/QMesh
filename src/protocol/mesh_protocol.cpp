@@ -223,6 +223,9 @@ void mesh_protocol_fsm(void) {
             ThisThread::sleep_for(1000);
         }
 #endif
+		if(rebooting) {
+			return;
+		}
         switch(state) {
             case WAIT_FOR_RX:
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
@@ -241,6 +244,7 @@ void mesh_protocol_fsm(void) {
                         rx_frame_sptr = make_shared<Frame>(fec);
                         PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(rx_radio_event->buf);
                         rx_frame_sptr->incrementTTL();
+						rx_frame_sptr->tx_frame = false;
                         enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                         enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
                         if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
@@ -288,6 +292,8 @@ void mesh_protocol_fsm(void) {
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
+				tx_frame_sptr->tx_frame = true;
+                enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 debug_printf(DBG_INFO, "Waiting one slot\r\n");
                 //radio_timing.waitFullSlots(1);
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
@@ -327,6 +333,9 @@ void beacon_fn(void) {
     auto beacon_frame_sptr = make_shared<Frame>();
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
     for(;;) {
+		if(rebooting) {
+			return;
+		}
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
         ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>()*1000);
     }
