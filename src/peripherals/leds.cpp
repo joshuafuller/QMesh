@@ -56,7 +56,7 @@ void IndicatorLED::LEDOff(void) {
 
 void IndicatorLED::LEDBlink(void) {
     led_state = LED_BLINK;
-    blink_period = 1.0;
+    blink_period = 250;
     blink_led = true;
 }
 

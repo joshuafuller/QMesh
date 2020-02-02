@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <memory>
 #include <fstream>
+#include <stdio.h>
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 #include "mesh_protocol.hpp"
@@ -111,8 +112,28 @@ static void ser_rx_isr(void) {
 }
 
 
+void get_next_line(FILE *f, string &str);
+void get_next_line(FILE *f, string &str) {
+	for(;;) {
+		int c = fgetc(f);
+		if(c == EOF) {
+			str.clear();
+			return;
+		}
+		str.push_back(c);
+		if(c == '\n') {
+			return;
+		}
+	}
+}
+
+
 void rx_serial_thread_fn(void) {
     pc2.attach(ser_rx_isr, mbed::SerialBase::RxIrq);
+	FILE *f;
+	int line_count = 0;
+	bool reading_log = false;
+	bool reading_bootlog = false;
     for(;;) {
         int rx_buf_idx = dequeue_mail<int>(rx_data_rdy);
         string rx_str(rx_bufs[rx_buf_idx]);
@@ -208,44 +229,71 @@ void rx_serial_thread_fn(void) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                std::fstream f;
-                f.open("/fs/logfile.json", ios_base::in);
-                MBED_ASSERT(f);
-                string line;
-                while(getline(f, line)) {
-                    MbedJSONValue log_json;
-                    parse(log_json, line.c_str());
+				if(!reading_log) {
+					//debug_printf(DBG_INFO, "Now opening the file\r\n");
+					//ThisThread::sleep_for(250);
+					reading_log = true;
+					f = fopen("/fs/logfile.json", "r");
+					MBED_ASSERT(f);
+					//debug_printf(DBG_INFO, "Opened the file\r\n");
+					//ThisThread::sleep_for(250);
+				}
+				string cur_line;
+				get_next_line(f, cur_line);
+				//debug_printf(DBG_INFO, "Got next line %s\r\n", cur_line.c_str());
+				//ThisThread::sleep_for(250);
+				if(cur_line.size() == 0) {
+					MbedJSONValue log_json;
                     log_json["Type"] = "Log Entry";
+					log_json["Count"] = -1;					
                     auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
-                }  
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
+					ThisThread::sleep_for(1000);
+					debug_printf(DBG_WARN, "Now rebooting...\r\n");
+					ThisThread::sleep_for(1000);
+					reboot_system();	
+				}
+				else {
+                    MbedJSONValue log_json;
+                    parse(log_json, cur_line.c_str());
+                    log_json["Type"] = "Log Entry";
+					log_json["Count"] = line_count++;					
+                    auto json_str = make_shared<string>(log_json.serialize());
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
+				}
             }
-            send_status();
-            debug_printf(DBG_WARN, "Now rebooting...\r\n");
-            ThisThread::sleep_for(1000);
-            reboot_system();
         }
+#if 0
         else if(type_str == "Read Boot Log") {
-            stay_in_management = true;
-            while(current_mode == BOOTING);
-            if(current_mode == MANAGEMENT) {
-                std::fstream f;
-                f.open("/fs/boot_log.json", ios_base::in);
-                MBED_ASSERT(f);
+			stay_in_management = true;
+			if(current_mode == MANAGEMENT) {
+				if(!reading_bootlog) {
+					reading_bootlog = true;
+					f.open("/fs/boot_log.json", ios_base::in);
+					MBED_ASSERT(f);
+				}
                 string line;
-                while(getline(f, line)) {
+				if(!getline(f, line)) {
+					MbedJSONValue log_json; 
+                    log_json["Type"] = "Boot Log Entry";
+					log_json["Count"] = -1;					
+                    auto json_str = make_shared<string>(log_json.serialize());
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
+					ThisThread::sleep_for(1000);
+					debug_printf(DBG_WARN, "Now rebooting...\r\n");					
+					reboot_system();	
+				}
+				else {
                     MbedJSONValue log_json;
                     parse(log_json, line.c_str());
                     log_json["Type"] = "Boot Log Entry";
+					log_json["Count"] = line_count++;					
                     auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
-                }  
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
+				}
             }
-            send_status();
-            debug_printf(DBG_WARN, "Now rebooting...\r\n");
-            ThisThread::sleep_for(1000);
-            reboot_system();
         }
+#endif
         else {
             continue;
         }
