@@ -16,33 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import sys, os
 import time
 import json
 import base64
 import pika
+import time
 
-# For now, let's just put the configuration in the same
-# file as the one setting it.
-settings = {}
-settings["Freq"] = 433000000
-settings["BW"] = 2 # 0=125KHz, 1=250KHz, 2=500KHz
-settings["CR"] = 4
-settings["SF"] = 12
-settings["Preamble Length"] = 12
-settings["Preamble Slots"] = 1
-beacon_str = "KG5VBY Beacon Test"
-settings["Beacon Message"] = str(base64.b64encode(beacon_str.encode('ascii')))
-settings["Beacon Interval"] = 1
-settings["Payload Length"] = len(beacon_str)
-settings["FEC Algorithm"] = "None"
-settings["Convolutional Rate"] = 2
-settings["Convolutional Order"] = 9
-settings["Reed-Solomon Number Roots"] = 8
-settings["TX Power"] = 22
-settings["CW Test Mode"] = 0 # 1 to enable CW test mode
-settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
-settings["Test FEC"] = 0 # 1 to enable an FEC test
+# Set the RTC on the board to the current system time.
+settings_rx = False
+cur_status = "None"
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')
@@ -50,13 +34,12 @@ def dbg_process(ch, method, properties, body):
     parsed_line["Type"] = ""
     try: parsed_line = json.loads(line)
     except Exception as e: pass
-    #print(parsed_line)
+    print(parsed_line)
     if parsed_line["Type"] == "Status":
         cur_status = parsed_line["Status"]
         print("Current status is " + parsed_line["Status"])
         print("Current time is " + str(parsed_line["Time"]))
         if parsed_line["Status"] == "MANAGEMENT":
-            print("Consuming done!\r\n")
             ch.stop_consuming()
 
 # Set up the RabbitMQ connection
@@ -79,34 +62,10 @@ channel.basic_publish(exchange='', routing_key='board_input', \
 channel.start_consuming()
 
 msg_req = {}
-msg_req["Type"] = "Stay in Management"
+msg_req["Type"] = "Erase Boot Log File"
 msg_req_str = json.dumps(msg_req)
 msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
         body=bytes(msg_req_str.encode('ascii')))
 channel.start_consuming()
-
-for (setting_name, setting_value) in settings.items():
-	msg_req = {}
-	msg_req["Type"] = "Put Setting"
-	msg_req["Setting"] = str(setting_name)
-	msg_req[str(setting_name)] = setting_value
-	msg_req_str = json.dumps(msg_req)
-	msg_req_str += str("\n")
-	channel.basic_publish(exchange='', routing_key='board_input', \
-			body=bytes(msg_req_str.encode('ascii')))
-	print(msg_req_str)
-	channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=dbg_process)
-	channel.start_consuming()
-	
-# Reboot the board
-msg_req = {}
-msg_req["Type"] = "Reboot"
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
-
-
 
