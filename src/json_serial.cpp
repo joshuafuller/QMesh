@@ -296,18 +296,18 @@ void rx_serial_thread_fn(void) {
 					ThisThread::sleep_for(250);
                     MbedJSONValue log_json;
                     parse(log_json, cur_line.c_str());
-					debug_printf(DBG_INFO, "Parsed\r\n");
-					ThisThread::sleep_for(250);
+					//debug_printf(DBG_INFO, "Parsed\r\n");
+					//ThisThread::sleep_for(250);
                     log_json["Type"] = "Boot Log Entry";
 					log_json["Count"] = line_count++;	
-					debug_printf(DBG_INFO, "More parsed\r\n");
-					ThisThread::sleep_for(250);	
+					//debug_printf(DBG_INFO, "More parsed\r\n");
+					//ThisThread::sleep_for(250);	
 					log_json.serialize();
-					debug_printf(DBG_INFO, "More parsed1 %s\r\n", log_json.serialize().c_str());
-					ThisThread::sleep_for(250);						
+					//debug_printf(DBG_INFO, "More parsed1 %s\r\n", log_json.serialize().c_str());
+					//ThisThread::sleep_for(250);						
                     auto json_str = make_shared<string>(log_json.serialize());
-					debug_printf(DBG_INFO, "More parsed2\r\n");
-					ThisThread::sleep_for(250);					
+					//debug_printf(DBG_INFO, "More parsed2\r\n");
+					//ThisThread::sleep_for(250);					
                     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
 				}
             }
