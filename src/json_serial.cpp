@@ -263,6 +263,55 @@ void rx_serial_thread_fn(void) {
 				}
             }
         }
+        else if(type_str == "Read Boot Log") {
+            stay_in_management = true;
+            while(current_mode == BOOTING);
+            if(current_mode == MANAGEMENT) {
+				if(!reading_bootlog) {
+					debug_printf(DBG_INFO, "Now opening the file\r\n");
+					ThisThread::sleep_for(250);
+					reading_bootlog = true;
+					f = fopen("/fs/boot_log.json", "r");
+					MBED_ASSERT(f);
+					debug_printf(DBG_INFO, "Opened the file\r\n");
+					ThisThread::sleep_for(250);
+				}
+				string cur_line;
+				get_next_line(f, cur_line);
+				debug_printf(DBG_INFO, "Got next line %s\r\n", cur_line.c_str());
+				ThisThread::sleep_for(250);
+				if(cur_line.size() == 0) {
+					MbedJSONValue log_json;
+                    log_json["Type"] = "Boot Log Entry";
+					log_json["Count"] = -1;					
+                    auto json_str = make_shared<string>(log_json.serialize());
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
+					ThisThread::sleep_for(1000);
+					debug_printf(DBG_WARN, "Now rebooting...\r\n");
+					ThisThread::sleep_for(1000);
+					reboot_system();	
+				}
+				else {
+					debug_printf(DBG_INFO, "Getting ready to send out\r\n");
+					ThisThread::sleep_for(250);
+                    MbedJSONValue log_json;
+                    parse(log_json, cur_line.c_str());
+					debug_printf(DBG_INFO, "Parsed\r\n");
+					ThisThread::sleep_for(250);
+                    log_json["Type"] = "Boot Log Entry";
+					log_json["Count"] = line_count++;	
+					debug_printf(DBG_INFO, "More parsed\r\n");
+					ThisThread::sleep_for(250);	
+					log_json.serialize();
+					debug_printf(DBG_INFO, "More parsed1 %s\r\n", log_json.serialize().c_str());
+					ThisThread::sleep_for(250);						
+                    auto json_str = make_shared<string>(log_json.serialize());
+					debug_printf(DBG_INFO, "More parsed2\r\n");
+					ThisThread::sleep_for(250);					
+                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
+				}
+            }
+        }		
 #if 0
         else if(type_str == "Read Boot Log") {
 			stay_in_management = true;

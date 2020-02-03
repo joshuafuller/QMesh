@@ -149,11 +149,11 @@ void log_boot(void) {
     FILE *f = fopen("/fs/boot_log.json", "a+");
     MBED_ASSERT(f);
     MbedJSONValue log_json;
-    log_json["Unix Time"] = (int) time(NULL);
     time_t my_time = time(NULL);
     char *time_str = ctime(&my_time);
     log_json["Time String"] = string(time_str);
     string log_json_str = log_json.serialize();
+	log_json_str.push_back('\n');
 	debug_printf(DBG_INFO, "Wrote %s\r\n", log_json_str.c_str());
     fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
     fflush(f);
@@ -180,6 +180,7 @@ void nv_log_fn(void) {
         log_json["Computed CRC"] = log_frame->calcCRC();
         log_json["CRC"] = log_frame->getCRC();
         string log_json_str = log_json.serialize();
+		log_json_str.push_back('\n');
         fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
         fflush(f);
 		fclose(f);
