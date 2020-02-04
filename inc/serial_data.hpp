@@ -171,7 +171,7 @@ public:
         hdr.pre_offset = 0;
         hdr.nsym_offset = 0;
         hdr.sym_offset = 0;
-        this->calcCRC();
+        this->setCRC();
         return data.size();
     }
 
