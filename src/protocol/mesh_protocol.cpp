@@ -228,16 +228,16 @@ void mesh_protocol_fsm(void) {
 		}
         switch(state) {
             case WAIT_FOR_RX:
-                debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
+                //debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
                 radio.receive();
-                debug_printf(DBG_INFO, "Received\r\n");
-                ThisThread::sleep_for(250);
+                //debug_printf(DBG_INFO, "Received\r\n");
+                //ThisThread::sleep_for(250);
                 if(!rx_radio_evt_mail.empty()) {
                     rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
-                    debug_printf(DBG_INFO, "Received2\r\n");
-                    ThisThread::sleep_for(250);
+                    //debug_printf(DBG_INFO, "Received2\r\n");
+                    //ThisThread::sleep_for(250);
                     if(rx_radio_event->evt_enum == RX_DONE_EVT) {
-                        debug_printf(DBG_INFO, "Received a packet\r\n");
+                        //debug_printf(DBG_INFO, "Received a packet\r\n");
                         // Load up the frame
                         radio_timing.startTimer();
                         led2.LEDSolid();
@@ -248,11 +248,11 @@ void mesh_protocol_fsm(void) {
                         enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                         enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
                         if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
-                            debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
+                            //debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
                             state = WAIT_FOR_RX;
                         }
                         else if(pkt_status != PKT_OK) {
-                            debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
+                            //debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
                         }
                         else {
                             radio.set_channel(radio_frequency.getWobbledFreq());
@@ -261,7 +261,7 @@ void mesh_protocol_fsm(void) {
                         radio_timing.waitFullSlots(1);
                     }
                     else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
-                        debug_printf(DBG_INFO, "Rx timed out\r\n");
+                        //debug_printf(DBG_INFO, "Rx timed out\r\n");
                         state = CHECK_TX_QUEUE;
                     }
                     else { MBED_ASSERT(false); }
@@ -272,7 +272,7 @@ void mesh_protocol_fsm(void) {
             break;
 
             case CHECK_TX_QUEUE:
-                debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
+                //debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
                     tx_frame_sptr->fec = fec;
@@ -285,20 +285,20 @@ void mesh_protocol_fsm(void) {
             break;
 
             case TX_PACKET:
-                debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
+                //debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { radio_timing.startTimer();
                 led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
-                debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
+                //debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
 				tx_frame_sptr->tx_frame = true;
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
-                debug_printf(DBG_INFO, "Waiting one slot\r\n");
+                //debug_printf(DBG_INFO, "Waiting one slot\r\n");
                 //radio_timing.waitFullSlots(1);
-                debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
+                //debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                debug_printf(DBG_INFO, "dequeued\r\n");
+                //debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff();
                 //radio_timing.waitFullSlots(2);
                 state = CHECK_TX_QUEUE;
@@ -306,7 +306,7 @@ void mesh_protocol_fsm(void) {
             break;
 
             case RETRANSMIT_PACKET:
-                debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
+                //debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { radio_timing.startTimer();
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(tx_frame_buf);

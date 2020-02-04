@@ -246,7 +246,7 @@ static void tx_done_cb(void)
     // If we just finished transmitting a local frame
     //  check to see if another frame's sitting in the queue
     //  if so, grab another frame and set it up to be sent one time unit in the future
-    debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");    
+    //debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");    
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);

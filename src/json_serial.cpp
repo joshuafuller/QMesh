@@ -292,7 +292,7 @@ void rx_serial_thread_fn(void) {
 					reboot_system();	
 				}
 				else {
-					debug_printf(DBG_INFO, "Getting ready to send out\r\n");
+					//debug_printf(DBG_INFO, "Getting ready to send out\r\n");
 					ThisThread::sleep_for(250);
                     MbedJSONValue log_json;
                     parse(log_json, cur_line.c_str());
