@@ -35,27 +35,6 @@ typedef enum {
 } mesh_state_t;
 mesh_state_t mesh_state; 
 
-#define TX_TIMEOUT 10
-static int tx_timeout = 0;
-void txCallback(void) {
-    if(mesh_state == TX) {
-        // If there's something to send in the TX queue, then send it
-        tx_timeout = 0;
-        // Otherwise, wait until the next timeslot to try again
-        tx_timeout += 1;
-        if(tx_timeout > 10) {
-            tx_timeout = 0;
-            mesh_state = RX;
-        }
-        else {
-            
-        }
-    }
-    else if(mesh_state == RX) {
-        // send(mesh_data);
-    }
-}
-
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;

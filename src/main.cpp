@@ -79,11 +79,11 @@ int main()
 
     // Power cycle the SPI flash chip and the RF module
     debug_printf(DBG_INFO, "Powering down the SPI flash and LoRa modules...\r\n");
-    flash_pwr_ctl = 0;
+    flash_pwr_ctl = 1;
     radio_pwr_ctl = 0;
     ThisThread::sleep_for(250);
     debug_printf(DBG_INFO, "Powering up the SPI flash...\r\n");
-    flash_pwr_ctl = 1;
+    flash_pwr_ctl = 0;
     debug_printf(DBG_INFO, "Powering up the LoRa module...\r\n");
     radio_pwr_ctl = 1;
     debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
