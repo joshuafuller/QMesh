@@ -76,7 +76,7 @@ void testFEC(void) {
         fec_success = 0;
         fec_fail = 0;
         fec_total = 0;
-        for(int i = 0; i < size_frame.size(); i++) {
+        for(size_t i = 0; i < size_frame.size(); i++) {
             for(int j = 0; j < 10; j++) {
                 int pld_len = radio_cb["Payload Length"].get<int>();
                 vector<uint8_t> rand_data(pld_len);
@@ -110,12 +110,12 @@ size_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_ms
     enc_msg.resize(msg.size());
     copy(msg.begin(), msg.end(), enc_msg.begin());
     Frame::crc16_t seed;
-    for(int i = 0; i < sizeof(seed); i++) {
+    for(size_t i = 0; i < sizeof(seed); i++) {
         seed.b[sizeof(seed)-1-i] = *(enc_msg.end()-1);
         enc_msg.pop_back();
     }
     FEC::whitenData(enc_msg, seed.s);
-    for(int i = 0; i < sizeof(seed); i++) {
+    for(size_t i = 0; i < sizeof(seed); i++) {
         enc_msg.push_back(seed.b[i]);
     }
     interleaveBits(enc_msg);
@@ -127,12 +127,12 @@ ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &d
     copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
     interleaveBits(dec_msg);
     Frame::crc16_t seed;
-    for(int i = 0; i < sizeof(seed); i++) {
+    for(size_t i = 0; i < sizeof(seed); i++) {
         seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
         dec_msg.pop_back();
     }
     FEC::whitenData(dec_msg, seed.s);
-    for(int i = 0; i < sizeof(seed); i++) {
+    for(size_t i = 0; i < sizeof(seed); i++) {
         dec_msg.push_back(seed.b[i]);
     }        
     return dec_msg.size();
@@ -141,7 +141,7 @@ ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &d
 void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
     mt19937 rand_gen(seed);
     uniform_int_distribution<uint8_t> dist(0, 255);  
-    for(int i = 0; i < buf.size(); i++) {
+    for(size_t i = 0; i < buf.size(); i++) {
         buf[i] = buf[i] ^ dist(rand_gen);
     }
 }
@@ -257,12 +257,12 @@ size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     vector<uint8_t> msg_int(msg.size());
     copy(msg.begin(), msg.end(), msg_int.begin());
     Frame::crc16_t seed;
-    for(int i = 0; i < sizeof(seed); i++) {
+    for(size_t i = 0; i < sizeof(seed); i++) {
         seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
         msg_int.pop_back();
     }
     whitenData(msg_int, seed.s);
-    for(int i = 0; i < sizeof(seed); i++) {
+    for(size_t i = 0; i < sizeof(seed); i++) {
         msg_int.push_back(seed.b[i]);
     }
 	enc_msg.resize(getEncSize(msg_int.size()));
@@ -414,7 +414,8 @@ static map<pair<int, int>, tuple<float, float, float, float> > ber_plot = {
 float FEC::getBER(const float snr) {
     int sf = radio_cb["SF"].get<int>();
     int cr = radio_cb["CR"].get<int>();
-    auto constants = ber_plot[make_tuple<float, float>(sf, cr)];
-    float rhs = get<0>(constants) * expf(get<1>(constants)*snr);
-    return powf(10.f, rhs);
+    //auto constants = ber_plot[make_tuple<float, float>(sf, cr)];
+    //float rhs = get<0>(constants) * expf(get<1>(constants)*snr);
+    //return powf(10.f, rhs);
+    return 1.0;
 }

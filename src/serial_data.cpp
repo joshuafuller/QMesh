@@ -151,14 +151,14 @@ void Frame::loadFromJSON(MbedJSONValue &json) {
 
 void Frame::saveToJSON(MbedJSONValue &json) {
     json["Type"] = "Frame";
-    json["HDR Pkt Type"] = hdr.type;
-    json["HDR Stream ID"] = hdr.stream_id;
-    json["HDR TTL"] = hdr.ttl;
-    json["HDR Sender"] = hdr.sender;
-    json["HDR Pre Offset"] = hdr.pre_offset;
-    json["HDR Num Sym Offset"] = hdr.nsym_offset;
-    json["HDR Sym Offset"] = hdr.sym_offset;
-    json["CRC"] = crc.s;
+    json["HDR Pkt Type"] = int(hdr.type);
+    json["HDR Stream ID"] = int(hdr.stream_id);
+    json["HDR TTL"] = int(hdr.ttl);
+    json["HDR Sender"] = int(hdr.sender);
+    json["HDR Pre Offset"] = int(hdr.pre_offset);
+    json["HDR Num Sym Offset"] = int(hdr.nsym_offset);
+    json["HDR Sym Offset"] = int(hdr.sym_offset);
+    json["CRC"] = int(crc.s);
     size_t b64_len;
     MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size()) == 0);
     unsigned char *b64_buf = new unsigned char[b64_len];
