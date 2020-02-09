@@ -27,6 +27,9 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "Timer.h"
 #include "SX126X_LoRaRadio.h"
 
+// Squash a warning about wait_ms being deprecated
+#define wait_ms(x) wait_us(x*1000)
+
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_SPI_FREQUENCY
 #define SPI_FREQUENCY    MBED_CONF_SX126X_LORA_DRIVER_SPI_FREQUENCY
 #else

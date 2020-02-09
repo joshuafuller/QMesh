@@ -38,6 +38,9 @@ SPDX-License-Identifier: BSD-3-Clause
 #define SPI_FREQUENCY    8000000
 #endif
 
+// Squash a warning about wait_ms being deprecated
+#define wait_ms(x) wait_us(x*1000)
+
 // Sync word for Private LoRa networks
 #define LORA_MAC_PRIVATE_SYNCWORD                   0x12
 // Sync word for Public LoRa networks

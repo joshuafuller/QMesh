@@ -129,6 +129,7 @@ int main()
     fec_test_rsv->benchmark(25);
     } 
 #endif
+
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);
