@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 
 RawSerial pc(USBTX, USBRX);
-RawSerial pc2(NC, PA_12);
+RawSerial pc2(PA_11, PA_12);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(4096), rx_serial_thread(4096);
 Thread mesh_protocol_thread(4096);
