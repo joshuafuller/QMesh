@@ -69,7 +69,7 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
 
 void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
         const uint32_t n_pre_sym, const uint8_t n_pld_bytes) {
-    float bw_f = bw;
+    float bw_f = lora_bw[bw];
     float sf_f = sf;
     float cr_f = cr;
     float n_pre_sym_f = n_pre_sym;
@@ -115,6 +115,8 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 
 void RadioTiming::waitFullSlots(const size_t num_slots) {
     uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
+    debug_printf(DBG_INFO, "Wait duration is %d\r\n", wait_duration_us);
+    debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
     wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
     wait_us(wait_duration_us-elapsed_us);
@@ -228,11 +230,11 @@ void mesh_protocol_fsm(void) {
                         enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                         enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
                         if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
-                            //debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
+                            debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
                             state = WAIT_FOR_RX;
                         }
                         else if(pkt_status != PKT_OK) {
-                            //debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
+                            debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
                         }
                         else {
                             radio.set_channel(radio_frequency.getWobbledFreq());
@@ -240,7 +242,7 @@ void mesh_protocol_fsm(void) {
                         }
                     }
                     else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
-                        //debug_printf(DBG_INFO, "Rx timed out\r\n");
+                        debug_printf(DBG_INFO, "Rx timed out\r\n");
                         state = CHECK_TX_QUEUE;
                     }
                     else { MBED_ASSERT(false); }
@@ -264,29 +266,30 @@ void mesh_protocol_fsm(void) {
             break;
 
             case TX_PACKET:
-                //debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
+                debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { 
                 led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
-                //debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
+                debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
 				tx_frame_sptr->tx_frame = true;
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
-                //debug_printf(DBG_INFO, "Waiting one slot\r\n");
+                debug_printf(DBG_INFO, "Waiting one slot\r\n");
                 //radio_timing.waitFullSlots(1);
-                //debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
+                debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
 				radio_timing.startTimer();
-                //debug_printf(DBG_INFO, "dequeued\r\n");
+                debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff();
                 radio_timing.waitFullSlots(2);
+                debug_printf(DBG_INFO, "waiting for slots\r\n");
                 state = CHECK_TX_QUEUE;
                 }
             break;
 
             case RETRANSMIT_PACKET:
-                //debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
+                debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(tx_frame_buf);
