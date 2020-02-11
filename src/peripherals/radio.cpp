@@ -190,7 +190,7 @@ void init_radio(void) {
                             radio_preamble_len, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
-                            RADIO_INVERT_IQ, false);
+                            RADIO_INVERT_IQ, true);
     radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
                             radio_bw, radio_sf,
                             radio_cr, radio_preamble_len,
