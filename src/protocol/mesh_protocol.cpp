@@ -256,7 +256,7 @@ void mesh_protocol_fsm(void) {
 						rx_frame_sptr->tx_frame = false;
                         if(pkt_status == PKT_OK) {
                             enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
-                            enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
+                            enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
                         }
 #if 0                        
                         if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
