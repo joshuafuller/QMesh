@@ -182,6 +182,7 @@ void init_radio(void) {
     }
     Frame tmp_frame(frame_fec);
     uint8_t full_pkt_len = tmp_frame.codedSize();
+    radio_cb["Full Packet Size"] = full_pkt_len;
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,
@@ -239,6 +240,8 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const uint8_t *my_buf
     snr = my_snr;
 }
 
+
+extern volatile bool rx_active;
 static void tx_done_cb(void)
 {
     // If we just finished retransmitting a frame
@@ -246,7 +249,8 @@ static void tx_done_cb(void)
     // If we just finished transmitting a local frame
     //  check to see if another frame's sitting in the queue
     //  if so, grab another frame and set it up to be sent one time unit in the future
-    //debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");    
+    //debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");  
+    //radio.standby();  
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> > (tx_radio_evt_mail, radio_event);
@@ -256,16 +260,19 @@ static void tx_done_cb(void)
 
 static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
+    //radio.standby();  
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
     enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event);
     //rx_radio_evt_mail.put(&radio_event);
-    debug_printf(DBG_INFO, "RX Done interrupt generated %d\r\n", size);    
+    debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
+    rx_active = false;
 }
  
 static void tx_timeout_cb(void)
 {
+    //radio.standby();  
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
@@ -276,20 +283,24 @@ static void tx_timeout_cb(void)
  
 static void rx_timeout_cb(void)
 {
+    //radio.standby();  
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
     enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event); 
-    //debug_printf(DBG_ERR, "Rx Timeout\r\n");
+    debug_printf(DBG_ERR, "Rx Timeout\r\n");
+    rx_active = false;
 }
  
 static void rx_error_cb(void)
 {
+    //radio.standby();  
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
     rx_radio_evt_mail.put(&radio_event);   
     debug_printf(DBG_ERR, "Rx Error\r\n");
+    rx_active = false;
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) {

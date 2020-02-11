@@ -114,8 +114,9 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 }
 
 void RadioTiming::waitFullSlots(const size_t num_slots) {
-    uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
-    debug_printf(DBG_INFO, "Wait duration is %d\r\n", wait_duration_us);
+    //uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
+    uint32_t wait_duration_us = pkt_time_us;
+    debug_printf(DBG_INFO, "xWait duration is %d\r\n", wait_duration_us);
     debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
     wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
@@ -151,6 +152,7 @@ void RadioTiming::startTimer(void) {
 
 uint32_t RadioFrequency::getWobbledFreq(void) {
     float wobble_factor = (float) rand() / (float) RAND_MAX;
+    debug_printf(DBG_INFO, "Wobble proportion is %f\r\n", wobble_factor);
     float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
     int wobble_direction = rand() & 0x1;
     wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
@@ -170,6 +172,8 @@ static enum {
 
 RadioTiming radio_timing;
 
+
+volatile bool rx_active = false;
 void mesh_protocol_fsm(void) {
     shared_ptr<FEC> fec;
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
@@ -207,11 +211,30 @@ void mesh_protocol_fsm(void) {
 		if(rebooting) {
 			return;
 		}
+        int radio_bw = radio_cb["BW"].get<int>();
+        int radio_sf = radio_cb["SF"].get<int>();
+        int radio_cr = radio_cb["CR"].get<int>();
+        int radio_freq = radio_cb["Frequency"].get<int>();
+        int radio_pwr = radio_cb["TX Power"].get<int>();  
+        int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
+        int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
         switch(state) {
             case WAIT_FOR_RX:
-                //debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
+#if 0
+                radio.set_rx_config(MODEM_LORA, radio_bw,
+                            radio_sf, radio_cr,
+                            0, radio_preamble_len,
+                            radio_preamble_len, RADIO_FIXED_LEN,
+                            full_pkt_len,
+                            RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
+                            RADIO_INVERT_IQ, false);
+#endif
 				radio.set_channel((int32_t) radio_cb["Frequency"].get<int>());
-                radio.receive();
+                if(!rx_active) {
+                    debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
+                    rx_active = true;
+                    radio.receive();
+                }
                 //debug_printf(DBG_INFO, "Received\r\n");
                 //ThisThread::sleep_for(250);
                 if(!rx_radio_evt_mail.empty()) {
@@ -275,6 +298,14 @@ void mesh_protocol_fsm(void) {
             break;
 
             case TX_PACKET:
+                rx_active = false;
+#if 0
+                radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
+                            radio_bw, radio_sf,
+                            radio_cr, radio_preamble_len,
+                            RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
+                            RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
+#endif
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { 
                 led3.LEDSolid();
@@ -296,6 +327,14 @@ void mesh_protocol_fsm(void) {
             break;
 
             case RETRANSMIT_PACKET:
+                rx_active = false;
+#if 0
+                radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
+                            radio_bw, radio_sf,
+                            radio_cr, radio_preamble_len,
+                            RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
+                            RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
+#endif
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { 
                 led3.LEDSolid();
