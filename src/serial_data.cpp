@@ -64,10 +64,10 @@ void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const u
 }
 
 size_t Frame::serializeCoded(vector<uint8_t> &buf) {
-    //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
+    debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
     vector<uint8_t> ser_buf;
     serialize(ser_buf);
-	//debug_printf(DBG_WARN, "Serialized frame size is now %d\r\n", ser_buf.size());
+	debug_printf(DBG_WARN, "Serialized frame size is now %d\r\n", ser_buf.size());
     return fec->encode(ser_buf, buf);
 }
 

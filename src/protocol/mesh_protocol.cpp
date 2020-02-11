@@ -231,14 +231,19 @@ void mesh_protocol_fsm(void) {
                         PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(rx_radio_event->buf);
                         rx_frame_sptr->incrementTTL();
 						rx_frame_sptr->tx_frame = false;
-                        enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
-                        enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
+                        if(pkt_status == PKT_OK) {
+                            enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
+                            enqueue_mail<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
+                        }
+#if 0                        
                         if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
                             debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
                             state = WAIT_FOR_RX;
                         }
-                        else if(pkt_status != PKT_OK) {
+#endif
+                        if(pkt_status != PKT_OK) {
                             debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
+                            state = CHECK_TX_QUEUE;
                         }
                         else {
                             radio.set_channel(radio_frequency.getWobbledFreq());
@@ -295,7 +300,8 @@ void mesh_protocol_fsm(void) {
                 { 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(tx_frame_buf);
-                MBED_ASSERT(rx_frame_size > 256);
+                //ThisThread::sleep_for(250);
+                MBED_ASSERT(rx_frame_size < 256);
 				radio_timing.waitFullSlots(1);
                 radio.send(rx_frame_buf.data(), rx_frame_size);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
