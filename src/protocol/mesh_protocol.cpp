@@ -215,12 +215,16 @@ void mesh_protocol_fsm(void) {
                 //debug_printf(DBG_INFO, "Received\r\n");
                 //ThisThread::sleep_for(250);
                 if(!rx_radio_evt_mail.empty()) {
+                    //debug_printf(DBG_INFO, "Dequeuing\r\n");
+                    //ThisThread::sleep_for(250);
                     rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
+                    //debug_printf(DBG_INFO, "Dequeued\r\n");
+                    //ThisThread::sleep_for(250);
 					radio_timing.startTimer();
                     //debug_printf(DBG_INFO, "Received2\r\n");
                     //ThisThread::sleep_for(250);
                     if(rx_radio_event->evt_enum == RX_DONE_EVT) {
-                        //debug_printf(DBG_INFO, "Received a packet\r\n");
+                        debug_printf(DBG_INFO, "Received a packet\r\n");
                         // Load up the frame
                         led2.LEDSolid();
                         rx_frame_sptr = make_shared<Frame>(fec);
@@ -275,8 +279,6 @@ void mesh_protocol_fsm(void) {
                 radio.send(tx_frame_buf.data(), tx_frame_size);
 				tx_frame_sptr->tx_frame = true;
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
-                debug_printf(DBG_INFO, "Waiting one slot\r\n");
-                //radio_timing.waitFullSlots(1);
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
 				radio_timing.startTimer();

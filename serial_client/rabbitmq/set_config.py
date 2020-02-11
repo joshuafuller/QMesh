@@ -29,11 +29,11 @@ settings["Freq"] = 433000000
 settings["BW"] = 2 # 0=125KHz, 1=250KHz, 2=500KHz
 settings["CR"] = 4
 settings["SF"] = 12
-settings["Preamble Length"] = 12
+settings["Preamble Length"] = 128
 settings["Preamble Slots"] = 1
 beacon_str = "KG5VBY Beacon Test"
 settings["Beacon Message"] = str(base64.b64encode(beacon_str.encode('ascii')))
-settings["Beacon Interval"] = 1
+settings["Beacon Interval"] = 10
 settings["Payload Length"] = len(beacon_str)
 settings["FEC Algorithm"] = "None"
 settings["Convolutional Rate"] = 2

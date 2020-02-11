@@ -186,10 +186,10 @@ void init_radio(void) {
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,
                             0, radio_preamble_len,
-                            RADIO_SYM_TIMEOUT, RADIO_FIXED_LEN,
+                            radio_preamble_len, RADIO_FIXED_LEN,
                             full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
-                            RADIO_INVERT_IQ, true);
+                            RADIO_INVERT_IQ, false);
     radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
                             radio_bw, radio_sf,
                             radio_cr, radio_preamble_len,
@@ -197,7 +197,7 @@ void init_radio(void) {
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
     radio.set_channel(radio_freq);
-    radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, RADIO_PREAMBLE_LEN, full_pkt_len);
+    radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, radio_preamble_len, full_pkt_len);
 
     int cw_test_mode = radio_cb["CW Test Mode"].get<int>();
     int pre_test_mode = radio_cb["Preamble Test Mode"].get<int>();
@@ -249,8 +249,9 @@ static void tx_done_cb(void)
     //debug_printf(DBG_INFO, "TX Done interrupt generated\r\n");    
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
+    enqueue_mail<std::shared_ptr<RadioEvent> > (tx_radio_evt_mail, radio_event);
     //radio.set_channel(RADIO_FREQUENCY);
-    tx_radio_evt_mail.put(&radio_event);
+    //tx_radio_evt_mail.put(&radio_event);
 }
 
 static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
@@ -258,7 +259,8 @@ static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
-    rx_radio_evt_mail.put(&radio_event);
+    enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event);
+    //rx_radio_evt_mail.put(&radio_event);
     debug_printf(DBG_INFO, "RX Done interrupt generated\r\n");    
 }
  
@@ -267,7 +269,8 @@ static void tx_timeout_cb(void)
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
-    tx_radio_evt_mail.put(&radio_event);    
+    enqueue_mail<std::shared_ptr<RadioEvent> >(tx_radio_evt_mail, radio_event);
+    //tx_radio_evt_mail.put(&radio_event);    
     debug_printf(DBG_ERR, "Tx Timeout\r\n");
 }
  
@@ -276,7 +279,7 @@ static void rx_timeout_cb(void)
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
-    rx_radio_evt_mail.put(&radio_event);   
+    enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event); 
     debug_printf(DBG_ERR, "Rx Timeout\r\n");
 }
  

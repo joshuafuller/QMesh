@@ -37,8 +37,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_FREQ_HOP false
 #define RADIO_CRC_ON false
 #define RADIO_FIXED_LEN true
-#define RADIO_SYM_TIMEOUT 8
-#define RADIO_PREAMBLE_LEN 12
+#define RADIO_SYM_TIMEOUT 32
+#define RADIO_PREAMBLE_LEN 128
 // 0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved
 #define RADIO_BANDWIDTH 2
 #define RADIO_SF 12
