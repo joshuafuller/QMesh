@@ -266,7 +266,7 @@ static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8
     //radio.set_channel(RADIO_FREQUENCY);
     enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event);
     //rx_radio_evt_mail.put(&radio_event);
-    debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
+    //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
     rx_active = false;
 }
  
@@ -278,7 +278,7 @@ static void tx_timeout_cb(void)
     //radio.set_channel(RADIO_FREQUENCY);
     enqueue_mail<std::shared_ptr<RadioEvent> >(tx_radio_evt_mail, radio_event);
     //tx_radio_evt_mail.put(&radio_event);    
-    debug_printf(DBG_ERR, "Tx Timeout\r\n");
+    //debug_printf(DBG_ERR, "Tx Timeout\r\n");
 }
  
 static void rx_timeout_cb(void)
@@ -288,7 +288,7 @@ static void rx_timeout_cb(void)
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
     enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event); 
-    debug_printf(DBG_ERR, "Rx Timeout\r\n");
+    //debug_printf(DBG_ERR, "Rx Timeout\r\n");
     rx_active = false;
 }
  
@@ -299,7 +299,7 @@ static void rx_error_cb(void)
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
     rx_radio_evt_mail.put(&radio_event);   
-    debug_printf(DBG_ERR, "Rx Error\r\n");
+    //debug_printf(DBG_ERR, "Rx Error\r\n");
     rx_active = false;
 }
 

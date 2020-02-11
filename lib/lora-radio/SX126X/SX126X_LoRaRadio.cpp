@@ -1085,9 +1085,10 @@ void SX126X_LoRaRadio::receive(void)
 
     uint8_t buf[3];
 
-#if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
+//#if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
+//#error boosting
     write_to_register(REG_RX_GAIN, 0x96);
-#endif
+//#endif
 
     buf[0] = (uint8_t) ((_rx_timeout >> 16) & 0xFF);
     buf[1] = (uint8_t) ((_rx_timeout >> 8) & 0xFF);

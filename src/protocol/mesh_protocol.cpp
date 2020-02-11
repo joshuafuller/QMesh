@@ -116,8 +116,8 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 void RadioTiming::waitFullSlots(const size_t num_slots) {
     //uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
     uint32_t wait_duration_us = pkt_time_us;
-    debug_printf(DBG_INFO, "xWait duration is %d\r\n", wait_duration_us);
-    debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
+    //debug_printf(DBG_INFO, "xWait duration is %d\r\n", wait_duration_us);
+    //debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
     wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
     wait_us(wait_duration_us-elapsed_us);
@@ -152,12 +152,12 @@ void RadioTiming::startTimer(void) {
 
 uint32_t RadioFrequency::getWobbledFreq(void) {
     float wobble_factor = (float) rand() / (float) RAND_MAX;
-    debug_printf(DBG_INFO, "Wobble proportion is %f\r\n", wobble_factor);
+    //debug_printf(DBG_INFO, "Wobble proportion is %f\r\n", wobble_factor);
     float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
     int wobble_direction = rand() & 0x1;
     wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
     uint32_t wobbled_freq = (int32_t) radio_cb["Frequency"].get<int>() + (int32_t) wobble_amount;
-    debug_printf(DBG_INFO, "Wobbled freq is %d\r\n", wobbled_freq);
+    //debug_printf(DBG_INFO, "Wobbled freq is %d\r\n", wobbled_freq);
     return wobbled_freq;   
 }
 
