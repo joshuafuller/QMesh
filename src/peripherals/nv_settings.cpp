@@ -101,8 +101,8 @@ void load_settings_from_flash(void) {
         radio_cb["Beacon Interval"] = RADIO_BEACON_INTERVAL;
         radio_cb["Payload Length"] = FRAME_PAYLOAD_LEN;
         radio_cb["FEC Algorithm"] = FEC_ALGORITHM;
-        radio_cb["Convolutional Rate"] = FEC_CONV_RATE;
-        radio_cb["Convolutional Order"] = FEC_CONV_ORDER;
+        radio_cb["Conv Rate"] = FEC_CONV_RATE;
+        radio_cb["Conv Order"] = FEC_CONV_ORDER;
         radio_cb["Reed-Solomon Number Roots"] = FEC_RS_NUM_ROOTS;
 	    radio_cb["TX Power"] = RADIO_POWER;
         radio_cb["CW Test Mode"] = 0;

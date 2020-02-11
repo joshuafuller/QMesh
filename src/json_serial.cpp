@@ -159,6 +159,7 @@ void rx_serial_thread_fn(void) {
                 radio_cb[setting] = rx_json[setting].get<int>();
             }
             save_settings_to_flash();
+            ThisThread::sleep_for(100);
 			send_status();
         }
         else if(type_str == "Get Status") {
