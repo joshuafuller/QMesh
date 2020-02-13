@@ -260,14 +260,14 @@ static void tx_done_cb(void)
 
 static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-    //radio.standby();  
+    //radio.standby(); 
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!rx_radio_evt_mail.full());
     //radio.set_channel(RADIO_FREQUENCY);
     enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event);
     //rx_radio_evt_mail.put(&radio_event);
-    //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
-    rx_active = false;
+    debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
+    //rx_active = false;
 }
  
 static void tx_timeout_cb(void)
