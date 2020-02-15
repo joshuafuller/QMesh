@@ -255,7 +255,6 @@ void mesh_protocol_fsm(void) {
                         rx_frame_sptr->incrementTTL();
 						rx_frame_sptr->tx_frame = false;
                         if(pkt_status == PKT_OK) {
-                            enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
                         }
 #if 0                        
@@ -314,9 +313,9 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
 				tx_frame_sptr->tx_frame = true;
-                enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
 				radio_timing.startTimer();
                 debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff();
@@ -344,6 +343,7 @@ void mesh_protocol_fsm(void) {
 				radio_timing.waitFullSlots(1);
                 radio.send(rx_frame_buf.data(), rx_frame_size);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 led2.LEDOff();
                 led3.LEDOff();
                 state = WAIT_FOR_RX;

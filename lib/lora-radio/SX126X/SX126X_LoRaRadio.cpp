@@ -401,7 +401,8 @@ void SX126X_LoRaRadio::standby(void)
     }
 
     set_device_ready();
-    uint8_t standby_mode = MBED_CONF_SX126X_LORA_DRIVER_STANDBY_MODE;
+    //uint8_t standby_mode = MBED_CONF_SX126X_LORA_DRIVER_STANDBY_MODE;
+    uint8_t standby_mode = STDBY_XOSC;
     write_opmode_command((uint8_t) RADIO_SET_STANDBY, &standby_mode, 1);
 
     if (standby_mode == STDBY_RC) {

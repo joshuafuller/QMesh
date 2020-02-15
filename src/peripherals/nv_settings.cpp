@@ -33,7 +33,8 @@ DigitalOut flash_io3(MBED_CONF_APP_FLASH_IO3);
 SPIFBlockDevice bd(MBED_CONF_APP_FLASH_SPI_MOSI, 
                     MBED_CONF_APP_FLASH_SPI_MISO, 
                     MBED_CONF_APP_FLASH_SPI_SCLK, 
-                    MBED_CONF_APP_FLASH_SPI_CS);
+                    MBED_CONF_APP_FLASH_SPI_CS,
+                    16000000);
 LittleFileSystem fs("fs");
 
 
@@ -165,6 +166,7 @@ void nv_log_fn(void) {
 	FILE *f = fopen("/fs/logfile.json", "a+");
     MBED_ASSERT(f);
     int write_count = 0;
+    string comb_str;
     for(;;) {
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
@@ -182,13 +184,20 @@ void nv_log_fn(void) {
         log_json["CRC"] = log_frame->getCRC();
         string log_json_str = log_json.serialize();
 		log_json_str.push_back('\n');
-        fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
-#if 1
+        comb_str.append(log_json_str);
+        fwrite(comb_str.c_str(), 1, comb_str.size(), f);
+        comb_str.clear();
+        //fclose(f);
+        //f = fopen("/fs/logfile.json", "a+");
+#if 0
         write_count += 1;
         if(write_count == 10) {
             write_count = 0;
-            fflush(f);
+            fwrite(comb_str.c_str(), 1, comb_str.size(), f);
+            ThisThread::sleep_for(100);
 		    fclose(f);
+            ThisThread::sleep_for(100);
+            comb_str.clear();
             debug_printf(DBG_INFO, "Committing logs to disk\r\n");
             for(;;) {
                 FILE *f = fopen("/fs/logfile.json", "a+");
@@ -198,7 +207,6 @@ void nv_log_fn(void) {
             }
         }
 #endif
-
         // Check whether we've filled up the SPI flash chip. If so,
         //  delete the file and reopen it as an empty one.
 #if 0        
