@@ -330,7 +330,7 @@ public:
 };
 
 
-extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
+extern Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 /** 
  * Enqueues a value onto an Mbed OS mailbox.
@@ -339,7 +339,7 @@ extern Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
  * @param val The value to be enqueued.
  */
 template <class T> 
-void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
+void enqueue_mail(Mail<T, QUEUE_DEPTH> &mail_queue, T val) {
     auto mail_item = mail_queue.alloc_for(osWaitForever);
     MBED_ASSERT(mail_item != NULL);
     *mail_item = val;
@@ -356,7 +356,7 @@ void enqueue_mail(Mail<T, 16> &mail_queue, T val) {
  * @param val The value to be enqueued.
  */
 template <class T> 
-void enqueue_mail_nonblocking(Mail<T, 16> &mail_queue, T val) {
+void enqueue_mail_nonblocking(Mail<T, QUEUE_DEPTH> &mail_queue, T val) {
     auto mail_item = mail_queue.alloc();
     if(mail_item == NULL) {
         return;
@@ -371,7 +371,7 @@ void enqueue_mail_nonblocking(Mail<T, 16> &mail_queue, T val) {
  * @param T The type of the value to be dequeued.
  */
 template <class T>
-T dequeue_mail(Mail<T, 16> &mail_queue) {
+T dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) {
     T mail_item; 
     for(;;) {
         osEvent evt = mail_queue.get();

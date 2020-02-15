@@ -27,19 +27,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbedtls/base64.h"
 #include "mesh_protocol.hpp"
 
-Mail<std::shared_ptr<string>, 16> tx_ser_queue;
+Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
 extern RawSerial pc, pc2;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
     for(;;) {
-        //print_memory_info();
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
         str_sptr->push_back('\r');
         str_sptr->push_back('\n');
         for(int i = 0; i < str_sptr->length(); i++) {
             while(!pc.writeable());
+#warning Consider using printf instead
             pc.putc(str_sptr->c_str()[i]);
         }
     }
@@ -77,7 +77,7 @@ void send_status(void) {
 
 static void ser_rx_isr(void);
 static char rx_bufs[4][2048];
-static Mail<int, 16> rx_data_rdy;
+static Mail<int, QUEUE_DEPTH> rx_data_rdy;
 static bool led2_val, led3_val = false;
 static int my_buf = 0;
 static int my_buf_idx = 0;

@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "json_serial.hpp"
 #include <random>
 
-Mail<shared_ptr<Frame>, 16> tx_frame_mail, rx_frame_mail, nv_logger_mail;
+Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
     hdr.type = 0;
@@ -228,9 +228,10 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     auto tx_str = make_shared<string>();
     JSONSerial json_ser;
     json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
+    MBED_ASSERT(tx_ser_queue.full() == false);
+    while(tx_ser_queue.full() == true);
     auto tx_str_sptr = tx_ser_queue.alloc();
     *tx_str_sptr = tx_str;
-    MBED_ASSERT(tx_ser_queue.full() == false);
     tx_ser_queue.put(tx_str_sptr);
 
     va_end(args);
@@ -270,9 +271,10 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     auto tx_str = make_shared<string>();
     JSONSerial json_ser;
     json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
+
+    while(tx_ser_queue.full() == true);
     auto tx_str_sptr = tx_ser_queue.alloc();
     *tx_str_sptr = tx_str;
-    while(tx_ser_queue.full() == true);
     tx_ser_queue.put(tx_str_sptr);
 
     va_end(args);

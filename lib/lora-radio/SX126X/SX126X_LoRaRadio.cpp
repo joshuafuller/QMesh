@@ -600,6 +600,7 @@ uint32_t SX126X_LoRaRadio::random(void)
 
 void SX126X_LoRaRadio::write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size)
 {
+    _spi.lock();
     _chip_select = 0;
 
     while (_busy) {
@@ -613,11 +614,13 @@ void SX126X_LoRaRadio::write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16
     }
 
     _chip_select = 1;
+    _spi.unlock();
 }
 
 void SX126X_LoRaRadio::read_opmode_command(uint8_t cmd,
                                            uint8_t *buffer, uint16_t size)
 {
+    _spi.lock();
     _chip_select = 0;
 
     while (_busy) {
@@ -632,6 +635,7 @@ void SX126X_LoRaRadio::read_opmode_command(uint8_t cmd,
     }
 
     _chip_select = 1;
+    _spi.unlock();
 }
 
 void SX126X_LoRaRadio::write_to_register(uint16_t addr, uint8_t data)
@@ -642,6 +646,7 @@ void SX126X_LoRaRadio::write_to_register(uint16_t addr, uint8_t data)
 void SX126X_LoRaRadio::write_to_register(uint16_t addr, uint8_t *data,
                                          uint8_t size)
 {
+    _spi.lock();
     _chip_select = 0;
 
     _spi.write(RADIO_WRITE_REGISTER);
@@ -653,6 +658,7 @@ void SX126X_LoRaRadio::write_to_register(uint16_t addr, uint8_t *data,
     }
 
     _chip_select = 1;
+    _spi.unlock();
 }
 
 uint8_t SX126X_LoRaRadio::read_register(uint16_t addr)
@@ -666,6 +672,7 @@ uint8_t SX126X_LoRaRadio::read_register(uint16_t addr)
 void SX126X_LoRaRadio::read_register(uint16_t addr, uint8_t *buffer,
                                      uint8_t size)
 {
+    _spi.lock();
     _chip_select = 0;
 
     _spi.write(RADIO_READ_REGISTER);
@@ -678,10 +685,12 @@ void SX126X_LoRaRadio::read_register(uint16_t addr, uint8_t *buffer,
     }
 
     _chip_select = 1;
+    _spi.unlock();
 }
 
 void SX126X_LoRaRadio::write_fifo(uint8_t *buffer, uint8_t size)
 {
+    _spi.lock();
     _chip_select = 0;
 
     _spi.write(RADIO_WRITE_BUFFER);
@@ -692,6 +701,7 @@ void SX126X_LoRaRadio::write_fifo(uint8_t *buffer, uint8_t size)
     }
 
     _chip_select = 1;
+    _spi.unlock();
 }
 
 void SX126X_LoRaRadio::set_modem(uint8_t modem)
@@ -713,6 +723,7 @@ uint8_t SX126X_LoRaRadio::get_modem()
 
 void SX126X_LoRaRadio::read_fifo(uint8_t *buffer, uint8_t size, uint8_t offset)
 {
+    _spi.lock();
     _chip_select = 0;
 
     _spi.write(RADIO_READ_BUFFER);
@@ -724,6 +735,7 @@ void SX126X_LoRaRadio::read_fifo(uint8_t *buffer, uint8_t size, uint8_t offset)
     }
 
     _chip_select = 1;
+    _spi.unlock();
 }
 
 uint8_t SX126X_LoRaRadio::get_device_variant(void)

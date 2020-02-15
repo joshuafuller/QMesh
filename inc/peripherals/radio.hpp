@@ -144,7 +144,7 @@ public:
                 const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
 };
 
-extern Mail<shared_ptr<RadioEvent>, 16> rx_radio_evt_mail, tx_radio_evt_mail;
+extern Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> rx_radio_evt_mail, tx_radio_evt_mail;
 
 
 #endif /* RADIO_HPP */

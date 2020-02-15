@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include "mesh_protocol.hpp"
 
-extern Mail<std::shared_ptr<string>, 16> tx_ser_queue;
+extern Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 /// Produces an MbedJSONValue with the current status and queues it for transmission.
 void tx_serial_thread_fn(void);
 /// Serial thread function that receives serial data, and processes it accordingly.

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbed.h"
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
+//#include "FATFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
 #include <cstdio>
@@ -161,10 +162,10 @@ void log_boot(void) {
 }
 
 void nv_log_fn(void) {
-
+	FILE *f = fopen("/fs/logfile.json", "a+");
+    MBED_ASSERT(f);
+    int write_count = 0;
     for(;;) {
-		FILE *f = fopen("/fs/logfile.json", "a+");
-		MBED_ASSERT(f);
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
         MbedJSONValue log_json;
@@ -182,10 +183,25 @@ void nv_log_fn(void) {
         string log_json_str = log_json.serialize();
 		log_json_str.push_back('\n');
         fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
-        fflush(f);
-		fclose(f);
+#if 1
+        write_count += 1;
+        if(write_count == 10) {
+            write_count = 0;
+            fflush(f);
+		    fclose(f);
+            debug_printf(DBG_INFO, "Committing logs to disk\r\n");
+            for(;;) {
+                FILE *f = fopen("/fs/logfile.json", "a+");
+                if(f) {
+                    break;
+                }
+            }
+        }
+#endif
+
         // Check whether we've filled up the SPI flash chip. If so,
         //  delete the file and reopen it as an empty one.
+#if 0        
         struct stat st;
         stat("/fs/logfile.json", &st);
         if(st.st_size > 12000000) {
@@ -194,5 +210,7 @@ void nv_log_fn(void) {
             fopen("/fs/logfile.json", "w+");
             MBED_ASSERT(f);
         }
+    }
+#endif
     }
 }

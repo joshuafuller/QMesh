@@ -121,7 +121,7 @@ MbedJSONValue radio_cb;
 static radio_events_t radio_events;
 
 // Event queue for communicating events from the radio
-Mail<shared_ptr<RadioEvent>, 16> tx_radio_evt_mail, rx_radio_evt_mail;
+Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> tx_radio_evt_mail, rx_radio_evt_mail;
 
 // Prototypes for the callbacks
 static void tx_done_cb(void);
