@@ -262,7 +262,7 @@ static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8
 {
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!rx_radio_evt_mail.full());
-	radio.set_channel((int32_t) radio_cb["Frequency"].get<int>());
+	//radio.set_channel((int32_t) radio_cb["Frequency"].get<int>());
     enqueue_mail<std::shared_ptr<RadioEvent> >(rx_radio_evt_mail, radio_event);
     //rx_radio_evt_mail.put(&radio_event);
     debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    

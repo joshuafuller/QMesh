@@ -187,8 +187,8 @@ void nv_log_fn(void) {
         comb_str.append(log_json_str);
         fwrite(comb_str.c_str(), 1, comb_str.size(), f);
         comb_str.clear();
-        //fclose(f);
-        //f = fopen("/fs/logfile.json", "a+");
+        fclose(f);
+        f = fopen("/fs/logfile.json", "a+");
 #if 0
         write_count += 1;
         if(write_count == 10) {

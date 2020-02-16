@@ -268,6 +268,7 @@ void mesh_protocol_fsm(void) {
                             state = CHECK_TX_QUEUE;
                         }
                         else {
+                            radio.standby();
                             radio.set_channel(radio_frequency.getWobbledFreq());
                             state = RETRANSMIT_PACKET;
                         }
@@ -294,6 +295,7 @@ void mesh_protocol_fsm(void) {
                 else {
                     state = WAIT_FOR_RX;
                 }
+                ThisThread::sleep_for(50);
             break;
 
             case TX_PACKET:
