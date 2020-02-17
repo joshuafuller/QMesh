@@ -256,22 +256,20 @@ void mesh_protocol_fsm(void) {
 						rx_frame_sptr->tx_frame = false;
                         if(pkt_status == PKT_OK) {
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
-                        }
-#if 0                        
-                        if(pkt_status == PKT_OK && checkRedundantPkt(rx_frame_sptr)) {
-                            debug_printf(DBG_WARN, "Rx Queue full, dropping frame\r\n");
-                            state = WAIT_FOR_RX;
-                        }
-#endif
-                        if(pkt_status != PKT_OK) {
-                            debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
-                            state = CHECK_TX_QUEUE;
+                            if(!checkRedundantPkt(rx_frame_sptr)) {
+                                debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
+                                state = WAIT_FOR_RX;
+                            }
+                            else {
+                                radio.standby();
+                                radio.set_channel(radio_frequency.getWobbledFreq());
+                                state = RETRANSMIT_PACKET;
+                            }
                         }
                         else {
-                            radio.standby();
-                            radio.set_channel(radio_frequency.getWobbledFreq());
-                            state = RETRANSMIT_PACKET;
-                        }
+                            debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
+                            state = CHECK_TX_QUEUE;
+                        }                        
                     }
                     else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
                         debug_printf(DBG_INFO, "Rx timed out\r\n");
@@ -364,10 +362,13 @@ string beacon_msg;
 void beacon_fn(void) {
     auto beacon_frame_sptr = make_shared<Frame>();
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
+    beacon_frame_sptr->setSender(radio_cb["Address"].get<int>());
+    uint8_t stream_id = 0;
     for(;;) {
 		if(rebooting) {
 			return;
 		}
+        beacon_frame_sptr->setStreamID(stream_id++);
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
         ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>()*1000);
     }

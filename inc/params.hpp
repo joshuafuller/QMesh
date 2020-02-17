@@ -34,6 +34,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Frame parameters
 #define FRAME_PAYLOAD_LEN 16
 
+// Default address for the node
+#define DEFAULT_ADDRESS 0
+
 // Radio parameters
 #define RADIO_INVERT_IQ false
 #define RADIO_HOP_PERIOD 1

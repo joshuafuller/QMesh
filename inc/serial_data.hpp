@@ -215,6 +215,22 @@ public:
     }
 
     /**
+     * Sets the sender's address based on the value passed in.
+     */
+    void setSender(uint8_t sender_addr) {
+        hdr.sender = sender_addr;
+        setCRC();
+    }
+
+    /**
+     * Sets the Stream ID
+     */
+    void setStreamID(uint8_t id) {
+        hdr.stream_id = id;
+        setCRC();
+    }
+
+    /**
     * Takes a vector of bytes and loads it into the Frame's internal
     * data structures. This is designed to take bytes received off the
     * air, so it performs FEC decoding, and will return a PKT_STATUS_ENUM

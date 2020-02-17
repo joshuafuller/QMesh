@@ -93,6 +93,7 @@ void load_settings_from_flash(void) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
         f = fopen("/fs/settings.json", "w");
         radio_cb["Mode"] = "Mesh Normal";
+        radio_cb["Address"] = DEFAULT_ADDRESS;
         radio_cb["Frequency"] = RADIO_FREQUENCY;
         radio_cb["BW"] = RADIO_BANDWIDTH;
         radio_cb["CR"] = RADIO_CODERATE;
@@ -127,6 +128,7 @@ void load_settings_from_flash(void) {
     fflush(f);
     fclose(f);
     debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());
+    debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb["Address"].get<int>());
     debug_printf(DBG_INFO, "Frequency: %d\r\n", radio_cb["Frequency"].get<int>());
     debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb["BW"].get<int>());
     debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb["CR"].get<int>());

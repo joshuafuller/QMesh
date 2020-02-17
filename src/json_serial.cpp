@@ -187,6 +187,7 @@ void rx_serial_thread_fn(void) {
             send_status();           
         }
         else if(type_str == "Reboot") {
+            debug_printf(DBG_INFO, "Received reboot command\r\n");
             send_status();
             reboot_system();
         }
