@@ -30,8 +30,12 @@ volatile bool rebooting = false;
 
 void reboot_system(void) {
 	rebooting = true;
-	mesh_protocol_thread.join();
-	beacon_thread.join();
+    if(mesh_protocol_thread.get_state() != Thread::Deleted) {
+	    mesh_protocol_thread.join();
+    }
+    if(beacon_thread.get_state() != Thread::Deleted) {
+	    beacon_thread.join();
+    }
     debug_printf(DBG_INFO, "Unmounting the filesystem...\r\n");
     int err = fs.unmount();
     debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(\r\n" : "OK\r\n"));
