@@ -35,7 +35,7 @@ settings = {}
 settings["Address"] = node_id
 settings["Freq"] = 433000000
 settings["BW"] = 1 # 0=125KHz, 1=250KHz, 2=500KHz
-settings["CR"] = 4
+settings["CR"] = 1
 settings["SF"] = 7
 settings["Preamble Length"] = 16
 settings["Preamble Slots"] = 1
