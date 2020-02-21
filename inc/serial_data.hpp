@@ -51,6 +51,11 @@ int debug_printf(const enum DBG_TYPES, const char *fmt, ...);
  */
 int debug_printf_clean(const enum DBG_TYPES, const char *fmt, ...);
 
+/**
+ * Outputs received frames over the UART.
+ */
+void rx_frame_ser_thread_fn(void);
+
 typedef enum {
     PKT_OK = 0,
     PKT_FEC_FAIL,
@@ -223,12 +228,27 @@ public:
     }
 
     /**
+     * Gets the sender's address.
+     */
+    uint32_t getSender(void) {
+        return hdr.sender;
+    }
+
+    /**
      * Sets the Stream ID
      */
     void setStreamID(uint8_t id) {
         hdr.stream_id = id;
         setCRC();
     }
+
+    /**
+     * Returns the Stream ID
+     */
+    uint32_t getStreamID(void) {
+        return hdr.stream_id;
+    }
+
 
     /**
     * Takes a vector of bytes and loads it into the Frame's internal

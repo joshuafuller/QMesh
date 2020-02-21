@@ -179,6 +179,9 @@ void nv_log_fn(void) {
         log_frame->getRxStats(rssi, snr, rx_size);
 		time_t my_time = time(NULL);
 		log_json["Timestamp"] = ctime(&my_time);
+        log_json["Sender"] = (int) log_frame->getSender();
+        log_json["TTL"] = (int) log_frame->getTTL();
+        log_json["Stream ID"] = (int) log_frame->getStreamID();
         log_json["RSSI"] = (int) rssi;
         log_json["SNR"] = (int) snr;
         log_json["RX Size"] = (int) rx_size;

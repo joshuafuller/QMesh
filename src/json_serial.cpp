@@ -37,11 +37,15 @@ void tx_serial_thread_fn(void) {
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
         str_sptr->push_back('\r');
         str_sptr->push_back('\n');
-        for(int i = 0; i < str_sptr->length(); i++) {
+//        for(int i = 0; i < str_sptr->length(); i++) {
+#if 0            
             while(!pc.writeable());
 #warning Consider using printf instead
             pc.putc(str_sptr->c_str()[i]);
-        }
+#else
+            pc.printf("%s", str_sptr->c_str());
+#endif
+//        }
     }
 }
 

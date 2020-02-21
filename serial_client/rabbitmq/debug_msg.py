@@ -50,6 +50,7 @@ def dbg_process(ch, method, properties, body):
         cr = parsed_line["CR"]
         mode = parsed_line["Mode"]
     elif parsed_line["Type"] == "Frame":
+        frame = {}
         frame["HDR Pkt Type"] = parsed_line["HDR Pkt Type"]
         frame["HDR Stream ID"] = parsed_line["HDR Stream ID"]
         frame["HDR TTL"] = parsed_line["HDR TTL"]
@@ -57,9 +58,12 @@ def dbg_process(ch, method, properties, body):
         frame["HDR Pre Offset"] = parsed_line["HDR Pre Offset"]
         frame["HDR Num Sym Offset"] = parsed_line["HDR Num Sym Offset"]
         frame["HDR Sym Offset"] = parsed_line["HDR Sym Offset"]
-        frame["Header CRC"] = parsed_line["Header CRC"]
-        frame["Data CRC"] = parsed_line["Data CRC"]
-        frame["Data Payload"] = base64.base64decode(frame["Data Payload"])
+        frame["CRC"] = parsed_line["CRC"]
+        print("-------------------")
+        print("Received Frame")
+        print(frame)
+        print("-------------------")
+
 
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))

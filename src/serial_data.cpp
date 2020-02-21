@@ -160,7 +160,7 @@ void Frame::saveToJSON(MbedJSONValue &json) {
     json["HDR Sym Offset"] = int(hdr.sym_offset);
     json["CRC"] = int(crc.s);
     size_t b64_len;
-    MBED_ASSERT(mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size()) == 0);
+    mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size());
     unsigned char *b64_buf = new unsigned char[b64_len];
     MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, data.data(), data.size()) == 0);
     json["Data Payload"] = b64_buf;
@@ -279,4 +279,17 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
 
     va_end(args);
     return 0;
+}
+
+
+void rx_frame_ser_thread_fn(void) {
+    for(;;) {
+        auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
+        MbedJSONValue json;
+        rx_frame_sptr->saveToJSON(json);
+        json["Frame Type"] = "RX";
+        auto json_str = make_shared<string>(json.serialize());
+        json_str->push_back('\n');
+        enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);	
+    }
 }

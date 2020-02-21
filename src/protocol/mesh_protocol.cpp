@@ -115,11 +115,15 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 
 void RadioTiming::waitFullSlots(const size_t num_slots) {
     //uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
-    uint32_t wait_duration_us = pkt_time_us;
+    int32_t wait_duration_us = pkt_time_us;
     //debug_printf(DBG_INFO, "xWait duration is %d\r\n", wait_duration_us);
     //debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
     wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
+    if(wait_duration_us-elapsed_us < 0) {
+        debug_printf(DBG_WARN, "Wait duration is negative!\r\n");
+        return;
+    }
     wait_us(wait_duration_us-elapsed_us);
 }
 
@@ -337,7 +341,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { 
                 led3.LEDSolid();
-                size_t rx_frame_size = rx_frame_sptr->serializeCoded(tx_frame_buf);
+                size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 //ThisThread::sleep_for(250);
                 MBED_ASSERT(rx_frame_size < 256);
 				radio_timing.waitFullSlots(1);

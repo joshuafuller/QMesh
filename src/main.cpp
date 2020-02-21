@@ -28,10 +28,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 RawSerial pc(USBTX, USBRX);
 RawSerial pc2(PA_11, PA_12);
 JSONSerial rx_json_ser, tx_json_ser;
-Thread tx_serial_thread(4096), rx_serial_thread(4096);
-Thread mesh_protocol_thread(4096);
-Thread beacon_thread(4096);
-Thread nv_log_thread(4096);
+Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
+Thread rx_serial_thread(osPriorityNormal, 4096, NULL, "RX-SERIAL");
+Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM");
+Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
+Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
+Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
 
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
@@ -74,6 +76,7 @@ int main()
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
     rx_serial_thread.start(rx_serial_thread_fn);
+    rx_frame_thread.start(rx_frame_ser_thread_fn);
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
 
