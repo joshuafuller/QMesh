@@ -57,7 +57,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_FREQUENCY 433000000
 #define HOP_CHANNEL_SIZE 12500
 // Number of past packets to check the current packet against
-#define PKT_CHK_HISTORY 32
+#define PKT_CHK_HISTORY 256
 // Maximum frame size. Currently the LoRa frame max, but may expand
 //  to accommodate fragmentation in the future.
 #define MAX_FRAME_SIZE 256

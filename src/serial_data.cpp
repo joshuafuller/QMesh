@@ -85,7 +85,7 @@ uint16_t Frame::calcCRC(void) {
 
 uint32_t Frame::calcUniqueCRC(void) {
     vector<uint8_t> buf;
-    buf.push_back((uint8_t) hdr.type);
+    //buf.push_back((uint8_t) hdr.type);
     buf.push_back((uint8_t) hdr.stream_id);
     copy(data.begin(), data.end(), back_inserter(buf));
     MbedCRC<POLY_32BIT_ANSI, 32> ct;

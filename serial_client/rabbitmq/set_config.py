@@ -22,12 +22,13 @@ import json
 import base64
 import pika
 
-if len(sys.argv) < 3:
-    print("USAGE: set_config.py <node id> <beacon interval>")
+if len(sys.argv) < 4:
+    print("USAGE: set_config.py <node id> <beacon interval> <power level (dBm)>")
     sys.exit(0)
 
 node_id = int(sys.argv[1])
 beacon_interval = int(sys.argv[2])
+tx_power = int(sys.argv[3])
 
 # For now, let's just put the configuration in the same
 # file as the one setting it.
@@ -35,8 +36,8 @@ settings = {}
 settings["Address"] = node_id
 settings["Freq"] = 433000000
 settings["BW"] = 1 # 0=125KHz, 1=250KHz, 2=500KHz
-settings["CR"] = 1
-settings["SF"] = 7
+settings["CR"] = 0
+settings["SF"] = 9
 settings["Preamble Length"] = 16
 settings["Preamble Slots"] = 1
 beacon_str = "KG5VBY Beacon Test"
@@ -47,7 +48,7 @@ settings["FEC Algorithm"] = "Convolutional"
 settings["Conv Rate"] = 2
 settings["Conv Order"] = 9
 settings["Reed-Solomon Number Roots"] = 8
-settings["TX Power"] = 0
+settings["TX Power"] = tx_power
 settings["CW Test Mode"] = 0 # 1 to enable CW test mode
 settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
 settings["Test FEC"] = 0 # 1 to enable an FEC test

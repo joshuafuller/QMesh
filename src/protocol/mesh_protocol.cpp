@@ -48,20 +48,24 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
     uint32_t crc = rx_frame->calcUniqueCRC();
     bool ret_val = false;
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
-        ret_val = true;
         past_crc.push_back(crc);
         past_timestamp.insert(pair<uint32_t, time_t>(crc, time(NULL)));
         if(past_crc.size() > PKT_CHK_HISTORY) {
+            debug_printf(DBG_INFO, "Exceeded history length\r\n");
+            past_timestamp.erase(*(past_crc.begin()));
             past_crc.pop_front();
-            past_timestamp.erase(crc);
         }
     }
     else { // redundant packet was found. Check the age of the packet.
         map<uint32_t, time_t>::iterator it = past_timestamp.find(crc);
+        ret_val = true;
         if(time(NULL) - it->second > 60) { // Ignore entries more than a minute old
-            ret_val = true;
+            ret_val = false;
             past_crc.erase(find(past_crc.begin(), past_crc.end(), crc));
             past_timestamp.erase(crc);
+            past_crc.push_back(crc);
+            past_timestamp.insert(pair<uint32_t, time_t>(crc, time(NULL)));
+            debug_printf(DBG_INFO, "Exceeded age\r\n");
         }
     }
     return ret_val;
@@ -222,6 +226,7 @@ void mesh_protocol_fsm(void) {
         int radio_pwr = radio_cb["TX Power"].get<int>();  
         int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
         int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
+        int my_addr = radio_cb["Address"].get<int>();
         switch(state) {
             case WAIT_FOR_RX:
 #if 0
@@ -256,15 +261,17 @@ void mesh_protocol_fsm(void) {
                         led2.LEDSolid();
                         rx_frame_sptr = make_shared<Frame>(fec);
                         PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(rx_radio_event->buf);
-                        rx_frame_sptr->incrementTTL();
-						rx_frame_sptr->tx_frame = false;
                         if(pkt_status == PKT_OK) {
-                            enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_sptr);
-                            if(!checkRedundantPkt(rx_frame_sptr)) {
+                            auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
+                            rx_frame_sptr->setSender(my_addr);
+                            rx_frame_sptr->incrementTTL();
+						    rx_frame_sptr->tx_frame = false;
+                            if(checkRedundantPkt(rx_frame_sptr)) {
                                 debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
                                 state = WAIT_FOR_RX;
                             }
                             else {
+                                enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                                 radio.standby();
                                 radio.set_channel(radio_frequency.getWobbledFreq());
                                 state = RETRANSMIT_PACKET;
@@ -311,18 +318,20 @@ void mesh_protocol_fsm(void) {
 #endif
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { 
+                led2.LEDOff();
                 led3.LEDSolid();
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send(tx_frame_buf.data(), tx_frame_size);
 				tx_frame_sptr->tx_frame = true;
+                checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
 				radio_timing.startTimer();
                 debug_printf(DBG_INFO, "dequeued\r\n");
-                led3.LEDOff();
+                led3.LEDOff(); 
                 radio_timing.waitFullSlots(2);
                 debug_printf(DBG_INFO, "waiting for slots\r\n");
                 state = CHECK_TX_QUEUE;
