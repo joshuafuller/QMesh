@@ -1,0 +1,3 @@
+Good packets: 580
+Bad packets: 31
+Packet Receive Rate: 0.949264
