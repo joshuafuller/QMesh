@@ -70,7 +70,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_BEACON_MSG "KG5VBY Auto Station\r\n"
 
 // Frequency wobble parameters
-#define FREQ_WOBBLE_PROPORTION 0.1f // Fraction of the bandwidth we'll wobble over
+#define FREQ_WOBBLE_PROPORTION 0.2f // Fraction of the bandwidth we'll wobble over
 
 // Symbol delay granularity
 #define SYM_FRAC_DELAY_SLOTS 8
