@@ -26,7 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 
 RawSerial pc(USBTX, USBRX);
-RawSerial pc2(PA_11, PA_12);
+// Should PA_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
+RawSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
 Thread rx_serial_thread(osPriorityNormal, 4096, NULL, "RX-SERIAL");

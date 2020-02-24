@@ -23,7 +23,9 @@
         "flash-io2":           { "value": "D9" },
         "flash-io3":           { "value": "A2" },
         "flash-pwr":           { "value": "A0" },
-        "radio-pwr":           { "value": "A1" }
+        "radio-pwr":           { "value": "A1" },
+        "alt_uart_tx":         { "value": "PA_11" },
+        "alt_uart_rx":         { "value": "PA_12" }
     },
     "target_overrides": {
         "*": {
@@ -38,6 +40,11 @@
             "lora.device-eui": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }",
             "lora.application-eui": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }",
             "lora.application-key": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }"
+        },
+
+        "NUCLEO_F746ZG" : {
+            "alt_uart_tx":       "PA_9" ,
+            "alt_uart_rx":       "PA_10"
         },
 
         "K64F": {
