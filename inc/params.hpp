@@ -63,6 +63,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_FRAME_SIZE 256
 
 // Various parameters for the TDMA meshing
+#define PADDING_TIME_US 10000.f
 #define FRAME_PADDING_SYMS 8 // Amount of padding between frames, in symbols
 #define RADIO_PREAMBLE_SLOTS 4 // Number of TDMA slots for the preamble offsets
 

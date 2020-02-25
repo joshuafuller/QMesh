@@ -421,4 +421,20 @@ T dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) {
     return mail_item;
 }
 
+template <class T>
+T dequeue_mail_timeout(Mail<T, QUEUE_DEPTH> &mail_queue, const uint32_t timeout_ms, bool &timed_out) {
+    T mail_item; 
+    timed_out = false;
+    osEvent evt = mail_queue.get(timeout_ms);
+    if(evt.status == osEventMail) {
+        mail_item = *((T *) evt.value.p);
+        mail_queue.free((T *) evt.value.p);
+    }
+    else if(evt.status == osEventTimeout) {
+        timed_out = true;
+    }
+    else { MBED_ASSERT(false); }
+    return mail_item;
+}
+
 #endif /* SERIAL_DATA_HPP */

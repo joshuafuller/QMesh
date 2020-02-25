@@ -119,7 +119,7 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 
 void RadioTiming::waitFullSlots(const size_t num_slots) {
     //uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
-    int32_t wait_duration_us = pkt_time_us;
+    int32_t wait_duration_us = pkt_time_us + PADDING_TIME_US;
     //debug_printf(DBG_INFO, "xWait duration is %d\r\n", wait_duration_us);
     //debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
     wait_duration_us *= num_slots;
@@ -227,34 +227,19 @@ void mesh_protocol_fsm(void) {
         int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
         int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
         int my_addr = radio_cb["Address"].get<int>();
+        int32_t my_frequency = radio_cb["Frequency"].get<int>();
         switch(state) {
             case WAIT_FOR_RX:
-#if 0
-                radio.set_rx_config(MODEM_LORA, radio_bw,
-                            radio_sf, radio_cr,
-                            0, radio_preamble_len,
-                            radio_preamble_len, RADIO_FIXED_LEN,
-                            full_pkt_len,
-                            RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
-                            RADIO_INVERT_IQ, false);
-#endif
-				radio.set_channel((int32_t) radio_cb["Frequency"].get<int>());
                 if(!rx_active) {
                     debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
                     rx_active = true;
+                    radio.set_channel(my_frequency);
                     radio.receive();
                 }
-                //debug_printf(DBG_INFO, "Received\r\n");
-                //ThisThread::sleep_for(250);
-                if(!rx_radio_evt_mail.empty()) {
-                    //debug_printf(DBG_INFO, "Dequeuing\r\n");
-                    //ThisThread::sleep_for(250);
-                    rx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail);
-                    //debug_printf(DBG_INFO, "Dequeued\r\n");
-                    //ThisThread::sleep_for(250);
+                bool timed_out;
+                rx_radio_event = dequeue_mail_timeout<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail, 50, timed_out);
+                if(!timed_out) {
 					radio_timing.startTimer();
-                    //debug_printf(DBG_INFO, "Received2\r\n");
-                    //ThisThread::sleep_for(250);
                     if(rx_radio_event->evt_enum == RX_DONE_EVT) {
                         debug_printf(DBG_INFO, "Received a packet\r\n");
                         // Load up the frame
@@ -271,8 +256,8 @@ void mesh_protocol_fsm(void) {
                                 state = WAIT_FOR_RX;
                             }
                             else {
-                                enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                                 radio.standby();
+                                enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                                 radio.set_channel(radio_frequency.getWobbledFreq());
                                 state = RETRANSMIT_PACKET;
                             }
@@ -304,7 +289,7 @@ void mesh_protocol_fsm(void) {
                 else {
                     state = WAIT_FOR_RX;
                 }
-                ThisThread::sleep_for(50);
+                //ThisThread::sleep_for(50);
             break;
 
             case TX_PACKET:
