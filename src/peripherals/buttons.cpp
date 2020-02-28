@@ -45,9 +45,6 @@ void reboot_system(void) {
     NVIC_SystemReset();
 }
 
-// Pin name for the button is USER_BUTTON
-//PushButton button(USER_BUTTON);
-
 PushButton::PushButton(PinName button) {
     was_pressed = false;
     btn = new InterruptIn(button);

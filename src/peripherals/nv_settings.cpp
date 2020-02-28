@@ -194,36 +194,5 @@ void nv_log_fn(void) {
         comb_str.clear();
         fclose(f);
         f = fopen("/fs/logfile.json", "a+");
-#if 0
-        write_count += 1;
-        if(write_count == 10) {
-            write_count = 0;
-            fwrite(comb_str.c_str(), 1, comb_str.size(), f);
-            ThisThread::sleep_for(100);
-		    fclose(f);
-            ThisThread::sleep_for(100);
-            comb_str.clear();
-            debug_printf(DBG_INFO, "Committing logs to disk\r\n");
-            for(;;) {
-                FILE *f = fopen("/fs/logfile.json", "a+");
-                if(f) {
-                    break;
-                }
-            }
-        }
-#endif
-        // Check whether we've filled up the SPI flash chip. If so,
-        //  delete the file and reopen it as an empty one.
-#if 0        
-        struct stat st;
-        stat("/fs/logfile.json", &st);
-        if(st.st_size > 12000000) {
-            debug_printf(DBG_INFO, "Log file is >12MB. Deleting and reopening...\r\n");
-            fclose(f);
-            fopen("/fs/logfile.json", "w+");
-            MBED_ASSERT(f);
-        }
-    }
-#endif
     }
 }

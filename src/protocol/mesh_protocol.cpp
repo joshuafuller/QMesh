@@ -118,10 +118,7 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 }
 
 void RadioTiming::waitFullSlots(const size_t num_slots) {
-    //uint32_t wait_duration_us = pkt_time_us + (4-1)*pre_time_us + sym_time_us;
     int32_t wait_duration_us = pkt_time_us + PADDING_TIME_US;
-    //debug_printf(DBG_INFO, "xWait duration is %d\r\n", wait_duration_us);
-    //debug_printf(DBG_INFO, "pkt_time %d; pre_time %d; sym_time %d\r\n", pkt_time_us, pre_time_us, sym_time_us);
     wait_duration_us *= num_slots;
     int elapsed_us = tmr.read_us();
     if(wait_duration_us-elapsed_us < 0) {
@@ -160,7 +157,6 @@ void RadioTiming::startTimer(void) {
 
 uint32_t RadioFrequency::getWobbledFreq(void) {
     float wobble_factor = (float) rand() / (float) RAND_MAX;
-    //debug_printf(DBG_INFO, "Wobble proportion is %f\r\n", wobble_factor);
     float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
     int wobble_direction = rand() & 0x1;
     wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
@@ -211,11 +207,6 @@ void mesh_protocol_fsm(void) {
     std::shared_ptr<Frame> rx_frame_sptr;
     static vector<uint8_t> tx_frame_buf(256), rx_frame_buf(256);
     for(;;) {
-#if 0
-        while(true) {
-            ThisThread::sleep_for(1000);
-        }
-#endif
 		if(rebooting) {
 			return;
 		}
@@ -289,18 +280,10 @@ void mesh_protocol_fsm(void) {
                 else {
                     state = WAIT_FOR_RX;
                 }
-                //ThisThread::sleep_for(50);
             break;
 
             case TX_PACKET:
                 rx_active = false;
-#if 0
-                radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
-                            radio_bw, radio_sf,
-                            radio_cr, radio_preamble_len,
-                            RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
-                            RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
-#endif
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { 
                 led2.LEDOff();
@@ -325,18 +308,10 @@ void mesh_protocol_fsm(void) {
 
             case RETRANSMIT_PACKET:
                 rx_active = false;
-#if 0
-                radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
-                            radio_bw, radio_sf,
-                            radio_cr, radio_preamble_len,
-                            RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
-                            RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
-#endif
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
-                //ThisThread::sleep_for(250);
                 MBED_ASSERT(rx_frame_size < 256);
 				radio_timing.waitFullSlots(1);
                 radio.send(rx_frame_buf.data(), rx_frame_size);

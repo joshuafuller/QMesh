@@ -37,15 +37,7 @@ void tx_serial_thread_fn(void) {
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
         str_sptr->push_back('\r');
         str_sptr->push_back('\n');
-//        for(int i = 0; i < str_sptr->length(); i++) {
-#if 0            
-            while(!pc.writeable());
-#warning Consider using printf instead
-            pc.putc(str_sptr->c_str()[i]);
-#else
-            pc.printf("%s", str_sptr->c_str());
-#endif
-//        }
+        pc.printf("%s", str_sptr->c_str());
     }
 }
 
@@ -236,18 +228,12 @@ void rx_serial_thread_fn(void) {
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
 				if(!reading_log) {
-					//debug_printf(DBG_INFO, "Now opening the file\r\n");
-					//ThisThread::sleep_for(250);
 					reading_log = true;
 					f = fopen("/fs/logfile.json", "r");
 					MBED_ASSERT(f);
-					//debug_printf(DBG_INFO, "Opened the file\r\n");
-					//ThisThread::sleep_for(250);
 				}
 				string cur_line;
 				get_next_line(f, cur_line);
-				//debug_printf(DBG_INFO, "Got next line %s\r\n", cur_line.c_str());
-				//ThisThread::sleep_for(250);
 				if(cur_line.size() == 0) {
 					MbedJSONValue log_json;
                     log_json["Type"] = "Log Entry";
@@ -298,57 +284,17 @@ void rx_serial_thread_fn(void) {
 					reboot_system();	
 				}
 				else {
-					//debug_printf(DBG_INFO, "Getting ready to send out\r\n");
 					ThisThread::sleep_for(250);
                     MbedJSONValue log_json;
                     parse(log_json, cur_line.c_str());
-					//debug_printf(DBG_INFO, "Parsed\r\n");
-					//ThisThread::sleep_for(250);
                     log_json["Type"] = "Boot Log Entry";
 					log_json["Count"] = line_count++;	
-					//debug_printf(DBG_INFO, "More parsed\r\n");
-					//ThisThread::sleep_for(250);	
-					log_json.serialize();
-					//debug_printf(DBG_INFO, "More parsed1 %s\r\n", log_json.serialize().c_str());
-					//ThisThread::sleep_for(250);						
-                    auto json_str = make_shared<string>(log_json.serialize());
-					//debug_printf(DBG_INFO, "More parsed2\r\n");
-					//ThisThread::sleep_for(250);					
+					log_json.serialize();						
+                    auto json_str = make_shared<string>(log_json.serialize());					
                     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
 				}
             }
         }		
-#if 0
-        else if(type_str == "Read Boot Log") {
-			stay_in_management = true;
-			if(current_mode == MANAGEMENT) {
-				if(!reading_bootlog) {
-					reading_bootlog = true;
-					f.open("/fs/boot_log.json", ios_base::in);
-					MBED_ASSERT(f);
-				}
-                string line;
-				if(!getline(f, line)) {
-					MbedJSONValue log_json; 
-                    log_json["Type"] = "Boot Log Entry";
-					log_json["Count"] = -1;					
-                    auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
-					ThisThread::sleep_for(1000);
-					debug_printf(DBG_WARN, "Now rebooting...\r\n");					
-					reboot_system();	
-				}
-				else {
-                    MbedJSONValue log_json;
-                    parse(log_json, line.c_str());
-                    log_json["Type"] = "Boot Log Entry";
-					log_json["Count"] = line_count++;					
-                    auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
-				}
-            }
-        }
-#endif
         else {
             continue;
         }
