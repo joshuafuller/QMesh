@@ -87,7 +87,7 @@ void init_filesystem(void) {
 
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Stats on settings.json\r\n");
-    FILE *f;
+    FILE *f;    
     f = fopen("/fs/settings.json", "r");
     if(!f) {
         debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
@@ -114,7 +114,7 @@ void load_settings_from_flash(void) {
         string settings_str = radio_cb.serialize();
         fprintf(f, "%s\r\n", settings_str.c_str());
         fflush(f);
-        fclose(f);
+        fclose(f); 
         f = fopen("/fs/settings.json", "r");
         MBED_ASSERT(f);
     }
@@ -124,7 +124,10 @@ void load_settings_from_flash(void) {
 	vector<char> linebuf(file_stat.st_size);
 	fread(linebuf.data(), 1, file_stat.st_size, f);
 	debug_printf(DBG_INFO, "Read from file: %s\r\n", linebuf.data());
-    parse(radio_cb, linebuf.data());
+    ThisThread::sleep_for(1000);
+    MbedJSONValue tmp_json;
+    parse(tmp_json, linebuf.data());
+    radio_cb = tmp_json;
     fflush(f);
     fclose(f);
     debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());

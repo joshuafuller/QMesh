@@ -155,6 +155,7 @@ void RadioTiming::startTimer(void) {
     tmr.start();
 }
 
+#if 0
 uint32_t RadioFrequency::getWobbledFreq(void) {
     float wobble_factor = (float) rand() / (float) RAND_MAX;
     float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
@@ -164,8 +165,9 @@ uint32_t RadioFrequency::getWobbledFreq(void) {
     //debug_printf(DBG_INFO, "Wobbled freq is %d\r\n", wobbled_freq);
     return wobbled_freq;   
 }
+#endif
 
-RadioFrequency radio_frequency;
+//RadioFrequency radio_frequency;
 
 static enum {
     WAIT_FOR_RX,
@@ -218,13 +220,15 @@ void mesh_protocol_fsm(void) {
         int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
         int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
         int my_addr = radio_cb["Address"].get<int>();
-        int32_t my_frequency = radio_cb["Frequency"].get<int>();
+        static mt19937 rand_gen(my_addr);
+        int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
+        static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
         switch(state) {
             case WAIT_FOR_RX:
                 if(!rx_active) {
                     debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
                     rx_active = true;
-                    radio.set_channel(my_frequency);
+                    radio.set_channel(radio_freq);
                     radio.receive();
                 }
                 bool timed_out;
@@ -249,7 +253,8 @@ void mesh_protocol_fsm(void) {
                             else {
                                 radio.standby();
                                 enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
-                                radio.set_channel(radio_frequency.getWobbledFreq());
+                                //radio.set_channel(radio_frequency.getWobbledFreq());
+                                radio.set_channel(freq_dist(rand_gen));
                                 state = RETRANSMIT_PACKET;
                             }
                         }
@@ -271,10 +276,12 @@ void mesh_protocol_fsm(void) {
 
             case CHECK_TX_QUEUE:
                 //debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
+                //ThisThread::sleep_for(250);
                 if(!tx_frame_mail.empty()) {
                     tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
                     tx_frame_sptr->fec = fec;
-                    radio.set_channel(radio_frequency.getWobbledFreq());
+                    //radio.set_channel(radio_frequency.getWobbledFreq());
+                    radio.set_channel(freq_dist(rand_gen));
                     state = TX_PACKET;
                 }
                 else {

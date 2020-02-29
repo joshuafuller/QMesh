@@ -137,11 +137,15 @@ void startTimer(void);
  * order to increase the likelihood of successful capture of one of the
  * transmissions.
  */
+#if 0
 class RadioFrequency {
 public:
+#if 0
     /// Get a wobbled frequency.
     uint32_t getWobbledFreq(void);
+#endif
 };
+#endif
 
 extern RadioTiming radio_timing;
 
