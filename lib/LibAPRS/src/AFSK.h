@@ -1,11 +1,8 @@
 #ifndef AFSK_H
 #define AFSK_H
 
-#include "device.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-//#include <avr/pgmspace.h>
+#include <cstdint>
+#include <cstdio>
 #include "FIFO.h"
 #include "HDLC.h"
 
@@ -43,6 +40,7 @@ inline static uint8_t sinSample(uint16_t i) {
 #define CONFIG_AFSK_RXTIMEOUT 0
 #define CONFIG_AFSK_PREAMBLE_LEN 150UL
 #define CONFIG_AFSK_TRAILER_LEN 50UL
+#define CONFIG_AFSK_DAC_SAMPLERATE 9600
 #define SAMPLERATE 9600
 #define BITRATE    1200
 #define SAMPLESPERBIT (SAMPLERATE / BITRATE)
@@ -65,9 +63,6 @@ typedef struct Hdlc
 
 typedef struct Afsk
 {
-    // Stream access to modem
-    FILE fd;
-
     // General values
     Hdlc hdlc;                              // We need a link control structure
     uint16_t preambleLength;                // Length of sync preamble
@@ -113,26 +108,10 @@ typedef struct Afsk
 
 #define AFSK_DAC_IRQ_START()   do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = true; } while (0)
 #define AFSK_DAC_IRQ_STOP()    do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = false; } while (0)
-#define AFSK_DAC_INIT()        do { DAC_DDR |= 0xF8; } while (0)
 
-// Here's some macros for controlling the RX/TX LEDs
-// THE _INIT() functions writes to the DDRB register
-// to configure the pins as output pins, and the _ON()
-// and _OFF() functions writes to the PORT registers
-// to turn the pins on or off.
-#define LED_TX_INIT() do { LED_DDR |= _BV(1); } while (0)
-#define LED_TX_ON()   do { LED_PORT |= _BV(1); } while (0)
-#define LED_TX_OFF()  do { LED_PORT &= ~_BV(1); } while (0)
-
-#define LED_RX_INIT() do { LED_DDR |= _BV(2); } while (0)
-#define LED_RX_ON()   do { LED_PORT |= _BV(2); } while (0)
-#define LED_RX_OFF()  do { LED_PORT &= ~_BV(2); } while (0)
-
-void AFSK_init(Afsk *afsk);
+void AFSK_init(Afsk &afsk);
 void AFSK_transmit(char *buffer, size_t size);
-void AFSK_poll(Afsk *afsk);
 
 void afsk_putchar(char c);
-int afsk_getchar(void);
 
 #endif

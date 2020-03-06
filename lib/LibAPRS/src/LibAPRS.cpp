@@ -1,13 +1,12 @@
-#include "Arduino.h"
+//#include "Arduino.h"
 #include "AFSK.h"
 #include "AX25.h"
 
 Afsk modem;
 AX25Ctx AX25;
-extern void aprs_msg_callback(struct AX25Msg *msg);
+//xtern void aprs_msg_callback(struct AX25Msg *msg);
 #define countof(a) sizeof(a)/sizeof(a[0])
 
-int LibAPRS_vref = REF_3V3;
 bool LibAPRS_open_squelch = false;
 
 unsigned long custom_preamble = 350UL;
@@ -51,17 +50,13 @@ size_t lastMessageLen;
 bool message_autoAck = false;
 /////////////////////////
 
+
 void APRS_init(int reference, bool open_squelch) {
-    LibAPRS_vref = reference;
     LibAPRS_open_squelch = open_squelch;
 
-    AFSK_init(&modem);
-    ax25_init(&AX25, aprs_msg_callback);
+    //ax25_init(&AX25, aprs_msg_callback);
 }
 
-void APRS_poll(void) {
-    ax25_poll(&AX25);
-}
 
 void APRS_setCallsign(char *call, int ssid) {
     memset(CALL, 0, 7);
@@ -73,6 +68,7 @@ void APRS_setCallsign(char *call, int ssid) {
     CALL_SSID = ssid;
 }
 
+
 void APRS_setDestination(char *call, int ssid) {
     memset(DST, 0, 7);
     int i = 0;
@@ -82,6 +78,7 @@ void APRS_setDestination(char *call, int ssid) {
     }
     DST_SSID = ssid;
 }
+
 
 void APRS_setPath1(char *call, int ssid) {
     memset(PATH1, 0, 7);
@@ -93,6 +90,7 @@ void APRS_setPath1(char *call, int ssid) {
     PATH1_SSID = ssid;
 }
 
+
 void APRS_setPath2(char *call, int ssid) {
     memset(PATH2, 0, 7);
     int i = 0;
@@ -102,6 +100,7 @@ void APRS_setPath2(char *call, int ssid) {
     }
     PATH2_SSID = ssid;
 }
+
 
 void APRS_setMessageDestination(char *call, int ssid) {
     memset(message_recip, 0, 7);
@@ -113,13 +112,16 @@ void APRS_setMessageDestination(char *call, int ssid) {
     message_recip_ssid = ssid;
 }
 
+
 void APRS_setPreamble(unsigned long pre) {
     custom_preamble = pre;
 }
 
+
 void APRS_setTail(unsigned long tail) {
     custom_tail = tail;
 }
+
 
 void APRS_useAlternateSymbolTable(bool use) {
     if (use) {
@@ -129,9 +131,11 @@ void APRS_useAlternateSymbolTable(bool use) {
     }
 }
 
+
 void APRS_setSymbol(char sym) {
     symbol = sym;
 }
+
 
 void APRS_setLat(char *lat) {
     memset(latitude, 0, 9);
@@ -142,6 +146,7 @@ void APRS_setLat(char *lat) {
     }
 }
 
+
 void APRS_setLon(char *lon) {
     memset(longtitude, 0, 10);
     int i = 0;
@@ -151,11 +156,13 @@ void APRS_setLon(char *lon) {
     }
 }
 
+
 void APRS_setPower(int s) {
     if (s >= 0 && s < 10) {
         power = s;
     }
 }
+
 
 void APRS_setHeight(int s) {
     if (s >= 0 && s < 10) {
@@ -163,11 +170,13 @@ void APRS_setHeight(int s) {
     }
 }
 
+
 void APRS_setGain(int s) {
     if (s >= 0 && s < 10) {
         gain = s;
     }
 }
+
 
 void APRS_setDirectivity(int s) {
     if (s >= 0 && s < 10) {
@@ -175,7 +184,9 @@ void APRS_setDirectivity(int s) {
     }
 }
 
+
 void APRS_printSettings() {
+#if 0
     Serial.println(F("LibAPRS Settings:"));
     Serial.print(F("Callsign:     ")); Serial.print(CALL); Serial.print(F("-")); Serial.println(CALL_SSID);
     Serial.print(F("Destination:  ")); Serial.print(DST); Serial.print(F("-")); Serial.println(DST_SSID);
@@ -192,7 +203,9 @@ void APRS_printSettings() {
     Serial.print(F("Directivity:  ")); if (directivity < 10) { Serial.println(directivity); } else { Serial.println(F("N/A")); }
     Serial.print(F("Latitude:     ")); if (latitude[0] != 0) { Serial.println(latitude); } else { Serial.println(F("N/A")); }
     Serial.print(F("Longtitude:   ")); if (longtitude[0] != 0) { Serial.println(longtitude); } else { Serial.println(F("N/A")); }
+#endif
 }
+
 
 void APRS_sendPkt(void *_buffer, size_t length) {
 
@@ -217,6 +230,7 @@ void APRS_sendPkt(void *_buffer, size_t length) {
 
     ax25_sendVia(&AX25, path, countof(path), buffer, length);
 }
+
 
 // Dynamic RAM usage of this function is 30 bytes
 void APRS_sendLoc(void *_buffer, size_t length) {
@@ -254,6 +268,7 @@ void APRS_sendLoc(void *_buffer, size_t length) {
     APRS_sendPkt(packet, payloadLength);
     free(packet);
 }
+
 
 // Dynamic RAM usage of this function is 18 bytes
 void APRS_sendMsg(void *_buffer, size_t length) {
@@ -308,41 +323,9 @@ void APRS_sendMsg(void *_buffer, size_t length) {
     free(packet);
 }
 
+
 void APRS_msgRetry() {
     message_seq--;
     APRS_sendMsg(lastMessage, lastMessageLen);
 }
 
-// For getting free memory, from:
-// http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1213583720/15
-
-extern unsigned int __heap_start;
-extern void *__brkval;
-
-struct __freelist {
-  size_t sz;
-  struct __freelist *nx;
-};
-
-extern struct __freelist *__flp;
-
-int freeListSize() {
-  struct __freelist* current;
-  int total = 0;
-  for (current = __flp; current; current = current->nx) {
-    total += 2; /* Add two bytes for the memory block's header  */
-    total += (int) current->sz;
-  }
-  return total;
-}
-
-int freeMemory() {
-  int free_memory;
-  if ((int)__brkval == 0) {
-    free_memory = ((int)&free_memory) - ((int)&__heap_start);
-  } else {
-    free_memory = ((int)&free_memory) - ((int)__brkval);
-    free_memory += freeListSize();
-  }
-  return free_memory;
-}

@@ -1,7 +1,4 @@
-#include "Arduino.h"
-#include <stdint.h>
-#include <stdbool.h>
-
+#include <cstdint>
 #include "FIFO.h"
 #include "CRC-CCIT.h"
 #include "HDLC.h"

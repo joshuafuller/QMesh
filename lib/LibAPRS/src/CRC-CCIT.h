@@ -4,7 +4,6 @@
 #define CRC_CCIT_H
 
 #include <stdint.h>
-//#include <avr/pgmspace.h>
 
 #define CRC_CCIT_INIT_VAL ((uint16_t)0xFFFF)
 
