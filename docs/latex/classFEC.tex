@@ -19,6 +19,15 @@ Inheritance diagram for F\+EC\+:\nopagebreak
 \mbox{\Hypertarget{classFEC_acff6b0b2b7266f73c45eeea65b7579f2}\label{classFEC_acff6b0b2b7266f73c45eeea65b7579f2}} 
 \hyperlink{classFEC_acff6b0b2b7266f73c45eeea65b7579f2}{F\+EC} (void)
 \begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFEC_afd2e56aa5a55ba34dc52e01a221c1350}\label{classFEC_afd2e56aa5a55ba34dc52e01a221c1350}} 
+string \hyperlink{classFEC_afd2e56aa5a55ba34dc52e01a221c1350}{get\+Name} (void)
+\begin{DoxyCompactList}\small\item\em Gets the name of the \hyperlink{classFEC}{F\+EC}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFEC_a412f924c0a2486c9ada8f0ce751bf707}\label{classFEC_a412f924c0a2486c9ada8f0ce751bf707}} 
+void {\bfseries interleave\+Bits} (vector$<$ uint8\+\_\+t $>$ \&bytes)
+\item 
+\mbox{\Hypertarget{classFEC_a05559ebcd5b4b3b05d8a92aa2954ff52}\label{classFEC_a05559ebcd5b4b3b05d8a92aa2954ff52}} 
+void {\bfseries deinterleave\+Bits} (vector$<$ uint8\+\_\+t $>$ \&bytes)
+\item 
 virtual size\+\_\+t \hyperlink{classFEC_a6504a5f7d5e1344538c25ed5481d0adb}{get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
 \item 
 virtual size\+\_\+t \hyperlink{classFEC_abc86f45390c50b3cd90cade73a137355}{encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
@@ -40,18 +49,27 @@ static bool {\bfseries get\+Bit} (const vector$<$ uint8\+\_\+t $>$ \&bytes, cons
 \item 
 \mbox{\Hypertarget{classFEC_aa04c28eb445a68ef068632734126529c}\label{classFEC_aa04c28eb445a68ef068632734126529c}} 
 static void {\bfseries set\+Bit} (const bool bit, const size\+\_\+t pos, vector$<$ uint8\+\_\+t $>$ \&bytes)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classFEC_a485fba806c7ca5fe2834e97e21aae0d5}\label{classFEC_a485fba806c7ca5fe2834e97e21aae0d5}} 
-static void {\bfseries interleave\+Bits} (const vector$<$ uint8\+\_\+t $>$ \&bytes, vector$<$ uint8\+\_\+t $>$ \&int\+\_\+bytes)
+\mbox{\Hypertarget{classFEC_a74f7ba3b1a613afc35c4dc9526350919}\label{classFEC_a74f7ba3b1a613afc35c4dc9526350919}} 
+void {\bfseries create\+Interleaving\+Matrix} (void)
+\end{DoxyCompactItemize}
+\subsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classFEC_ae2d118ea33372eae137b01915b465b3f}\label{classFEC_ae2d118ea33372eae137b01915b465b3f}} 
-static void {\bfseries deinterleave\+Bits} (const vector$<$ uint8\+\_\+t $>$ \&int\+\_\+bytes, vector$<$ uint8\+\_\+t $>$ \&bytes)
+\mbox{\Hypertarget{classFEC_a428e7fa69a863496db90089dd4bc21a1}\label{classFEC_a428e7fa69a863496db90089dd4bc21a1}} 
+static void {\bfseries whiten\+Data} (vector$<$ uint8\+\_\+t $>$ \&buf, uint16\+\_\+t seed)
 \end{DoxyCompactItemize}
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
 \item 
 \mbox{\Hypertarget{classFEC_abb6d143bc35d00ea0d302b1f70af9851}\label{classFEC_abb6d143bc35d00ea0d302b1f70af9851}} 
 string {\bfseries name}
+\item 
+\mbox{\Hypertarget{classFEC_a4ba61eb1ae60f3d485fce36872c5ce63}\label{classFEC_a4ba61eb1ae60f3d485fce36872c5ce63}} 
+vector$<$ pair$<$ int, int $>$ $>$ {\bfseries interleave\+\_\+matrix}
 \end{DoxyCompactItemize}
 
 

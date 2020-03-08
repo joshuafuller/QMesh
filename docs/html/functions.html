@@ -71,14 +71,11 @@ $(function() {
 
 
 <h3><a id="index_c"></a>- c -</h3><ul>
-<li>calculateHeaderCrc()
-: <a class="el" href="classFrame.html#a3e45887a93b6173b1c56bde945524e8c">Frame</a>
+<li>calcCRC()
+: <a class="el" href="classFrame.html#a84bdc2969f8962206c89c5f916d80973">Frame</a>
 </li>
-<li>calculatePayloadCrc()
-: <a class="el" href="classFrame.html#adbb695fdefa7b4c464620b0048016b0a">Frame</a>
-</li>
-<li>calculateUniqueCrc()
-: <a class="el" href="classFrame.html#a0fe074218aa4420b0706eb699c7f7172">Frame</a>
+<li>calcUniqueCRC()
+: <a class="el" href="classFrame.html#a690b8728c8215af874f0aed2c643d7a6">Frame</a>
 </li>
 <li>calcWaitPreamble()
 : <a class="el" href="classRadioTiming.html#ab88cd62548731862e0a24c986bf095bf">RadioTiming</a>
@@ -86,14 +83,11 @@ $(function() {
 <li>calcWaitSymbol()
 : <a class="el" href="classRadioTiming.html#a763af2aa098f7b311c149dbf062d40a2">RadioTiming</a>
 </li>
-<li>checkHeaderCrc()
-: <a class="el" href="classFrame.html#a34b08e2484da3872ea9e4de67d22be3e">Frame</a>
+<li>checkCRC()
+: <a class="el" href="classFrame.html#a99bf5c1a41572292c07bc9699a491a96">Frame</a>
 </li>
-<li>checkIntegrity()
-: <a class="el" href="classFrame.html#ac7d53c381360cbcddf3f11ef89281c32">Frame</a>
-</li>
-<li>checkPayloadCrc()
-: <a class="el" href="classFrame.html#ae073ad6b06c8eb7073b390474e869224">Frame</a>
+<li>codedSize()
+: <a class="el" href="classFrame.html#a14c155e1ec94aa20bec722efaff3b25d">Frame</a>
 </li>
 <li>computeTimes()
 : <a class="el" href="classRadioTiming.html#a8889214bcfb05975e8ed121a59ffb06c">RadioTiming</a>
@@ -114,8 +108,8 @@ $(function() {
 <li>decodeSoft()
 : <a class="el" href="classFEC.html#a04ba63e1dac24bed00f448f9198e34b5">FEC</a>
 </li>
-<li>deserialize()
-: <a class="el" href="classFrame.html#ab60c3b088b1ef6b52944fa1f4b5ae51a">Frame</a>
+<li>deserializeCoded()
+: <a class="el" href="classFrame.html#a448b698fd4cc568e610f87f971354dc6">Frame</a>
 </li>
 </ul>
 
@@ -150,19 +144,16 @@ $(function() {
 <li>getBER()
 : <a class="el" href="classFEC.html#aaf1d4259c61fe117e086ad07871d22a3">FEC</a>
 </li>
+<li>getCRC()
+: <a class="el" href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">Frame</a>
+</li>
 <li>getEncSize()
 : <a class="el" href="classFEC.html#a6504a5f7d5e1344538c25ed5481d0adb">FEC</a>
 , <a class="el" href="classFECConv.html#a3b49acf69440d2677e3181513b9f3592">FECConv</a>
 , <a class="el" href="classFECRSV.html#a62fb01c152dad2e043ae75bbacfd928c">FECRSV</a>
 </li>
-<li>getFullPktSize()
-: <a class="el" href="classFrame.html#abdb6ae194b6afb15b37d770f12ad9343">Frame</a>
-</li>
-<li>getHdrSize()
-: <a class="el" href="classFrame.html#a26923d6e02a809d968809d33b0ee9175">Frame</a>
-</li>
-<li>getHeaderCrc()
-: <a class="el" href="classFrame.html#a1a98d502e3c3c0b189aa20b12588f4e8">Frame</a>
+<li>getName()
+: <a class="el" href="classFEC.html#afd2e56aa5a55ba34dc52e01a221c1350">FEC</a>
 </li>
 <li>getOffsets()
 : <a class="el" href="classFrame.html#a66f58470ee6679fb3a46ad7a43e3c5be">Frame</a>
@@ -170,20 +161,20 @@ $(function() {
 <li>getPayload()
 : <a class="el" href="classFrame.html#a57812c04330da0044155af6e2ca9a6a7">Frame</a>
 </li>
-<li>getPayloadCrc()
-: <a class="el" href="classFrame.html#ae3023171ac602d6be2ccb8e613c586c7">Frame</a>
-</li>
-<li>getPktSize()
-: <a class="el" href="classFrame.html#ae72614ae975e9f856acd3b51dd65ecfc">Frame</a>
-</li>
 <li>getPressed()
 : <a class="el" href="classPushButton.html#af56d1fde8fcbb9e1c4cfceb56be5b467">PushButton</a>
 </li>
 <li>getRxStats()
 : <a class="el" href="classFrame.html#a1caeb909554201233a464f24e445a5e1">Frame</a>
 </li>
+<li>getSender()
+: <a class="el" href="classFrame.html#a278632174fa07b44e0dabda3d010f000">Frame</a>
+</li>
 <li>getSettings()
 : <a class="el" href="classJSONSerial.html#a7f12c4a3d58ff26825fbaf8694b7a795">JSONSerial</a>
+</li>
+<li>getStreamID()
+: <a class="el" href="classFrame.html#ad98ec7af45ce4428441d2ee3d28bae7e">Frame</a>
 </li>
 <li>getTTL()
 : <a class="el" href="classFrame.html#a383e2fb65096f4c57f37b48d3d74f07d">Frame</a>
@@ -191,8 +182,12 @@ $(function() {
 <li>getType()
 : <a class="el" href="classJSONSerial.html#ace1745d4308eef3f8734186cf55496e2">JSONSerial</a>
 </li>
-<li>getWobbledFreq()
-: <a class="el" href="classRadioFrequency.html#af98f36e60d90b65ef009767fc1af4d79">RadioFrequency</a>
+</ul>
+
+
+<h3><a id="index_h"></a>- h -</h3><ul>
+<li>hdrSize()
+: <a class="el" href="classFrame.html#a1807a7893ff81064f2e92cb5ab065ec8">Frame</a>
 </li>
 </ul>
 
@@ -232,6 +227,16 @@ $(function() {
 </ul>
 
 
+<h3><a id="index_o"></a>- o -</h3><ul>
+<li>operator!=()
+: <a class="el" href="classFrame.html#a604c4dc3f60c7bf4e861243f05ace9b8">Frame</a>
+</li>
+<li>operator==()
+: <a class="el" href="classFrame.html#a40746b6fa955619e185573c1d38022dd">Frame</a>
+</li>
+</ul>
+
+
 <h3><a id="index_p"></a>- p -</h3><ul>
 <li>prettyPrint()
 : <a class="el" href="classFrame.html#a6fba80bf6639a27ffffb612e64cf6844">Frame</a>
@@ -246,23 +251,26 @@ $(function() {
 <li>saveToJSON()
 : <a class="el" href="classFrame.html#a865ca9d9a5584fab74d7258012509b97">Frame</a>
 </li>
-<li>serialize()
-: <a class="el" href="classFrame.html#a8c202575665982edb827d04d2c2b705c">Frame</a>
+<li>serializeCoded()
+: <a class="el" href="classFrame.html#a2e1d5421694ec4d9abaadacf2b32b492">Frame</a>
 </li>
 <li>setBeaconPayload()
 : <a class="el" href="classFrame.html#a950b26a59c2f2716662a09964e5d95d1">Frame</a>
 </li>
-<li>setHeaderCrc()
-: <a class="el" href="classFrame.html#a28beb1dcca5f9f385a10dddab7e4ce21">Frame</a>
+<li>setCRC()
+: <a class="el" href="classFrame.html#aa2de2dba681188cc6ab00dfc42d15426">Frame</a>
 </li>
 <li>setOffsets()
 : <a class="el" href="classFrame.html#ac25e10413d25b9eea2502c1c02d457e0">Frame</a>
 </li>
-<li>setPayloadCrc()
-: <a class="el" href="classFrame.html#a4d4af8b70c703f5e8f9869fb157f9af1">Frame</a>
-</li>
 <li>setRxStats()
 : <a class="el" href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">Frame</a>
+</li>
+<li>setSender()
+: <a class="el" href="classFrame.html#a982cef0e09413cc2a5c55298e2cc7c5f">Frame</a>
+</li>
+<li>setStreamID()
+: <a class="el" href="classFrame.html#af3cc33a2ea60ad84db23097da6df3c31">Frame</a>
 </li>
 <li>settingsToJSON()
 : <a class="el" href="classJSONSerial.html#a32f2b8eddfbe137c61b77352445e1e09">JSONSerial</a>

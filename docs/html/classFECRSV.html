@@ -117,6 +117,16 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFEC.html#acff6b0b2b7266f73c45eeea65b7579f2">FEC</a> (void)</td></tr>
 <tr class="memdesc:acff6b0b2b7266f73c45eeea65b7579f2 inherit pub_methods_classFEC"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor. <br /></td></tr>
 <tr class="separator:acff6b0b2b7266f73c45eeea65b7579f2 inherit pub_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd2e56aa5a55ba34dc52e01a221c1350 inherit pub_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="afd2e56aa5a55ba34dc52e01a221c1350"></a>
+string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFEC.html#afd2e56aa5a55ba34dc52e01a221c1350">getName</a> (void)</td></tr>
+<tr class="memdesc:afd2e56aa5a55ba34dc52e01a221c1350 inherit pub_methods_classFEC"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the name of the <a class="el" href="classFEC.html">FEC</a>. <br /></td></tr>
+<tr class="separator:afd2e56aa5a55ba34dc52e01a221c1350 inherit pub_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a412f924c0a2486c9ada8f0ce751bf707 inherit pub_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="a412f924c0a2486c9ada8f0ce751bf707"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>interleaveBits</b> (vector&lt; uint8_t &gt; &amp;bytes)</td></tr>
+<tr class="separator:a412f924c0a2486c9ada8f0ce751bf707 inherit pub_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05559ebcd5b4b3b05d8a92aa2954ff52 inherit pub_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="a05559ebcd5b4b3b05d8a92aa2954ff52"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>deinterleaveBits</b> (vector&lt; uint8_t &gt; &amp;bytes)</td></tr>
+<tr class="separator:a05559ebcd5b4b3b05d8a92aa2954ff52 inherit pub_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04ba63e1dac24bed00f448f9198e34b5 inherit pub_methods_classFEC"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFEC.html#a04ba63e1dac24bed00f448f9198e34b5">decodeSoft</a> (const vector&lt; uint8_t &gt; &amp;enc_msg, vector&lt; uint8_t &gt; &amp;dec_msg, const float snr)</td></tr>
 <tr class="separator:a04ba63e1dac24bed00f448f9198e34b5 inherit pub_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaccc10a6d38eb005f1f287119bdaecd8 inherit pub_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="aaccc10a6d38eb005f1f287119bdaecd8"></a>
@@ -148,6 +158,9 @@ correct_convolutional *&#160;</td><td class="memItemRight" valign="bottom"><b>co
 <tr class="memitem:abb6d143bc35d00ea0d302b1f70af9851 inherit pro_attribs_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="abb6d143bc35d00ea0d302b1f70af9851"></a>
 string&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td></tr>
 <tr class="separator:abb6d143bc35d00ea0d302b1f70af9851 inherit pro_attribs_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ba61eb1ae60f3d485fce36872c5ce63 inherit pro_attribs_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="a4ba61eb1ae60f3d485fce36872c5ce63"></a>
+vector&lt; pair&lt; int, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>interleave_matrix</b></td></tr>
+<tr class="separator:a4ba61eb1ae60f3d485fce36872c5ce63 inherit pro_attribs_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -160,12 +173,14 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>getBit</b> (co
 <tr class="memitem:aa04c28eb445a68ef068632734126529c inherit pub_static_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="aa04c28eb445a68ef068632734126529c"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>setBit</b> (const bool bit, const size_t pos, vector&lt; uint8_t &gt; &amp;bytes)</td></tr>
 <tr class="separator:aa04c28eb445a68ef068632734126529c inherit pub_static_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a485fba806c7ca5fe2834e97e21aae0d5 inherit pub_static_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="a485fba806c7ca5fe2834e97e21aae0d5"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>interleaveBits</b> (const vector&lt; uint8_t &gt; &amp;bytes, vector&lt; uint8_t &gt; &amp;int_bytes)</td></tr>
-<tr class="separator:a485fba806c7ca5fe2834e97e21aae0d5 inherit pub_static_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2d118ea33372eae137b01915b465b3f inherit pub_static_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="ae2d118ea33372eae137b01915b465b3f"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>deinterleaveBits</b> (const vector&lt; uint8_t &gt; &amp;int_bytes, vector&lt; uint8_t &gt; &amp;bytes)</td></tr>
-<tr class="separator:ae2d118ea33372eae137b01915b465b3f inherit pub_static_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classFEC"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classFEC')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classFEC.html">FEC</a></td></tr>
+<tr class="memitem:a74f7ba3b1a613afc35c4dc9526350919 inherit pro_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="a74f7ba3b1a613afc35c4dc9526350919"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>createInterleavingMatrix</b> (void)</td></tr>
+<tr class="separator:a74f7ba3b1a613afc35c4dc9526350919 inherit pro_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_static_methods_classFEC"><td colspan="2" onclick="javascript:toggleInherit('pro_static_methods_classFEC')"><img src="closed.png" alt="-"/>&#160;Static Protected Member Functions inherited from <a class="el" href="classFEC.html">FEC</a></td></tr>
+<tr class="memitem:a428e7fa69a863496db90089dd4bc21a1 inherit pro_static_methods_classFEC"><td class="memItemLeft" align="right" valign="top"><a id="a428e7fa69a863496db90089dd4bc21a1"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>whitenData</b> (vector&lt; uint8_t &gt; &amp;buf, uint16_t seed)</td></tr>
+<tr class="separator:a428e7fa69a863496db90089dd4bc21a1 inherit pro_static_methods_classFEC"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Derived class that implements Reed-Solomon-Viterbi (RSV) forward error correction. The convolutional coding is the same as implemented in the <a class="el" href="classFECConv.html">FECConv</a> class, and the Reed-Solomon outer code is a (256,223) code. </p>

@@ -4,6 +4,16 @@
 
 {\ttfamily \#include $<$serial\+\_\+data.\+hpp$>$}
 
+
+
+Collaboration diagram for Frame\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=168pt]{classFrame__coll__graph}
+\end{center}
+\end{figure}
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
@@ -12,41 +22,56 @@ union \hyperlink{unionFrame_1_1crc16__t}{crc16\+\_\+t}
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
+\mbox{\Hypertarget{classFrame_a1c9286c3bbd1c0393baefa0ee4120a04}\label{classFrame_a1c9286c3bbd1c0393baefa0ee4120a04}} 
+struct {\bfseries \+\_\+\+\_\+attribute\+\_\+\+\_\+} ((\+\_\+\+\_\+packed\+\_\+\+\_\+))
+\item 
 \hyperlink{classFrame_ad2e5946cf41d4817e750500acf05d02b}{Frame} ()
 \item 
 \hyperlink{classFrame_a230b093686859a8d614b81b19f0433a0}{Frame} (shared\+\_\+ptr$<$ \hyperlink{classFEC}{F\+EC} $>$ my\+\_\+fec)
 \item 
+\mbox{\Hypertarget{classFrame_abc897b6f22eabc8d4b2f12821bce1649}\label{classFrame_abc897b6f22eabc8d4b2f12821bce1649}} 
+void {\bfseries serialize} (vector$<$ uint8\+\_\+t $>$ \&ser\+\_\+frame)
+\item 
+\mbox{\Hypertarget{classFrame_a40746b6fa955619e185573c1d38022dd}\label{classFrame_a40746b6fa955619e185573c1d38022dd}} 
+bool \hyperlink{classFrame_a40746b6fa955619e185573c1d38022dd}{operator==} (const \hyperlink{classFrame}{Frame} \&L)
+\begin{DoxyCompactList}\small\item\em Equality operator for Frames. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_a604c4dc3f60c7bf4e861243f05ace9b8}\label{classFrame_a604c4dc3f60c7bf4e861243f05ace9b8}} 
+bool \hyperlink{classFrame_a604c4dc3f60c7bf4e861243f05ace9b8}{operator!=} (const \hyperlink{classFrame}{Frame} \&L)
+\begin{DoxyCompactList}\small\item\em Inequality operator for Frames. \end{DoxyCompactList}\item 
 void \hyperlink{classFrame_ae0082da89627bc112701735227104eec}{load\+Test\+Frame} (vector$<$ uint8\+\_\+t $>$ \&buf)
 \item 
 size\+\_\+t \hyperlink{classFrame_a57812c04330da0044155af6e2ca9a6a7}{get\+Payload} (vector$<$ uint8\+\_\+t $>$ \&buf)
 \item 
 size\+\_\+t \hyperlink{classFrame_a950b26a59c2f2716662a09964e5d95d1}{set\+Beacon\+Payload} (string \&beacon\+\_\+str)
 \item 
-size\+\_\+t \hyperlink{classFrame_a8c202575665982edb827d04d2c2b705c}{serialize} (vector$<$ uint8\+\_\+t $>$ \&buf)
+\mbox{\Hypertarget{classFrame_ad72ae3be73f6ef1ac0db92014f7eda7f}\label{classFrame_ad72ae3be73f6ef1ac0db92014f7eda7f}} 
+void {\bfseries whiten} (const vector$<$ uint8\+\_\+t $>$ \&buf, vector$<$ uint8\+\_\+t $>$ \&wht\+\_\+buf, const uint16\+\_\+t seed)
 \item 
-uint16\+\_\+t \hyperlink{classFrame_a3e45887a93b6173b1c56bde945524e8c}{calculate\+Header\+Crc} (void)
+size\+\_\+t \hyperlink{classFrame_a2e1d5421694ec4d9abaadacf2b32b492}{serialize\+Coded} (vector$<$ uint8\+\_\+t $>$ \&buf)
 \item 
-uint16\+\_\+t \hyperlink{classFrame_adbb695fdefa7b4c464620b0048016b0a}{calculate\+Payload\+Crc} (void)
+uint16\+\_\+t \hyperlink{classFrame_a84bdc2969f8962206c89c5f916d80973}{calc\+C\+RC} (void)
 \item 
-uint32\+\_\+t \hyperlink{classFrame_a0fe074218aa4420b0706eb699c7f7172}{calculate\+Unique\+Crc} (void)
+uint32\+\_\+t \hyperlink{classFrame_a690b8728c8215af874f0aed2c643d7a6}{calc\+Unique\+C\+RC} (void)
 \item 
-bool \hyperlink{classFrame_a34b08e2484da3872ea9e4de67d22be3e}{check\+Header\+Crc} (void)
+bool \hyperlink{classFrame_a99bf5c1a41572292c07bc9699a491a96}{check\+C\+RC} (void)
 \item 
-bool \hyperlink{classFrame_ae073ad6b06c8eb7073b390474e869224}{check\+Payload\+Crc} (void)
+uint16\+\_\+t \hyperlink{classFrame_aa2de2dba681188cc6ab00dfc42d15426}{set\+C\+RC} (void)
 \item 
-bool \hyperlink{classFrame_ac7d53c381360cbcddf3f11ef89281c32}{check\+Integrity} (void)
+void \hyperlink{classFrame_a982cef0e09413cc2a5c55298e2cc7c5f}{set\+Sender} (uint8\+\_\+t sender\+\_\+addr)
 \item 
-uint16\+\_\+t \hyperlink{classFrame_a28beb1dcca5f9f385a10dddab7e4ce21}{set\+Header\+Crc} (void)
+uint32\+\_\+t \hyperlink{classFrame_a278632174fa07b44e0dabda3d010f000}{get\+Sender} (void)
 \item 
-uint16\+\_\+t \hyperlink{classFrame_a4d4af8b70c703f5e8f9869fb157f9af1}{set\+Payload\+Crc} (void)
+void \hyperlink{classFrame_af3cc33a2ea60ad84db23097da6df3c31}{set\+Stream\+ID} (uint8\+\_\+t id)
 \item 
-P\+K\+T\+\_\+\+S\+T\+A\+T\+U\+S\+\_\+\+E\+N\+UM \hyperlink{classFrame_ab60c3b088b1ef6b52944fa1f4b5ae51a}{deserialize} (shared\+\_\+ptr$<$ vector$<$ uint8\+\_\+t $>$$>$ buf)
+uint32\+\_\+t \hyperlink{classFrame_ad98ec7af45ce4428441d2ee3d28bae7e}{get\+Stream\+ID} (void)
+\item 
+P\+K\+T\+\_\+\+S\+T\+A\+T\+U\+S\+\_\+\+E\+N\+UM \hyperlink{classFrame_a448b698fd4cc568e610f87f971354dc6}{deserialize\+Coded} (const shared\+\_\+ptr$<$ vector$<$ uint8\+\_\+t $>$$>$ buf)
 \item 
 void \hyperlink{classFrame_a46139e40aaadc65459f1d094e6f7fc20}{increment\+T\+TL} (void)
 \item 
 uint8\+\_\+t \hyperlink{classFrame_a383e2fb65096f4c57f37b48d3d74f07d}{get\+T\+TL} (void)
 \item 
-size\+\_\+t \hyperlink{classFrame_abdb6ae194b6afb15b37d770f12ad9343}{get\+Full\+Pkt\+Size} (void)
+size\+\_\+t \hyperlink{classFrame_a14c155e1ec94aa20bec722efaff3b25d}{coded\+Size} (void)
 \item 
 void \hyperlink{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}{get\+Offsets} (uint8\+\_\+t $\ast$pre\+\_\+offset, uint8\+\_\+t $\ast$nsym\+\_\+offset, uint8\+\_\+t $\ast$sym\+\_\+offset)
 \item 
@@ -56,9 +81,7 @@ void \hyperlink{classFrame_a1caeb909554201233a464f24e445a5e1}{get\+Rx\+Stats} (i
 \item 
 void \hyperlink{classFrame_a6f48959a7d7971ad25d25bf5c5237b22}{set\+Rx\+Stats} (const int16\+\_\+t rssi, const int8\+\_\+t snr, const uint16\+\_\+t rx\+\_\+size)
 \item 
-uint16\+\_\+t \hyperlink{classFrame_ae3023171ac602d6be2ccb8e613c586c7}{get\+Payload\+Crc} (void)
-\item 
-uint16\+\_\+t \hyperlink{classFrame_a1a98d502e3c3c0b189aa20b12588f4e8}{get\+Header\+Crc} (void)
+uint16\+\_\+t \hyperlink{classFrame_ab6513ed996012cf14141615c1ed47e38}{get\+C\+RC} (void)
 \item 
 void \hyperlink{classFrame_a6fba80bf6639a27ffffb612e64cf6844}{pretty\+Print} (const enum D\+B\+G\+\_\+\+T\+Y\+P\+ES dbg\+\_\+type)
 \item 
@@ -71,21 +94,22 @@ void \hyperlink{classFrame_a865ca9d9a5584fab74d7258012509b97}{save\+To\+J\+S\+ON
 \item 
 static size\+\_\+t \hyperlink{classFrame_a2e2305d6c4488220574ec0415fe217b5}{size} (void)
 \item 
-static size\+\_\+t \hyperlink{classFrame_ae72614ae975e9f856acd3b51dd65ecfc}{get\+Pkt\+Size} (void)
-\item 
-static size\+\_\+t \hyperlink{classFrame_a26923d6e02a809d968809d33b0ee9175}{get\+Hdr\+Size} (void)
+static size\+\_\+t \hyperlink{classFrame_a1807a7893ff81064f2e92cb5ab065ec8}{hdr\+Size} (void)
 \end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
+\mbox{\Hypertarget{classFrame_aaaf5414ab06dbc255a62733d927807f4}\label{classFrame_aaaf5414ab06dbc255a62733d927807f4}} 
+{\bfseries frame\+\_\+hdr}
+\item 
 \mbox{\Hypertarget{classFrame_a0a718492a654222c71e8ff0b8e06fb8a}\label{classFrame_a0a718492a654222c71e8ff0b8e06fb8a}} 
 shared\+\_\+ptr$<$ \hyperlink{classFEC}{F\+EC} $>$ {\bfseries fec}
+\item 
+\mbox{\Hypertarget{classFrame_afc760f301f1c03205d4862bbaad0442a}\label{classFrame_afc760f301f1c03205d4862bbaad0442a}} 
+bool {\bfseries tx\+\_\+frame}
 \end{DoxyCompactItemize}
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
-\item 
-\mbox{\Hypertarget{classFrame_a759fe5f07a329e7bff5bdd2c1620f7b0}\label{classFrame_a759fe5f07a329e7bff5bdd2c1620f7b0}} 
-frame\+\_\+pkt {\bfseries pkt}
 \item 
 \mbox{\Hypertarget{classFrame_ab7a6e2ca6c4b411ff1f2152ec1261539}\label{classFrame_ab7a6e2ca6c4b411ff1f2152ec1261539}} 
 int16\+\_\+t {\bfseries rssi}
@@ -99,26 +123,17 @@ uint16\+\_\+t {\bfseries rx\+\_\+size}
 \mbox{\Hypertarget{classFrame_adfe9288bf669e9ae08f61fa18b82c47f}\label{classFrame_adfe9288bf669e9ae08f61fa18b82c47f}} 
 P\+K\+T\+\_\+\+S\+T\+A\+T\+U\+S\+\_\+\+E\+N\+UM {\bfseries pkt\+\_\+status}
 \end{DoxyCompactItemize}
-\subsection*{Private Member Functions}
-\begin{DoxyCompactItemize}
-\item 
-\mbox{\Hypertarget{classFrame_a1c9286c3bbd1c0393baefa0ee4120a04}\label{classFrame_a1c9286c3bbd1c0393baefa0ee4120a04}} 
-struct {\bfseries \+\_\+\+\_\+attribute\+\_\+\+\_\+} ((\+\_\+\+\_\+packed\+\_\+\+\_\+))
-\item 
-\mbox{\Hypertarget{classFrame_a1c9286c3bbd1c0393baefa0ee4120a04}\label{classFrame_a1c9286c3bbd1c0393baefa0ee4120a04}} 
-struct {\bfseries \+\_\+\+\_\+attribute\+\_\+\+\_\+} ((\+\_\+\+\_\+packed\+\_\+\+\_\+))
-\end{DoxyCompactItemize}
 \subsection*{Private Attributes}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classFrame_aaaf5414ab06dbc255a62733d927807f4}\label{classFrame_aaaf5414ab06dbc255a62733d927807f4}} 
-{\bfseries frame\+\_\+hdr}
-\item 
-\mbox{\Hypertarget{classFrame_a567a07ca040d22e622bfe70936aaddc7}\label{classFrame_a567a07ca040d22e622bfe70936aaddc7}} 
-{\bfseries frame\+\_\+pkt}
+\mbox{\Hypertarget{classFrame_ad08ba2f639e3c7d47cde39ecec16c4d3}\label{classFrame_ad08ba2f639e3c7d47cde39ecec16c4d3}} 
+frame\+\_\+hdr {\bfseries hdr}
 \item 
 \mbox{\Hypertarget{classFrame_a0af26264fb9334282af8ad0ab6253bf0}\label{classFrame_a0af26264fb9334282af8ad0ab6253bf0}} 
 vector$<$ uint8\+\_\+t $>$ {\bfseries data}
+\item 
+\mbox{\Hypertarget{classFrame_aeb9531efc4880ad98cce77dd266e2f74}\label{classFrame_aeb9531efc4880ad98cce77dd266e2f74}} 
+\hyperlink{unionFrame_1_1crc16__t}{crc16\+\_\+t} {\bfseries crc}
 \end{DoxyCompactItemize}
 
 
@@ -152,47 +167,35 @@ Constructor that loads a specific \hyperlink{classFEC}{F\+EC}.
 
 
 \subsection{Member Function Documentation}
-\mbox{\Hypertarget{classFrame_a3e45887a93b6173b1c56bde945524e8c}\label{classFrame_a3e45887a93b6173b1c56bde945524e8c}} 
-\index{Frame@{Frame}!calculate\+Header\+Crc@{calculate\+Header\+Crc}}
-\index{calculate\+Header\+Crc@{calculate\+Header\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{calculate\+Header\+Crc()}{calculateHeaderCrc()}}
-{\footnotesize\ttfamily uint16\+\_\+t Frame\+::calculate\+Header\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{classFrame_a84bdc2969f8962206c89c5f916d80973}\label{classFrame_a84bdc2969f8962206c89c5f916d80973}} 
+\index{Frame@{Frame}!calc\+C\+RC@{calc\+C\+RC}}
+\index{calc\+C\+RC@{calc\+C\+RC}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{calc\+C\+R\+C()}{calcCRC()}}
+{\footnotesize\ttfamily uint16\+\_\+t Frame\+::calc\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
-Calculate the C\+RC of the header. \mbox{\Hypertarget{classFrame_adbb695fdefa7b4c464620b0048016b0a}\label{classFrame_adbb695fdefa7b4c464620b0048016b0a}} 
-\index{Frame@{Frame}!calculate\+Payload\+Crc@{calculate\+Payload\+Crc}}
-\index{calculate\+Payload\+Crc@{calculate\+Payload\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{calculate\+Payload\+Crc()}{calculatePayloadCrc()}}
-{\footnotesize\ttfamily uint16\+\_\+t Frame\+::calculate\+Payload\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+Calculate the C\+RC of the payload. \mbox{\Hypertarget{classFrame_a690b8728c8215af874f0aed2c643d7a6}\label{classFrame_a690b8728c8215af874f0aed2c643d7a6}} 
+\index{Frame@{Frame}!calc\+Unique\+C\+RC@{calc\+Unique\+C\+RC}}
+\index{calc\+Unique\+C\+RC@{calc\+Unique\+C\+RC}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{calc\+Unique\+C\+R\+C()}{calcUniqueCRC()}}
+{\footnotesize\ttfamily uint32\+\_\+t Frame\+::calc\+Unique\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
-Calculate the C\+RC of the payload. \mbox{\Hypertarget{classFrame_a0fe074218aa4420b0706eb699c7f7172}\label{classFrame_a0fe074218aa4420b0706eb699c7f7172}} 
-\index{Frame@{Frame}!calculate\+Unique\+Crc@{calculate\+Unique\+Crc}}
-\index{calculate\+Unique\+Crc@{calculate\+Unique\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{calculate\+Unique\+Crc()}{calculateUniqueCrc()}}
-{\footnotesize\ttfamily uint32\+\_\+t Frame\+::calculate\+Unique\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+Calculate the C\+RC for the \char`\"{}unique\char`\"{} information. The unique information consists of the type, stream\+\_\+id, and payload. This method is primarily used to provide a unique \char`\"{}hash\char`\"{} for Frames in order to determine whether the Q\+Mesh node has seen them before. \mbox{\Hypertarget{classFrame_a99bf5c1a41572292c07bc9699a491a96}\label{classFrame_a99bf5c1a41572292c07bc9699a491a96}} 
+\index{Frame@{Frame}!check\+C\+RC@{check\+C\+RC}}
+\index{check\+C\+RC@{check\+C\+RC}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{check\+C\+R\+C()}{checkCRC()}}
+{\footnotesize\ttfamily bool Frame\+::check\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Calculate the C\+RC for the \char`\"{}unique\char`\"{} information. The unique information consists of the type, stream\+\_\+id, and payload. This method is primarily used to provide a unique \char`\"{}hash\char`\"{} for Frames in order to determine whether the Q\+Mesh node has seen them before. \mbox{\Hypertarget{classFrame_a34b08e2484da3872ea9e4de67d22be3e}\label{classFrame_a34b08e2484da3872ea9e4de67d22be3e}} 
-\index{Frame@{Frame}!check\+Header\+Crc@{check\+Header\+Crc}}
-\index{check\+Header\+Crc@{check\+Header\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{check\+Header\+Crc()}{checkHeaderCrc()}}
-{\footnotesize\ttfamily bool Frame\+::check\+Header\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+Check the payload C\+RC, returning True if a match, False if not. \mbox{\Hypertarget{classFrame_a14c155e1ec94aa20bec722efaff3b25d}\label{classFrame_a14c155e1ec94aa20bec722efaff3b25d}} 
+\index{Frame@{Frame}!coded\+Size@{coded\+Size}}
+\index{coded\+Size@{coded\+Size}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{coded\+Size()}{codedSize()}}
+{\footnotesize\ttfamily size\+\_\+t Frame\+::coded\+Size (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
-Check the header C\+RC, returning True if a match, False if not. \mbox{\Hypertarget{classFrame_ac7d53c381360cbcddf3f11ef89281c32}\label{classFrame_ac7d53c381360cbcddf3f11ef89281c32}} 
-\index{Frame@{Frame}!check\+Integrity@{check\+Integrity}}
-\index{check\+Integrity@{check\+Integrity}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{check\+Integrity()}{checkIntegrity()}}
-{\footnotesize\ttfamily bool Frame\+::check\+Integrity (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
-
-Check the integrity of the packet by checking both the header and payload C\+R\+Cs \mbox{\Hypertarget{classFrame_ae073ad6b06c8eb7073b390474e869224}\label{classFrame_ae073ad6b06c8eb7073b390474e869224}} 
-\index{Frame@{Frame}!check\+Payload\+Crc@{check\+Payload\+Crc}}
-\index{check\+Payload\+Crc@{check\+Payload\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{check\+Payload\+Crc()}{checkPayloadCrc()}}
-{\footnotesize\ttfamily bool Frame\+::check\+Payload\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
-
-Check the payload C\+RC, returning True if a match, False if not. \mbox{\Hypertarget{classFrame_ab60c3b088b1ef6b52944fa1f4b5ae51a}\label{classFrame_ab60c3b088b1ef6b52944fa1f4b5ae51a}} 
-\index{Frame@{Frame}!deserialize@{deserialize}}
-\index{deserialize@{deserialize}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{deserialize()}{deserialize()}}
-{\footnotesize\ttfamily P\+K\+T\+\_\+\+S\+T\+A\+T\+U\+S\+\_\+\+E\+N\+UM Frame\+::deserialize (\begin{DoxyParamCaption}\item[{shared\+\_\+ptr$<$ vector$<$ uint8\+\_\+t $>$$>$}]{buf }\end{DoxyParamCaption})}
+Get the size, in bytes, of a \hyperlink{classFrame}{Frame} after \hyperlink{classFEC}{F\+EC} encoding. \mbox{\Hypertarget{classFrame_a448b698fd4cc568e610f87f971354dc6}\label{classFrame_a448b698fd4cc568e610f87f971354dc6}} 
+\index{Frame@{Frame}!deserialize\+Coded@{deserialize\+Coded}}
+\index{deserialize\+Coded@{deserialize\+Coded}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{deserialize\+Coded()}{deserializeCoded()}}
+{\footnotesize\ttfamily P\+K\+T\+\_\+\+S\+T\+A\+T\+U\+S\+\_\+\+E\+N\+UM Frame\+::deserialize\+Coded (\begin{DoxyParamCaption}\item[{const shared\+\_\+ptr$<$ vector$<$ uint8\+\_\+t $>$$>$}]{buf }\end{DoxyParamCaption})}
 
 Takes a vector of bytes and loads it into the \hyperlink{classFrame}{Frame}\textquotesingle{}s internal data structures. This is designed to take bytes received off the air, so it performs \hyperlink{classFEC}{F\+EC} decoding, and will return a P\+K\+T\+\_\+\+S\+T\+A\+T\+U\+S\+\_\+\+E\+N\+UM with the results (testing stuff out)\+: ~\newline
 
@@ -201,9 +204,7 @@ Takes a vector of bytes and loads it into the \hyperlink{classFrame}{Frame}\text
 
 \item P\+K\+T\+\_\+\+B\+A\+D\+\_\+\+S\+I\+ZE -- Packet size is inconsistent with bytes decoded ~\newline
 
-\item P\+K\+T\+\_\+\+B\+A\+D\+\_\+\+H\+D\+R\+\_\+\+C\+RC -- Bad packet header C\+RC ~\newline
-
-\item P\+K\+T\+\_\+\+B\+A\+D\+\_\+\+P\+L\+D\+\_\+\+C\+RC -- Bad packet payload C\+RC ~\newline
+\item P\+K\+T\+\_\+\+B\+A\+D\+\_\+\+C\+RC -- Bad packet payload C\+RC ~\newline
 
 \item P\+K\+T\+\_\+\+OK -- Packet decoded successfully ~\newline
  
@@ -212,25 +213,13 @@ Takes a vector of bytes and loads it into the \hyperlink{classFrame}{Frame}\text
 \hline
 \end{DoxyParams}
 
-\end{DoxyItemize}\mbox{\Hypertarget{classFrame_abdb6ae194b6afb15b37d770f12ad9343}\label{classFrame_abdb6ae194b6afb15b37d770f12ad9343}} 
-\index{Frame@{Frame}!get\+Full\+Pkt\+Size@{get\+Full\+Pkt\+Size}}
-\index{get\+Full\+Pkt\+Size@{get\+Full\+Pkt\+Size}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{get\+Full\+Pkt\+Size()}{getFullPktSize()}}
-{\footnotesize\ttfamily size\+\_\+t Frame\+::get\+Full\+Pkt\+Size (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+\end{DoxyItemize}\mbox{\Hypertarget{classFrame_ab6513ed996012cf14141615c1ed47e38}\label{classFrame_ab6513ed996012cf14141615c1ed47e38}} 
+\index{Frame@{Frame}!get\+C\+RC@{get\+C\+RC}}
+\index{get\+C\+RC@{get\+C\+RC}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{get\+C\+R\+C()}{getCRC()}}
+{\footnotesize\ttfamily uint16\+\_\+t Frame\+::get\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Get the size, in bytes, of a \hyperlink{classFrame}{Frame} after \hyperlink{classFEC}{F\+EC} encoding. \mbox{\Hypertarget{classFrame_a26923d6e02a809d968809d33b0ee9175}\label{classFrame_a26923d6e02a809d968809d33b0ee9175}} 
-\index{Frame@{Frame}!get\+Hdr\+Size@{get\+Hdr\+Size}}
-\index{get\+Hdr\+Size@{get\+Hdr\+Size}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{get\+Hdr\+Size()}{getHdrSize()}}
-{\footnotesize\ttfamily static size\+\_\+t Frame\+::get\+Hdr\+Size (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
-
-Returns the size of a packet header \mbox{\Hypertarget{classFrame_a1a98d502e3c3c0b189aa20b12588f4e8}\label{classFrame_a1a98d502e3c3c0b189aa20b12588f4e8}} 
-\index{Frame@{Frame}!get\+Header\+Crc@{get\+Header\+Crc}}
-\index{get\+Header\+Crc@{get\+Header\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{get\+Header\+Crc()}{getHeaderCrc()}}
-{\footnotesize\ttfamily uint16\+\_\+t Frame\+::get\+Header\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
-
-Returns the header C\+RC stored within the \hyperlink{classFrame}{Frame} object. \mbox{\Hypertarget{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}\label{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}} 
+Returns the payload C\+RC stored within the \hyperlink{classFrame}{Frame} object. \mbox{\Hypertarget{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}\label{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}} 
 \index{Frame@{Frame}!get\+Offsets@{get\+Offsets}}
 \index{get\+Offsets@{get\+Offsets}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{get\+Offsets()}{getOffsets()}}
@@ -256,19 +245,7 @@ Get the payload. Returns the number of bytes in the payload.
 {\em buf} & Where the payload bytes are put. \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classFrame_ae3023171ac602d6be2ccb8e613c586c7}\label{classFrame_ae3023171ac602d6be2ccb8e613c586c7}} 
-\index{Frame@{Frame}!get\+Payload\+Crc@{get\+Payload\+Crc}}
-\index{get\+Payload\+Crc@{get\+Payload\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{get\+Payload\+Crc()}{getPayloadCrc()}}
-{\footnotesize\ttfamily uint16\+\_\+t Frame\+::get\+Payload\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
-
-Returns the payload C\+RC stored within the \hyperlink{classFrame}{Frame} object. \mbox{\Hypertarget{classFrame_ae72614ae975e9f856acd3b51dd65ecfc}\label{classFrame_ae72614ae975e9f856acd3b51dd65ecfc}} 
-\index{Frame@{Frame}!get\+Pkt\+Size@{get\+Pkt\+Size}}
-\index{get\+Pkt\+Size@{get\+Pkt\+Size}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{get\+Pkt\+Size()}{getPktSize()}}
-{\footnotesize\ttfamily static size\+\_\+t Frame\+::get\+Pkt\+Size (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
-
-Returns the the size of a packet \mbox{\Hypertarget{classFrame_a1caeb909554201233a464f24e445a5e1}\label{classFrame_a1caeb909554201233a464f24e445a5e1}} 
+\mbox{\Hypertarget{classFrame_a1caeb909554201233a464f24e445a5e1}\label{classFrame_a1caeb909554201233a464f24e445a5e1}} 
 \index{Frame@{Frame}!get\+Rx\+Stats@{get\+Rx\+Stats}}
 \index{get\+Rx\+Stats@{get\+Rx\+Stats}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{get\+Rx\+Stats()}{getRxStats()}}
@@ -283,13 +260,31 @@ Get the receive statistics
 {\em rx\+\_\+size} & Number of bytes received \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classFrame_a383e2fb65096f4c57f37b48d3d74f07d}\label{classFrame_a383e2fb65096f4c57f37b48d3d74f07d}} 
+\mbox{\Hypertarget{classFrame_a278632174fa07b44e0dabda3d010f000}\label{classFrame_a278632174fa07b44e0dabda3d010f000}} 
+\index{Frame@{Frame}!get\+Sender@{get\+Sender}}
+\index{get\+Sender@{get\+Sender}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{get\+Sender()}{getSender()}}
+{\footnotesize\ttfamily uint32\+\_\+t Frame\+::get\+Sender (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Gets the sender\textquotesingle{}s address. \mbox{\Hypertarget{classFrame_ad98ec7af45ce4428441d2ee3d28bae7e}\label{classFrame_ad98ec7af45ce4428441d2ee3d28bae7e}} 
+\index{Frame@{Frame}!get\+Stream\+ID@{get\+Stream\+ID}}
+\index{get\+Stream\+ID@{get\+Stream\+ID}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{get\+Stream\+I\+D()}{getStreamID()}}
+{\footnotesize\ttfamily uint32\+\_\+t Frame\+::get\+Stream\+ID (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Returns the Stream ID \mbox{\Hypertarget{classFrame_a383e2fb65096f4c57f37b48d3d74f07d}\label{classFrame_a383e2fb65096f4c57f37b48d3d74f07d}} 
 \index{Frame@{Frame}!get\+T\+TL@{get\+T\+TL}}
 \index{get\+T\+TL@{get\+T\+TL}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{get\+T\+T\+L()}{getTTL()}}
 {\footnotesize\ttfamily uint8\+\_\+t Frame\+::get\+T\+TL (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Return the frame\textquotesingle{}s current T\+TL value \mbox{\Hypertarget{classFrame_a46139e40aaadc65459f1d094e6f7fc20}\label{classFrame_a46139e40aaadc65459f1d094e6f7fc20}} 
+Return the frame\textquotesingle{}s current T\+TL value \mbox{\Hypertarget{classFrame_a1807a7893ff81064f2e92cb5ab065ec8}\label{classFrame_a1807a7893ff81064f2e92cb5ab065ec8}} 
+\index{Frame@{Frame}!hdr\+Size@{hdr\+Size}}
+\index{hdr\+Size@{hdr\+Size}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{hdr\+Size()}{hdrSize()}}
+{\footnotesize\ttfamily static size\+\_\+t Frame\+::hdr\+Size (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Returns the size of a packet header \mbox{\Hypertarget{classFrame_a46139e40aaadc65459f1d094e6f7fc20}\label{classFrame_a46139e40aaadc65459f1d094e6f7fc20}} 
 \index{Frame@{Frame}!increment\+T\+TL@{increment\+T\+TL}}
 \index{increment\+T\+TL@{increment\+T\+TL}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{increment\+T\+T\+L()}{incrementTTL()}}
@@ -339,11 +334,11 @@ Load the J\+S\+ON object with the \hyperlink{classFrame}{Frame}\textquotesingle{
 {\em json} & Mbed\+J\+S\+O\+N\+Value holding \hyperlink{classFrame}{Frame}\textquotesingle{}s parameters. \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classFrame_a8c202575665982edb827d04d2c2b705c}\label{classFrame_a8c202575665982edb827d04d2c2b705c}} 
-\index{Frame@{Frame}!serialize@{serialize}}
-\index{serialize@{serialize}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{serialize()}{serialize()}}
-{\footnotesize\ttfamily size\+\_\+t Frame\+::serialize (\begin{DoxyParamCaption}\item[{vector$<$ uint8\+\_\+t $>$ \&}]{buf }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{classFrame_a2e1d5421694ec4d9abaadacf2b32b492}\label{classFrame_a2e1d5421694ec4d9abaadacf2b32b492}} 
+\index{Frame@{Frame}!serialize\+Coded@{serialize\+Coded}}
+\index{serialize\+Coded@{serialize\+Coded}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{serialize\+Coded()}{serializeCoded()}}
+{\footnotesize\ttfamily size\+\_\+t Frame\+::serialize\+Coded (\begin{DoxyParamCaption}\item[{vector$<$ uint8\+\_\+t $>$ \&}]{buf }\end{DoxyParamCaption})}
 
 F\+E\+C-\/encode the \hyperlink{classFrame}{Frame}, and provide the encoded bytes. Returns size in bytes of the F\+E\+C-\/encoded \hyperlink{classFrame}{Frame}. 
 \begin{DoxyParams}{Parameters}
@@ -361,13 +356,13 @@ Set the beacon string. Returns the size of the beacon string.
 {\em beacon\+\_\+str} & The beacon string. \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classFrame_a28beb1dcca5f9f385a10dddab7e4ce21}\label{classFrame_a28beb1dcca5f9f385a10dddab7e4ce21}} 
-\index{Frame@{Frame}!set\+Header\+Crc@{set\+Header\+Crc}}
-\index{set\+Header\+Crc@{set\+Header\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{set\+Header\+Crc()}{setHeaderCrc()}}
-{\footnotesize\ttfamily uint16\+\_\+t Frame\+::set\+Header\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+\mbox{\Hypertarget{classFrame_aa2de2dba681188cc6ab00dfc42d15426}\label{classFrame_aa2de2dba681188cc6ab00dfc42d15426}} 
+\index{Frame@{Frame}!set\+C\+RC@{set\+C\+RC}}
+\index{set\+C\+RC@{set\+C\+RC}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{set\+C\+R\+C()}{setCRC()}}
+{\footnotesize\ttfamily uint16\+\_\+t Frame\+::set\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Sets the header C\+RC by computing it based on the curent header data. Also returns the computed C\+RC. \mbox{\Hypertarget{classFrame_ac25e10413d25b9eea2502c1c02d457e0}\label{classFrame_ac25e10413d25b9eea2502c1c02d457e0}} 
+Sets the payload C\+RC by computing it based on the curent payload data. Also returns the computed C\+RC. \mbox{\Hypertarget{classFrame_ac25e10413d25b9eea2502c1c02d457e0}\label{classFrame_ac25e10413d25b9eea2502c1c02d457e0}} 
 \index{Frame@{Frame}!set\+Offsets@{set\+Offsets}}
 \index{set\+Offsets@{set\+Offsets}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{set\+Offsets()}{setOffsets()}}
@@ -382,13 +377,7 @@ Get the offsets in the packet header
 {\em sym\+\_\+offset} & Intra-\/symbol offset. \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classFrame_a4d4af8b70c703f5e8f9869fb157f9af1}\label{classFrame_a4d4af8b70c703f5e8f9869fb157f9af1}} 
-\index{Frame@{Frame}!set\+Payload\+Crc@{set\+Payload\+Crc}}
-\index{set\+Payload\+Crc@{set\+Payload\+Crc}!Frame@{Frame}}
-\subsubsection{\texorpdfstring{set\+Payload\+Crc()}{setPayloadCrc()}}
-{\footnotesize\ttfamily uint16\+\_\+t Frame\+::set\+Payload\+Crc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
-
-Sets the payload C\+RC by computing it based on the curent payload data. Also returns the computed C\+RC. \mbox{\Hypertarget{classFrame_a6f48959a7d7971ad25d25bf5c5237b22}\label{classFrame_a6f48959a7d7971ad25d25bf5c5237b22}} 
+\mbox{\Hypertarget{classFrame_a6f48959a7d7971ad25d25bf5c5237b22}\label{classFrame_a6f48959a7d7971ad25d25bf5c5237b22}} 
 \index{Frame@{Frame}!set\+Rx\+Stats@{set\+Rx\+Stats}}
 \index{set\+Rx\+Stats@{set\+Rx\+Stats}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{set\+Rx\+Stats()}{setRxStats()}}
@@ -403,7 +392,19 @@ Set the receive statistics
 {\em rx\+\_\+size} & Number of bytes received \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classFrame_a2e2305d6c4488220574ec0415fe217b5}\label{classFrame_a2e2305d6c4488220574ec0415fe217b5}} 
+\mbox{\Hypertarget{classFrame_a982cef0e09413cc2a5c55298e2cc7c5f}\label{classFrame_a982cef0e09413cc2a5c55298e2cc7c5f}} 
+\index{Frame@{Frame}!set\+Sender@{set\+Sender}}
+\index{set\+Sender@{set\+Sender}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{set\+Sender()}{setSender()}}
+{\footnotesize\ttfamily void Frame\+::set\+Sender (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{sender\+\_\+addr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Sets the sender\textquotesingle{}s address based on the value passed in. \mbox{\Hypertarget{classFrame_af3cc33a2ea60ad84db23097da6df3c31}\label{classFrame_af3cc33a2ea60ad84db23097da6df3c31}} 
+\index{Frame@{Frame}!set\+Stream\+ID@{set\+Stream\+ID}}
+\index{set\+Stream\+ID@{set\+Stream\+ID}!Frame@{Frame}}
+\subsubsection{\texorpdfstring{set\+Stream\+I\+D()}{setStreamID()}}
+{\footnotesize\ttfamily void Frame\+::set\+Stream\+ID (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Sets the Stream ID \mbox{\Hypertarget{classFrame_a2e2305d6c4488220574ec0415fe217b5}\label{classFrame_a2e2305d6c4488220574ec0415fe217b5}} 
 \index{Frame@{Frame}!size@{size}}
 \index{size@{size}!Frame@{Frame}}
 \subsubsection{\texorpdfstring{size()}{size()}}
