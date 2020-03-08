@@ -120,12 +120,10 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     }
     // Step three: check the payload CRC
     if(!checkCRC()) {
-        //debug_printf(DBG_INFO, "Bad payload CRC\r\n");
         pkt_status = PKT_BAD_CRC;
         return pkt_status;
     }
     // Size checked out, CRCs checked out, so return OK
-    //debug_printf(DBG_INFO, "Packet OK\r\n");
     pkt_status = PKT_OK;
     return pkt_status;
 }

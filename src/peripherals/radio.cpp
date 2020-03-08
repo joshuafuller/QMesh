@@ -24,65 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "radio.hpp"
 #include "correct.h"
 
-#define SX1272   0xFF
-#define SX1276   0xEE
 #define SX126X   0xDD
 
 #define CDEBYTES_E22
 
-#if (MBED_CONF_APP_LORA_RADIO == SX1272)
-#include "SX1272_LoRaRadio.h"
-#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-#include "SX1276_LoRaRadio.h"
-#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
 #include "SX126X_LoRaRadio.h"
-#endif
 
-#if (MBED_CONF_APP_LORA_RADIO == SX1272)
-SX1272_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
-                       MBED_CONF_APP_LORA_SPI_MISO,
-                       MBED_CONF_APP_LORA_SPI_SCLK,
-                       MBED_CONF_APP_LORA_CS,
-                       MBED_CONF_APP_LORA_RESET,
-                       MBED_CONF_APP_LORA_DIO0,
-                       MBED_CONF_APP_LORA_DIO1,
-                       MBED_CONF_APP_LORA_DIO2,
-                       MBED_CONF_APP_LORA_DIO3,
-                       MBED_CONF_APP_LORA_DIO4,
-                       MBED_CONF_APP_LORA_DIO5,
-                       MBED_CONF_APP_LORA_RF_SWITCH_CTL1,
-                       MBED_CONF_APP_LORA_RF_SWITCH_CTL2,
-                       MBED_CONF_APP_LORA_TXCTL,
-                       MBED_CONF_APP_LORA_RXCTL,
-                       MBED_CONF_APP_LORA_ANT_SWITCH,
-                       MBED_CONF_APP_LORA_PWR_AMP_CTL,
-                       MBED_CONF_APP_LORA_TCXO);
-
-#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-SX1276_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI,
-                       MBED_CONF_APP_LORA_SPI_MISO,
-                       MBED_CONF_APP_LORA_SPI_SCLK,
-                       MBED_CONF_APP_LORA_CS,
-                       MBED_CONF_APP_LORA_RESET,
-                       MBED_CONF_APP_LORA_DIO0,
-                       MBED_CONF_APP_LORA_DIO1,
-                       MBED_CONF_APP_LORA_DIO2,
-                       MBED_CONF_APP_LORA_DIO3,
-                       MBED_CONF_APP_LORA_DIO4,
-                       MBED_CONF_APP_LORA_DIO5,
-                       MBED_CONF_APP_LORA_RF_SWITCH_CTL1,
-                       MBED_CONF_APP_LORA_RF_SWITCH_CTL2,
-                       MBED_CONF_APP_LORA_TXCTL,
-                       MBED_CONF_APP_LORA_RXCTL,
-                       MBED_CONF_APP_LORA_ANT_SWITCH,
-                       MBED_CONF_APP_LORA_PWR_AMP_CTL,
-                       MBED_CONF_APP_LORA_TCXO);
-
-#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
-#warning Using SX1262
-
-#ifdef CDEBYTES_E22
-#warning Using CDEBYTES E22
 SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_SPI_MISO, // PinName miso
                        MBED_CONF_APP_LORA_SPI_SCLK, // PinName sclk
@@ -95,26 +42,6 @@ SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_RESET,  // PinName nrst
                        MBED_CONF_APP_LORA_BUSY,
                        MBED_CONF_APP_RADIO_PWR);  // PinName busy,
-#else
-
-#warning Pins being used for Mbed SX1262 board
-SX126X_LoRaRadio radio(D11, // PinName mosi
-                       D12, // PinName miso
-                       D13, // PinName sclk
-                       D7,  // PinName nss
-                       NC,  // PinName rxen
-                       NC,  // PinName txen
-                       A0,  // PinName reset
-                       D5,  // PinName dio1
-                       NC,  // PinName dio2   
-                       NC,  // PinName nrst  
-                       D3);  // PinName busy
-#endif
-
-#else
-#error "Unknown LoRa radio specified (SX1272,SX1276 are valid)"
-#endif
-
 MbedJSONValue radio_cb;
 
 // The callbacks used by the LoRa radio driver

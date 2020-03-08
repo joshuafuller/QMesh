@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbed.h"
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
-//#include "FATFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
 #include <cstdio>

@@ -27,6 +27,7 @@ AnalogOut audio_out(A3);
 uint16_t audio_out;
 #endif
 
+
 void AFSK_hw_init(void) { }
 
 
@@ -90,7 +91,6 @@ uint8_t AFSK_dac_isr(Afsk *afsk) {
             if (fifo_isempty(afsk->txFifo) && afsk->tailLength == 0) {
                 AFSK_DAC_IRQ_STOP();
                 afsk->sending = false;
-                //LED_TX_OFF();
                 return 0;
             } else {
                 if (!afsk->bitStuff) afsk->bitstuffCount = 0;
@@ -143,4 +143,11 @@ uint8_t AFSK_dac_isr(Afsk *afsk) {
     afsk->sampleIndex--;
 
     return sinSample(afsk->phaseAcc);
+}
+
+
+/// Use a Ticker to determine when to send out the next sample
+Ticker sample_timer;
+void dac_isr(void) {
+    audio_out = AFSK_dac_isr(AFSK_modem); 
 }
