@@ -24,9 +24,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "json_serial.hpp"
 #include "mesh_protocol.hpp"
 #include "mem_trace.hpp"
+#include "Adafruit_SSD1306.h"
 
 RawSerial pc(USBTX, USBRX);
-// Should PA_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
+// Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
 RawSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
@@ -49,6 +50,21 @@ void send_status(void);
 
 DigitalIn user_button(USER_BUTTON);
 
+
+// an I2C sub-class that provides a constructed default
+class I2CPreInit : public I2C
+{
+public:
+    I2CPreInit(PinName sda, PinName scl) : I2C(sda, scl)
+    {
+        frequency(400000);
+        start();
+    };
+};
+I2CPreInit gI2C(PB_9, PB_8);
+Adafruit_SSD1306_I2c oled(gI2C, NC);
+
+
 // main() runs in its own thread in the OS
 int main()
 {
@@ -62,6 +78,11 @@ int main()
 		}
 	}
 	led1.LEDSolid();
+
+    oled.splash();
+    ThisThread::sleep_for(250);
+
+    oled.printf("Welcome to QMesh\r\n");
 	
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
@@ -161,9 +182,5 @@ int main()
     ThisThread::sleep_for(250);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
-
-    while(true) {
-        ThisThread::sleep_for(250);
-    }
 }
 

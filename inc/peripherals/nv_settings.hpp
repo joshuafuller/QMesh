@@ -23,10 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
-#include "SPIFBlockDevice.h"
+#include "QSPIFBlockDevice.h"
 #include "MbedJSONValue.h"
 
-extern SPIFBlockDevice bd;
+extern QSPIFBlockDevice bd;
 extern LittleFileSystem fs;
 
 void nv_log_fn(void);

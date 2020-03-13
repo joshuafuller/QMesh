@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mbed.h"
+#include "QSPIFBlockDevice.h"
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
 #include "serial_data.hpp"
@@ -27,26 +28,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include "MbedJSONValue.h"
 
-DigitalOut flash_io2(MBED_CONF_APP_FLASH_IO2);
-DigitalOut flash_io3(MBED_CONF_APP_FLASH_IO3);
-SPIFBlockDevice bd(MBED_CONF_APP_FLASH_SPI_MOSI, 
-                    MBED_CONF_APP_FLASH_SPI_MISO, 
-                    MBED_CONF_APP_FLASH_SPI_SCLK, 
-                    MBED_CONF_APP_FLASH_SPI_CS,
-                    16000000);
+
+QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
+                    MBED_CONF_APP_QSPI_FLASH_IO2, MBED_CONF_APP_QSPI_FLASH_IO3, 
+                    MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
+                    1000000);
 LittleFileSystem fs("fs");
 
 
 void rescue_filesystem(void) {
-    flash_io2 = 1;
-    flash_io3 = 1;
     int err = bd.init();
 	err = fs.reformat(&bd);
 }
 
 void init_filesystem(void) {
-    flash_io2 = 1;
-    flash_io3 = 1;
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
     int err = bd.init();
     debug_printf(DBG_INFO, "bd.init -> %d  \r\n", err);
