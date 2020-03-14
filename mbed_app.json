@@ -22,8 +22,6 @@
         "qspi-flash-io1":      { "value": "PD_12"},
         "qspi-flash-io2":      { "value": "PE_2"},
         "qspi-flash-io3":      { "value": "PD_13"},
-        "flash-pwr":           { "value": "A0" },
-        "radio-pwr":           { "value": "A1" },
         "alt_uart_tx":         { "value": "PA_11" },
         "alt_uart_rx":         { "value": "PA_12" }
     },
