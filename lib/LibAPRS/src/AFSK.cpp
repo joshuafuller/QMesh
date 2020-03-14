@@ -21,7 +21,7 @@ void AFSK_hw_refDetect(void) { }
 //AnalogIn audio_in(A3);
 #if defined (TARGET_NUCLEO_F746ZG) || defined (TARGET_NUCLEO_H743ZI2)
 #warning Board has a DAC! Yay!
-AnalogOut audio_out(A3);
+AnalogOut audio_out(PA_4);
 #else
 #warning Board does not have a DAC! Using dummy variable instead!
 uint16_t audio_out;

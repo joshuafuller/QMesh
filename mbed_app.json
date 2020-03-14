@@ -9,7 +9,7 @@
         "lora-spi-mosi":       { "value": "D11" },
         "lora-spi-miso":       { "value": "D12" },
         "lora-spi-sclk":       { "value": "D13" },
-        "lora-cs":             { "value": "D10" },
+        "lora-cs":             { "value": "D10" },  
         "lora-reset":          { "value": "D3" },
         "lora-busy":           { "value": "D2" },
         "lora-dio1":           { "value": "D5" },
