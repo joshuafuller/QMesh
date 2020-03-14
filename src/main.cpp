@@ -40,9 +40,6 @@ Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
 
-DigitalOut flash_pwr_ctl(MBED_CONF_APP_FLASH_PWR);
-DigitalOut radio_pwr_ctl(MBED_CONF_APP_RADIO_PWR);
-
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
 
@@ -61,8 +58,8 @@ public:
         start();
     };
 };
-I2CPreInit gI2C(PB_9, PB_8);
-Adafruit_SSD1306_I2c oled(gI2C, NC);
+//I2CPreInit gI2C(PB_9, PB_8);
+//Adafruit_SSD1306_I2c oled(gI2C, NC);
 
 
 // main() runs in its own thread in the OS
@@ -79,10 +76,10 @@ int main()
 	}
 	led1.LEDSolid();
 
-    oled.splash();
-    ThisThread::sleep_for(250);
+    //oled.splash();
+    //ThisThread::sleep_for(250);
 
-    oled.printf("Welcome to QMesh\r\n");
+    //oled.printf("Welcome to QMesh\r\n");
 	
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
@@ -101,18 +98,6 @@ int main()
     rx_frame_thread.start(rx_frame_ser_thread_fn);
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
-
-    // Power cycle the SPI flash chip and the RF module
-    debug_printf(DBG_INFO, "Powering down the SPI flash and LoRa modules...\r\n");
-    flash_pwr_ctl = 1;
-    radio_pwr_ctl = 0;
-    ThisThread::sleep_for(250);
-    debug_printf(DBG_INFO, "Powering up the SPI flash...\r\n");
-    flash_pwr_ctl = 0;
-    debug_printf(DBG_INFO, "Powering up the LoRa module...\r\n");
-    radio_pwr_ctl = 1;
-    debug_printf(DBG_INFO, "Both modules now powered up!\r\n");
-    ThisThread::sleep_for(1000);
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
