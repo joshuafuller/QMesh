@@ -45,6 +45,8 @@ using namespace rtos;
 #define SIG_INTERRUPT        0x02
 #endif
 
+rtos::Thread *lora_irq_thread;
+
 /*!
  * FSK bandwidth definition
  */
@@ -116,6 +118,8 @@ SX126X_LoRaRadio::SX126X_LoRaRadio(PinName mosi,
     _image_calibrated = false;
     _force_image_calibration = false;
     _active_modem = MODEM_LORA;
+
+    lora_irq_thread = &irq_thread;
 
 #ifdef MBED_CONF_RTOS_PRESENT
     irq_thread.start(callback(this, &SX126X_LoRaRadio::rf_irq_task));
@@ -445,7 +449,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     wait_us(100);
 
     radio_reset();
-    
+
 #if MBED_CONF_LORA_PUBLIC_NETWORK
     _network_mode_public = true;
 #else

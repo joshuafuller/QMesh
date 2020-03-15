@@ -23,6 +23,8 @@ extern volatile bool rebooting;
 
 void reboot_system(void);
 
+void button_thread_fn(void);
+
 /**
  * Class that provides useful functionality around the board's
  * pushbuttons.
@@ -31,6 +33,7 @@ class PushButton {
 protected:
     bool was_pressed;
     InterruptIn *btn;
+    Thread btn_thread;
 public:
     /**
      * Constructor.

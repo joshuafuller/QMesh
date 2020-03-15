@@ -36,6 +36,7 @@ Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM");
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
 Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
+Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON");
 
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
@@ -75,6 +76,9 @@ int main()
 		}
 	}
 	led1.LEDSolid();
+
+    auto push_button = new PushButton(USER_BUTTON);
+    button_thread.start(button_thread_fn);
 
     //oled.splash();
     //ThisThread::sleep_for(250);

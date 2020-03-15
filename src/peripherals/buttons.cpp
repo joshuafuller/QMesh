@@ -25,6 +25,7 @@ extern Thread tx_serial_thread, rx_serial_thread;
 extern Thread mesh_protocol_thread;
 extern Thread beacon_thread;
 extern Thread nv_log_thread;
+extern rtos::Thread *lora_irq_thread;
 
 volatile bool rebooting = false;
 
@@ -36,13 +37,23 @@ void reboot_system(void) {
     if(beacon_thread.get_state() != Thread::Deleted) {
 	    beacon_thread.join();
     }
+    if(lora_irq_thread->get_state() != Thread::Deleted) {
+        lora_irq_thread->terminate();
+    }
     debug_printf(DBG_INFO, "Unmounting the filesystem...\r\n");
     int err = fs.unmount();
     debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(\r\n" : "OK\r\n"));
     bd.sync();
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
-    ThisThread::sleep_for(3000);
+    ThisThread::sleep_for(500);
     NVIC_SystemReset();
+}
+
+Semaphore btn_pressed_irq(0);
+void button_thread_fn(void) {
+    btn_pressed_irq.acquire();
+    debug_printf(DBG_WARN, "Soft reset button pressed\r\n");
+    reboot_system();
 }
 
 PushButton::PushButton(PinName button) {
@@ -53,7 +64,7 @@ PushButton::PushButton(PinName button) {
 
 void PushButton::btnInterrupt(void) {
     was_pressed = true;
-    reboot_system();
+    btn_pressed_irq.release();
 }
     
 bool PushButton::getPressed(void) {
