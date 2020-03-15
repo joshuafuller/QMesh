@@ -445,7 +445,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     wait_us(100);
 
     radio_reset();
-
+    
 #if MBED_CONF_LORA_PUBLIC_NETWORK
     _network_mode_public = true;
 #else
@@ -535,10 +535,12 @@ uint32_t SX126X_LoRaRadio::time_on_air(radio_modems_t modem, uint8_t pkt_len)
 void SX126X_LoRaRadio::radio_reset()
 {
     // Power cycle the module
+#if 0
     _pwr_ctl = 0;
     wait_ms(1000);
     _pwr_ctl = 1;
     wait_ms(1000);
+#endif
     // Do the reset
     _reset_ctl.output();
     _reset_ctl = 0;

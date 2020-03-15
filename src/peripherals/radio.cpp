@@ -40,8 +40,8 @@ SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_DIO1,  // PinName dio1
                        MBED_CONF_APP_LORA_DIO2,  // PinName dio2
                        MBED_CONF_APP_LORA_RESET,  // PinName nrst
-                       MBED_CONF_APP_LORA_BUSY,
-                       NC);  // PinName busy,
+                       MBED_CONF_APP_LORA_BUSY,   // PinName busy,
+                       NC);  
 MbedJSONValue radio_cb;
 
 // The callbacks used by the LoRa radio driver
