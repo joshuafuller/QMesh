@@ -149,7 +149,10 @@ void rx_serial_thread_fn(void) {
                 radio_cb["Mode"] = rx_json["Mode"].get<string>();
             }
             else if(setting == "FEC Algorithm") {
-                 radio_cb["FEC Algorithm"] = rx_json["FEC Algorithm"].get<string>();               
+                radio_cb["FEC Algorithm"] = rx_json["FEC Algorithm"].get<string>();               
+            }
+            else if(setting == "Beacon Message") {
+                radio_cb["Beacon Message"] = rx_json["Beacon Message"].get<string>();
             }
             else {
                 radio_cb[setting] = rx_json[setting].get<int>();
