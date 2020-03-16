@@ -158,22 +158,18 @@ void rx_serial_thread_fn(void) {
                 radio_cb[setting] = rx_json[setting].get<int>();
             }
             save_settings_to_flash();
-            ThisThread::sleep_for(100);
 			send_status();
         }
         else if(type_str == "Get Status") {
-            ThisThread::sleep_for(100);
             send_status();      
         }
         else if(type_str == "Set Time") {
             string new_time = rx_json["Time"].get<string>();
             set_time((unsigned int) stoul(new_time));
-            ThisThread::sleep_for(100);
             send_status();
         }
         else if(type_str == "Stay in Management") {
-            stay_in_management = true;
-            ThisThread::sleep_for(100);            
+            stay_in_management = true;           
             send_status();
         }
         else if(type_str == "Debug Msg") {
@@ -196,10 +192,8 @@ void rx_serial_thread_fn(void) {
             if(current_mode == MANAGEMENT) {
                 fs.remove("logfile.json");
             }
-            ThisThread::sleep_for(100);
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
-            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else if(type_str == "Erase Boot Log File") {
@@ -208,10 +202,8 @@ void rx_serial_thread_fn(void) {
             if(current_mode == MANAGEMENT) {
                 fs.remove("boot_log.json");
             }
-            ThisThread::sleep_for(100);
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
-            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else if(type_str == "Erase Cfg File") {
@@ -220,10 +212,8 @@ void rx_serial_thread_fn(void) {
             if(current_mode == MANAGEMENT) {
                 fs.remove("settings.json");
             }
-            ThisThread::sleep_for(100);
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
-            ThisThread::sleep_for(1000);
             reboot_system();
         }
         else if(type_str == "Read Log") {
@@ -243,9 +233,7 @@ void rx_serial_thread_fn(void) {
 					log_json["Count"] = -1;					
                     auto json_str = make_shared<string>(log_json.serialize());
                     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
-					ThisThread::sleep_for(1000);
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
-					ThisThread::sleep_for(1000);
 					reboot_system();	
 				}
 				else {
@@ -263,31 +251,22 @@ void rx_serial_thread_fn(void) {
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
 				if(!reading_bootlog) {
-					debug_printf(DBG_INFO, "Now opening the file\r\n");
-					ThisThread::sleep_for(250);
 					reading_bootlog = true;
 					f = fopen("/fs/boot_log.json", "r");
 					MBED_ASSERT(f);
-					debug_printf(DBG_INFO, "Opened the file\r\n");
-					ThisThread::sleep_for(250);
 				}
 				string cur_line;
 				get_next_line(f, cur_line);
-				debug_printf(DBG_INFO, "Got next line %s\r\n", cur_line.c_str());
-				ThisThread::sleep_for(250);
 				if(cur_line.size() == 0) {
 					MbedJSONValue log_json;
                     log_json["Type"] = "Boot Log Entry";
 					log_json["Count"] = -1;					
                     auto json_str = make_shared<string>(log_json.serialize());
                     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
-					ThisThread::sleep_for(1000);
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
-					ThisThread::sleep_for(1000);
 					reboot_system();	
 				}
 				else {
-					ThisThread::sleep_for(250);
                     MbedJSONValue log_json;
                     parse(log_json, cur_line.c_str());
                     log_json["Type"] = "Boot Log Entry";

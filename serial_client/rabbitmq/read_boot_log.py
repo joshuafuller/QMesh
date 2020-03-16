@@ -47,18 +47,14 @@ def log_process(ch, method, properties, body):
     line = body.decode('utf-8')
     parsed_line = {}
     parsed_line["Type"] = ""
-    print(line)
     try: parsed_line = json.loads(line)
     except Exception as e: pass
-    print(parsed_line)
-    print(parsed_line["Type"])
     if parsed_line["Type"] == "Boot Log Entry":
         print(parsed_line)
         if parsed_line["Count"] == -1:
             print("Finished reading in log entries")
             sys.exit(0)
         else:
-            print(str(parsed_line))
             out_file.write(str(parsed_line) + "\r\n")
             out_file.flush()
             ch.stop_consuming()
