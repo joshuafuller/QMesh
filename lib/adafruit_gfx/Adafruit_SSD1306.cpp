@@ -57,6 +57,7 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
     // bring out of reset
     rst = 1;
     // turn on VCC (9V?)
+    //command(0xE4);
 
     command(SSD1306_DISPLAYOFF);
     command(SSD1306_SETDISPLAYCLOCKDIV);

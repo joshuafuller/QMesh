@@ -48,7 +48,9 @@ void send_status(void);
 
 DigitalIn user_button(USER_BUTTON);
 
+I2C oled_i2c(PB_9, PB_8);
 
+#if 0
 // an I2C sub-class that provides a constructed default
 class I2CPreInit : public I2C
 {
@@ -59,8 +61,9 @@ public:
         start();
     };
 };
-//I2CPreInit gI2C(PB_9, PB_8);
-//Adafruit_SSD1306_I2c oled(gI2C, NC);
+I2CPreInit gI2C(PB_9, PB_8);
+Adafruit_SSD1306_I2c oled(gI2C, NC);
+#endif
 
 
 // main() runs in its own thread in the OS
@@ -80,7 +83,12 @@ int main()
     auto push_button = new PushButton(USER_BUTTON);
     button_thread.start(button_thread_fn);
 
-    //oled.splash();
+    oled_i2c.frequency(100000);
+    oled_i2c.start();
+
+    Adafruit_SSD1306_I2c oled(oled_i2c, PD_13, 0x78, 32, 128);
+    oled.splash();
+    oled.display();
     //ThisThread::sleep_for(250);
 
     //oled.printf("Welcome to QMesh\r\n");
