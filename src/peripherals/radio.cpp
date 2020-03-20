@@ -101,7 +101,7 @@ void init_radio(void) {
     else if(fec_algo == "RSV") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
-        int rs_roots = radio_cb["RS Num Roots"].get<int>();
+        int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
         frame_fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
     }
     else {

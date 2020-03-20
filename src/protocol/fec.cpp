@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include "mem_trace.hpp"
 
+
 void testFEC(void) {
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
@@ -106,6 +107,7 @@ void testFEC(void) {
     }
 }
 
+
 size_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     enc_msg.resize(msg.size());
     copy(msg.begin(), msg.end(), enc_msg.begin());
@@ -121,6 +123,7 @@ size_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_ms
     interleaveBits(enc_msg);
     return enc_msg.size();
 }
+
 
 ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     dec_msg.resize(enc_msg.size());
@@ -138,6 +141,7 @@ ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &d
     return dec_msg.size();
 }  
     
+
 void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
     mt19937 rand_gen(seed);
     uniform_int_distribution<uint8_t> dist(0, 255);  
@@ -145,6 +149,7 @@ void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
         buf[i] = buf[i] ^ dist(rand_gen);
     }
 }
+
 
 void FEC::createInterleavingMatrix(void) {
     interleave_matrix.clear();
@@ -174,6 +179,7 @@ void FEC::createInterleavingMatrix(void) {
     }
 }
 
+
 void FEC::interleaveBits(vector<uint8_t> &bytes) {
     for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
         bool bit0 = getBit(bytes, it->first);
@@ -185,6 +191,7 @@ void FEC::interleaveBits(vector<uint8_t> &bytes) {
         setBit(bit1, it->second, bytes);
     }
 }
+
 
 void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
     for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
@@ -198,11 +205,13 @@ void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
     }
 }
 
+
 size_t FECConv::getEncSize(const size_t msg_len) {
     int conv_len = correct_convolutional_encode_len(corr_con, msg_len);
     //debug_printf(DBG_INFO, "conv len is %d\r\n", conv_len);
     return (size_t) ceilf((float) correct_convolutional_encode_len(corr_con, msg_len)/8.0f);
 }
+
 
 FECConv::FECConv(const size_t inv_rate, const size_t order) {
     name = "Convolutional Coding";
@@ -253,6 +262,7 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) {
     createInterleavingMatrix();
 }
 
+
 size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     vector<uint8_t> msg_int(msg.size());
     copy(msg.begin(), msg.end(), msg_int.begin());
@@ -271,6 +281,7 @@ size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     interleaveBits(enc_msg);   
     return enc_len;
 }
+
 
 ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
 	MBED_ASSERT(getEncSize(enc_msg.size()) <= 256);
@@ -292,6 +303,7 @@ ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg
     }
     return dec_size;
 }
+
 
 void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");

@@ -69,3 +69,8 @@ void IndicatorLED::LEDFastBlink(void) {
 IndicatorLED::~IndicatorLED() {
     delete pin;
 }
+
+
+class Nucleo144LEDs {
+    
+};
