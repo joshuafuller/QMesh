@@ -45,6 +45,11 @@
             "alt_uart_rx":       "PA_10"
         },
 
+        "NUCLEO_H743ZI2" : {
+            "alt_uart_tx":       "PA_9" ,
+            "alt_uart_rx":       "PA_10"
+        },
+
         "K64F": {
             "lora-spi-mosi":       "D11",
             "lora-spi-miso":       "D12",
