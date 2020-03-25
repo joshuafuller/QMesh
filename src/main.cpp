@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mesh_protocol.hpp"
 #include "mem_trace.hpp"
 #include "Adafruit_SSD1306.h"
+#include "SoftI2C.h"
 
 RawSerial pc(USBTX, USBRX);
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
@@ -48,7 +49,7 @@ void send_status(void);
 
 DigitalIn user_button(USER_BUTTON);
 
-I2C oled_i2c(PB_9, PB_8);
+SoftI2C oled_i2c(PB_8, PB_9);
 
 #if 0
 // an I2C sub-class that provides a constructed default
@@ -87,11 +88,9 @@ int main()
     oled_i2c.start();
 
     Adafruit_SSD1306_I2c oled(oled_i2c, PD_13, 0x78, 32, 128);
-    oled.splash();
+    oled.clearDisplay();
+    oled.printf("Welcome to QMesh\r\n");
     oled.display();
-    //ThisThread::sleep_for(250);
-
-    //oled.printf("Welcome to QMesh\r\n");
 	
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
@@ -179,5 +178,6 @@ int main()
     ThisThread::sleep_for(250);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
+
 }
 

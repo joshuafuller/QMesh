@@ -25,6 +25,7 @@ All text above, and the splash screen must be included in any redistribution
 
 #include "mbed.h"
 #include "Adafruit_GFX.h"
+#include "SoftI2C.h"
 
 #include <vector>
 #include <algorithm>
@@ -170,7 +171,7 @@ public:
 	 * @param rawHeight - The vertical number of pixels for the display, defaults to 32
 	 * @param rawWidth - The horizonal number of pixels for the display, defaults to 128
 	 */
-	Adafruit_SSD1306_I2c(I2C &i2c, PinName RST, uint8_t i2cAddress = SSD_I2C_ADDRESS, uint8_t rawHeight = 32, uint8_t rawWidth = 128)
+	Adafruit_SSD1306_I2c(SoftI2C &i2c, PinName RST, uint8_t i2cAddress = SSD_I2C_ADDRESS, uint8_t rawHeight = 32, uint8_t rawWidth = 128)
 	    : Adafruit_SSD1306(RST, rawHeight, rawWidth)
 	    , mi2c(i2c)
 	    , mi2cAddress(i2cAddress)
@@ -213,7 +214,7 @@ protected:
 		}
 	};
 
-	I2C &mi2c;
+	SoftI2C &mi2c;
 	uint8_t mi2cAddress;
 };
 
