@@ -57,8 +57,6 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
     // bring out of reset
     rst = 1;
     // turn on VCC (9V?)
-    //command(0xE4);
-
     command(SSD1306_DISPLAYOFF);
     command(SSD1306_SETDISPLAYCLOCKDIV);
     command(0x80);                                  // the suggested ratio 0x80
@@ -141,13 +139,16 @@ void Adafruit_SSD1306::display(void)
 	command(SSD1306_SETLOWCOLUMN | 0x0);  // low col = 0
 	command(SSD1306_SETHIGHCOLUMN | 0x0);  // hi col = 0
 	command(SSD1306_SETSTARTLINE | 0x0); // line #0
+    ThisThread::sleep_for(10);
 	sendDisplayBuffer();
+    sendDisplayBuffer();
 }
 
 // Clear the display buffer. Requires a display() call at some point afterwards
 void Adafruit_SSD1306::clearDisplay(void)
 {
 	std::fill(buffer.begin(),buffer.end(),0);
+    setTextCursor(0,0);
 }
 
 void Adafruit_SSD1306::splash(void)

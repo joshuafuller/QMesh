@@ -50,6 +50,7 @@ void send_status(void);
 DigitalIn user_button(USER_BUTTON);
 
 SoftI2C oled_i2c(PB_8, PB_9);
+Adafruit_SSD1306_I2c *oled;
 
 #if 0
 // an I2C sub-class that provides a constructed default
@@ -70,7 +71,19 @@ Adafruit_SSD1306_I2c oled(gI2C, NC);
 // main() runs in its own thread in the OS
 int main()
 {
+    oled_i2c.frequency(400000);
+    oled_i2c.start();
+    
+    oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, 0x78, 32, 128);
+
+    oled->printf("Welcome to QMesh\r\n");
+    oled->display();
+    //oled->display();
+
     led1.LEDBlink();
+    oled->printf("In rescue mode...\r\n");
+    oled->display();
+    //oled->display();
 	ThisThread::sleep_for(1000);
 	if(user_button) {
 		led1.LEDFastBlink();
@@ -83,14 +96,6 @@ int main()
 
     auto push_button = new PushButton(USER_BUTTON);
     button_thread.start(button_thread_fn);
-
-    oled_i2c.frequency(100000);
-    oled_i2c.start();
-
-    Adafruit_SSD1306_I2c oled(oled_i2c, PD_13, 0x78, 32, 128);
-    oled.clearDisplay();
-    oled.printf("Welcome to QMesh\r\n");
-    oled.display();
 	
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
@@ -118,6 +123,9 @@ int main()
 
     // Wait for 2 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;
+    oled->printf("MANAGEMENT mode...\r\n");
+    oled->display();
+    oled->display();
     send_status();
     led1.LEDFastBlink();
     ThisThread::sleep_for(2000);
@@ -179,5 +187,14 @@ int main()
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
 
+    oled->clearDisplay();
+    oled->printf("Now running Mesh0\r\n");
+    oled->display();
+    oled->printf("Now running Mesh1\r\n");
+    oled->display();
+    oled->printf("Now running Mesh2\r\n");
+    oled->display();
+    oled->printf("Now running Mesh3\r\n");
+    oled->display();
 }
 
