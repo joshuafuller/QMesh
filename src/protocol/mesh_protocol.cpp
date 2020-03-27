@@ -19,10 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbed.h"
 #include "params.hpp"
 #include "serial_data.hpp"
-#include <math.h>
+#include <cmath>
 #include <list>
 #include <map>
 #include <algorithm>
+#include <atomic>
+#include "Adafruit_SSD1306.h"
 #include "LoRaRadio.h"
 #include "mesh_protocol.hpp"
 #include "radio.hpp"
@@ -180,6 +182,11 @@ RadioTiming radio_timing;
 
 
 volatile bool rx_active = false;
+atomic<int> total_rx_pkt(0);
+atomic<int> total_rx_corr_pkt(0);
+atomic<int> total_tx_pkt(0);
+atomic<int> last_rx_rssi(0.0);
+atomic<int> last_rx_snr(0.0);
 void mesh_protocol_fsm(void) {
     shared_ptr<FEC> fec;
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
@@ -237,11 +244,15 @@ void mesh_protocol_fsm(void) {
 					radio_timing.startTimer();
                     if(rx_radio_event->evt_enum == RX_DONE_EVT) {
                         debug_printf(DBG_INFO, "Received a packet\r\n");
+                        total_rx_pkt.store(total_rx_pkt.load()+1);
+                        last_rx_rssi.store(rx_radio_event->rssi);
+                        last_rx_snr.store(rx_radio_event->snr);
                         // Load up the frame
                         led2.LEDSolid();
                         rx_frame_sptr = make_shared<Frame>(fec);
                         PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(rx_radio_event->buf);
                         if(pkt_status == PKT_OK) {
+                            total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
                             auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
                             rx_frame_sptr->setSender(my_addr);
                             rx_frame_sptr->incrementTTL();
@@ -291,6 +302,7 @@ void mesh_protocol_fsm(void) {
 
             case TX_PACKET:
                 rx_active = false;
+                total_tx_pkt.store(total_tx_pkt.load()+1);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { 
                 led2.LEDOff();
@@ -351,5 +363,20 @@ void beacon_fn(void) {
         beacon_frame_sptr->setStreamID(stream_id++);
         enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
         ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>()*1000);
+    }
+}
+
+
+extern Adafruit_SSD1306_I2c *oled;
+void oled_mon_fn(void) {
+    for(;;) {
+        oled->clearDisplay();
+        oled->printf("PACKET STATISTICS\r\n");
+        oled->printf("Pkt Tx/Rx: %d / %d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
+        oled->printf("Pct Corr Rx: %d\r\n", (total_rx_pkt.load()*total_rx_corr_pkt.load())*100);
+        oled->printf("RSSI/SNR: %d / %d\r\n", last_rx_rssi.load(), last_rx_snr.load());
+        oled->display();
+        oled->display();
+        ThisThread::sleep_for(1000);
     }
 }

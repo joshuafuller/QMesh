@@ -162,5 +162,7 @@ extern string beacon_msg;
 void beacon_fn(void);
 
 
+void oled_mon_fn(void);
+
 
 #endif /* MESH_PROTOCOL_HPP */

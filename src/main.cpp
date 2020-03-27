@@ -38,6 +38,7 @@ Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
 Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
 Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON");
+Thread oled_mon_thread(osPriorityNormal, 4096, NULL, "OLED-MON");
 
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
@@ -184,17 +185,10 @@ int main()
     beacon_thread.start(beacon_fn);
 
     ThisThread::sleep_for(250);
+    
+    // Start the OLED monitoring thread
+    oled_mon_thread.start(oled_mon_fn);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
-
-    oled->clearDisplay();
-    oled->printf("Now running Mesh0\r\n");
-    oled->display();
-    oled->printf("Now running Mesh1\r\n");
-    oled->display();
-    oled->printf("Now running Mesh2\r\n");
-    oled->display();
-    oled->printf("Now running Mesh3\r\n");
-    oled->display();
 }
 

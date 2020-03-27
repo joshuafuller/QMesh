@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "peripherals.hpp"
 #include "serial_data.hpp"
 #include <string>
+#include "Adafruit_SSD1306.h"
 #include "mesh_protocol.hpp"
 
 extern Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
