@@ -372,9 +372,10 @@ void oled_mon_fn(void) {
     for(;;) {
         oled->clearDisplay();
         oled->printf("PACKET STATISTICS\r\n");
-        oled->printf("Pkt Tx/Rx: %d / %d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
-        oled->printf("Pct Corr Rx: %d\r\n", (total_rx_pkt.load()*total_rx_corr_pkt.load())*100);
-        oled->printf("RSSI/SNR: %d / %d\r\n", last_rx_rssi.load(), last_rx_snr.load());
+        oled->printf("Pkt Tx/Rx: %4d/%4d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
+        oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
+                        (float) total_rx_pkt.load())*100));
+        oled->printf("RSSI/SNR: %4d/%4d\r\n", last_rx_rssi.load(), last_rx_snr.load());
         oled->display();
         oled->display();
         ThisThread::sleep_for(1000);
