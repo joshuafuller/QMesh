@@ -21,20 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_HPP
 
 #include "mbed.h"
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
 #include <vector>
-
-#if (MBED_CONF_APP_LORA_RADIO == SX1272)
-#include "SX1272_LoRaRadio.h"
-extern SX1272_LoRaRadio radio;
-#elif (MBED_CONF_APP_LORA_RADIO == SX1276)
-#include "SX1276_LoRaRadio.h"
-extern SX1276_LoRaRadio radio;
-#elif (MBED_CONF_APP_LORA_RADIO == SX126X)
 #include "SX126X_LoRaRadio.h"
+#include "MbedJSONValue.h"
+#include "serial_data.hpp"
+
 extern SX126X_LoRaRadio radio;
-#endif
+extern MbedJSONValue radio_cb;
 
 /// Two modes: normal mesh mode, and beacon mode.
 typedef enum {
@@ -63,30 +58,5 @@ void init_radio(void);
 #define RX_DONE_SIGNAL 0xAB
 void tx_test_radio(void);
 void rx_test_radio(void);
-
-typedef enum {
-    TX_DONE_EVT,
-    RX_DONE_EVT,
-    TX_TIMEOUT_EVT,
-    RX_TIMEOUT_EVT,
-    RX_ERROR_EVT,
-} radio_evt_enum_t;
-
-class RadioEvent {
-public:
-    radio_evt_enum_t evt_enum;
-    Timer timer;
-    int16_t rssi;
-    int8_t snr;
-    std::shared_ptr<vector<uint8_t>> buf;
-
-    RadioEvent(const radio_evt_enum_t my_evt_enum);
-
-    RadioEvent(const radio_evt_enum_t my_evt_enum, const uint8_t *my_buf, 
-                const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
-};
-
-extern Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> rx_radio_evt_mail, tx_radio_evt_mail;
-
 
 #endif /* RADIO_HPP */

@@ -239,7 +239,7 @@ void mesh_protocol_fsm(void) {
                     radio.receive();
                 }
                 bool timed_out;
-                rx_radio_event = dequeue_mail_timeout<std::shared_ptr<RadioEvent>>(rx_radio_evt_mail, 50, timed_out);
+                rx_radio_event = dequeue_mail_timeout<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail, 50, timed_out);
                 if(!timed_out) {
 					radio_timing.startTimer();
                     if(rx_radio_event->evt_enum == RX_DONE_EVT) {
@@ -314,7 +314,7 @@ void mesh_protocol_fsm(void) {
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
-                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
 				radio_timing.startTimer();
                 debug_printf(DBG_INFO, "dequeued\r\n");
@@ -334,7 +334,7 @@ void mesh_protocol_fsm(void) {
                 MBED_ASSERT(rx_frame_size < 256);
 				radio_timing.waitFullSlots(1);
                 radio.send(rx_frame_buf.data(), rx_frame_size);
-                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 led2.LEDOff();
                 led3.LEDOff();
@@ -361,7 +361,9 @@ void beacon_fn(void) {
 			return;
 		}
         beacon_frame_sptr->setStreamID(stream_id++);
-        enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, beacon_frame_sptr);
+        auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
+        MBED_ASSERT(!unified_radio_evt_mail.full());
+        enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
         ThisThread::sleep_for(radio_cb["Beacon Interval"].get<int>()*1000);
     }
 }

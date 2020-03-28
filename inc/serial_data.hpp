@@ -27,6 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "json_serial.hpp"
 #include "fec.hpp"
 
+
+extern MbedJSONValue radio_cb;
+
 static uint8_t enc_buf[512], dec_buf[256];
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
@@ -107,10 +110,7 @@ public:
     /**
     * Get the combined, un-FEC'd size of the Frame.
     */
-    static size_t size(void) {
-        return radio_cb["Payload Length"].get<int>() + sizeof(hdr) + 
-            sizeof(crc);
-    }
+    static size_t size(void);
 
     /**
     * Default constructor. Constructs with a default FEC (one that does nothing).
@@ -364,6 +364,35 @@ public:
     */
     void saveToJSON(MbedJSONValue &json);
 };
+
+
+typedef enum {
+    TX_FRAME_EVT,
+    TX_DONE_EVT,
+    RX_DONE_EVT,
+    TX_TIMEOUT_EVT,
+    RX_TIMEOUT_EVT,
+    RX_ERROR_EVT,
+} radio_evt_enum_t;
+
+class RadioEvent {
+public:
+    radio_evt_enum_t evt_enum;
+    Timer timer;
+    int16_t rssi;
+    int8_t snr;
+    std::shared_ptr<vector<uint8_t>> buf;
+    std::shared_ptr<Frame> frame;
+
+    RadioEvent(const radio_evt_enum_t my_evt_enum);
+
+    RadioEvent(const radio_evt_enum_t my_evt_enum, const uint8_t *my_buf, 
+                const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
+
+    RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);
+};
+
+extern Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail;
 
 
 extern Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
