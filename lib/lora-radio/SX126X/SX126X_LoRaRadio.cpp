@@ -167,6 +167,22 @@ void SX126X_LoRaRadio::rf_irq_task(void)
 
 void SX126X_LoRaRadio::dio1_irq_isr()
 {
+    // Start timing the duration since the packet was receive
+    if(primary_active == false) {
+        primary_active = true;
+        primary_rx_tmr.stop();
+        primary_rx_tmr.reset();
+        primary_rx_tmr.start();
+    }
+    else if(secondary_active == false) {
+        secondary_active = true;
+        primary_rx_tmr.stop();
+        primary_rx_tmr.reset();
+        secondary_rx_tmr.start();
+    }
+    primary_tx_tmr.stop();
+    primary_tx_tmr.reset();
+    primary_tx_tmr.start();
 #ifdef MBED_CONF_RTOS_PRESENT
     irq_thread.flags_set(SIG_INTERRUPT);
 #else
@@ -280,8 +296,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     clear_irq_status(IRQ_RADIO_ALL);
 
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
-        if (_radio_events->tx_done) {
-            _radio_events->tx_done();
+        if (_radio_events->tx_done_tmr) {
+            _radio_events->tx_done_tmr(primary_tx_tmr);
         }
     }
 
@@ -291,21 +307,12 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 _radio_events->rx_error();
             }
         } else {
-            if (_radio_events->rx_done) {
+            if (_radio_events->rx_done_tmr) {
                 uint8_t offset = 0;
                 uint8_t payload_len = 0;
                 int16_t rssi = 0;
                 int8_t snr = 0;
                 packet_status_t pkt_status;
-                // Start timing the duration since the packet was received
-                if(primary_active == false) {
-                    primary_active = true;
-                    primary_rx_tmr.start();
-                }
-                else if(secondary_active == false) {
-                    secondary_active = true;
-                    secondary_rx_tmr.start();
-                }
                 get_rx_buffer_status(&payload_len, &offset);
                 read_fifo(_data_buffer, payload_len, offset);
                 get_packet_status(&pkt_status);
@@ -315,8 +322,15 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                     rssi = pkt_status.params.lora.rssi_pkt;
                     snr = pkt_status.params.lora.snr_pkt;
                 }
-
-                _radio_events->rx_done(_data_buffer, payload_len, rssi, snr);
+                if(secondary_active) {
+                    _radio_events->rx_done_tmr(_data_buffer, secondary_rx_tmr, payload_len, rssi, snr);
+                }
+                else if(primary_active) {
+                    _radio_events->rx_done_tmr(_data_buffer, primary_rx_tmr, payload_len, rssi, snr);
+                }
+                else {
+                    MBED_ASSERT(false);
+                }
             }
         }
     }
@@ -538,13 +552,6 @@ uint32_t SX126X_LoRaRadio::time_on_air(radio_modems_t modem, uint8_t pkt_len)
 
 void SX126X_LoRaRadio::radio_reset()
 {
-    // Power cycle the module
-#if 0
-    _pwr_ctl = 0;
-    wait_ms(1000);
-    _pwr_ctl = 1;
-    wait_ms(1000);
-#endif
     // Do the reset
     _reset_ctl.output();
     _reset_ctl = 0;
@@ -747,45 +754,8 @@ void SX126X_LoRaRadio::read_fifo(uint8_t *buffer, uint8_t size, uint8_t offset)
 
 uint8_t SX126X_LoRaRadio::get_device_variant(void)
 {
-#if 0
-    uint16_t val = 0;
-    val = _dev_select.read_u16();
-
-    if (val <= 0x2000) {
-        return SX1262;
-    } else if (val <= 0xA000) {
-        return SX1268;
-    } else {
-        return SX1261;
-    }
-#else
     return LORA_DEVICE;
-#endif
 }
-
-#if 0
-uint8_t SX126X_LoRaRadio::get_frequency_support(void)
-{
-    uint16_t val = 0;
-    val = _freq_select.read_u16();
-
-    if (val < 100) {
-        return ( MATCHING_FREQ_915);
-    } else if (val <= 0x3000) {
-        return ( MATCHING_FREQ_780);
-    } else if (val <= 0x4900) {      // 0x4724
-        return ( MATCHING_FREQ_490);
-    } else if (val <= 1) {
-        return ( MATCHING_FREQ_434);
-    } else if (val <= 1) {
-        return ( MATCHING_FREQ_280);
-    } else if (val <= 0xF000) {
-        return ( MATCHING_FREQ_169);
-    } else {
-        return ( MATCHING_FREQ_868);
-    }
-}
-#endif
 
 uint8_t SX126X_LoRaRadio::get_fsk_bw_reg_val(uint32_t bandwidth)
 {
@@ -1037,6 +1007,9 @@ void SX126X_LoRaRadio::configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
 
 void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
 {
+    primary_active = false;
+    secondary_active = false;
+
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {

@@ -299,7 +299,7 @@ public:
     /**
      * Timers for tracking when the Rx interrupt was thrown
      */
-    mbed::Timer primary_rx_tmr, secondary_rx_tmr;
+    mbed::Timer primary_rx_tmr, secondary_rx_tmr, primary_tx_tmr;
     bool primary_active, secondary_active;
 
 private:

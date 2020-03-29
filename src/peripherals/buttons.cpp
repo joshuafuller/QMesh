@@ -25,6 +25,7 @@ extern Thread tx_serial_thread, rx_serial_thread;
 extern Thread mesh_protocol_thread;
 extern Thread beacon_thread;
 extern Thread nv_log_thread;
+extern Thread oled_mon_thread;
 extern rtos::Thread *lora_irq_thread;
 
 volatile bool rebooting = false;
@@ -36,6 +37,9 @@ void reboot_system(void) {
     }
     if(beacon_thread.get_state() != Thread::Deleted) {
 	    beacon_thread.join();
+    }
+    if(oled_mon_thread.get_state() != Thread::Deleted) {
+        oled_mon_thread.join();
     }
     if(lora_irq_thread->get_state() != Thread::Deleted) {
         lora_irq_thread->terminate();

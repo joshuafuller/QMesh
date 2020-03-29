@@ -70,7 +70,7 @@ public:
     uint32_t pre_wait_factor;
     uint32_t pre_wait_us;
 
-    Timer tmr;
+    Timer *tmr_ptr;
 
 /**
  * Given the various LoRa parameters, pre-compute all of the different timing
@@ -125,7 +125,10 @@ void waitTx(void);
 /** 
  * Starts the protocol timer.
  */
-void startTimer(void);
+void setTimer(Timer *my_tmr_ptr) {
+    tmr_ptr = my_tmr_ptr;
+}
+
 };
 
 /**

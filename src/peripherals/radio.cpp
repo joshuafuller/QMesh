@@ -48,11 +48,11 @@ MbedJSONValue radio_cb;
 static radio_events_t radio_events;
 
 // Event queue for communicating events from the radio
-Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail;
+Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail, tx_radio_evt_mail;
 
 // Prototypes for the callbacks
-static void tx_done_cb(void);
-static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr);
+static void tx_done_cb(Timer &rx_done_tmr);
+static void rx_done_cb(uint8_t const *payload, Timer &tmr, uint16_t size, int16_t rssi, int8_t snr);
 static void tx_timeout_cb(void);
 static void rx_timeout_cb(void);
 static void rx_error_cb(void);
@@ -65,8 +65,8 @@ shared_ptr<FEC> frame_fec;
 void init_radio(void) {
     // Initialize Radio driver
     debug_printf(DBG_INFO, "Now initializing the radio\r\n");
-    radio_events.tx_done = tx_done_cb;
-    radio_events.rx_done = rx_done_cb;
+    radio_events.tx_done_tmr = tx_done_cb;
+    radio_events.rx_done_tmr = rx_done_cb;
     radio_events.rx_error = rx_error_cb;
     radio_events.tx_timeout = tx_timeout_cb;
     radio_events.rx_timeout = rx_timeout_cb;
@@ -151,13 +151,17 @@ void init_radio(void) {
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {
-    timer.start();
     evt_enum = my_evt_enum;
 }
 
-RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const uint8_t *my_buf, 
+RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, Timer &my_tmr) {
+    tmr = &my_tmr;
+    evt_enum = my_evt_enum;
+}
+
+RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, Timer &my_tmr, const uint8_t *my_buf, 
         const size_t my_size, const int16_t my_rssi, const int8_t my_snr) {
-    timer.start();
+    tmr = &my_tmr;
     evt_enum = my_evt_enum;
     MBED_ASSERT(my_size <= 256);
     buf = std::make_shared<vector<uint8_t>>();
@@ -173,17 +177,16 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Fram
 }
 
 
-extern volatile bool rx_active;
-static void tx_done_cb(void)
+static void tx_done_cb(Timer &tmr)
 {
-    auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT);
-    MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> > (unified_radio_evt_mail, radio_event);
+    auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT, tmr);
+    MBED_ASSERT(!tx_radio_evt_mail.full());
+    enqueue_mail<std::shared_ptr<RadioEvent> > (tx_radio_evt_mail, radio_event);
 }
 
-static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8_t snr)
+static void rx_done_cb(uint8_t const *payload, Timer &tmr, uint16_t size, int16_t rssi, int8_t snr)
 {
-    auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, payload, (size_t) size, rssi, snr);
+    auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, tmr, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
     debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
@@ -192,8 +195,8 @@ static void rx_done_cb(uint8_t const *payload, uint16_t size, int16_t rssi, int8
 static void tx_timeout_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
-    MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
+    MBED_ASSERT(!tx_radio_evt_mail.full());
+    enqueue_mail<std::shared_ptr<RadioEvent> >(tx_radio_evt_mail, radio_event);
 }
  
 static void rx_timeout_cb(void)
@@ -201,7 +204,6 @@ static void rx_timeout_cb(void)
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event); 
-    rx_active = false;
 }
  
 static void rx_error_cb(void)
@@ -209,7 +211,6 @@ static void rx_error_cb(void)
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
-    rx_active = false;
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) { }

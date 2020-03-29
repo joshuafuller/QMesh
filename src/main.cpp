@@ -53,22 +53,6 @@ DigitalIn user_button(USER_BUTTON);
 SoftI2C oled_i2c(PB_8, PB_9);
 Adafruit_SSD1306_I2c *oled;
 
-#if 0
-// an I2C sub-class that provides a constructed default
-class I2CPreInit : public I2C
-{
-public:
-    I2CPreInit(PinName sda, PinName scl) : I2C(sda, scl)
-    {
-        frequency(400000);
-        start();
-    };
-};
-I2CPreInit gI2C(PB_9, PB_8);
-Adafruit_SSD1306_I2c oled(gI2C, NC);
-#endif
-
-
 // main() runs in its own thread in the OS
 int main()
 {

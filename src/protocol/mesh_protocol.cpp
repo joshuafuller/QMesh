@@ -122,7 +122,7 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 void RadioTiming::waitFullSlots(const size_t num_slots) {
     int32_t wait_duration_us = pkt_time_us + PADDING_TIME_US;
     wait_duration_us *= num_slots;
-    int elapsed_us = tmr.read_us();
+    int elapsed_us = tmr_ptr->read_us();
     if(wait_duration_us-elapsed_us < 0) {
         debug_printf(DBG_WARN, "Wait duration is negative!\r\n");
         return;
@@ -133,7 +133,7 @@ void RadioTiming::waitFullSlots(const size_t num_slots) {
 void RadioTiming::waitRxRemainder(const size_t sym_wait, const size_t pre_wait) {
     uint32_t wait_duration_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
     wait_duration_us += 16*sym_time_us; // 16 symbol padding for right now
-    int elapsed_us = tmr.read_us();
+    int elapsed_us = tmr_ptr->read_us();
     wait_us(wait_duration_us-elapsed_us);
 }
 
@@ -151,42 +151,20 @@ void RadioTiming::waitTx(void) {
     wait_us(sym_wait_us+pre_wait_us);
 }
 
-void RadioTiming::startTimer(void) {
-    tmr.stop();
-    tmr.reset();
-    tmr.start();
-}
-
-#if 0
-uint32_t RadioFrequency::getWobbledFreq(void) {
-    float wobble_factor = (float) rand() / (float) RAND_MAX;
-    float wobble_amount = wobble_factor * lora_bw[radio_cb["BW"].get<int>()] * FREQ_WOBBLE_PROPORTION;
-    int wobble_direction = rand() & 0x1;
-    wobble_amount = wobble_direction ? -wobble_amount : wobble_amount;
-    uint32_t wobbled_freq = (int32_t) radio_cb["Frequency"].get<int>() + (int32_t) wobble_amount;
-    //debug_printf(DBG_INFO, "Wobbled freq is %d\r\n", wobbled_freq);
-    return wobbled_freq;   
-}
-#endif
-
-//RadioFrequency radio_frequency;
-
 static enum {
-    WAIT_FOR_RX,
-    CHECK_TX_QUEUE,
+    WAIT_FOR_EVENT,
     TX_PACKET,
     RETRANSMIT_PACKET,
-} state = WAIT_FOR_RX;
+} state = WAIT_FOR_EVENT;
 
 RadioTiming radio_timing;
 
 
-volatile bool rx_active = false;
-atomic<int> total_rx_pkt(0);
-atomic<int> total_rx_corr_pkt(0);
-atomic<int> total_tx_pkt(0);
-atomic<int> last_rx_rssi(0.0);
-atomic<int> last_rx_snr(0.0);
+static atomic<int> total_rx_pkt(0);
+static atomic<int> total_rx_corr_pkt(0);
+static atomic<int> total_tx_pkt(0);
+static atomic<int> last_rx_rssi(0.0);
+static atomic<int> last_rx_snr(0.0);
 void mesh_protocol_fsm(void) {
     shared_ptr<FEC> fec;
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
@@ -211,97 +189,78 @@ void mesh_protocol_fsm(void) {
     else {
         MBED_ASSERT(false);
     }
-    std::shared_ptr<RadioEvent> rx_radio_event, tx_radio_event;
+    std::shared_ptr<RadioEvent> radio_event, tx_radio_event;
     std::shared_ptr<Frame> tx_frame_sptr;
     std::shared_ptr<Frame> rx_frame_sptr;
     static vector<uint8_t> tx_frame_buf(256), rx_frame_buf(256);
-    for(;;) {
-		if(rebooting) {
-			return;
-		}
-        int radio_bw = radio_cb["BW"].get<int>();
-        int radio_sf = radio_cb["SF"].get<int>();
-        int radio_cr = radio_cb["CR"].get<int>();
-        int radio_freq = radio_cb["Frequency"].get<int>();
-        int radio_pwr = radio_cb["TX Power"].get<int>();  
-        int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
-        int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
-        int my_addr = radio_cb["Address"].get<int>();
-        static mt19937 rand_gen(my_addr);
-        int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
-        static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
-        switch(state) {
-            case WAIT_FOR_RX:
-                if(!rx_active) {
-                    debug_printf(DBG_INFO, "Current state is WAIT_FOR_RX\r\n");
-                    rx_active = true;
-                    radio.set_channel(radio_freq);
-                    radio.receive();
-                }
-                bool timed_out;
-                rx_radio_event = dequeue_mail_timeout<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail, 50, timed_out);
-                if(!timed_out) {
-					radio_timing.startTimer();
-                    if(rx_radio_event->evt_enum == RX_DONE_EVT) {
-                        debug_printf(DBG_INFO, "Received a packet\r\n");
-                        total_rx_pkt.store(total_rx_pkt.load()+1);
-                        last_rx_rssi.store(rx_radio_event->rssi);
-                        last_rx_snr.store(rx_radio_event->snr);
-                        // Load up the frame
-                        led2.LEDSolid();
-                        rx_frame_sptr = make_shared<Frame>(fec);
-                        PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(rx_radio_event->buf);
-                        if(pkt_status == PKT_OK) {
-                            total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
-                            auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
-                            rx_frame_sptr->setSender(my_addr);
-                            rx_frame_sptr->incrementTTL();
-						    rx_frame_sptr->tx_frame = false;
-                            if(checkRedundantPkt(rx_frame_sptr)) {
-                                debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
-                                state = WAIT_FOR_RX;
-                            }
-                            else {
-                                radio.standby();
-                                enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
-                                //radio.set_channel(radio_frequency.getWobbledFreq());
-                                radio.set_channel(freq_dist(rand_gen));
-                                state = RETRANSMIT_PACKET;
-                            }
-                        }
-                        else {
-                            debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
-                            state = CHECK_TX_QUEUE;
-                        }                        
-                    }
-                    else if(rx_radio_event->evt_enum == RX_TIMEOUT_EVT) {
-                        debug_printf(DBG_INFO, "Rx timed out\r\n");
-                        state = CHECK_TX_QUEUE;
-                    }
-                    else { MBED_ASSERT(false); }
-                }
-                else {
-                    state = CHECK_TX_QUEUE;
-                }
-            break;
+    int radio_bw = radio_cb["BW"].get<int>();
+    int radio_sf = radio_cb["SF"].get<int>();
+    int radio_cr = radio_cb["CR"].get<int>();
+    int radio_freq = radio_cb["Frequency"].get<int>();
+    int radio_pwr = radio_cb["TX Power"].get<int>();  
+    int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
+    int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
+    int my_addr = radio_cb["Address"].get<int>();
+    static mt19937 rand_gen(my_addr);
+    int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
+    static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
 
-            case CHECK_TX_QUEUE:
-                //debug_printf(DBG_INFO, "Current state is CHECK_TX_QUEUE\r\n");
-                //ThisThread::sleep_for(250);
-                if(!tx_frame_mail.empty()) {
-                    tx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(tx_frame_mail);
+    for(;;) {
+        switch(state) {
+            case WAIT_FOR_EVENT:
+                debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
+                radio.set_channel(radio_freq);
+                radio.receive();
+                radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
+				radio_timing.setTimer(radio_event->tmr);
+                if(radio_event->evt_enum == TX_FRAME_EVT) {
+                    radio.standby();
                     tx_frame_sptr->fec = fec;
-                    //radio.set_channel(radio_frequency.getWobbledFreq());
                     radio.set_channel(freq_dist(rand_gen));
                     state = TX_PACKET;
                 }
+                else if(radio_event->evt_enum == RX_DONE_EVT) {
+                    debug_printf(DBG_INFO, "Received a packet\r\n");
+                    total_rx_pkt.store(total_rx_pkt.load()+1);
+                    last_rx_rssi.store(radio_event->rssi);
+                    last_rx_snr.store(radio_event->snr);
+                    // Load up the frame
+                    led2.LEDSolid();
+                    rx_frame_sptr = make_shared<Frame>(fec);
+                    PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(radio_event->buf);
+                    if(pkt_status == PKT_OK) {
+                        total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
+                        auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
+                        rx_frame_sptr->setSender(my_addr);
+                        rx_frame_sptr->incrementTTL();
+						rx_frame_sptr->tx_frame = false;
+                        if(checkRedundantPkt(rx_frame_sptr)) {
+                            debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
+                            state = WAIT_FOR_EVENT;
+                        }
+                        else {
+                            radio.standby();
+                            enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
+                            radio.set_channel(freq_dist(rand_gen));
+                            state = RETRANSMIT_PACKET;
+                        }
+                    }
+                    else {
+                        debug_printf(DBG_INFO, "Rx packet not received correctly\r\n");
+                        state = WAIT_FOR_EVENT;
+                    }                        
+                }
+                else if(radio_event->evt_enum == RX_TIMEOUT_EVT) {
+                    debug_printf(DBG_INFO, "Rx timed out\r\n");
+                    state = WAIT_FOR_EVENT;
+                }
                 else {
-                    state = WAIT_FOR_RX;
+                    state = WAIT_FOR_EVENT;
                 }
             break;
 
             case TX_PACKET:
-                rx_active = false;
+                radio.standby();
                 total_tx_pkt.store(total_tx_pkt.load()+1);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 { 
@@ -316,17 +275,16 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
-				radio_timing.startTimer();
+                radio_timing.setTimer(tx_radio_event->tmr);
                 debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff(); 
                 radio_timing.waitFullSlots(2);
                 debug_printf(DBG_INFO, "waiting for slots\r\n");
-                state = CHECK_TX_QUEUE;
+                state = WAIT_FOR_EVENT;
                 }
             break;
 
             case RETRANSMIT_PACKET:
-                rx_active = false;
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 { 
                 led3.LEDSolid();
@@ -334,11 +292,11 @@ void mesh_protocol_fsm(void) {
                 MBED_ASSERT(rx_frame_size < 256);
 				radio_timing.waitFullSlots(1);
                 radio.send(rx_frame_buf.data(), rx_frame_size);
-                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
+                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 led2.LEDOff();
                 led3.LEDOff();
-                state = WAIT_FOR_RX;
+                state = WAIT_FOR_EVENT;
                 }
             break;
 
