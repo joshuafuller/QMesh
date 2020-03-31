@@ -70,7 +70,7 @@ public:
     uint32_t pre_wait_factor;
     uint32_t pre_wait_us;
 
-    Timer *tmr_ptr;
+    shared_ptr<Timer> tmr_sptr;
 
 /**
  * Given the various LoRa parameters, pre-compute all of the different timing
@@ -125,30 +125,11 @@ void waitTx(void);
 /** 
  * Starts the protocol timer.
  */
-void setTimer(Timer *my_tmr_ptr) {
-    tmr_ptr = my_tmr_ptr;
+void setTimer(shared_ptr<Timer> my_tmr_sptr) {
+    tmr_sptr = my_tmr_sptr;
 }
 
 };
-
-/**
- * This class handles "wobbling" the frequency. Wobbling the frequency 
- * involves randomly changing the center frequency to some value that
- * stays within the frequency error tolerance of LoRa (roughly +/- 20% 
- * of the modulated bandwidth). The goal of frequency wobbling is to 
- * reduce the amount of overlap between concurrent transmissions in 
- * order to increase the likelihood of successful capture of one of the
- * transmissions.
- */
-#if 0
-class RadioFrequency {
-public:
-#if 0
-    /// Get a wobbled frequency.
-    uint32_t getWobbledFreq(void);
-#endif
-};
-#endif
 
 extern RadioTiming radio_timing;
 

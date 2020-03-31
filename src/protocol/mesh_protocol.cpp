@@ -122,7 +122,7 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
 void RadioTiming::waitFullSlots(const size_t num_slots) {
     int32_t wait_duration_us = pkt_time_us + PADDING_TIME_US;
     wait_duration_us *= num_slots;
-    int elapsed_us = tmr_ptr->read_us();
+    int elapsed_us = tmr_sptr->read_us();
     if(wait_duration_us-elapsed_us < 0) {
         debug_printf(DBG_WARN, "Wait duration is negative!\r\n");
         return;
@@ -133,7 +133,7 @@ void RadioTiming::waitFullSlots(const size_t num_slots) {
 void RadioTiming::waitRxRemainder(const size_t sym_wait, const size_t pre_wait) {
     uint32_t wait_duration_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
     wait_duration_us += 16*sym_time_us; // 16 symbol padding for right now
-    int elapsed_us = tmr_ptr->read_us();
+    int elapsed_us = tmr_sptr->read_us();
     wait_us(wait_duration_us-elapsed_us);
 }
 
@@ -212,7 +212,7 @@ void mesh_protocol_fsm(void) {
                 radio.set_channel(radio_freq);
                 radio.receive();
                 radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
-				radio_timing.setTimer(radio_event->tmr);
+				radio_timing.setTimer(radio_event->tmr_sptr);
                 if(radio_event->evt_enum == TX_FRAME_EVT) {
                     radio.standby();
                     tx_frame_sptr->fec = fec;
@@ -275,7 +275,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
-                radio_timing.setTimer(tx_radio_event->tmr);
+                radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff(); 
                 radio_timing.waitFullSlots(2);

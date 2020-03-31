@@ -168,21 +168,16 @@ void SX126X_LoRaRadio::rf_irq_task(void)
 void SX126X_LoRaRadio::dio1_irq_isr()
 {
     // Start timing the duration since the packet was receive
-    if(primary_active == false) {
-        primary_active = true;
-        primary_rx_tmr.stop();
-        primary_rx_tmr.reset();
-        primary_rx_tmr.start();
+    if(tmr_sem_ptr->try_acquire()) {
+        cur_tmr->stop();
+        cur_tmr->reset();
+        cur_tmr->start();
+        tmr_sem_ptr->release();
     }
-    else if(secondary_active == false) {
-        secondary_active = true;
-        primary_rx_tmr.stop();
-        primary_rx_tmr.reset();
-        secondary_rx_tmr.start();
+    else {
+        MBED_ASSERT(false);
     }
-    primary_tx_tmr.stop();
-    primary_tx_tmr.reset();
-    primary_tx_tmr.start();
+
 #ifdef MBED_CONF_RTOS_PRESENT
     irq_thread.flags_set(SIG_INTERRUPT);
 #else
@@ -296,9 +291,11 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     clear_irq_status(IRQ_RADIO_ALL);
 
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
-        if (_radio_events->tx_done_tmr) {
-            _radio_events->tx_done_tmr(primary_tx_tmr);
-        }
+        tmr_sem_ptr->acquire();
+        _radio_events->tx_done_tmr(cur_tmr_sptr);
+        cur_tmr_sptr = make_shared<Timer>();
+        cur_tmr = cur_tmr_sptr.get();
+        tmr_sem_ptr->release();
     }
 
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
@@ -307,31 +304,25 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 _radio_events->rx_error();
             }
         } else {
-            if (_radio_events->rx_done_tmr) {
-                uint8_t offset = 0;
-                uint8_t payload_len = 0;
-                int16_t rssi = 0;
-                int8_t snr = 0;
-                packet_status_t pkt_status;
-                get_rx_buffer_status(&payload_len, &offset);
-                read_fifo(_data_buffer, payload_len, offset);
-                get_packet_status(&pkt_status);
-                if (pkt_status.modem_type == MODEM_FSK) {
-                    rssi = pkt_status.params.gfsk.rssi_sync;
-                } else {
-                    rssi = pkt_status.params.lora.rssi_pkt;
-                    snr = pkt_status.params.lora.snr_pkt;
-                }
-                if(secondary_active) {
-                    _radio_events->rx_done_tmr(_data_buffer, secondary_rx_tmr, payload_len, rssi, snr);
-                }
-                else if(primary_active) {
-                    _radio_events->rx_done_tmr(_data_buffer, primary_rx_tmr, payload_len, rssi, snr);
-                }
-                else {
-                    MBED_ASSERT(false);
-                }
+            uint8_t offset = 0;
+            uint8_t payload_len = 0;
+            int16_t rssi = 0;
+            int8_t snr = 0;
+            packet_status_t pkt_status;
+            get_rx_buffer_status(&payload_len, &offset);
+            read_fifo(_data_buffer, payload_len, offset);
+            get_packet_status(&pkt_status);
+            if (pkt_status.modem_type == MODEM_FSK) {
+                rssi = pkt_status.params.gfsk.rssi_sync;
+            } else {
+                rssi = pkt_status.params.lora.rssi_pkt;
+                snr = pkt_status.params.lora.snr_pkt;
             }
+            tmr_sem_ptr->acquire();
+            _radio_events->rx_done_tmr(_data_buffer, cur_tmr_sptr, payload_len, rssi, snr);
+            cur_tmr_sptr = make_shared<Timer>();
+            cur_tmr = cur_tmr_sptr.get();
+            tmr_sem_ptr->release();
         }
     }
 
@@ -453,7 +444,13 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     _radio_events = events;
     // attach DIO1 interrupt line to its respective ISR
     _dio1_ctl.rise(callback(this, &SX126X_LoRaRadio::dio1_irq_isr));
-    //uint8_t freq_support = get_frequency_support();
+
+    // Allocate the first timer
+    tmr_sem_ptr = new Semaphore(1);
+    tmr_sem_ptr->acquire();
+    cur_tmr_sptr = make_shared<Timer>();
+    cur_tmr = cur_tmr_sptr.get();
+    tmr_sem_ptr->release();
 
     // Hold chip-select high
     _chip_select = 1;
@@ -1007,9 +1004,6 @@ void SX126X_LoRaRadio::configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
 
 void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
 {
-    primary_active = false;
-    secondary_active = false;
-
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {
