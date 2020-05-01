@@ -26,7 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
+#include "TinyGPSPlus.h"
 
+Serial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+TinyGPSPlus gps;
 RawSerial pc(USBTX, USBRX);
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
 RawSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX);
@@ -169,7 +172,7 @@ int main()
     beacon_thread.start(beacon_fn);
 
     ThisThread::sleep_for(250);
-    
+ 
     // Start the OLED monitoring thread
     oled_mon_thread.start(oled_mon_fn);
 
