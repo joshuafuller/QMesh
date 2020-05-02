@@ -51,7 +51,7 @@ static radio_events_t radio_events;
 Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail, tx_radio_evt_mail;
 
 // Prototypes for the callbacks
-static void tx_done_cb(shared_ptr<Timer> rx_done_tmr_sptr);
+static void tx_done_cb(shared_ptr<Timer> tmr_sptr);
 static void rx_done_cb(uint8_t const *payload, shared_ptr<Timer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr);
 static void tx_timeout_cb(void);
 static void rx_timeout_cb(void);

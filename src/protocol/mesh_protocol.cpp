@@ -211,16 +211,12 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
                 radio.set_channel(radio_freq);
                 radio.receive();
-                debug_printf(DBG_INFO, "Waiting...\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
-                debug_printf(DBG_INFO, "Waited...\r\n");
                 if(radio_event->evt_enum == TX_FRAME_EVT) {
                     radio.standby();
-                    debug_printf(DBG_INFO, "Set standby\r\n");
                     tx_frame_sptr = radio_event->frame;
                     tx_frame_sptr->fec = fec;
                     radio.set_channel(freq_dist(rand_gen));
-                    debug_printf(DBG_INFO, "Getting ready to transmit\r\n");
                     state = TX_PACKET;
                 }
                 else if(radio_event->evt_enum == RX_DONE_EVT) {
@@ -277,14 +273,11 @@ void mesh_protocol_fsm(void) {
                 radio.send(tx_frame_buf.data(), tx_frame_size);
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
-                debug_printf(DBG_INFO, "Waiting on dequeue\r\n");
-                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(unified_radio_evt_mail);
+                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
-                debug_printf(DBG_INFO, "dequeued\r\n");
                 led3.LEDOff(); 
                 radio_timing.waitFullSlots(2);
-                debug_printf(DBG_INFO, "waiting for slots\r\n");
                 state = WAIT_FOR_EVENT;
                 }
             break;
@@ -327,7 +320,6 @@ void beacon_fn(void) {
         beacon_frame_sptr->setStreamID(stream_id++);
         auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
         MBED_ASSERT(!unified_radio_evt_mail.full());
-        debug_printf(DBG_INFO, "Enqueueing...\r\n");
         enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
         ThisThread::sleep_for(beacon_interval*1000);
     }
