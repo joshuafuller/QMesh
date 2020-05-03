@@ -126,6 +126,12 @@ void mesh_protocol_fsm(void) {
     int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
     static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
 
+    // Set up an initial timer
+    auto initial_timer = make_shared<Timer>();
+    initial_timer->reset();
+    initial_timer->start();
+    radio_timing.setTimer(initial_timer);
+    radio_timing.waitFullSlots(1); // TODO: change this to be zero once we know zero works
     for(;;) {
         switch(state) {
             case WAIT_FOR_EVENT:
@@ -191,7 +197,8 @@ void mesh_protocol_fsm(void) {
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
-                radio.send(tx_frame_buf.data(), tx_frame_size);
+                //radio.send(tx_frame_buf.data(), tx_frame_size);
+                radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing);
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
@@ -199,7 +206,7 @@ void mesh_protocol_fsm(void) {
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 led3.LEDOff(); 
                 radio_timing.waitFullSlots(2);
-                radio_timing.wait();
+                //radio_timing.wait();
                 state = WAIT_FOR_EVENT;
                 }
             break;
@@ -211,8 +218,7 @@ void mesh_protocol_fsm(void) {
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 MBED_ASSERT(rx_frame_size < 256);
 				radio_timing.waitFullSlots(1);
-                radio_timing.wait();
-                radio.send(rx_frame_buf.data(), rx_frame_size);
+                radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 led2.LEDOff();

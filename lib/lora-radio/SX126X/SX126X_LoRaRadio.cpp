@@ -1069,7 +1069,7 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
     buf[1] = (uint8_t) ((timeout_scalled >> 8) & 0xFF);
     buf[2] = (uint8_t) (timeout_scalled & 0xFF);
 
-    radio_timing.wait();
+    radio_timing.waitNoWarn();
     write_opmode_command(RADIO_SET_TX, buf, 3);
 
     _operation_mode = MODE_TX;

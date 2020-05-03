@@ -69,6 +69,9 @@ void RadioTiming::wait(void) {
 
 void RadioTiming::waitNoWarn(void) {
     int elapsed_us = tmr_sptr->read_us();
+    if(wait_duration_us-elapsed_us < 0) {
+        return;
+    }
     wait_us(wait_duration_us-elapsed_us);
 }
 
