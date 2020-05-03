@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "serial_data.hpp"
 #include <string>
 #include "radio.hpp"
+#include "radio_timing.hpp"
 #include "correct.h"
 
 #define SX126X   0xDD

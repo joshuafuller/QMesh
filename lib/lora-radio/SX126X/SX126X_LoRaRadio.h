@@ -41,7 +41,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "sx126x_ds.h"
 #include "lorawan/LoRaRadio.h"
 #include "mbed.h"
-
+#include "radio_timing.hpp"
 #include "params.hpp"
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -178,6 +178,7 @@ public:
      *  @param size          Buffer size
      */
     virtual void send(uint8_t *buffer, uint8_t size);
+    virtual void send_with_delay(uint8_t *buffer, uint8_t size, RadioTiming &radio_timing);
 
     /**
      * Sets the radio to receive

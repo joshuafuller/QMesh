@@ -25,6 +25,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include <math.h>
 #include "mbed_wait_api.h"
 #include "Timer.h"
+#include "radio_timing.hpp"
 #include "SX126X_LoRaRadio.h"
 
 // Squash a warning about wait_ms being deprecated
@@ -1032,6 +1033,43 @@ void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
     buf[1] = (uint8_t) ((timeout_scalled >> 8) & 0xFF);
     buf[2] = (uint8_t) (timeout_scalled & 0xFF);
 
+    write_opmode_command(RADIO_SET_TX, buf, 3);
+
+    _operation_mode = MODE_TX;
+}
+
+
+void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTiming &radio_timing)
+{
+    set_tx_power(_tx_power);
+
+    if(_rxen.is_connected()) {
+        _rxen = 0;
+    }
+    if(_txen.is_connected()) {
+        _txen = 1;
+    }
+   
+    configure_dio_irq(IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
+                      IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
+                      IRQ_RADIO_NONE,
+                      IRQ_RADIO_NONE );
+
+    set_modulation_params(&_mod_params);
+    set_packet_params(&_packet_params);
+
+    write_fifo(buffer, size);
+    uint8_t buf[3];
+
+    // _tx_timeout in ms should be converted to us and then divided by
+    // 15.625 us. Check data-sheet 13.1.4 SetTX() section.
+    uint32_t timeout_scalled = ceil((_tx_timeout * 1000) / 15.625);
+
+    buf[0] = (uint8_t) ((timeout_scalled >> 16) & 0xFF);
+    buf[1] = (uint8_t) ((timeout_scalled >> 8) & 0xFF);
+    buf[2] = (uint8_t) (timeout_scalled & 0xFF);
+
+    radio_timing.wait();
     write_opmode_command(RADIO_SET_TX, buf, 3);
 
     _operation_mode = MODE_TX;
