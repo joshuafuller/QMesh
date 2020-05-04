@@ -2,6 +2,9 @@
 #include "serial_data.hpp"
 #include "radio_timing.hpp"
 
+DigitalOut rx_int_mon(MBED_CONF_APP_RX_INT_MON, 0);
+DigitalOut tx_int_mon(MBED_CONF_APP_TX_INT_MON, 0);
+DigitalOut int_trig_mon(MBED_CONF_APP_INT_TRIG_MON, 0);
 
 void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
         const uint32_t n_pre_sym, const uint8_t n_pld_bytes) {

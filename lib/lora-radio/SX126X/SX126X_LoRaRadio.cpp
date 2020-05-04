@@ -179,6 +179,9 @@ void SX126X_LoRaRadio::dio1_irq_isr()
         MBED_ASSERT(false);
     }
 
+    rx_int_mon = 0;
+    tx_int_mon = 0;
+
 #ifdef MBED_CONF_RTOS_PRESENT
     irq_thread.flags_set(SIG_INTERRUPT);
 #else
@@ -1034,6 +1037,8 @@ void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
     buf[2] = (uint8_t) (timeout_scalled & 0xFF);
 
     write_opmode_command(RADIO_SET_TX, buf, 3);
+    tx_int_mon = 1;
+    rx_int_mon = 0;
 
     _operation_mode = MODE_TX;
 }
@@ -1071,6 +1076,8 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
 
     radio_timing.waitNoWarn();
     write_opmode_command(RADIO_SET_TX, buf, 3);
+    tx_int_mon = 1;
+    rx_int_mon = 0;
 
     _operation_mode = MODE_TX;
 }
@@ -1119,6 +1126,8 @@ void SX126X_LoRaRadio::receive(void)
     buf[2] = (uint8_t) (_rx_timeout & 0xFF);
 
     write_opmode_command(RADIO_SET_RX, buf, 3);
+    rx_int_mon = 1;
+    tx_int_mon = 0;
 
     _operation_mode = MODE_RX;
 }

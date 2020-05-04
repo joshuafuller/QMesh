@@ -3,6 +3,8 @@
 
 #include "mbed.h"
 
+extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon;
+
 const float lora_bw[] = {125e3f, 250e3f, 500e3f};
 
 /**

@@ -25,7 +25,10 @@
         "alt_uart_tx":         { "value": "PA_11" },
         "alt_uart_rx":         { "value": "PA_12" },
         "gps_uart_tx":         { "value": "PG_14" },
-        "gps_uart_rx":         { "value": "PG_9" }
+        "gps_uart_rx":         { "value": "PG_9" },
+        "rx_int_mon":          { "value": "PD_0"},
+        "tx_int_mon":          { "value": "PD_1"},
+        "int_trig_mon":        { "value": "PG_0"}
     },
     "target_overrides": {
         "*": {
