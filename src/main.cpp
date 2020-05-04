@@ -30,13 +30,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Serial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 TinyGPSPlus gps;
-RawSerial pc(USBTX, USBRX);
+Serial pc(USBTX, USBRX);
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
-RawSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX);
+UARTSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX, 230400);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
-Thread rx_serial_thread(osPriorityNormal, 4096, NULL, "RX-SERIAL");
-Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM");
+Thread rx_serial_thread(osPriorityAboveNormal, 4096, NULL, "RX-SERIAL");
+Thread mesh_protocol_thread(osPriorityNormal, 4096, NULL, "MESH-FSM");
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
 Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
@@ -66,12 +66,10 @@ int main()
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
-    //oled->display();
 
     led1.LEDBlink();
     oled->printf("In rescue mode...\r\n");
     oled->display();
-    //oled->display();
 	ThisThread::sleep_for(1000);
 	if(user_button) {
 		led1.LEDFastBlink();
@@ -90,7 +88,7 @@ int main()
 
     // Set the UART comms speed
     pc.baud(230400);
-    pc2.baud(230400);
+    //pc2.baud(230400);
 
     ThisThread::sleep_for(1000);
 

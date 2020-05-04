@@ -29,7 +29,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
-extern RawSerial pc, pc2;
+extern Serial pc;
+extern UARTSerial pc2;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
@@ -71,42 +72,6 @@ void send_status(void) {
     enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);       
 }  
 
-static void ser_rx_isr(void);
-static char rx_bufs[4][2048];
-static Mail<int, QUEUE_DEPTH> rx_data_rdy;
-static bool led2_val, led3_val = false;
-static int my_buf = 0;
-static int my_buf_idx = 0;
-static void ser_rx_isr(void) {
-    if(led2_val) {
-        led2.LEDSolid();
-        led2_val = false;
-    }
-    else {
-        led2.LEDOff();
-        led2_val = true;
-    }
-    for(;;) {
-        char my_char = pc2.getc();
-        rx_bufs[my_buf][my_buf_idx++] = my_char;
-        if(my_char == '\n' || my_char == '\r') {
-            if(led3_val) {
-                led3.LEDSolid();
-                led3_val = false;
-            }
-            else {
-                led3.LEDOff();
-                led3_val = true;
-            }
-            rx_bufs[my_buf][my_buf_idx++] = '\0';
-            enqueue_mail_nonblocking<int>(rx_data_rdy, my_buf);
-            my_buf += 1;
-            my_buf_idx = 0;
-            my_buf %= 4;
-        }
-    } 
-}
-
 
 void get_next_line(FILE *f, string &str);
 void get_next_line(FILE *f, string &str) {
@@ -125,14 +90,18 @@ void get_next_line(FILE *f, string &str) {
 
 
 void rx_serial_thread_fn(void) {
-    pc2.attach(ser_rx_isr, mbed::SerialBase::RxIrq);
+    //pc2.attach(ser_rx_isr, mbed::SerialBase::RxIrq);
 	FILE *f;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
+    vector<char> rx_buf(1024);
+    FILE *rx_ser = fdopen(&pc2, "r");
     for(;;) {
-        int rx_buf_idx = dequeue_mail<int>(rx_data_rdy);
-        string rx_str(rx_bufs[rx_buf_idx]);
+        debug_printf(DBG_WARN, "starting the receive\r\n");
+        //pc2.gets(rx_buf.data(), 128);
+        fgets(rx_buf.data(), 128, rx_ser);
+        string rx_str(rx_buf.data());    
         debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
         parse(rx_json, rx_str.c_str());

@@ -32,6 +32,7 @@ volatile bool rebooting = false;
 
 void reboot_system(void) {
 	rebooting = true;
+#if 0
     if(mesh_protocol_thread.get_state() != Thread::Deleted) {
 	    mesh_protocol_thread.join();
     }
@@ -48,6 +49,7 @@ void reboot_system(void) {
     int err = fs.unmount();
     debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(\r\n" : "OK\r\n"));
     bd.sync();
+#endif
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
     ThisThread::sleep_for(500);
     NVIC_SystemReset();
