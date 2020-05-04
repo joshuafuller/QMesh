@@ -86,7 +86,7 @@ static void ser_rx_isr(void) {
         led2.LEDOff();
         led2_val = true;
     }
-    while(pc2.readable()) {
+    for(;;) {
         char my_char = pc2.getc();
         rx_bufs[my_buf][my_buf_idx++] = my_char;
         if(my_char == '\n' || my_char == '\r') {
