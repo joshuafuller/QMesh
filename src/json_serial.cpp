@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
 extern UARTSerial pc;
-extern UARTSerial pc2;
+//extern UARTSerial pc2;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
@@ -97,7 +97,7 @@ void rx_serial_thread_fn(void) {
 	bool reading_log = false;
 	bool reading_bootlog = false;
     vector<char> rx_buf(1024);
-    FILE *rx_ser = fdopen(&pc2, "r");
+    FILE *rx_ser = fdopen(&pc, "r");
     for(;;) {
         debug_printf(DBG_WARN, "starting the receive\r\n");
         //pc2.gets(rx_buf.data(), 128);

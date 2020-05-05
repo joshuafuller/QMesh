@@ -32,7 +32,7 @@ Serial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 TinyGPSPlus gps;
 UARTSerial pc(USBTX, USBRX, 230400);
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
-UARTSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX, 230400);
+//UARTSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX, 230400);
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
 Thread rx_serial_thread(osPriorityAboveNormal, 4096, NULL, "RX-SERIAL");
