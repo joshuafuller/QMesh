@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Serial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 TinyGPSPlus gps;
-Serial pc(USBTX, USBRX);
+UARTSerial pc(USBTX, USBRX, 230400);
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
 UARTSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX, 230400);
 JSONSerial rx_json_ser, tx_json_ser;
@@ -87,7 +87,7 @@ int main()
     wdt_thread.start(wdt_fn);
 
     // Set the UART comms speed
-    pc.baud(230400);
+    //pc.baud(230400);
     //pc2.baud(230400);
 
     ThisThread::sleep_for(1000);

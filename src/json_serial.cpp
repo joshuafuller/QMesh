@@ -29,16 +29,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
-extern Serial pc;
+extern UARTSerial pc;
 extern UARTSerial pc2;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
+    FILE *tx_ser = fdopen(&pc, "w");
     for(;;) {
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
         str_sptr->push_back('\r');
         str_sptr->push_back('\n');
-        pc.printf("%s", str_sptr->c_str());
+        fprintf(tx_ser, "%s", str_sptr->c_str());
     }
 }
 
