@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "buttons.hpp"
 #include "serial_data.hpp"
 #include "LittleFileSystem.h"
+#include "Adafruit_SSD1306.h"
 
 extern Thread tx_serial_thread, rx_serial_thread;
 extern Thread mesh_protocol_thread;
@@ -27,6 +28,8 @@ extern Thread beacon_thread;
 extern Thread nv_log_thread;
 extern Thread oled_mon_thread;
 extern rtos::Thread *lora_irq_thread;
+
+extern Adafruit_SSD1306_I2c *oled;
 
 volatile bool rebooting = false;
 
@@ -58,8 +61,9 @@ void reboot_system(void) {
 Semaphore btn_pressed_irq(0);
 void button_thread_fn(void) {
     btn_pressed_irq.acquire();
-    debug_printf(DBG_WARN, "Soft reset button pressed\r\n");
-    reboot_system();
+    //debug_printf(DBG_WARN, "Soft reset button pressed\r\n");
+    //reboot_system();
+    
 }
 
 PushButton::PushButton(PinName button) {
@@ -71,6 +75,7 @@ PushButton::PushButton(PinName button) {
 void PushButton::btnInterrupt(void) {
     was_pressed = true;
     btn_pressed_irq.release();
+    oled->displayOff();
 }
     
 bool PushButton::getPressed(void) {

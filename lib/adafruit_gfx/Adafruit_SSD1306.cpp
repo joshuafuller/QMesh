@@ -98,6 +98,16 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
     command(SSD1306_DISPLAYON);
 }
 
+// Turn off the display
+void Adafruit_SSD1306::displayOff(void) {
+    command(SSD1306_DISPLAYOFF);
+}
+
+// Turn on the display
+void Adafruit_SSD1306::displayOn(void) {
+    command(SSD1306_DISPLAYON);
+}
+
 // Set a single pixel
 void Adafruit_SSD1306::drawPixel(int16_t x, int16_t y, uint16_t color)
 {

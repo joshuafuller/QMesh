@@ -65,6 +65,10 @@ public:
 	virtual void data(uint8_t c) = 0;
 	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
 
+    // Turn the display on and off
+    void displayOff(void);
+    void displayOn(void);
+
 	/// Clear the display buffer    
 	void clearDisplay(void);
 	virtual void invertDisplay(bool i);

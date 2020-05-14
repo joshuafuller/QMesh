@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoftI2C.h"
 #include "TinyGPSPlus.h"
 
-Serial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 TinyGPSPlus gps;
 UARTSerial pc(USBTX, USBRX, 230400);
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
@@ -55,6 +55,17 @@ DigitalIn user_button(USER_BUTTON);
 
 SoftI2C oled_i2c(PB_8, PB_9);
 Adafruit_SSD1306_I2c *oled;
+
+void print_stats()
+{
+    mbed_stats_cpu_t stats;
+    mbed_stats_cpu_get(&stats);
+
+    debug_printf(DBG_INFO, "Uptime: %-20lld", stats.uptime);
+    debug_printf(DBG_INFO, "Idle time: %-20lld", stats.idle_time);
+    debug_printf(DBG_INFO, "Sleep time: %-20lld", stats.sleep_time);
+    debug_printf(DBG_INFO, "Deep sleep time: %-20lld\n", stats.deep_sleep_time);
+}
 
 // main() runs in its own thread in the OS
 int main()
@@ -175,5 +186,10 @@ int main()
     oled_mon_thread.start(oled_mon_fn);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
+
+    for(;;) {
+        print_stats();
+        ThisThread::sleep_for(5000);
+    }
 }
 

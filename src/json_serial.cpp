@@ -30,7 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
 extern UARTSerial pc;
-//extern UARTSerial pc2;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
