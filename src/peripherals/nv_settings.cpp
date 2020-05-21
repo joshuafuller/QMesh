@@ -34,6 +34,8 @@ QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
                     MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
                     0, 40000000);
 LittleFileSystem fs("fs");
+extern UARTSerial *pc;
+extern Mutex pc_lock;
 
 
 void rescue_filesystem(void) {
@@ -135,6 +137,13 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb["Beacon Message"].get<string>().c_str());
     debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb["Beacon Interval"].get<int>());
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb["Payload Length"].get<int>());
+
+    // Check if low-power mode is set. If so, delete the UART
+    if(fopen("/fs/low_power.mode", "r")) {
+        pc_lock.lock();
+        delete pc;
+        pc_lock.unlock();
+    }
 }
 
 void save_settings_to_flash(void) {

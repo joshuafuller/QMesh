@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 TinyGPSPlus gps;
 //UARTSerial pc(USBTX, USBRX, 230400);
-UARTSerial *pc;
+//UARTSerial *pc;
 Mutex pc_lock;
 // Should be A_9 (TX) and PA_10 (RX) on the NUCLEO-F746ZG
 //UARTSerial pc2(MBED_CONF_APP_ALT_UART_TX, MBED_CONF_APP_ALT_UART_RX, 230400);

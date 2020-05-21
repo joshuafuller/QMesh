@@ -43,8 +43,20 @@ void tx_serial_thread_fn(void) {
         str_sptr->push_back('\r');
         str_sptr->push_back('\n');
         pc_lock.lock();
+        // Use the "continuous" UARTSerial
         if(pc) {
+            FILE *tx_ser = fdopen(pc, "w");
             fprintf(tx_ser, "%s", str_sptr->c_str());
+            fclose(tx_ser);
+        }
+        // Use an "ephemeral" UARTSerial that's just created to send out that one line
+        // and subsequently destroyed
+        else {
+            pc = new UARTSerial(USBTX, USBRX, 230400);
+            FILE *tx_ser = fdopen(pc, "w");
+            fprintf(tx_ser, "%s", str_sptr->c_str());
+            fclose(tx_ser);
+            delete pc;
         }
         pc_lock.unlock();
     }
@@ -103,20 +115,19 @@ void rx_serial_thread_fn(void) {
 	bool reading_log = false;
 	bool reading_bootlog = false;
     vector<char> rx_buf(1024);
-    FILE *rx_ser;
-    if(pc) {
-        rx_ser = fdopen(pc, "r");
-    }
-    else {
-        while(!pc) {
-            ThisThread::sleep_for(1000);
-        }
-    }
     for(;;) {
         debug_printf(DBG_WARN, "starting the receive\r\n");
         pc_lock.lock();
-        fgets(rx_buf.data(), 128, rx_ser);
+        if(pc) {
+            FILE *rx_ser = fdopen(pc, "r");
+            fgets(rx_buf.data(), 128, rx_ser);
+            fclose(rx_ser);
+        }
         pc_lock.unlock();
+        if(!pc) {
+            ThisThread::sleep_for(1000);
+            continue;
+        }
         string rx_str(rx_buf.data());    
         debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
