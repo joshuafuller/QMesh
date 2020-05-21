@@ -28,7 +28,10 @@ extern Thread beacon_thread;
 extern Thread nv_log_thread;
 extern Thread oled_mon_thread;
 extern rtos::Thread *lora_irq_thread;
+extern Thread btn_evt_thread;
 
+extern UARTSerial *pc;
+extern Mutex pc_lock;
 extern Adafruit_SSD1306_I2c *oled;
 
 volatile bool rebooting = false;
@@ -60,10 +63,32 @@ void reboot_system(void) {
 
 Semaphore btn_pressed_irq(0);
 void button_thread_fn(void) {
-    btn_pressed_irq.acquire();
-    //debug_printf(DBG_WARN, "Soft reset button pressed\r\n");
-    //reboot_system();
-    
+    for(;;) {
+        btn_pressed_irq.acquire();
+        FILE *f = fopen("/fs/low_power.mode", "r");
+        if(f) {
+            fclose(f);
+            fs.remove("/fs/low_power.mode");
+            if(pc) {
+                pc_lock.lock();
+                delete pc;
+                pc_lock.unlock();
+            }
+            oled->displayOn();
+        }
+        else {
+            fclose(f);
+            FILE *f = fopen("/fs/low_power.mode", "w");
+            fprintf(f, "In low power mode\r\n");
+            fclose(f);
+            if(!pc) {
+                pc_lock.lock();
+                pc = new UARTSerial(USBTX, USBRX, 230400);
+                pc_lock.unlock();
+            }
+            oled->displayOff();
+        }
+    } 
 }
 
 PushButton::PushButton(PinName button) {

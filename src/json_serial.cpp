@@ -29,16 +29,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
-extern UARTSerial pc;
+extern UARTSerial *pc;
+extern Mutex pc_lock;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
-    FILE *tx_ser = fdopen(&pc, "w");
+    FILE *tx_ser;
+    if(pc) {
+        tx_ser = fdopen(pc, "w");
+    }
     for(;;) {
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
         str_sptr->push_back('\r');
         str_sptr->push_back('\n');
-        fprintf(tx_ser, "%s", str_sptr->c_str());
+        pc_lock.lock();
+        if(pc) {
+            fprintf(tx_ser, "%s", str_sptr->c_str());
+        }
+        pc_lock.unlock();
     }
 }
 
@@ -90,17 +98,25 @@ void get_next_line(FILE *f, string &str) {
 
 
 void rx_serial_thread_fn(void) {
-    //pc2.attach(ser_rx_isr, mbed::SerialBase::RxIrq);
 	FILE *f;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
     vector<char> rx_buf(1024);
-    FILE *rx_ser = fdopen(&pc, "r");
+    FILE *rx_ser;
+    if(pc) {
+        rx_ser = fdopen(pc, "r");
+    }
+    else {
+        while(!pc) {
+            ThisThread::sleep_for(1000);
+        }
+    }
     for(;;) {
         debug_printf(DBG_WARN, "starting the receive\r\n");
-        //pc2.gets(rx_buf.data(), 128);
+        pc_lock.lock();
         fgets(rx_buf.data(), 128, rx_ser);
+        pc_lock.unlock();
         string rx_str(rx_buf.data());    
         debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
