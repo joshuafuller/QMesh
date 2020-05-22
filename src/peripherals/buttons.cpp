@@ -30,32 +30,13 @@ extern Thread oled_mon_thread;
 extern rtos::Thread *lora_irq_thread;
 extern Thread btn_evt_thread;
 
-extern UARTSerial *pc;
-extern Mutex pc_lock;
 extern Adafruit_SSD1306_I2c *oled;
+extern UARTSerial gps_serial;
 
 volatile bool rebooting = false;
 
 void reboot_system(void) {
 	rebooting = true;
-#if 0
-    if(mesh_protocol_thread.get_state() != Thread::Deleted) {
-	    mesh_protocol_thread.join();
-    }
-    if(beacon_thread.get_state() != Thread::Deleted) {
-	    beacon_thread.join();
-    }
-    if(oled_mon_thread.get_state() != Thread::Deleted) {
-        oled_mon_thread.join();
-    }
-    if(lora_irq_thread->get_state() != Thread::Deleted) {
-        lora_irq_thread->terminate();
-    }
-    debug_printf(DBG_INFO, "Unmounting the filesystem...\r\n");
-    int err = fs.unmount();
-    debug_printf(DBG_INFO, "%s\n", (err ? "Fail :(\r\n" : "OK\r\n"));
-    bd.sync();
-#endif
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
     ThisThread::sleep_for(500);
     NVIC_SystemReset();
@@ -69,11 +50,8 @@ void button_thread_fn(void) {
         if(f) {
             fclose(f);
             fs.remove("/fs/low_power.mode");
-            if(pc) {
-                pc_lock.lock();
-                delete pc;
-                pc_lock.unlock();
-            }
+            mbed_file_handle(STDIN_FILENO)->enable_input(true);
+            gps_serial.enable_input(true);
             oled->displayOn();
         }
         else {
@@ -81,11 +59,8 @@ void button_thread_fn(void) {
             FILE *f = fopen("/fs/low_power.mode", "w");
             fprintf(f, "In low power mode\r\n");
             fclose(f);
-            if(!pc) {
-                pc_lock.lock();
-                pc = new UARTSerial(USBTX, USBRX, 230400);
-                pc_lock.unlock();
-            }
+            mbed_file_handle(STDIN_FILENO)->enable_input(false);   
+            gps_serial.enable_input(false);
             oled->displayOff();
         }
     } 

@@ -423,6 +423,11 @@ typedef struct radio_events {
     mbed::Callback<void()> rx_error;
 
     /**
+     * Callback when the preamble is detected.
+     */
+    mbed::Callback<void()> rx_preamble_det;
+
+    /**
      * FHSS Change Channel callback prototype.
      *
      *  @param current_channel   The index number of the current channel.

@@ -34,8 +34,7 @@ QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
                     MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
                     0, 40000000);
 LittleFileSystem fs("fs");
-extern UARTSerial *pc;
-extern Mutex pc_lock;
+extern UARTSerial gps_serial;
 
 
 void rescue_filesystem(void) {
@@ -140,9 +139,8 @@ void load_settings_from_flash(void) {
 
     // Check if low-power mode is set. If so, delete the UART
     if(fopen("/fs/low_power.mode", "r")) {
-        pc_lock.lock();
-        delete pc;
-        pc_lock.unlock();
+        mbed_file_handle(STDIN_FILENO)->enable_input(false); 
+        gps_serial.enable_input(false); 
     }
 }
 

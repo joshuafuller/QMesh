@@ -34,10 +34,10 @@
         "*": {
             "target.features_add": ["STORAGE"],
             "target.components_add": ["SPIF", "QSPIF"],
-            "platform.stdio-buffered-serial": true,
             "platform.stdio-convert-newlines": true,
             "platform.stdio-baud-rate": 230400,
             "platform.default-serial-baud-rate": 230400,
+            "platform.stdio-buffered-serial": true,
             "platform.cpu-stats-enabled": 1,
             "lora.over-the-air-activation": true,
             "lora.duty-cycle-on": true,
@@ -261,6 +261,5 @@
         "MBED_HEAP_STATS_ENABLED=1",
         "MBED_STACK_STATS_ENABLED=1",
         "MBED_TICKLESS=1",
-        "MBED_SLEEP_TRACING_ENABLED=1",
         "MBED_MEM_TRACING_ENABLED=1"]
 }

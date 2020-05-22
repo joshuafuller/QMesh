@@ -57,9 +57,11 @@ static void rx_done_cb(uint8_t const *payload, shared_ptr<Timer> tmr_sptr, uint1
 static void tx_timeout_cb(void);
 static void rx_timeout_cb(void);
 static void rx_error_cb(void);
+static void rx_preamble_det_cb(void);
 static void fhss_change_channel_cb(uint8_t current_channel);
 
 shared_ptr<FEC> frame_fec;  
+static DeepSleepLock *deep_sleep_lock;
 
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
@@ -71,6 +73,7 @@ void init_radio(void) {
     radio_events.rx_error = rx_error_cb;
     radio_events.tx_timeout = tx_timeout_cb;
     radio_events.rx_timeout = rx_timeout_cb;
+    radio_events.rx_preamble_det = rx_preamble_det_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
     ThisThread::sleep_for(250);
     radio.init_radio(&radio_events);
@@ -180,19 +183,32 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Fram
 
 static void tx_done_cb(shared_ptr<Timer> tmr_sptr)
 {
+    debug_printf(DBG_INFO, "TX done\r\n");
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT, tmr_sptr);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> > (tx_radio_evt_mail, radio_event);
 }
+
 
 static void rx_done_cb(uint8_t const *payload, shared_ptr<Timer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)
 {
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, tmr_sptr, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
-    debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr);    
+    debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
+    if(deep_sleep_lock) {
+        delete deep_sleep_lock;
+    }   
 }
- 
+
+
+static void rx_preamble_det_cb(void) {
+    if(!deep_sleep_lock) {
+        deep_sleep_lock = new DeepSleepLock();
+    }
+}
+
+
 static void tx_timeout_cb(void)
 {
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
@@ -205,6 +221,9 @@ static void rx_timeout_cb(void)
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event); 
+    if(deep_sleep_lock) {
+        delete deep_sleep_lock;
+    }   
 }
  
 static void rx_error_cb(void)
@@ -212,6 +231,9 @@ static void rx_error_cb(void)
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
+    if(deep_sleep_lock) {
+        delete deep_sleep_lock;
+    }   
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) { }

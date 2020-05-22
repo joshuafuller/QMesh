@@ -302,6 +302,10 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         tmr_sem_ptr->release();
     }
 
+    if ((irq_status & IRQ_PREAMBLE_DETECTED) == IRQ_PREAMBLE_DETECTED) {
+        _radio_events->rx_preamble_det();
+    }
+    
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
         if ((irq_status & IRQ_CRC_ERROR) == IRQ_CRC_ERROR) {
             if (_radio_events && _radio_events->rx_error) {
@@ -1106,8 +1110,8 @@ void SX126X_LoRaRadio::receive(void)
     }
 
     if (_reception_mode != RECEPTION_MODE_OTHER) {
-        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR ,
-                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR ,
+        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_PREAMBLE_DETECTED ,
+                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_PREAMBLE_DETECTED ,
                           IRQ_RADIO_NONE,
                           IRQ_RADIO_NONE);
         set_modulation_params(&_mod_params);

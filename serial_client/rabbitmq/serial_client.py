@@ -24,7 +24,7 @@ import time
 import threading
 
 ser = None
-params = pika.ConnectionParameters('localhost', heartbeat=600, 
+params = pika.ConnectionParameters('127.0.0.1', heartbeat=600, 
         blocked_connection_timeout=300)
 
 # Callback whenever new received messages come in from the broker

@@ -29,36 +29,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
 
-extern UARTSerial *pc;
-extern Mutex pc_lock;
-
 void print_memory_info();
 void tx_serial_thread_fn(void) {
-    FILE *tx_ser;
-    if(pc) {
-        tx_ser = fdopen(pc, "w");
-    }
     for(;;) {
         auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
-        str_sptr->push_back('\r');
-        str_sptr->push_back('\n');
-        pc_lock.lock();
-        // Use the "continuous" UARTSerial
-        if(pc) {
-            FILE *tx_ser = fdopen(pc, "w");
-            fprintf(tx_ser, "%s", str_sptr->c_str());
-            fclose(tx_ser);
-        }
-        // Use an "ephemeral" UARTSerial that's just created to send out that one line
-        // and subsequently destroyed
-        else {
-            pc = new UARTSerial(USBTX, USBRX, 230400);
-            FILE *tx_ser = fdopen(pc, "w");
-            fprintf(tx_ser, "%s", str_sptr->c_str());
-            fclose(tx_ser);
-            delete pc;
-        }
-        pc_lock.unlock();
+        puts(str_sptr->c_str());
     }
 }
 
@@ -117,17 +92,7 @@ void rx_serial_thread_fn(void) {
     vector<char> rx_buf(1024);
     for(;;) {
         debug_printf(DBG_WARN, "starting the receive\r\n");
-        pc_lock.lock();
-        if(pc) {
-            FILE *rx_ser = fdopen(pc, "r");
-            fgets(rx_buf.data(), 128, rx_ser);
-            fclose(rx_ser);
-        }
-        pc_lock.unlock();
-        if(!pc) {
-            ThisThread::sleep_for(1000);
-            continue;
-        }
+        gets(rx_buf.data());
         string rx_str(rx_buf.data());    
         debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
         MbedJSONValue rx_json;
