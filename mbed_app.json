@@ -39,6 +39,9 @@
             "platform.default-serial-baud-rate": 230400,
             "platform.stdio-buffered-serial": true,
             "platform.cpu-stats-enabled": 1,
+            "platform.thread-stats-enabled": true,
+            "rtos.idle-thread-stack-size": 4096,
+    		"rtos.idle-thread-stack-size-debug-extra": 4096,
             "lora.over-the-air-activation": true,
             "lora.duty-cycle-on": true,
             "lora.phy": "EU868",
@@ -258,8 +261,6 @@
         }
     },
     "macros": ["MBEDTLS_USER_CONFIG_FILE=\"mbedtls_lora_config.h\"",
-        "MBED_HEAP_STATS_ENABLED=1",
-        "MBED_STACK_STATS_ENABLED=1",
         "MBED_TICKLESS=1",
-        "MBED_MEM_TRACING_ENABLED=1"]
+        "MBED_CPU_STATS_ENABLED=1"]
 }

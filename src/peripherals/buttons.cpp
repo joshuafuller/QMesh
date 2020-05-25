@@ -31,7 +31,7 @@ extern rtos::Thread *lora_irq_thread;
 extern Thread btn_evt_thread;
 
 extern Adafruit_SSD1306_I2c *oled;
-extern UARTSerial gps_serial;
+//extern UARTSerial gps_serial;
 
 volatile bool rebooting = false;
 
@@ -42,6 +42,7 @@ void reboot_system(void) {
     NVIC_SystemReset();
 }
 
+
 Semaphore btn_pressed_irq(0);
 void button_thread_fn(void) {
     for(;;) {
@@ -51,7 +52,8 @@ void button_thread_fn(void) {
             fclose(f);
             int remove_results = fs.remove("low_power.mode");
             mbed_file_handle(STDIN_FILENO)->enable_input(true);
-            gps_serial.enable_input(true);
+            rx_serial_thread.start(rx_serial_thread_fn);
+            //gps_serial.enable_input(true);
             oled->displayOn();
         }
         else {
@@ -59,7 +61,8 @@ void button_thread_fn(void) {
             fprintf(f, "In low power mode\r\n");
             fclose(f);
             mbed_file_handle(STDIN_FILENO)->enable_input(false);   
-            gps_serial.enable_input(false);
+            rx_serial_thread.terminate();
+            //gps_serial.enable_input(false);
             oled->displayOff();
         }
     } 

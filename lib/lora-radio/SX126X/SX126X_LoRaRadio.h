@@ -301,8 +301,8 @@ public:
      * Timers for tracking when the Rx interrupt was thrown
      */
     Semaphore *tmr_sem_ptr;
-    Timer *cur_tmr;
-    shared_ptr<Timer> cur_tmr_sptr;
+    LowPowerTimer *cur_tmr;
+    shared_ptr<LowPowerTimer> cur_tmr_sptr;
 
 private:
 

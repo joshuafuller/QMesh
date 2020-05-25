@@ -378,7 +378,7 @@ typedef enum {
 class RadioEvent {
 public:
     radio_evt_enum_t evt_enum;
-    shared_ptr<Timer> tmr_sptr;
+    shared_ptr<LowPowerTimer> tmr_sptr;
     int16_t rssi;
     int8_t snr;
     shared_ptr<vector<uint8_t>> buf;
@@ -386,9 +386,9 @@ public:
 
     RadioEvent(const radio_evt_enum_t my_evt_enum);
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<Timer> my_tmr);
+    RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<LowPowerTimer> my_tmr);
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<Timer> my_tmr, const uint8_t *my_buf, 
+    RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<LowPowerTimer> my_tmr, const uint8_t *my_buf, 
                 const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
 
     RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);

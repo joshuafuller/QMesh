@@ -47,7 +47,7 @@ public:
     uint32_t pre_wait_factor;
     uint32_t pre_wait_us;
 
-    shared_ptr<Timer> tmr_sptr;
+    shared_ptr<LowPowerTimer> tmr_sptr;
     int32_t wait_duration_us;
 
 /**
@@ -103,7 +103,7 @@ void waitTx(void);
 /** 
  * Starts the protocol timer.
  */
-void setTimer(shared_ptr<Timer> my_tmr_sptr) {
+void setTimer(shared_ptr<LowPowerTimer> my_tmr_sptr) {
     tmr_sptr = my_tmr_sptr;
 }
 

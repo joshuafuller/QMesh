@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "radio_timing.hpp"
 #include "radio.hpp"
 
-static Timeout rx_mesh_time;
+static LowPowerTimeout rx_mesh_time;
 typedef enum {
     TX,
     RX,
@@ -127,7 +127,7 @@ void mesh_protocol_fsm(void) {
     static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
 
     // Set up an initial timer
-    auto initial_timer = make_shared<Timer>();
+    auto initial_timer = make_shared<LowPowerTimer>();
     initial_timer->reset();
     initial_timer->start();
     radio_timing.setTimer(initial_timer);

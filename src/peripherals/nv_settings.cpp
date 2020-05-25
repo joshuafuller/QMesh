@@ -34,7 +34,7 @@ QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
                     MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
                     0, 40000000);
 LittleFileSystem fs("fs");
-extern UARTSerial gps_serial;
+//extern UARTSerial gps_serial;
 extern Adafruit_SSD1306_I2c *oled;
 
 
@@ -81,6 +81,7 @@ void init_filesystem(void) {
 	}
 }
 
+extern Thread rx_serial_thread;
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Stats on settings.json\r\n");
     FILE *f;    
@@ -139,11 +140,13 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb["Payload Length"].get<int>());
 
     // Check if low-power mode is set. If so, delete the UART
+    rx_serial_thread.start(rx_serial_thread_fn);
     FILE *low_power_fh = fopen("/fs/low_power.mode", "r");
     if(low_power_fh) {
+        rx_serial_thread.terminate();
         oled->displayOff();
         mbed_file_handle(STDIN_FILENO)->enable_input(false); 
-        gps_serial.enable_input(false); 
+        //gps_serial.enable_input(false); 
         fclose(low_power_fh);
     }
 }

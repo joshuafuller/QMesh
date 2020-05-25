@@ -28,11 +28,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoftI2C.h"
 #include "TinyGPSPlus.h"
 
-UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, 9600);
+//UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, 9600);
 TinyGPSPlus gps;
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
-Thread rx_serial_thread(osPriorityAboveNormal, 4096, NULL, "RX-SERIAL");
+Thread rx_serial_thread(osPriorityNormal, 4096, NULL, "RX-SERIAL");
 Thread mesh_protocol_thread(osPriorityNormal, 4096, NULL, "MESH-FSM");
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
 Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
@@ -56,18 +56,38 @@ Adafruit_SSD1306_I2c *oled;
 
 void print_stats()
 {
+    {
     mbed_stats_cpu_t stats;
     mbed_stats_cpu_get(&stats);
 
-    debug_printf(DBG_INFO, "Uptime: %-20lld", stats.uptime);
-    debug_printf(DBG_INFO, "Idle time: %-20lld", stats.idle_time);
-    debug_printf(DBG_INFO, "Sleep time: %-20lld", stats.sleep_time);
-    debug_printf(DBG_INFO, "Deep sleep time: %-20lld\n", stats.deep_sleep_time);
+    printf("Uptime: %-20lld", stats.uptime);
+    printf("Idle time: %-20lld", stats.idle_time);
+    printf("Sleep time: %-20lld", stats.sleep_time);
+    printf("Deep sleep time: %-20lld\n", stats.deep_sleep_time);
+    }
+#if 0
+    {
+    mbed_stats_thread_t *stats = new mbed_stats_thread_t[20];
+    int count = mbed_stats_thread_get_each(stats, 20);
+    
+    for(int i = 0; i < count; i++) {
+        printf("ID: 0x%x \n", stats[i].id);
+        printf("Name: %s \n", stats[i].name);
+        printf("State: %d \n", stats[i].state);
+        printf("Priority: %d \n", stats[i].priority);
+        printf("Stack Size: %d \n", stats[i].stack_size);
+        printf("Stack Space: %d \n", stats[i].stack_space);
+        printf("\n");
+    }
+    }
+#endif
 }
 
 // main() runs in its own thread in the OS
+static int dummy = printf("Starting all the things\r\n");
 int main()
 {
+    //sleep_manager_lock_deep_sleep();
     oled_i2c.frequency(400000);
     oled_i2c.start();
     
@@ -88,23 +108,20 @@ int main()
 		}
 	}
 	led1.LEDSolid();
-
     auto push_button = new PushButton(USER_BUTTON);
     button_thread.start(button_thread_fn);
 	
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
-
     ThisThread::sleep_for(1000);
 
     debug_printf(DBG_INFO, "Starting serial threads...\r\n"); // Removing this causes a hard fault???
-
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
-    rx_serial_thread.start(rx_serial_thread_fn);
     rx_frame_thread.start(rx_frame_ser_thread_fn);
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
+    printf("Hello\r\n");
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
@@ -182,7 +199,7 @@ int main()
     debug_printf(DBG_INFO, "Started all threads\r\n");
 
     for(;;) {
-        //print_stats();
+        print_stats();
         ThisThread::sleep_for(5000);
     }
 }
