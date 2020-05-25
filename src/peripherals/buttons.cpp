@@ -52,9 +52,11 @@ void button_thread_fn(void) {
             fclose(f);
             int remove_results = fs.remove("low_power.mode");
             mbed_file_handle(STDIN_FILENO)->enable_input(true);
-            rx_serial_thread.start(rx_serial_thread_fn);
             //gps_serial.enable_input(true);
             oled->displayOn();
+            debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
+            ThisThread::sleep_for(1000);
+            reboot_system();
         }
         else {
             FILE *f = fopen("/fs/low_power.mode", "w");
