@@ -109,7 +109,8 @@ typedef struct Afsk
 #define AFSK_DAC_IRQ_START()   do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = true; } while (0)
 #define AFSK_DAC_IRQ_STOP()    do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = false; } while (0)
 
-void AFSK_init(Afsk &afsk);
+extern Afsk *AFSK_modem;
+void AFSK_init(Afsk *afsk);
 void AFSK_transmit(char *buffer, size_t size);
 
 void afsk_putchar(char c);

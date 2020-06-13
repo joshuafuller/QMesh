@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
 #include "TinyGPSPlus.h"
+#include "LibAPRS.h"
+#include "AFSK.h"
 
 //UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, 9600);
 TinyGPSPlus gps;
@@ -40,6 +42,8 @@ Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
 Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON");
 Thread oled_mon_thread(osPriorityNormal, 4096, NULL, "OLED-MON");
 Thread btn_evt_thread(osPriorityNormal, 4096, NULL, "BTN-EVT");
+
+Afsk my_afsk;
 
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
@@ -83,11 +87,12 @@ void print_stats()
 #endif
 }
 
+
 // main() runs in its own thread in the OS
+
 static int dummy = printf("Starting all the things\r\n");
 int main()
 {
-    //sleep_manager_lock_deep_sleep();
     oled_i2c.frequency(400000);
     oled_i2c.start();
     
@@ -122,6 +127,16 @@ int main()
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
     printf("Hello\r\n");
+
+    // Initialize the LibAPRS components
+    debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
+    ThisThread::sleep_for(500);
+    APRS_init(0, false);
+    debug_printf(DBG_INFO, "Starting AFSK...\r\n");
+    ThisThread::sleep_for(500);
+    AFSK_init(&my_afsk);
+    ThisThread::sleep_for(500);
+    APRS_printSettings();
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();

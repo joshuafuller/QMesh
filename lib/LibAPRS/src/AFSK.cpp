@@ -46,9 +46,7 @@ void AFSK_init(Afsk *afsk) {
     for (int i = 0; i<SAMPLESPERBIT / 2; i++) {
         fifo_push(afsk->delayFifo, 0);
     }
-
     AFSK_hw_init();
-
 }
 
 

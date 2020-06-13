@@ -23,7 +23,6 @@ IndicatorLED led1(LED1);
 IndicatorLED led2(LED2);
 IndicatorLED led3(LED3);
 
-
 void IndicatorLED::blinkFn(void) {
     while(true) {
         if(led_state == LED_BLINK) {

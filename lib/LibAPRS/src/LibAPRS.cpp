@@ -1,10 +1,12 @@
 //#include "Arduino.h"
 #include "AFSK.h"
 #include "AX25.h"
+#include <string>
+#include "serial_data.hpp"
 
 Afsk modem;
 AX25Ctx AX25;
-//xtern void aprs_msg_callback(struct AX25Msg *msg);
+static void aprs_msg_callback(struct AX25Msg *msg) {};
 #define countof(a) sizeof(a)/sizeof(a[0])
 
 bool LibAPRS_open_squelch = false;
@@ -53,8 +55,7 @@ bool message_autoAck = false;
 
 void APRS_init(int reference, bool open_squelch) {
     LibAPRS_open_squelch = open_squelch;
-
-    //ax25_init(&AX25, aprs_msg_callback);
+    ax25_init(&AX25, aprs_msg_callback);
 }
 
 
@@ -186,24 +187,70 @@ void APRS_setDirectivity(int s) {
 
 
 void APRS_printSettings() {
-#if 0
-    Serial.println(F("LibAPRS Settings:"));
-    Serial.print(F("Callsign:     ")); Serial.print(CALL); Serial.print(F("-")); Serial.println(CALL_SSID);
-    Serial.print(F("Destination:  ")); Serial.print(DST); Serial.print(F("-")); Serial.println(DST_SSID);
-    Serial.print(F("Path1:        ")); Serial.print(PATH1); Serial.print(F("-")); Serial.println(PATH1_SSID);
-    Serial.print(F("Path2:        ")); Serial.print(PATH2); Serial.print(F("-")); Serial.println(PATH2_SSID);
-    Serial.print(F("Message dst:  ")); if (message_recip[0] == 0) { Serial.println(F("N/A")); } else { Serial.print(message_recip); Serial.print(F("-")); Serial.println(message_recip_ssid); }
-    Serial.print(F("TX Preamble:  ")); Serial.println(custom_preamble);
-    Serial.print(F("TX Tail:      ")); Serial.println(custom_tail);
-    Serial.print(F("Symbol table: ")); if (symbolTable == '/') { Serial.println(F("Normal")); } else { Serial.println(F("Alternate")); }
-    Serial.print(F("Symbol:       ")); Serial.println(symbol);
-    Serial.print(F("Power:        ")); if (power < 10) { Serial.println(power); } else { Serial.println(F("N/A")); }
-    Serial.print(F("Height:       ")); if (height < 10) { Serial.println(height); } else { Serial.println(F("N/A")); }
-    Serial.print(F("Gain:         ")); if (gain < 10) { Serial.println(gain); } else { Serial.println(F("N/A")); }
-    Serial.print(F("Directivity:  ")); if (directivity < 10) { Serial.println(directivity); } else { Serial.println(F("N/A")); }
-    Serial.print(F("Latitude:     ")); if (latitude[0] != 0) { Serial.println(latitude); } else { Serial.println(F("N/A")); }
-    Serial.print(F("Longtitude:   ")); if (longtitude[0] != 0) { Serial.println(longtitude); } else { Serial.println(F("N/A")); }
-#endif
+    debug_printf(DBG_INFO, "LibAPRS Settings:\r\n");
+    debug_printf(DBG_INFO, "Callsign: %s-%d\r\n", CALL, CALL_SSID);
+    debug_printf(DBG_INFO, "Destination: %s-%d\r\n", DST, DST_SSID);
+    debug_printf(DBG_INFO, "Path1: %s-%d\r\n", PATH1, PATH1_SSID);
+    debug_printf(DBG_INFO, "Path2: %s-%d\r\n", PATH2, PATH2_SSID);
+    string msg_recip_str;
+    if (message_recip[0] == 0) {
+        msg_recip_str = "N/A"; 
+    } else { 
+        msg_recip_str = message_recip;
+    }
+    debug_printf(DBG_INFO, "Message dst: %s-%d\r\n", msg_recip_str.c_str(), message_recip_ssid);
+    debug_printf(DBG_INFO, "TX Preamble: 0x%8x\r\n", custom_preamble);
+    debug_printf(DBG_INFO, "TX Tail:     0x%8x\r\n", custom_tail);
+    string norm_alt_str;
+    if (symbolTable == '/') {
+        msg_recip_str = "Normal";  
+    } else { 
+        msg_recip_str = "Alternate";
+    }
+    debug_printf(DBG_INFO, "Symbol table: %s\r\n", msg_recip_str.c_str()); 
+    debug_printf(DBG_INFO, "Symbol:       %c\r\n", symbol);
+    string power_str;
+    if (power < 10) { 
+        power_str = to_string(power); 
+    } else { 
+        power_str = "N/A"; 
+    }
+    debug_printf(DBG_INFO, "Power:        %s\r\n", power_str.c_str());
+    string height_str;
+    if (height < 10) { 
+        height_str = height;
+    } else { 
+        height_str = "N/A"; 
+    }
+    debug_printf(DBG_INFO, "Height:       %s\r\n", height_str.c_str());
+    string gain_str;
+    if (gain < 10) { 
+        gain_str = gain;
+    } else { 
+        gain_str = "N/A"; 
+    }
+    debug_printf(DBG_INFO, "Gain:         %s\r\n", gain_str.c_str());
+    string dir_str;
+    if (directivity < 10) { 
+        dir_str = directivity; 
+    } else { 
+        dir_str = "N/A"; 
+    }
+    debug_printf(DBG_INFO, "Directivity:  %s\r\n", dir_str.c_str()); 
+    string lat_str;
+    if (latitude[0] != 0) {
+        lat_str = latitude;  
+    } else { 
+        lat_str = "N/A";
+    }
+    debug_printf(DBG_INFO, "Latitude:     %s\r\n", lat_str.c_str());
+    string long_str; 
+    if (longtitude[0] != 0) { 
+        long_str = longtitude; 
+    } else { 
+        long_str = "N/A"; 
+    }
+    debug_printf(DBG_INFO, "Longitude:   %s\r\n", long_str.c_str()); 
 }
 
 
