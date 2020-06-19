@@ -154,7 +154,7 @@ void dac_isr(void) {
 
  
 void AFSK_DAC_IRQ_START(void) {
-    sample_timer.attach_us(dac_isr, 1e6f/9600.f);
+    sample_timer.attach_us(dac_isr, 1e6f/(float) CONFIG_AFSK_DAC_SAMPLERATE);
 }
 
 
