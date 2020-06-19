@@ -147,7 +147,9 @@ uint8_t AFSK_dac_isr(Afsk *afsk) {
 /// Use a Ticker to determine when to send out the next sample
 Ticker sample_timer;
 void dac_isr(void) {
-    audio_out = AFSK_dac_isr(AFSK_modem);
+    uint8_t sample = AFSK_dac_isr(AFSK_modem);
+    uint16_t sample_shifted = (uint16_t) sample << 8;
+    audio_out.write_u16(sample_shifted);
 }
 
  

@@ -145,7 +145,9 @@ int main()
     APRS_printSettings();
     // Try to send out a test packet
     string comment = "LibAPRS location update";
-    APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
+    //while(1) {
+        APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
+    //}
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
