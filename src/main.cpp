@@ -130,13 +130,22 @@ int main()
 
     // Initialize the LibAPRS components
     debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
-    ThisThread::sleep_for(500);
-    APRS_init(0, false);
-    debug_printf(DBG_INFO, "Starting AFSK...\r\n");
-    ThisThread::sleep_for(500);
     AFSK_init(&my_afsk);
-    ThisThread::sleep_for(500);
+    APRS_init(0, false);
+    string call_str = "NOCALL";
+    APRS_setCallsign((char *) call_str.data(), 1);
+    string lat_str = "5530.80N";
+    APRS_setLat((char *) lat_str.c_str());
+    string lon_str = "01143.89E";
+    APRS_setLon((char *) lon_str.c_str());
+    APRS_setPower(2);
+    APRS_setHeight(4);
+    APRS_setGain(7);
+    APRS_setDirectivity(0);
     APRS_printSettings();
+    // Try to send out a test packet
+    string comment = "LibAPRS location update";
+    APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();

@@ -11,7 +11,7 @@ typedef struct FIFOBuffer
   unsigned char *end;
   unsigned char * volatile head;
   unsigned char * volatile tail;
-  Semaphore sem;
+  Semaphore *sem;
 } FIFOBuffer;
 
 
@@ -54,9 +54,9 @@ inline void fifo_flush(FIFOBuffer &f) {
 inline bool fifo_isempty_locked(FIFOBuffer &f) {
   bool result;
   
-  f.sem.acquire();
+  f.sem->acquire();
   result = fifo_isempty(f);
-  f.sem.release();
+  f.sem->release();
   
   return result;
 }
@@ -64,32 +64,33 @@ inline bool fifo_isempty_locked(FIFOBuffer &f) {
 inline bool fifo_isfull_locked(FIFOBuffer &f) {
   bool result;
   
-  f.sem.acquire();  
+  f.sem->acquire();  
   result = fifo_isfull(f);
-  f.sem.release();
+  f.sem->release();
   
   return result;
 }
 
 inline void fifo_push_locked(FIFOBuffer &f, unsigned char c) {
 	
-  f.sem.acquire();
+  f.sem->acquire();
   fifo_push(f, c);
-  f.sem.release();
+  f.sem->release();
   
 }
 
 inline unsigned char fifo_pop_locked(FIFOBuffer &f) {
   unsigned char c;
   
-  f.sem.acquire();
+  f.sem->acquire();
   c = fifo_pop(f);
-  f.sem.release();
+  f.sem->release();
   
   return c;
 }
 
 inline void fifo_init(FIFOBuffer &f, unsigned char *buffer, size_t size) {
+  f.sem = new Semaphore(1);
   f.head = f.tail = f.begin = buffer;
   f.end = buffer + size -1;
 }

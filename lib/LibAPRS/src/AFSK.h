@@ -106,8 +106,13 @@ typedef struct Afsk
 #define MARK_INC   (uint16_t)(DIV_ROUND(SIN_LEN * (uint32_t)MARK_FREQ, CONFIG_AFSK_DAC_SAMPLERATE))
 #define SPACE_INC  (uint16_t)(DIV_ROUND(SIN_LEN * (uint32_t)SPACE_FREQ, CONFIG_AFSK_DAC_SAMPLERATE))
 
+#if 0
 #define AFSK_DAC_IRQ_START()   do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = true; } while (0)
 #define AFSK_DAC_IRQ_STOP()    do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = false; } while (0)
+#else
+void AFSK_DAC_IRQ_START(void);
+void AFSK_DAC_IRQ_STOP(void);
+#endif
 
 extern Afsk *AFSK_modem;
 void AFSK_init(Afsk *afsk);

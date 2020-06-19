@@ -1,4 +1,3 @@
-//#include "Arduino.h"
 #include "AFSK.h"
 #include "AX25.h"
 #include <string>

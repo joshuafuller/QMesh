@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "leds.hpp"
 
-
 IndicatorLED led1(LED1);
 IndicatorLED led2(LED2);
 IndicatorLED led3(LED3);
