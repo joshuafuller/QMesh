@@ -23,23 +23,23 @@ namespace mbed {
 
 void AnalogOut::write(float value)
 {
-    lock();
+//    lock();
     analogout_write(&_dac, value);
-    unlock();
+//    unlock();
 }
 
 void AnalogOut::write_u16(unsigned short value)
 {
-    lock();
+//    lock();
     analogout_write_u16(&_dac, value);
-    unlock();
+//    unlock();
 }
 
 float AnalogOut::read()
 {
-    lock();
+//    lock();
     float ret = analogout_read(&_dac);
-    unlock();
+//    unlock();
     return ret;
 }
 
