@@ -4,19 +4,38 @@
 
 DRA818::DRA818(PinName my_uart_tx_pin_name, PinName my_uart_rx_pin_name, 
         PinName my_sleep_pin_name, PinName my_ptt_pin_name,
-        PinName my_rf_pwr_pin_name) {
+        PinName my_rf_pwr_pin_name, PinName my_sq_pin_name) {
+
+    evt_queue = mbed_event_queue();
+
+    // Set up the various signals for the DRA818 module
+    uart_tx_pin_name = my_uart_tx_pin_name;
+    uart_rx_pin_name = my_uart_rx_pin_name;
     sleep_pin_name = my_sleep_pin_name;
     ptt_pin_name = my_ptt_pin_name;
     rf_pwr_pin_name = my_rf_pwr_pin_name;
-    wake();
+    sq_pin_name = my_sq_pin_name;
     sleep_pin_sptr = make_shared<DigitalOut>(sleep_pin_name);
     ptt_pin_sptr = make_shared<DigitalOut>(ptt_pin_name);
     rf_pwr_pin_sptr = make_shared<DigitalInOut>(rf_pwr_pin_name);
+    sq_pin_sptr = make_shared<InterruptIn>(sq_pin_name);
+
+    // wake() just sets up the UART
+    wake();
+
+    // Set up the squelch pin handler
+    sq_pin_sptr->fall(evt_queue->event(callback(this, &DRA818::squelch_handler)));
+}
+
+
+void DRA818::squelch_handler(void) {
+    debug_printf(DBG_INFO, "Squelch detected!\r\n");
 }
 
 
 DRA818::~DRA818() {
     delete ser;
+    sleep_pin_sptr->write(0);
 }
 
 

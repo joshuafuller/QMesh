@@ -128,6 +128,9 @@ int main()
     send_status();
     printf("Hello\r\n");
 
+    // Set up the RDA1846 module control
+    DRA818(PD_5, PD_6, PD_7, PD_4, PD_3, PE_2);
+
     // Initialize the LibAPRS components
     debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
     AFSK_init(&my_afsk);
