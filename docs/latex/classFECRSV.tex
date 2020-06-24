@@ -1,44 +1,46 @@
-\hypertarget{classFECRSV}{}\section{F\+E\+C\+R\+SV Class Reference}
-\label{classFECRSV}\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
+\hypertarget{classFECRSV}{}\doxysection{F\+E\+C\+R\+SV Class Reference}
+\label{classFECRSV}\index{FECRSV@{FECRSV}}
 
 
 {\ttfamily \#include $<$fec.\+hpp$>$}
 
 
 
-Inheritance diagram for F\+E\+C\+R\+SV\+:\nopagebreak
+Inheritance diagram for F\+E\+C\+R\+SV\+:
+\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=139pt]{classFECRSV__inherit__graph}
+\includegraphics[width=140pt]{classFECRSV__inherit__graph}
 \end{center}
 \end{figure}
 
 
-Collaboration diagram for F\+E\+C\+R\+SV\+:\nopagebreak
+Collaboration diagram for F\+E\+C\+R\+SV\+:
+\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=139pt]{classFECRSV__coll__graph}
+\includegraphics[width=140pt]{classFECRSV__coll__graph}
 \end{center}
 \end{figure}
-\subsection*{Public Member Functions}
+\doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{classFECRSV_ac7d8897c02cdb41a46d895b14bfb976f}{F\+E\+C\+R\+SV} (const size\+\_\+t inv\+\_\+rate, const size\+\_\+t order, const size\+\_\+t my\+\_\+rs\+\_\+corr\+\_\+bytes)
+\mbox{\hyperlink{classFECRSV_ac7d8897c02cdb41a46d895b14bfb976f}{F\+E\+C\+R\+SV}} (const size\+\_\+t inv\+\_\+rate, const size\+\_\+t order, const size\+\_\+t my\+\_\+rs\+\_\+corr\+\_\+bytes)
 \item 
-\hyperlink{classFECRSV_abe3a37b51594a1fd3ce2ea92c744575a}{F\+E\+C\+R\+SV} (void)
+\mbox{\hyperlink{classFECRSV_abe3a37b51594a1fd3ce2ea92c744575a}{F\+E\+C\+R\+SV}} (void)
 \item 
 \mbox{\Hypertarget{classFECRSV_a5bfac8acff2c5604b4aa78417cceec5b}\label{classFECRSV_a5bfac8acff2c5604b4aa78417cceec5b}} 
-\hyperlink{classFECRSV_a5bfac8acff2c5604b4aa78417cceec5b}{$\sim$\+F\+E\+C\+R\+SV} (void)
+\mbox{\hyperlink{classFECRSV_a5bfac8acff2c5604b4aa78417cceec5b}{$\sim$\+F\+E\+C\+R\+SV}} (void)
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
-size\+\_\+t \hyperlink{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}{encode} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&rsv\+\_\+enc\+\_\+msg)
+size\+\_\+t \mbox{\hyperlink{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}{encode}} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&rsv\+\_\+enc\+\_\+msg)
 \item 
-ssize\+\_\+t \hyperlink{classFECRSV_a4781900bd59579d7a380687c59179ae5}{decode} (const vector$<$ uint8\+\_\+t $>$ \&rsv\+\_\+enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+ssize\+\_\+t \mbox{\hyperlink{classFECRSV_a4781900bd59579d7a380687c59179ae5}{decode}} (const vector$<$ uint8\+\_\+t $>$ \&rsv\+\_\+enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
 \item 
-size\+\_\+t \hyperlink{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}{get\+Enc\+Size} (const size\+\_\+t msg\+\_\+len)
+size\+\_\+t \mbox{\hyperlink{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}{get\+Enc\+Size}} (const size\+\_\+t msg\+\_\+len)
 \end{DoxyCompactItemize}
-\subsection*{Protected Attributes}
+\doxysubsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
 \item 
 \mbox{\Hypertarget{classFECRSV_abb99cf759979bc02ce129a4ba59206d3}\label{classFECRSV_abb99cf759979bc02ce129a4ba59206d3}} 
@@ -50,17 +52,17 @@ correct\+\_\+reed\+\_\+solomon $\ast$ {\bfseries rs\+\_\+con}
 \mbox{\Hypertarget{classFECRSV_a3bab792933973acef7689ea4dd490af5}\label{classFECRSV_a3bab792933973acef7689ea4dd490af5}} 
 vector$<$ uint8\+\_\+t $>$ {\bfseries rs\+\_\+buf}
 \end{DoxyCompactItemize}
-\subsection*{Additional Inherited Members}
+\doxysubsection*{Additional Inherited Members}
 
 
-\subsection{Detailed Description}
-Derived class that implements Reed-\/\+Solomon-\/\+Viterbi (R\+SV) forward error correction. The convolutional coding is the same as implemented in the \hyperlink{classFECConv}{F\+E\+C\+Conv} class, and the Reed-\/\+Solomon outer code is a (256,223) code. 
+\doxysubsection{Detailed Description}
+Derived class that implements Reed-\/\+Solomon-\/\+Viterbi (R\+SV) forward error correction. The convolutional coding is the same as implemented in the \mbox{\hyperlink{classFECConv}{F\+E\+C\+Conv}} class, and the Reed-\/\+Solomon outer code is a (256,223) code. 
 
-\subsection{Constructor \& Destructor Documentation}
+\doxysubsection{Constructor \& Destructor Documentation}
 \mbox{\Hypertarget{classFECRSV_ac7d8897c02cdb41a46d895b14bfb976f}\label{classFECRSV_ac7d8897c02cdb41a46d895b14bfb976f}} 
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\subsubsection{\texorpdfstring{F\+E\+C\+R\+S\+V()}{FECRSV()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+\index{FECRSV@{FECRSV}!FECRSV@{FECRSV}}
+\index{FECRSV@{FECRSV}!FECRSV@{FECRSV}}
+\doxysubsubsection{\texorpdfstring{FECRSV()}{FECRSV()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
 {\footnotesize\ttfamily F\+E\+C\+R\+S\+V\+::\+F\+E\+C\+R\+SV (\begin{DoxyParamCaption}\item[{const size\+\_\+t}]{inv\+\_\+rate,  }\item[{const size\+\_\+t}]{order,  }\item[{const size\+\_\+t}]{my\+\_\+rs\+\_\+corr\+\_\+bytes }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 Constructor. 
@@ -73,18 +75,18 @@ Constructor.
 \hline
 \end{DoxyParams}
 \mbox{\Hypertarget{classFECRSV_abe3a37b51594a1fd3ce2ea92c744575a}\label{classFECRSV_abe3a37b51594a1fd3ce2ea92c744575a}} 
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\subsubsection{\texorpdfstring{F\+E\+C\+R\+S\+V()}{FECRSV()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+\index{FECRSV@{FECRSV}!FECRSV@{FECRSV}}
+\index{FECRSV@{FECRSV}!FECRSV@{FECRSV}}
+\doxysubsubsection{\texorpdfstring{FECRSV()}{FECRSV()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
 {\footnotesize\ttfamily F\+E\+C\+R\+S\+V\+::\+F\+E\+C\+R\+SV (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 Default constructor. Initializes with a convolutional coding rate of 2, n=9, and 32 Reed-\/\+Solomon correction bytes. 
 
-\subsection{Member Function Documentation}
+\doxysubsection{Member Function Documentation}
 \mbox{\Hypertarget{classFECRSV_a4781900bd59579d7a380687c59179ae5}\label{classFECRSV_a4781900bd59579d7a380687c59179ae5}} 
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!decode@{decode}}
-\index{decode@{decode}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\subsubsection{\texorpdfstring{decode()}{decode()}}
+\index{FECRSV@{FECRSV}!decode@{decode}}
+\index{decode@{decode}!FECRSV@{FECRSV}}
+\doxysubsubsection{\texorpdfstring{decode()}{decode()}}
 {\footnotesize\ttfamily ssize\+\_\+t F\+E\+C\+R\+S\+V\+::decode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{dec\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
 
 Decode F\+E\+C-\/coded data. Returns the decoded data size, in bytes. 
@@ -96,15 +98,15 @@ Decode F\+E\+C-\/coded data. Returns the decoded data size, in bytes.
 \end{DoxyParams}
 
 
-Reimplemented from \hyperlink{classFECConv_afd897d6756bbbe4874942654e91a95e3}{F\+E\+C\+Conv}.
+Reimplemented from \mbox{\hyperlink{classFECConv_afd897d6756bbbe4874942654e91a95e3}{F\+E\+C\+Conv}}.
 
 \mbox{\Hypertarget{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}\label{classFECRSV_ac9bd3fe4c494067e6f24a1287b0c562e}} 
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!encode@{encode}}
-\index{encode@{encode}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\subsubsection{\texorpdfstring{encode()}{encode()}}
+\index{FECRSV@{FECRSV}!encode@{encode}}
+\index{encode@{encode}!FECRSV@{FECRSV}}
+\doxysubsubsection{\texorpdfstring{encode()}{encode()}}
 {\footnotesize\ttfamily size\+\_\+t F\+E\+C\+R\+S\+V\+::encode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
 
-Apply the \hyperlink{classFEC}{F\+EC} coding. Returns the encoded size, in bytes. 
+Apply the \mbox{\hyperlink{classFEC}{F\+EC}} coding. Returns the encoded size, in bytes. 
 \begin{DoxyParams}{Parameters}
 {\em msg} & Byte vector of data to be encoded. \\
 \hline
@@ -113,12 +115,12 @@ Apply the \hyperlink{classFEC}{F\+EC} coding. Returns the encoded size, in bytes
 \end{DoxyParams}
 
 
-Reimplemented from \hyperlink{classFECConv_ae3e796d0e026dca718ed6384653a4564}{F\+E\+C\+Conv}.
+Reimplemented from \mbox{\hyperlink{classFECConv_ae3e796d0e026dca718ed6384653a4564}{F\+E\+C\+Conv}}.
 
 \mbox{\Hypertarget{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}\label{classFECRSV_a62fb01c152dad2e043ae75bbacfd928c}} 
-\index{F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}!get\+Enc\+Size@{get\+Enc\+Size}}
-\index{get\+Enc\+Size@{get\+Enc\+Size}!F\+E\+C\+R\+SV@{F\+E\+C\+R\+SV}}
-\subsubsection{\texorpdfstring{get\+Enc\+Size()}{getEncSize()}}
+\index{FECRSV@{FECRSV}!getEncSize@{getEncSize}}
+\index{getEncSize@{getEncSize}!FECRSV@{FECRSV}}
+\doxysubsubsection{\texorpdfstring{getEncSize()}{getEncSize()}}
 {\footnotesize\ttfamily size\+\_\+t F\+E\+C\+R\+S\+V\+::get\+Enc\+Size (\begin{DoxyParamCaption}\item[{const size\+\_\+t}]{msg\+\_\+len }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
 
 Get the encoded size. 
@@ -128,7 +130,7 @@ Get the encoded size.
 \end{DoxyParams}
 
 
-Reimplemented from \hyperlink{classFECConv_a3b49acf69440d2677e3181513b9f3592}{F\+E\+C\+Conv}.
+Reimplemented from \mbox{\hyperlink{classFECConv_a3b49acf69440d2677e3181513b9f3592}{F\+E\+C\+Conv}}.
 
 
 

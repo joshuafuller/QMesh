@@ -1,15 +1,19 @@
 var searchData=
 [
-  ['savetojson',['saveToJSON',['../classFrame.html#a865ca9d9a5584fab74d7258012509b97',1,'Frame']]],
-  ['serializecoded',['serializeCoded',['../classFrame.html#a2e1d5421694ec4d9abaadacf2b32b492',1,'Frame']]],
-  ['setbeaconpayload',['setBeaconPayload',['../classFrame.html#a950b26a59c2f2716662a09964e5d95d1',1,'Frame']]],
-  ['setcrc',['setCRC',['../classFrame.html#aa2de2dba681188cc6ab00dfc42d15426',1,'Frame']]],
-  ['setoffsets',['setOffsets',['../classFrame.html#ac25e10413d25b9eea2502c1c02d457e0',1,'Frame']]],
-  ['setrxstats',['setRxStats',['../classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22',1,'Frame']]],
-  ['setsender',['setSender',['../classFrame.html#a982cef0e09413cc2a5c55298e2cc7c5f',1,'Frame']]],
-  ['setstreamid',['setStreamID',['../classFrame.html#af3cc33a2ea60ad84db23097da6df3c31',1,'Frame']]],
-  ['settingstojson',['settingsToJSON',['../classJSONSerial.html#a32f2b8eddfbe137c61b77352445e1e09',1,'JSONSerial']]],
-  ['size',['size',['../classFrame.html#a2e2305d6c4488220574ec0415fe217b5',1,'Frame']]],
-  ['starttimer',['startTimer',['../classRadioTiming.html#a20de4c0e271dcab020ab6fa999570855',1,'RadioTiming']]],
-  ['statustojson',['statusToJSON',['../classJSONSerial.html#ae1fb99c885d204203a48ef45c16252a2',1,'JSONSerial']]]
+  ['savetojson_54',['saveToJSON',['../classFrame.html#a865ca9d9a5584fab74d7258012509b97',1,'Frame']]],
+  ['serializecoded_55',['serializeCoded',['../classFrame.html#a2e1d5421694ec4d9abaadacf2b32b492',1,'Frame']]],
+  ['setbeaconpayload_56',['setBeaconPayload',['../classFrame.html#a950b26a59c2f2716662a09964e5d95d1',1,'Frame']]],
+  ['setcrc_57',['setCRC',['../classFrame.html#aa2de2dba681188cc6ab00dfc42d15426',1,'Frame']]],
+  ['setfrequency_58',['setFrequency',['../classDRA818.html#a23630c5f9a7760268d92f173ee8407dc',1,'DRA818']]],
+  ['setoffsets_59',['setOffsets',['../classFrame.html#ac25e10413d25b9eea2502c1c02d457e0',1,'Frame']]],
+  ['setpower_60',['setPower',['../classDRA818.html#afe4137d6b8c4b7e085ccfd7093ee9d7a',1,'DRA818']]],
+  ['setrxstats_61',['setRxStats',['../classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22',1,'Frame']]],
+  ['setsender_62',['setSender',['../classFrame.html#a982cef0e09413cc2a5c55298e2cc7c5f',1,'Frame']]],
+  ['setstreamid_63',['setStreamID',['../classFrame.html#af3cc33a2ea60ad84db23097da6df3c31',1,'Frame']]],
+  ['settimer_64',['setTimer',['../classRadioTiming.html#aa02ff42eeac80549729fceff002a0f35',1,'RadioTiming']]],
+  ['settingstojson_65',['settingsToJSON',['../classJSONSerial.html#a32f2b8eddfbe137c61b77352445e1e09',1,'JSONSerial']]],
+  ['size_66',['size',['../classFrame.html#aa38b49286989b869cd82ac064ead3628',1,'Frame']]],
+  ['sleep_67',['sleep',['../classDRA818.html#a755244474b9c7364fa3177aa93088ac5',1,'DRA818']]],
+  ['squelch_5fhandler_68',['squelch_handler',['../classDRA818.html#a5fe52ecc54a381406d2e4d10fa9249cb',1,'DRA818']]],
+  ['statustojson_69',['statusToJSON',['../classJSONSerial.html#ae1fb99c885d204203a48ef45c16252a2',1,'JSONSerial']]]
 ];

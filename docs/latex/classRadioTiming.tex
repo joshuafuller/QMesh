@@ -1,27 +1,32 @@
-\hypertarget{classRadioTiming}{}\section{Radio\+Timing Class Reference}
-\label{classRadioTiming}\index{Radio\+Timing@{Radio\+Timing}}
+\hypertarget{classRadioTiming}{}\doxysection{Radio\+Timing Class Reference}
+\label{classRadioTiming}\index{RadioTiming@{RadioTiming}}
 
 
-{\ttfamily \#include $<$mesh\+\_\+protocol.\+hpp$>$}
+{\ttfamily \#include $<$radio\+\_\+timing.\+hpp$>$}
 
-\subsection*{Public Member Functions}
+\doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \hyperlink{classRadioTiming_a8889214bcfb05975e8ed121a59ffb06c}{compute\+Times} (const uint32\+\_\+t bw, const uint8\+\_\+t sf, const uint8\+\_\+t cr, const uint32\+\_\+t n\+\_\+pre\+\_\+sym, uint8\+\_\+t n\+\_\+pld\+\_\+bytes)
+void \mbox{\hyperlink{classRadioTiming_a8889214bcfb05975e8ed121a59ffb06c}{compute\+Times}} (const uint32\+\_\+t bw, const uint8\+\_\+t sf, const uint8\+\_\+t cr, const uint32\+\_\+t n\+\_\+pre\+\_\+sym, uint8\+\_\+t n\+\_\+pld\+\_\+bytes)
 \item 
-void \hyperlink{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}{wait\+Full\+Slots} (const size\+\_\+t num\+\_\+slots)
+void \mbox{\hyperlink{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}{wait\+Full\+Slots}} (const size\+\_\+t num\+\_\+slots)
 \item 
-void \hyperlink{classRadioTiming_ab794bed8927778ed17a9cbbfe1cf4a5f}{wait\+Rx\+Remainder} (const size\+\_\+t sym\+\_\+wait, const size\+\_\+t pre\+\_\+wait)
+void \mbox{\hyperlink{classRadioTiming_ab794bed8927778ed17a9cbbfe1cf4a5f}{wait\+Rx\+Remainder}} (const size\+\_\+t sym\+\_\+wait, const size\+\_\+t pre\+\_\+wait)
 \item 
-void \hyperlink{classRadioTiming_a763af2aa098f7b311c149dbf062d40a2}{calc\+Wait\+Symbol} (void)
+void \mbox{\hyperlink{classRadioTiming_a763af2aa098f7b311c149dbf062d40a2}{calc\+Wait\+Symbol}} (void)
 \item 
-void \hyperlink{classRadioTiming_ab88cd62548731862e0a24c986bf095bf}{calc\+Wait\+Preamble} (void)
+void \mbox{\hyperlink{classRadioTiming_ab88cd62548731862e0a24c986bf095bf}{calc\+Wait\+Preamble}} (void)
 \item 
-void \hyperlink{classRadioTiming_a8451969371826cd733288652f5323053}{wait\+Tx} (void)
+void \mbox{\hyperlink{classRadioTiming_a8451969371826cd733288652f5323053}{wait\+Tx}} (void)
 \item 
-void \hyperlink{classRadioTiming_a20de4c0e271dcab020ab6fa999570855}{start\+Timer} (void)
+void \mbox{\hyperlink{classRadioTiming_aa02ff42eeac80549729fceff002a0f35}{set\+Timer}} (shared\+\_\+ptr$<$ Low\+Power\+Timer $>$ my\+\_\+tmr\+\_\+sptr)
+\item 
+void \mbox{\hyperlink{classRadioTiming_abe0019845f38a6cf9c2f70d8bba547bb}{wait}} (void)
+\item 
+\mbox{\Hypertarget{classRadioTiming_a6c321264323d0b27fd4cd4f660f48cd2}\label{classRadioTiming_a6c321264323d0b27fd4cd4f660f48cd2}} 
+void {\bfseries wait\+No\+Warn} (void)
 \end{DoxyCompactItemize}
-\subsection*{Public Attributes}
+\doxysubsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
 \mbox{\Hypertarget{classRadioTiming_aefbdd2b026a1a79309d6aeeefdaf40b8}\label{classRadioTiming_aefbdd2b026a1a79309d6aeeefdaf40b8}} 
@@ -90,12 +95,15 @@ uint32\+\_\+t {\bfseries pre\+\_\+wait\+\_\+factor}
 \mbox{\Hypertarget{classRadioTiming_ae1c4611a8d342a27c11d7b6f7adcb6a9}\label{classRadioTiming_ae1c4611a8d342a27c11d7b6f7adcb6a9}} 
 uint32\+\_\+t {\bfseries pre\+\_\+wait\+\_\+us}
 \item 
-\mbox{\Hypertarget{classRadioTiming_a682b2b5c537f20be8668d76dbed42db9}\label{classRadioTiming_a682b2b5c537f20be8668d76dbed42db9}} 
-Timer {\bfseries tmr}
+\mbox{\Hypertarget{classRadioTiming_a512ac60af04abd6e12004338ca692c9d}\label{classRadioTiming_a512ac60af04abd6e12004338ca692c9d}} 
+shared\+\_\+ptr$<$ Low\+Power\+Timer $>$ {\bfseries tmr\+\_\+sptr}
+\item 
+\mbox{\Hypertarget{classRadioTiming_ac1c9c1a3f43df35fede3320b17ecfcef}\label{classRadioTiming_ac1c9c1a3f43df35fede3320b17ecfcef}} 
+int32\+\_\+t {\bfseries wait\+\_\+duration\+\_\+us}
 \end{DoxyCompactItemize}
 
 
-\subsection{Detailed Description}
+\doxysubsection{Detailed Description}
 A synchronized flooded mesh has all sort of timing-\/related things it needs to handle. This class handles all of these different timing things. Specifically, it handles\+:
 \begin{DoxyItemize}
 \item Calculating Lo\+Ra timing values, such as symbol duration, preamble duration, payload duration, etc.
@@ -103,23 +111,23 @@ A synchronized flooded mesh has all sort of timing-\/related things it needs to 
 \item Waiting the precise amount of time before e.\+g. retransmitting. 
 \end{DoxyItemize}
 
-\subsection{Member Function Documentation}
+\doxysubsection{Member Function Documentation}
 \mbox{\Hypertarget{classRadioTiming_ab88cd62548731862e0a24c986bf095bf}\label{classRadioTiming_ab88cd62548731862e0a24c986bf095bf}} 
-\index{Radio\+Timing@{Radio\+Timing}!calc\+Wait\+Preamble@{calc\+Wait\+Preamble}}
-\index{calc\+Wait\+Preamble@{calc\+Wait\+Preamble}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{calc\+Wait\+Preamble()}{calcWaitPreamble()}}
+\index{RadioTiming@{RadioTiming}!calcWaitPreamble@{calcWaitPreamble}}
+\index{calcWaitPreamble@{calcWaitPreamble}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{calcWaitPreamble()}{calcWaitPreamble()}}
 {\footnotesize\ttfamily void Radio\+Timing\+::calc\+Wait\+Preamble (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
 Calculate the random preamble-\/length wait period. Chooses between \mbox{[}0,3\mbox{]} different preamble offsets. \mbox{\Hypertarget{classRadioTiming_a763af2aa098f7b311c149dbf062d40a2}\label{classRadioTiming_a763af2aa098f7b311c149dbf062d40a2}} 
-\index{Radio\+Timing@{Radio\+Timing}!calc\+Wait\+Symbol@{calc\+Wait\+Symbol}}
-\index{calc\+Wait\+Symbol@{calc\+Wait\+Symbol}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{calc\+Wait\+Symbol()}{calcWaitSymbol()}}
+\index{RadioTiming@{RadioTiming}!calcWaitSymbol@{calcWaitSymbol}}
+\index{calcWaitSymbol@{calcWaitSymbol}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{calcWaitSymbol()}{calcWaitSymbol()}}
 {\footnotesize\ttfamily void Radio\+Timing\+::calc\+Wait\+Symbol (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
 Calculate a random intra-\/symbol wait duration. Chooses between \mbox{[}0,7\mbox{]} eights of the symbol duration. Stores the result internally within the object. \mbox{\Hypertarget{classRadioTiming_a8889214bcfb05975e8ed121a59ffb06c}\label{classRadioTiming_a8889214bcfb05975e8ed121a59ffb06c}} 
-\index{Radio\+Timing@{Radio\+Timing}!compute\+Times@{compute\+Times}}
-\index{compute\+Times@{compute\+Times}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{compute\+Times()}{computeTimes()}}
+\index{RadioTiming@{RadioTiming}!computeTimes@{computeTimes}}
+\index{computeTimes@{computeTimes}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{computeTimes()}{computeTimes()}}
 {\footnotesize\ttfamily void Radio\+Timing\+::compute\+Times (\begin{DoxyParamCaption}\item[{const uint32\+\_\+t}]{bw,  }\item[{const uint8\+\_\+t}]{sf,  }\item[{const uint8\+\_\+t}]{cr,  }\item[{const uint32\+\_\+t}]{n\+\_\+pre\+\_\+sym,  }\item[{uint8\+\_\+t}]{n\+\_\+pld\+\_\+bytes }\end{DoxyParamCaption})}
 
 Given the various Lo\+Ra parameters, pre-\/compute all of the different timing parameters. 
@@ -135,16 +143,22 @@ Given the various Lo\+Ra parameters, pre-\/compute all of the different timing p
 {\em n\+\_\+pld\+\_\+bytes} & Number of payload bytes. \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{classRadioTiming_a20de4c0e271dcab020ab6fa999570855}\label{classRadioTiming_a20de4c0e271dcab020ab6fa999570855}} 
-\index{Radio\+Timing@{Radio\+Timing}!start\+Timer@{start\+Timer}}
-\index{start\+Timer@{start\+Timer}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{start\+Timer()}{startTimer()}}
-{\footnotesize\ttfamily void Radio\+Timing\+::start\+Timer (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{classRadioTiming_aa02ff42eeac80549729fceff002a0f35}\label{classRadioTiming_aa02ff42eeac80549729fceff002a0f35}} 
+\index{RadioTiming@{RadioTiming}!setTimer@{setTimer}}
+\index{setTimer@{setTimer}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{setTimer()}{setTimer()}}
+{\footnotesize\ttfamily void Radio\+Timing\+::set\+Timer (\begin{DoxyParamCaption}\item[{shared\+\_\+ptr$<$ Low\+Power\+Timer $>$}]{my\+\_\+tmr\+\_\+sptr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Starts the protocol timer. \mbox{\Hypertarget{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}\label{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}} 
-\index{Radio\+Timing@{Radio\+Timing}!wait\+Full\+Slots@{wait\+Full\+Slots}}
-\index{wait\+Full\+Slots@{wait\+Full\+Slots}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{wait\+Full\+Slots()}{waitFullSlots()}}
+Starts the protocol timer. \mbox{\Hypertarget{classRadioTiming_abe0019845f38a6cf9c2f70d8bba547bb}\label{classRadioTiming_abe0019845f38a6cf9c2f70d8bba547bb}} 
+\index{RadioTiming@{RadioTiming}!wait@{wait}}
+\index{wait@{wait}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{wait()}{wait()}}
+{\footnotesize\ttfamily void Radio\+Timing\+::wait (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Start the preset waiting period. \mbox{\Hypertarget{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}\label{classRadioTiming_a5968dcc1c5dc7aa644e4fd4b3c44f373}} 
+\index{RadioTiming@{RadioTiming}!waitFullSlots@{waitFullSlots}}
+\index{waitFullSlots@{waitFullSlots}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{waitFullSlots()}{waitFullSlots()}}
 {\footnotesize\ttfamily void Radio\+Timing\+::wait\+Full\+Slots (\begin{DoxyParamCaption}\item[{const size\+\_\+t}]{num\+\_\+slots }\end{DoxyParamCaption})}
 
 Wait for a number of transmit slots. Note that this function uses the timer\textquotesingle{}s start time as the basis for how long to wait. Since the timer is typically started right after a Lo\+Ra packet is received, this function allows us to prepare a packet for retransmission, wait the remainder of one timeslot, and then retransmit it. 
@@ -153,9 +167,9 @@ Wait for a number of transmit slots. Note that this function uses the timer\text
 \hline
 \end{DoxyParams}
 \mbox{\Hypertarget{classRadioTiming_ab794bed8927778ed17a9cbbfe1cf4a5f}\label{classRadioTiming_ab794bed8927778ed17a9cbbfe1cf4a5f}} 
-\index{Radio\+Timing@{Radio\+Timing}!wait\+Rx\+Remainder@{wait\+Rx\+Remainder}}
-\index{wait\+Rx\+Remainder@{wait\+Rx\+Remainder}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{wait\+Rx\+Remainder()}{waitRxRemainder()}}
+\index{RadioTiming@{RadioTiming}!waitRxRemainder@{waitRxRemainder}}
+\index{waitRxRemainder@{waitRxRemainder}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{waitRxRemainder()}{waitRxRemainder()}}
 {\footnotesize\ttfamily void Radio\+Timing\+::wait\+Rx\+Remainder (\begin{DoxyParamCaption}\item[{const size\+\_\+t}]{sym\+\_\+wait,  }\item[{const size\+\_\+t}]{pre\+\_\+wait }\end{DoxyParamCaption})}
 
 Wait for the \char`\"{}remaining time\char`\"{} that includes various timing offsets used to implement Q\+Mesh\textquotesingle{}s collision resistance\+:
@@ -170,14 +184,14 @@ Wait for the \char`\"{}remaining time\char`\"{} that includes various timing off
 \end{DoxyParams}
 
 \end{DoxyItemize}\mbox{\Hypertarget{classRadioTiming_a8451969371826cd733288652f5323053}\label{classRadioTiming_a8451969371826cd733288652f5323053}} 
-\index{Radio\+Timing@{Radio\+Timing}!wait\+Tx@{wait\+Tx}}
-\index{wait\+Tx@{wait\+Tx}!Radio\+Timing@{Radio\+Timing}}
-\subsubsection{\texorpdfstring{wait\+Tx()}{waitTx()}}
+\index{RadioTiming@{RadioTiming}!waitTx@{waitTx}}
+\index{waitTx@{waitTx}!RadioTiming@{RadioTiming}}
+\doxysubsubsection{\texorpdfstring{waitTx()}{waitTx()}}
 {\footnotesize\ttfamily void Radio\+Timing\+::wait\+Tx (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
 Wait for the symbol and preamble offset durations. 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
-inc/protocol/mesh\+\_\+protocol.\+hpp\item 
-src/protocol/mesh\+\_\+protocol.\+cpp\end{DoxyCompactItemize}
+inc/protocol/radio\+\_\+timing.\+hpp\item 
+src/protocol/radio\+\_\+timing.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,139 @@
+\hypertarget{classDRA818}{}\doxysection{D\+R\+A818 Class Reference}
+\label{classDRA818}\index{DRA818@{DRA818}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDRA818_a5c4fae167b49890a57dc4d5c4a9613a1}{D\+R\+A818}} (Pin\+Name my\+\_\+uart\+\_\+tx\+\_\+pin\+\_\+name, Pin\+Name my\+\_\+uart\+\_\+rx\+\_\+pin\+\_\+name, Pin\+Name my\+\_\+sleep\+\_\+pin\+\_\+name, Pin\+Name my\+\_\+ptt\+\_\+pin\+\_\+name, Pin\+Name my\+\_\+rf\+\_\+pwr\+\_\+pin\+\_\+name, Pin\+Name my\+\_\+sq\+\_\+pin\+\_\+name)
+\item 
+\mbox{\Hypertarget{classDRA818_a820ccde0d1ae9bb395b437b284d83c3c}\label{classDRA818_a820ccde0d1ae9bb395b437b284d83c3c}} 
+\mbox{\hyperlink{classDRA818_a820ccde0d1ae9bb395b437b284d83c3c}{$\sim$\+D\+R\+A818}} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classDRA818_a755244474b9c7364fa3177aa93088ac5}{sleep}} (void)
+\item 
+void \mbox{\hyperlink{classDRA818_afe4137d6b8c4b7e085ccfd7093ee9d7a}{set\+Power}} (const bool high\+\_\+power)
+\item 
+\mbox{\Hypertarget{classDRA818_a4ff3291d00829f7dfe43c9e82fa3345d}\label{classDRA818_a4ff3291d00829f7dfe43c9e82fa3345d}} 
+void \mbox{\hyperlink{classDRA818_a4ff3291d00829f7dfe43c9e82fa3345d}{tx\+\_\+en}} (void)
+\begin{DoxyCompactList}\small\item\em Enable transmit via a the P\+TT signal. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDRA818_a8c505a2a9347564a696cf438d866d5af}\label{classDRA818_a8c505a2a9347564a696cf438d866d5af}} 
+void \mbox{\hyperlink{classDRA818_a8c505a2a9347564a696cf438d866d5af}{tx\+\_\+dis}} (void)
+\begin{DoxyCompactList}\small\item\em Stop transmitting via the P\+TT signal. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDRA818_a4d92f2826adb110eded66ccf11c69f2d}\label{classDRA818_a4d92f2826adb110eded66ccf11c69f2d}} 
+void \mbox{\hyperlink{classDRA818_a4d92f2826adb110eded66ccf11c69f2d}{wake}} (void)
+\begin{DoxyCompactList}\small\item\em Take the module out of sleep. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDRA818_a3a39a9e49a01964b7d42980a28c1e1a9}\label{classDRA818_a3a39a9e49a01964b7d42980a28c1e1a9}} 
+bool \mbox{\hyperlink{classDRA818_a3a39a9e49a01964b7d42980a28c1e1a9}{handshake}} (void)
+\begin{DoxyCompactList}\small\item\em Perform a handshake command with the module. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDRA818_a5fe52ecc54a381406d2e4d10fa9249cb}\label{classDRA818_a5fe52ecc54a381406d2e4d10fa9249cb}} 
+void \mbox{\hyperlink{classDRA818_a5fe52ecc54a381406d2e4d10fa9249cb}{squelch\+\_\+handler}} (void)
+\begin{DoxyCompactList}\small\item\em Interrupt handler that gets triggered when squelch gets broken. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classDRA818_a23630c5f9a7760268d92f173ee8407dc}{set\+Frequency}} (const float tx\+\_\+freq, const float rx\+\_\+freq)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classDRA818_a0887f81c1d222497ed21e54156e46dcf}\label{classDRA818_a0887f81c1d222497ed21e54156e46dcf}} 
+Pin\+Name {\bfseries uart\+\_\+tx\+\_\+pin\+\_\+name}
+\item 
+\mbox{\Hypertarget{classDRA818_a30f1554c1466864df67a52690332d44e}\label{classDRA818_a30f1554c1466864df67a52690332d44e}} 
+Pin\+Name {\bfseries uart\+\_\+rx\+\_\+pin\+\_\+name}
+\item 
+\mbox{\Hypertarget{classDRA818_a64a436126662b6e31d1be76665b6afbb}\label{classDRA818_a64a436126662b6e31d1be76665b6afbb}} 
+Pin\+Name {\bfseries sleep\+\_\+pin\+\_\+name}
+\item 
+\mbox{\Hypertarget{classDRA818_afcab27248003503030f1fa425cd9b068}\label{classDRA818_afcab27248003503030f1fa425cd9b068}} 
+Pin\+Name {\bfseries ptt\+\_\+pin\+\_\+name}
+\item 
+\mbox{\Hypertarget{classDRA818_ac501f10f2ac0dde4d1927b5f1547870a}\label{classDRA818_ac501f10f2ac0dde4d1927b5f1547870a}} 
+Pin\+Name {\bfseries rf\+\_\+pwr\+\_\+pin\+\_\+name}
+\item 
+\mbox{\Hypertarget{classDRA818_a115b51071ac7cef8340a2b2bdf37f377}\label{classDRA818_a115b51071ac7cef8340a2b2bdf37f377}} 
+Pin\+Name {\bfseries sq\+\_\+pin\+\_\+name}
+\item 
+\mbox{\Hypertarget{classDRA818_a6c3a37dbb7c682b4a52f3b64c3134962}\label{classDRA818_a6c3a37dbb7c682b4a52f3b64c3134962}} 
+shared\+\_\+ptr$<$ Digital\+Out $>$ {\bfseries sleep\+\_\+pin\+\_\+sptr}
+\item 
+\mbox{\Hypertarget{classDRA818_ae63cdfb37296cb6113833d968c7dadda}\label{classDRA818_ae63cdfb37296cb6113833d968c7dadda}} 
+shared\+\_\+ptr$<$ Digital\+Out $>$ {\bfseries ptt\+\_\+pin\+\_\+sptr}
+\item 
+\mbox{\Hypertarget{classDRA818_abd112de5420d18c400d20e279b6df3c6}\label{classDRA818_abd112de5420d18c400d20e279b6df3c6}} 
+shared\+\_\+ptr$<$ Digital\+In\+Out $>$ {\bfseries rf\+\_\+pwr\+\_\+pin\+\_\+sptr}
+\item 
+\mbox{\Hypertarget{classDRA818_acd95995dd03e49baa4827b3c6021ab59}\label{classDRA818_acd95995dd03e49baa4827b3c6021ab59}} 
+shared\+\_\+ptr$<$ Interrupt\+In $>$ {\bfseries sq\+\_\+pin\+\_\+sptr}
+\item 
+\mbox{\Hypertarget{classDRA818_af5b47401ad33dc5f7651993510f09bfa}\label{classDRA818_af5b47401ad33dc5f7651993510f09bfa}} 
+U\+A\+R\+T\+Serial $\ast$ {\bfseries ser}
+\item 
+\mbox{\Hypertarget{classDRA818_a3778162cc818e39de561fc853348cb27}\label{classDRA818_a3778162cc818e39de561fc853348cb27}} 
+F\+I\+LE $\ast$ {\bfseries ser\+\_\+fh}
+\item 
+\mbox{\Hypertarget{classDRA818_a5f207059a4f864cc660614d8669c6e57}\label{classDRA818_a5f207059a4f864cc660614d8669c6e57}} 
+bool {\bfseries sleeping}
+\item 
+\mbox{\Hypertarget{classDRA818_a65fdfc08bb40008d5133f1854ca188a2}\label{classDRA818_a65fdfc08bb40008d5133f1854ca188a2}} 
+Event\+Queue $\ast$ {\bfseries evt\+\_\+queue}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classDRA818_a5c4fae167b49890a57dc4d5c4a9613a1}\label{classDRA818_a5c4fae167b49890a57dc4d5c4a9613a1}} 
+\index{DRA818@{DRA818}!DRA818@{DRA818}}
+\index{DRA818@{DRA818}!DRA818@{DRA818}}
+\doxysubsubsection{\texorpdfstring{DRA818()}{DRA818()}}
+{\footnotesize\ttfamily D\+R\+A818\+::\+D\+R\+A818 (\begin{DoxyParamCaption}\item[{Pin\+Name}]{my\+\_\+uart\+\_\+tx\+\_\+pin\+\_\+name,  }\item[{Pin\+Name}]{my\+\_\+uart\+\_\+rx\+\_\+pin\+\_\+name,  }\item[{Pin\+Name}]{my\+\_\+sleep\+\_\+pin\+\_\+name,  }\item[{Pin\+Name}]{my\+\_\+ptt\+\_\+pin\+\_\+name,  }\item[{Pin\+Name}]{my\+\_\+rf\+\_\+pwr\+\_\+pin\+\_\+name,  }\item[{Pin\+Name}]{my\+\_\+sq\+\_\+pin\+\_\+name }\end{DoxyParamCaption})}
+
+Constuctor. Needs a U\+A\+RT to communicate with the module. 
+\begin{DoxyParams}{Parameters}
+{\em my\+\_\+uart\+\_\+tx\+\_\+pin\+\_\+name} & Pin name of the TX pin of the U\+A\+RT \\
+\hline
+{\em my\+\_\+uart\+\_\+rx\+\_\+pin\+\_\+name} & Pin name of the RX pin of the U\+A\+RT \\
+\hline
+{\em my\+\_\+sleep\+\_\+pin\+\_\+name} & G\+P\+IO output pin for the sleep/wake control \\
+\hline
+{\em my\+\_\+ptt\+\_\+pin\+\_\+name} & G\+P\+IO output pin for the P\+TT control \\
+\hline
+{\em my\+\_\+rf\+\_\+pwr\+\_\+pin\+\_\+name} & G\+P\+IO output pin for the power control \\
+\hline
+{\em my\+\_\+sq\+\_\+pin\+\_\+name} & G\+P\+IO input output pin for the squelch pin \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classDRA818_a23630c5f9a7760268d92f173ee8407dc}\label{classDRA818_a23630c5f9a7760268d92f173ee8407dc}} 
+\index{DRA818@{DRA818}!setFrequency@{setFrequency}}
+\index{setFrequency@{setFrequency}!DRA818@{DRA818}}
+\doxysubsubsection{\texorpdfstring{setFrequency()}{setFrequency()}}
+{\footnotesize\ttfamily void D\+R\+A818\+::set\+Frequency (\begin{DoxyParamCaption}\item[{const float}]{tx\+\_\+freq,  }\item[{const float}]{rx\+\_\+freq }\end{DoxyParamCaption})}
+
+Set the transmit and receive frequencies. 
+\begin{DoxyParams}{Parameters}
+{\em tx\+\_\+freq} & The desired transmit frequency \\
+\hline
+{\em rx\+\_\+freq} & The desired receive frequency \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classDRA818_afe4137d6b8c4b7e085ccfd7093ee9d7a}\label{classDRA818_afe4137d6b8c4b7e085ccfd7093ee9d7a}} 
+\index{DRA818@{DRA818}!setPower@{setPower}}
+\index{setPower@{setPower}!DRA818@{DRA818}}
+\doxysubsubsection{\texorpdfstring{setPower()}{setPower()}}
+{\footnotesize\ttfamily void D\+R\+A818\+::set\+Power (\begin{DoxyParamCaption}\item[{const bool}]{high\+\_\+power }\end{DoxyParamCaption})}
+
+Sets high ($\sim$1W) or low ($\sim$0.5W) Tx power for the module. 
+\begin{DoxyParams}{Parameters}
+{\em high\+\_\+power} & true for 1W, false for 0.\+5W. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classDRA818_a755244474b9c7364fa3177aa93088ac5}\label{classDRA818_a755244474b9c7364fa3177aa93088ac5}} 
+\index{DRA818@{DRA818}!sleep@{sleep}}
+\index{sleep@{sleep}!DRA818@{DRA818}}
+\doxysubsubsection{\texorpdfstring{sleep()}{sleep()}}
+{\footnotesize\ttfamily void D\+R\+A818\+::sleep (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Puts the module to sleep. Also deletes the U\+A\+R\+T\+Serial object so that the S\+T\+M32 can enter deep sleep. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+inc/peripherals/D\+R\+A818.\+hpp\item 
+src/peripherals/D\+R\+A818.\+cpp\end{DoxyCompactItemize}

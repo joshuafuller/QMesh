@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['nv_5fsettings_5ft',['nv_settings_t',['../structnv__settings__t.html',1,'']]]
+  ['jsonserial_90',['JSONSerial',['../classJSONSerial.html',1,'']]]
 ];
