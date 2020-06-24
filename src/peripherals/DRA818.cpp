@@ -15,9 +15,13 @@ DRA818::DRA818(PinName my_uart_tx_pin_name, PinName my_uart_rx_pin_name,
     ptt_pin_name = my_ptt_pin_name;
     rf_pwr_pin_name = my_rf_pwr_pin_name;
     sq_pin_name = my_sq_pin_name;
+    
     sleep_pin_sptr = make_shared<DigitalOut>(sleep_pin_name);
+    sleep_pin_sptr->write(1);
     ptt_pin_sptr = make_shared<DigitalOut>(ptt_pin_name);
+    ptt_pin_sptr->write(0);
     rf_pwr_pin_sptr = make_shared<DigitalInOut>(rf_pwr_pin_name);
+    rf_pwr_pin_sptr->write(1);
     sq_pin_sptr = make_shared<InterruptIn>(sq_pin_name);
 
     // wake() just sets up the UART
@@ -64,10 +68,12 @@ void DRA818::tx_dis(void) {
 
 
 void DRA818::wake(void) {
-    ser = new UARTSerial(uart_tx_pin_name, uart_rx_pin_name, 9600);
-    ser_fh = fdopen(ser, "rw");
-    sleep_pin_sptr->write(1);
-    sleeping = false;
+    if(sleeping) {
+        ser = new UARTSerial(uart_tx_pin_name, uart_rx_pin_name, 9600);
+        ser_fh = fdopen(ser, "rw");
+        sleep_pin_sptr->write(1);
+        sleeping = false;
+    }
 }
 
 
