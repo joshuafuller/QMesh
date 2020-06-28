@@ -313,6 +313,7 @@ public:
         hdr.pre_offset = pre_offset;
         hdr.nsym_offset = nsym_offset;
         hdr.sym_offset = sym_offset;
+        setCRC();
     }
 
     /**
