@@ -139,6 +139,7 @@ void mesh_protocol_fsm(void) {
     for(;;) {
         switch(state) {
             case WAIT_FOR_EVENT:
+                led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
                 radio.set_channel(radio_freq);
                 radio.receive();
