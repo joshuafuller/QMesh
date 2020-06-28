@@ -297,10 +297,10 @@ public:
      * @param nsym_offset Number of symbol-length offsets
      * @param sym_offset Intra-symbol offset.
      */
-    void getOffsets(uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset) {
-        *pre_offset = hdr.pre_offset;
-        *nsym_offset = hdr.nsym_offset;
-        *sym_offset = hdr.sym_offset;
+    void getOffsets(uint8_t &pre_offset, uint8_t &nsym_offset, uint8_t &sym_offset) {
+        pre_offset = hdr.pre_offset;
+        nsym_offset = hdr.nsym_offset;
+        sym_offset = hdr.sym_offset;
     }
 
     /** 
@@ -309,10 +309,10 @@ public:
      * @param nsym_offset Number of symbol-length offsets
      * @param sym_offset Intra-symbol offset.
      */
-    void setOffsets(const uint8_t *pre_offset, const uint8_t *nsym_offset, const uint8_t *sym_offset) {
-        hdr.pre_offset = *pre_offset;
-        hdr.nsym_offset = *nsym_offset;
-        hdr.sym_offset = *sym_offset;
+    void setOffsets(const uint8_t pre_offset, const uint8_t nsym_offset, const uint8_t sym_offset) {
+        hdr.pre_offset = pre_offset;
+        hdr.nsym_offset = nsym_offset;
+        hdr.sym_offset = sym_offset;
     }
 
     /**

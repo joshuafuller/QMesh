@@ -108,6 +108,7 @@ void load_settings_from_flash(void) {
         radio_cb["CW Test Mode"] = 0;
         radio_cb["Preamble Test Mode"] = 0;
         radio_cb["Test FEC"] = 0;
+        radio_cb["Number Timing Offset Increments"] = 0;
         string settings_str = radio_cb.serialize();
         fprintf(f, "%s\r\n", settings_str.c_str());
         fflush(f);
@@ -138,6 +139,8 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb["Beacon Message"].get<string>().c_str());
     debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb["Beacon Interval"].get<int>());
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb["Payload Length"].get<int>());
+    debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
+                radio_cb["Number Timing Offset Increments"].get<int>());
 
     // Check if low-power mode is set. If so, delete the UART
     rx_serial_thread.start(rx_serial_thread_fn);

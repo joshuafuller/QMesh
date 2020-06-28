@@ -122,9 +122,13 @@ void mesh_protocol_fsm(void) {
     int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
     int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
     int my_addr = radio_cb["Address"].get<int>();
+    int timing_off_inc = radio_cb["Number Timing Offset Increments"].get<int>();
     static mt19937 rand_gen(my_addr);
     int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
     static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
+    static mt19937 timing_rand_gen(my_addr);
+    uniform_int_distribution<uint8_t> timing_off_dist(0, timing_off_inc);  
+    uint8_t next_sym_off = timing_off_dist(timing_rand_gen);
 
     // Set up an initial timer
     auto initial_timer = make_shared<LowPowerTimer>();
@@ -194,6 +198,7 @@ void mesh_protocol_fsm(void) {
                 { 
                 led2.LEDOff();
                 led3.LEDSolid();
+                tx_frame_sptr->setOffsets(0, 0, next_sym_off);
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
@@ -205,7 +210,16 @@ void mesh_protocol_fsm(void) {
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 led3.LEDOff(); 
-                radio_timing.waitFullSlots(2);
+                // Set the amount of time to wait until the next transmit
+                // Start with the two-slot baseline delay
+                // Subtract the last frame's symbol delay
+                // Add the next frame's symbol delay
+                radio_timing.waitFullSlots(2);              
+                uint8_t pre_off, nsym_off, sym_off;
+                tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
+                radio_timing.waitSymOffset(sym_off, -1.0f);
+                next_sym_off = timing_off_dist(timing_rand_gen);
+                radio_timing.waitSymOffset(next_sym_off, 1.0f);
                 //radio_timing.wait();
                 state = WAIT_FOR_EVENT;
                 }
@@ -217,8 +231,20 @@ void mesh_protocol_fsm(void) {
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 MBED_ASSERT(rx_frame_size < 256);
+                // Perform the timing offset work:
+                //  1. Start by waiting one full slot
+                //  2. Subtract the symbol fraction delay from the received packet
+                //  3. Set the new symbol fraction delay in the frame
+                //  4. Add the symbol fraction delay for the retransmitted packet
 				radio_timing.waitFullSlots(1);
+                uint8_t pre_off, nsym_off, sym_off;
+                rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
+                radio_timing.waitSymOffset(sym_off, -1.0f);
+                rx_frame_sptr->setOffsets(0, 0, timing_off_dist(timing_rand_gen));
+                rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
+                radio_timing.waitSymOffset(sym_off, 1.0f);
                 radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
+                
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 led2.LEDOff();

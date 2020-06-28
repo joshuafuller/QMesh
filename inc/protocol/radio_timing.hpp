@@ -72,6 +72,15 @@ void computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr,
  */
 void waitFullSlots(const size_t num_slots);
 
+
+/**
+ * Wait for a fraction of a symbol. 
+ * @param symb_frac The fraction of the symbol, in eigths of half a symbol
+ *  duration, to wait.
+ * @papram direction should be either 1.0f or -1.0f, used to set the direction
+ */
+void waitSymOffset(const uint8_t symb_frac, const float direction);
+
 /**
  * Wait for the "remaining time" that includes various timing offsets
  * used to implement QMesh's collision resistance:
