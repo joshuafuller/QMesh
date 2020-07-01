@@ -31,7 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "AFSK.h"
 
 //UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, 9600);
-TinyGPSPlus gps;
+//TinyGPSPlus gps;
+GNSS *gnss;
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
 Thread rx_serial_thread(osPriorityNormal, 4096, NULL, "RX-SERIAL");
@@ -42,6 +43,7 @@ Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
 Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON");
 Thread oled_mon_thread(osPriorityNormal, 4096, NULL, "OLED-MON");
 Thread btn_evt_thread(osPriorityNormal, 4096, NULL, "BTN-EVT");
+Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD");
 
 Afsk my_afsk;
 
@@ -127,6 +129,10 @@ int main()
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
     printf("Hello\r\n");
+
+    // Start up the GPS code
+    debug_printf(DBG_INFO, "Starting the GPS...\r\n");
+    gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 
     // Set up the RDA1846 module control
     DRA818(PD_5, PD_6, PD_7, PD_4, PD_3, PE_2);

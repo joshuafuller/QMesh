@@ -64,9 +64,17 @@ typedef enum
 class GNSS
 {
 public:
-	Stream&       stream;
+    UARTSerial *ser;
+    PinName uart_tx, uart_rx;
 	// Assign serial interface to be used with the module
-	GNSS( Stream& stream ) : stream(stream){}
+	//GNSS( Stream& stream ) : stream(stream){}
+
+    GNSS( const PinName tx, const PinName rx ) {
+        uart_tx = tx;
+        uart_rx = rx;
+        ser = new UARTSerial(uart_tx, uart_rx);
+        ser->set_baud(9600);
+    }
 	
 	// Empty begin() starts module on default, non-power saving mode, or PSM_1HZ.
 	bool init( psmMode_t m = CONTINOUS );

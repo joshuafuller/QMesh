@@ -26,5 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "buttons.hpp"
 #include "stm32_watchdog.h"
 #include "DRA818.hpp"
+#include "ublox_GNSS.h"
 
 #endif /* PERIPHERALS_HPP */
