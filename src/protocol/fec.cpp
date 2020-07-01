@@ -150,7 +150,7 @@ void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
     }
 }
 
-
+#if 0
 void FEC::createInterleavingMatrix(void) {
     interleave_matrix.clear();
     int enc_size = this->getEncSize(Frame::size());
@@ -178,8 +178,9 @@ void FEC::createInterleavingMatrix(void) {
         interleave_matrix.push_back(swap_idx);
     }
 }
+#endif
 
-
+#if 0
 void FEC::interleaveBits(vector<uint8_t> &bytes) {
     for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
         bool bit0 = getBit(bytes, it->first);
@@ -191,8 +192,62 @@ void FEC::interleaveBits(vector<uint8_t> &bytes) {
         setBit(bit1, it->second, bytes);
     }
 }
+#endif
 
 
+// NOTE: NOT YET FINISHED
+void FEC::getInterleavingParams(const size_t msg_len, size_t &num_bits, size_t &num_bytes, 
+                                    size_t &row_size, size_t &col_size) {
+    size_t enc_size = this->getFECEncSize(msg_len);
+    float num_bits_f = enc_size*8;
+    float row_size_f = floorf(sqrtf(num_bits_f));
+    float col_size_f = ceilf(num_bits_f/row_size_f);
+    num_bits = (size_t) num_bits_f;
+    num_bytes = (size_t) ceilf((row_size_f*col_size_f)/8.0f);
+    row_size = (size_t) row_size_f;
+    col_size = (size_t) col_size_f;
+}
+
+
+size_t FEC::getEncSize(const size_t msg_len) {
+    size_t num_bits, num_bytes, row_size, col_size;
+    getInterleavingParams(msg_len, num_bits, num_bytes, row_size, col_size);
+    return num_bytes;
+}
+
+
+// Using a technique similar to the AO-40 OSCAR interleaving setup
+void FEC::interleaveBits(vector<uint8_t> &bytes) {
+    vector<uint8_t> new_bytes(bytes.size(), 0x00);
+    size_t num_bits, num_bytes, row_size, col_size;
+    getInterleavingParams(bytes.size(), num_bits, num_bytes, row_size, col_size);
+    int bit_idx = 0;
+    for(size_t row = 0; row < row_size; row++) {
+        for(size_t col = 0; col < col_size; col++) {
+            bool bit = getBit(bytes, row + col*row_size);
+            setBit(bit, bit_idx++, new_bytes);
+        }
+    }
+    copy(new_bytes.begin(), new_bytes.end(), bytes.begin());
+}
+
+
+void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
+    vector<uint8_t> new_bytes(bytes.size(), 0x00);
+    size_t num_bits, num_bytes, row_size, col_size;
+    getInterleavingParams(bytes.size(), num_bits, num_bytes, row_size, col_size);
+    int bit_idx = 0;
+    for(size_t row = 0; row < row_size; row++) {
+        for(size_t col = 0; col < col_size; col++) {
+            bool bit = getBit(bytes, bit_idx++);
+            setBit(bit, row + col*row_size, new_bytes);
+        }
+    }
+    copy(new_bytes.begin(), new_bytes.end(), bytes.begin());
+}
+
+
+#if 0
 void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
     for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
         bool bit0 = getBit(bytes, it->second);
@@ -204,9 +259,10 @@ void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
         setBit(it->first, bit1, bytes);
     }
 }
+#endif
 
 
-size_t FECConv::getEncSize(const size_t msg_len) {
+size_t FECConv::getFECEncSize(const size_t msg_len) {
     int conv_len = correct_convolutional_encode_len(corr_con, msg_len);
     //debug_printf(DBG_INFO, "conv len is %d\r\n", conv_len);
     return (size_t) ceilf((float) correct_convolutional_encode_len(corr_con, msg_len)/8.0f);
@@ -259,7 +315,6 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) {
         break;
     }
     corr_con = correct_convolutional_create(inv_rate, order, poly);
-    createInterleavingMatrix();
 }
 
 

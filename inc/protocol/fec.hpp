@@ -81,14 +81,17 @@ class FEC {
 protected:
     string name;
     vector<pair<int, int> > interleave_matrix;
-    void createInterleavingMatrix(void);
+    virtual size_t getFECEncSize(const size_t msg_len) {
+        return msg_len*8;
+    }
+    void getInterleavingParams(const size_t msg_len, size_t &num_bits, size_t &num_bytes, 
+                                    size_t &row_size, size_t &col_size);
     static void whitenData(vector<uint8_t> &buf, uint16_t seed);
 
 public:
     /// Constructor.
     FEC(void) {
         name = "Dummy FEC";
-        createInterleavingMatrix();
     }
 
     /// Gets the name of the FEC.
@@ -123,9 +126,7 @@ public:
      * Get the encoded size.
      * @param msg_len The unencoded size of the message.
      */
-    virtual size_t getEncSize(const size_t msg_len) {
-        return msg_len;
-    }
+    size_t getEncSize(const size_t msg_len);
 
     /**
      * Apply the FEC coding. Returns the encoded size, in bytes.
@@ -170,7 +171,6 @@ class FECInterleave : public FEC {
 public:
     FECInterleave(void) {
         name = "Dummy Interleaver and Whitener";
-        createInterleavingMatrix();
     }
 
     size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
@@ -207,7 +207,7 @@ public:
         correct_convolutional_destroy(corr_con);
     }
 
-    size_t getEncSize(const size_t msg_len);
+    size_t getFECEncSize(const size_t msg_len);
 
     size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
 
@@ -240,7 +240,6 @@ public:
         rs_corr_bytes = my_rs_corr_bytes;
         rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
                                                   1, 1, rs_corr_bytes);
-        createInterleavingMatrix();
     }
 
     /**
@@ -258,8 +257,8 @@ public:
 
     ssize_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg);
 
-    size_t getEncSize(const size_t msg_len) {
-        size_t enc_size = FECConv::getEncSize(msg_len+rs_corr_bytes);
+    size_t getFECEncSize(const size_t msg_len) {
+        size_t enc_size = FECConv::getFECEncSize(msg_len+rs_corr_bytes);
         MBED_ASSERT(enc_size <= 256);
         return enc_size;
     }
