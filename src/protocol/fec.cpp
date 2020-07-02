@@ -198,10 +198,10 @@ void FEC::interleaveBits(vector<uint8_t> &bytes) {
 // NOTE: NOT YET FINISHED
 void FEC::getInterleavingParams(const size_t msg_len, size_t &num_bits, size_t &num_bytes, 
                                     size_t &row_size, size_t &col_size) {
-    size_t enc_size = this->getFECEncSize(msg_len);
-    float num_bits_f = enc_size*8;
+    float num_bits_f = msg_len*8;
     float row_size_f = floorf(sqrtf(num_bits_f));
     float col_size_f = ceilf(num_bits_f/row_size_f);
+    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", row_size_f, col_size_f);
     num_bits = (size_t) num_bits_f;
     num_bytes = (size_t) ceilf((row_size_f*col_size_f)/8.0f);
     row_size = (size_t) row_size_f;
@@ -211,16 +211,19 @@ void FEC::getInterleavingParams(const size_t msg_len, size_t &num_bits, size_t &
 
 size_t FEC::getEncSize(const size_t msg_len) {
     size_t num_bits, num_bytes, row_size, col_size;
-    getInterleavingParams(msg_len, num_bits, num_bytes, row_size, col_size);
+    size_t enc_size = this->getFECEncSize(msg_len);
+    getInterleavingParams(enc_size, num_bits, num_bytes, row_size, col_size);
     return num_bytes;
 }
 
 
 // Using a technique similar to the AO-40 OSCAR interleaving setup
 void FEC::interleaveBits(vector<uint8_t> &bytes) {
-    vector<uint8_t> new_bytes(bytes.size(), 0x00);
     size_t num_bits, num_bytes, row_size, col_size;
+    debug_printf(DBG_INFO, "num bytes is %d\r\n", bytes.size());
     getInterleavingParams(bytes.size(), num_bits, num_bytes, row_size, col_size);
+    debug_printf(DBG_INFO, "num_bytes is %d\r\n", num_bytes);
+    vector<uint8_t> new_bytes(num_bytes, 0x00);
     int bit_idx = 0;
     for(size_t row = 0; row < row_size; row++) {
         for(size_t col = 0; col < col_size; col++) {
@@ -228,6 +231,7 @@ void FEC::interleaveBits(vector<uint8_t> &bytes) {
             setBit(bit, bit_idx++, new_bytes);
         }
     }
+    bytes.resize(new_bytes.size());
     copy(new_bytes.begin(), new_bytes.end(), bytes.begin());
 }
 
@@ -334,7 +338,7 @@ size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, msg_int.data(), 
             msg_int.size(), enc_msg.data())/8.0f);
     interleaveBits(enc_msg);   
-    return enc_len;
+    return enc_msg.size();
 }
 
 
@@ -343,7 +347,7 @@ ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg
     dec_msg.resize(Frame::size());
 	vector<uint8_t> deint_msg(enc_msg.size());
     copy(enc_msg.begin(), enc_msg.end(), deint_msg.begin());
-    interleaveBits(deint_msg);   
+    deinterleaveBits(deint_msg);   
     size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
     size_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             enc_msg_size_bits, dec_msg.data());
@@ -413,19 +417,22 @@ size_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) 
     }
     vector<uint8_t> rs_enc_msg(msg_int.size()+rs_corr_bytes);
     size_t rs_size = correct_reed_solomon_encode(rs_con, msg_int.data(), msg_int.size(), rs_enc_msg.data());
-	rsv_enc_msg.resize(getEncSize(msg_int.size()));
+	rsv_enc_msg.resize(getFECEncSize(msg_int.size()));
     size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
             rs_enc_msg.size(), rsv_enc_msg.data())/8.0f);
+    debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", rsv_enc_msg.size());
     interleaveBits(rsv_enc_msg);
-	MBED_ASSERT(enc_len == rsv_enc_msg.size());
-    return enc_len;
+    debug_printf(DBG_INFO, "rsv-post-int %d\r\n", rsv_enc_msg.size());
+	//MBED_ASSERT(enc_len == rsv_enc_msg.size());
+    return rsv_enc_msg.size();
 }
 
 
-ssize_t FECRSV::decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) {
+ssize_t FECRSV::decode(const size_t orig_msg_size, const vector<uint8_t> &rsv_enc_msg, 
+                            vector<uint8_t> &dec_msg) {
     vector<uint8_t> rsv_enc_msg_int(rsv_enc_msg.size());
     copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), rsv_enc_msg_int.begin());
-    interleaveBits(rsv_enc_msg_int);   
+    deinterleaveBits(rsv_enc_msg_int);   
     vector<uint8_t> rs_enc_msg(rsv_enc_msg_int.size());
     size_t conv_bytes = correct_convolutional_decode(corr_con, rsv_enc_msg_int.data(), 
                             rsv_enc_msg_int.size()*8, rs_enc_msg.data());
