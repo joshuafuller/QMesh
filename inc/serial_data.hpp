@@ -115,7 +115,7 @@ public:
     /**
     * Default constructor. Constructs with a default FEC (one that does nothing).
     */
-    Frame() : Frame(make_shared<FEC>()) { }
+    Frame() : Frame(make_shared<FEC>(Frame::size())) { }
 
     /**
     * Constructor that loads a specific FEC.

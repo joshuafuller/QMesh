@@ -474,7 +474,6 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
 #else
     _network_mode_public = false;
 #endif
-
     // this is a POR sequence
     cold_start_wakeup();
 }

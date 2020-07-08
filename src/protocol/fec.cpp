@@ -30,13 +30,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void testFEC(void) {
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
-    fec_sptr = make_shared<FEC>();   
+    fec_sptr = make_shared<FEC>(Frame::size());   
     test_fecs.push_back(fec_sptr);
-    fec_sptr = make_shared<FECInterleave>();
+    fec_sptr = make_shared<FECInterleave>(Frame::size());
     test_fecs.push_back(fec_sptr);
-    fec_sptr = make_shared<FECConv>();
+    fec_sptr = make_shared<FECConv>(Frame::size());
     test_fecs.push_back(fec_sptr);
-    fec_sptr = make_shared<FECRSV>();
+    fec_sptr = make_shared<FECRSV>(Frame::size());
     test_fecs.push_back(fec_sptr);
     debug_printf(DBG_INFO, "Initialized FEC objects\r\n");
     ThisThread::sleep_for(1000);
@@ -108,172 +108,61 @@ void testFEC(void) {
 }
 
 
-size_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-    enc_msg.resize(msg.size());
+int FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    MBED_ASSERT(msg.size() == msg_len);
+    enc_msg.resize(int_params.bytes);
     copy(msg.begin(), msg.end(), enc_msg.begin());
-    Frame::crc16_t seed;
-    for(size_t i = 0; i < sizeof(seed); i++) {
-        seed.b[sizeof(seed)-1-i] = *(enc_msg.end()-1);
-        enc_msg.pop_back();
-    }
-    FEC::whitenData(enc_msg, seed.s);
-    for(size_t i = 0; i < sizeof(seed); i++) {
-        enc_msg.push_back(seed.b[i]);
-    }
-    interleaveBits(enc_msg);
+    interleaveBits(msg, enc_msg);
+    MBED_ASSERT(enc_msg.size() == enc_size);
     return enc_msg.size();
 }
 
 
-ssize_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
-    dec_msg.resize(enc_msg.size());
-    copy(enc_msg.begin(), enc_msg.end(), dec_msg.begin());
-    interleaveBits(dec_msg);
-    Frame::crc16_t seed;
-    for(size_t i = 0; i < sizeof(seed); i++) {
-        seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
-        dec_msg.pop_back();
-    }
-    FEC::whitenData(dec_msg, seed.s);
-    for(size_t i = 0; i < sizeof(seed); i++) {
-        dec_msg.push_back(seed.b[i]);
-    }        
+int FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    MBED_ASSERT(enc_msg.size() == enc_size);
+    vector<uint8_t> int_msg(enc_size, 0);
+    deinterleaveBits(enc_msg, dec_msg);
+    MBED_ASSERT(dec_msg.size() == msg_len);
     return dec_msg.size();
 }  
-    
-
-void FEC::whitenData(vector<uint8_t> &buf, uint16_t seed) {
-    mt19937 rand_gen(seed);
-    uniform_int_distribution<uint8_t> dist(0, 255);  
-    for(size_t i = 0; i < buf.size(); i++) {
-        buf[i] = buf[i] ^ dist(rand_gen);
-    }
-}
-
-#if 0
-void FEC::createInterleavingMatrix(void) {
-    interleave_matrix.clear();
-    int enc_size = this->getEncSize(Frame::size());
-    list<int> vals;
-    for(int i = 0; i < enc_size*8; i++) {
-        vals.push_back(i);
-    }
-    mt19937 rand_gen(6731);
-    pair<int, int> swap_idx;
-    while(vals.size() != 0) {
-        uniform_int_distribution<int> dist0(0, vals.size()-1);
-        int list_idx0 = dist0(rand_gen);
-        list<int>::iterator it0 = vals.begin();
-        advance(it0, list_idx0);
-        swap_idx.first = *it0;
-        vals.erase(it0);
-            
-        uniform_int_distribution<int> dist1(0, vals.size()-1);
-        int list_idx1 = dist1(rand_gen);
-        list<int>::iterator it1 = vals.begin();
-        advance(it1, list_idx1);
-        swap_idx.second = *it1;
-        vals.erase(it1);
-
-        interleave_matrix.push_back(swap_idx);
-    }
-}
-#endif
-
-#if 0
-void FEC::interleaveBits(vector<uint8_t> &bytes) {
-    for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
-        bool bit0 = getBit(bytes, it->first);
-        bool bit1 = getBit(bytes, it->second);
-        bool swap = bit0;
-        bit0 = bit1;
-        bit1 = swap;
-        setBit(bit0, it->first, bytes);
-        setBit(bit1, it->second, bytes);
-    }
-}
-#endif
-
-
-// NOTE: NOT YET FINISHED
-void FEC::getInterleavingParams(const size_t msg_len, size_t &num_bits, size_t &num_bytes, 
-                                    size_t &row_size, size_t &col_size) {
-    float num_bits_f = msg_len*8;
-    float row_size_f = floorf(sqrtf(num_bits_f));
-    float col_size_f = ceilf(num_bits_f/row_size_f);
-    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", row_size_f, col_size_f);
-    num_bits = (size_t) num_bits_f;
-    num_bytes = (size_t) ceilf((row_size_f*col_size_f)/8.0f);
-    row_size = (size_t) row_size_f;
-    col_size = (size_t) col_size_f;
-}
-
-
-size_t FEC::getEncSize(const size_t msg_len) {
-    size_t num_bits, num_bytes, row_size, col_size;
-    size_t enc_size = this->getFECEncSize(msg_len);
-    getInterleavingParams(enc_size, num_bits, num_bytes, row_size, col_size);
-    return num_bytes;
-}
 
 
 // Using a technique similar to the AO-40 OSCAR interleaving setup
-void FEC::interleaveBits(vector<uint8_t> &bytes) {
-    size_t num_bits, num_bytes, row_size, col_size;
-    debug_printf(DBG_INFO, "num bytes is %d\r\n", bytes.size());
-    getInterleavingParams(bytes.size(), num_bits, num_bytes, row_size, col_size);
-    debug_printf(DBG_INFO, "num_bytes is %d\r\n", num_bytes);
-    vector<uint8_t> new_bytes(num_bytes, 0x00);
-    int bit_idx = 0;
-    for(size_t row = 0; row < row_size; row++) {
-        for(size_t col = 0; col < col_size; col++) {
-            bool bit = getBit(bytes, row + col*row_size);
-            setBit(bit, bit_idx++, new_bytes);
+void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) {
+    MBED_ASSERT(bytes.size() == int_params.pre_bytes);
+    vector<uint8_t> new_bytes_preint(int_params.bytes, 0x00);
+    vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
+    copy(bytes.begin(), bytes.end(), new_bytes_preint.begin());
+    int32_t bit_idx = 0;
+    for(int32_t row = 0; row < int_params.row; row++) {
+        for(int32_t col = 0; col < int_params.col; col++) {
+            bool bit = getBit(new_bytes_preint, row + col*int_params.row);
+            setBit(bit, bit_idx++, new_bytes_int);
         }
     }
-    bytes.resize(new_bytes.size());
-    copy(new_bytes.begin(), new_bytes.end(), bytes.begin());
+    bytes_int.resize(int_params.bytes);
+    copy(new_bytes_int.begin(), new_bytes_int.end(), bytes_int.begin());
+    MBED_ASSERT(bytes_int.size() == int_params.bytes);
 }
 
 
-void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
-    vector<uint8_t> new_bytes(bytes.size(), 0x00);
-    size_t num_bits, num_bytes, row_size, col_size;
-    getInterleavingParams(bytes.size(), num_bits, num_bytes, row_size, col_size);
-    int bit_idx = 0;
-    for(size_t row = 0; row < row_size; row++) {
-        for(size_t col = 0; col < col_size; col++) {
-            bool bit = getBit(bytes, bit_idx++);
-            setBit(bit, row + col*row_size, new_bytes);
+void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) {
+    MBED_ASSERT(bytes_int.size() == int_params.bytes);
+    vector<uint8_t> new_bytes_deint(bytes_int.size(), 0x00);
+    int32_t bit_idx = 0;
+    for(int32_t row = 0; row < int_params.row; row++) {
+        for(int32_t col = 0; col < int_params.col; col++) {
+            bool bit = getBit(bytes_int, bit_idx++);
+            setBit(bit, row + col*int_params.row, new_bytes_deint);
         }
     }
-    copy(new_bytes.begin(), new_bytes.end(), bytes.begin());
+    copy(new_bytes_deint.begin(), new_bytes_deint.end(), bytes_deint.begin());
+    MBED_ASSERT(bytes_deint.size() == int_params.pre_bytes);
 }
 
 
-#if 0
-void FEC::deinterleaveBits(vector<uint8_t> &bytes) {
-    for(vector<pair<int, int> >::iterator it = interleave_matrix.begin(); it != interleave_matrix.end(); it++) {
-        bool bit0 = getBit(bytes, it->second);
-        bool bit1 = getBit(bytes, it->first);
-        bool swap = bit0;
-        bit0 = bit1;
-        bit1 = swap;
-        setBit(it->second, bit0, bytes);
-        setBit(it->first, bit1, bytes);
-    }
-}
-#endif
-
-
-size_t FECConv::getFECEncSize(const size_t msg_len) {
-    int conv_len = correct_convolutional_encode_len(corr_con, msg_len);
-    //debug_printf(DBG_INFO, "conv len is %d\r\n", conv_len);
-    return (size_t) ceilf((float) correct_convolutional_encode_len(corr_con, msg_len)/8.0f);
-}
-
-
-FECConv::FECConv(const size_t inv_rate, const size_t order) {
+FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order):
+    FECInterleave(my_msg_len) {
     name = "Convolutional Coding";
     // Set up the convolutional outer code
     this->inv_rate = inv_rate;
@@ -319,47 +208,61 @@ FECConv::FECConv(const size_t inv_rate, const size_t order) {
         break;
     }
     corr_con = correct_convolutional_create(inv_rate, order, poly);
+
+    // Set up all of the other major parameters
+    msg_len = my_msg_len;
+
+    // Get the post-convolutional encoding length
+    conv_params.bits = correct_convolutional_encode_len(corr_con, msg_len);
+    conv_params.bytes = ceilf((float) conv_params.bits/8.0f);
+    int_params.pre_bytes = conv_params.bytes;
+
+    // Set up the interleaving parameters
+    int_params.bits_f = conv_params.bits*8;
+    int_params.row_f = floorf(sqrtf(int_params.bits_f));
+    int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
+    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
+    int_params.bits = (int32_t) int_params.bits_f;
+    int_params.bytes = (int32_t) ceilf((int_params.row_f*int_params.col_f)/8.0f);
+    int_params.row = (int32_t) int_params.row_f;
+    int_params.col = (int32_t) int_params.col_f;
+
+    enc_size = int_params.bytes;
 }
 
 
-size_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-    vector<uint8_t> msg_int(msg.size());
-    copy(msg.begin(), msg.end(), msg_int.begin());
-    Frame::crc16_t seed;
-    for(size_t i = 0; i < sizeof(seed); i++) {
-        seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
-        msg_int.pop_back();
-    }
-    whitenData(msg_int, seed.s);
-    for(size_t i = 0; i < sizeof(seed); i++) {
-        msg_int.push_back(seed.b[i]);
-    }
-	enc_msg.resize(getEncSize(msg_int.size()));
-    size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, msg_int.data(), 
-            msg_int.size(), enc_msg.data())/8.0f);
-    interleaveBits(enc_msg);   
+int32_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    // Convolutional encode
+    MBED_ASSERT(msg.size() == msg_len);
+    vector<uint8_t> conv_msg(conv_params.bytes, 0);
+    int32_t conv_len = (int32_t) ceilf((float) correct_convolutional_encode(corr_con, msg.data(), 
+            msg.size(), conv_msg.data())/8.0f);
+    MBED_ASSERT(conv_len == conv_params.bytes);
+    MBED_ASSERT(conv_msg.size() == conv_params.bytes);
+    // Interleave
+    vector<uint8_t> int_msg(int_params.bytes, 0);
+    copy(conv_msg.begin(), conv_msg.end(), int_msg.begin());
+    interleaveBits(conv_msg, int_msg);
+    MBED_ASSERT(int_msg.size() == enc_size);
+
+    enc_msg.resize(int_params.bytes);
+    copy(int_msg.begin(), int_msg.end(), enc_msg.begin());
+    MBED_ASSERT(enc_msg.size() == enc_size);
     return enc_msg.size();
 }
 
 
-ssize_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
-	MBED_ASSERT(getEncSize(enc_msg.size()) <= 256);
-    dec_msg.resize(Frame::size());
-	vector<uint8_t> deint_msg(enc_msg.size());
-    copy(enc_msg.begin(), enc_msg.end(), deint_msg.begin());
-    deinterleaveBits(deint_msg);   
-    size_t enc_msg_size_bits = correct_convolutional_encode_len(corr_con, Frame::size());
-    size_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
-                            enc_msg_size_bits, dec_msg.data());
-    Frame::crc16_t seed;
-    for(int i = 0; i < sizeof(seed); i++) {
-        seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
-        dec_msg.pop_back();
-    }
-    whitenData(dec_msg, seed.s);
-    for(int i = 0; i < sizeof(seed); i++) {
-        dec_msg.push_back(seed.b[i]);
-    }
+int32_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    // Deinterleave
+	MBED_ASSERT(enc_msg.size() == enc_size);
+	vector<uint8_t> deint_msg(conv_params.bytes, 0);
+    deinterleaveBits(enc_msg, deint_msg);
+    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
+    // Convolutional decode
+    dec_msg.resize(msg_len);
+    int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
+                            conv_params.bits, dec_msg.data());
+    MBED_ASSERT(dec_size == msg_len);
     return dec_size;
 }
 
@@ -380,8 +283,7 @@ void FEC::benchmark(size_t num_iters) {
     int enc_num_ms = enc_timer.read_ms();
     debug_printf(DBG_INFO, "Done!\r\n");
     debug_printf(DBG_INFO, "Benchmarking the decode...\r\n");
-    LowPowerTimer dec_timer;;
-    size_t enc_size = getEncSize(Frame::size());
+    LowPowerTimer dec_timer;
     dec_timer.start();
     for(size_t i = 0; i < num_iters; i++) {
         decode(enc_data, msg_data);
@@ -402,94 +304,140 @@ void FEC::benchmark(size_t num_iters) {
 }
 
 
-size_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) {
-    MBED_ASSERT(getEncSize(msg.size()) <= 256);
-    Frame::crc16_t seed;
-    vector<uint8_t> msg_int(msg.size());
-    copy(msg.begin(), msg.end(), msg_int.begin());
-    for(int i = 0; i < sizeof(seed); i++) {
-        seed.b[sizeof(seed)-1-i] = *(msg_int.end()-1);
-        msg_int.pop_back();
+FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
+            const int32_t my_rs_corr_bytes) 
+    : FECConv(my_msg_len, inv_rate, order) {
+    name = "RSV";
+    // Set up the convolutional outer code
+    this->inv_rate = inv_rate;
+    this->order = order;
+    correct_convolutional_polynomial_t *poly = NULL;
+    switch(inv_rate) {
+        case 2: // 1/2
+            switch(order) {
+                case 6: poly = conv_r12_6_polynomial; break;
+                case 7: poly = libfec_r12_7_polynomial; break;
+                case 8: poly = conv_r12_8_polynomial; break;
+                case 9: poly = conv_r12_9_polynomial; break;
+                default:
+                    debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
+                    MBED_ASSERT(false);
+                break;
+            }
+        break;
+        case 3: // 1/3
+            switch(order) {
+                case 6: poly = conv_r13_6_polynomial; break;
+                case 7: poly = conv_r13_7_polynomial; break;
+                case 8: poly = conv_r13_8_polynomial; break;
+                case 9: poly = libfec_r13_9_polynomial; break;
+                default:
+                    debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
+                    MBED_ASSERT(false);
+                break;
+            }
+        break;
+        case 6: // 1/6
+            if(order == 15) {
+                poly = libfec_r16_15_polynomial;
+            }
+            else {
+                debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
+                MBED_ASSERT(false);                    
+            }
+        break;
+        default:
+            debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
+            MBED_ASSERT(false);
+        break;
     }
-    whitenData(msg_int, seed.s);
-    for(int i = 0; i < sizeof(seed); i++) {
-        msg_int.push_back(seed.b[i]);
-    }
-    vector<uint8_t> rs_enc_msg(msg_int.size()+rs_corr_bytes);
-    size_t rs_size = correct_reed_solomon_encode(rs_con, msg_int.data(), msg_int.size(), rs_enc_msg.data());
-	rsv_enc_msg.resize(getFECEncSize(msg_int.size()));
-    size_t enc_len = (size_t) ceilf((float) correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
-            rs_enc_msg.size(), rsv_enc_msg.data())/8.0f);
-    debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", rsv_enc_msg.size());
-    interleaveBits(rsv_enc_msg);
-    debug_printf(DBG_INFO, "rsv-post-int %d\r\n", rsv_enc_msg.size());
-	//MBED_ASSERT(enc_len == rsv_enc_msg.size());
-    return rsv_enc_msg.size();
+    corr_con = correct_convolutional_create(inv_rate, order, poly);
+
+    // Set up all of the other major parameters
+    msg_len = my_msg_len;
+
+    // Reed-Solomon parameters
+    rs_corr_bytes = my_rs_corr_bytes;
+    rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
+                                                1, 1, rs_corr_bytes);
+    rs_enc_msg_size = msg_len + rs_corr_bytes;
+
+    // Get the post-convolutional encoding length
+    conv_params.bits = correct_convolutional_encode_len(corr_con, rs_enc_msg_size);
+    conv_params.bytes = ceilf((float) conv_params.bits/8.0f);
+
+    // Set up the various other parameters
+    int_params.bits_f = conv_params.bytes*8;
+    int_params.row_f = floorf(sqrtf(int_params.bits_f));
+    int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
+    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
+    int_params.bits = (int32_t) int_params.bits_f;
+    int_params.bytes = (int32_t) ceilf((int_params.row_f*int_params.col_f)/8.0f);
+    int_params.row = (int32_t) int_params.row_f;
+    int_params.col = (int32_t) int_params.col_f;
+    enc_size = int_params.bytes;
 }
 
 
-ssize_t FECRSV::decode(const size_t orig_msg_size, const vector<uint8_t> &rsv_enc_msg, 
-                            vector<uint8_t> &dec_msg) {
-    vector<uint8_t> rsv_enc_msg_int(rsv_enc_msg.size());
-    copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), rsv_enc_msg_int.begin());
-    deinterleaveBits(rsv_enc_msg_int);   
-    vector<uint8_t> rs_enc_msg(rsv_enc_msg_int.size());
-    size_t conv_bytes = correct_convolutional_decode(corr_con, rsv_enc_msg_int.data(), 
-                            rsv_enc_msg_int.size()*8, rs_enc_msg.data());
-    dec_msg.resize(conv_bytes-rs_corr_bytes);  
-    size_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), conv_bytes, 
-                        dec_msg.data());
-    Frame::crc16_t seed;
-    for(int i = 0; i < sizeof(seed); i++) {
-        seed.b[sizeof(seed)-1-i] = *(dec_msg.end()-1);
-        dec_msg.pop_back();
-    }
-    whitenData(dec_msg, seed.s);
-    for(int i = 0; i < sizeof(seed); i++) {
-        dec_msg.push_back(seed.b[i]);
-    }
+int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    // Reed-Solomon encode
+    MBED_ASSERT(msg.size() == msg_len);
+    vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
+    int32_t rs_size = correct_reed_solomon_encode(rs_con, msg.data(), msg_len, 
+                                                    rs_enc_msg.data());
+    MBED_ASSERT(rs_size == rs_enc_msg_size);
+    // Convolutional encode
+    vector<uint8_t> conv_enc_msg(conv_params.bytes, 0);
+    int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
+                            conv_params.bytes, conv_enc_msg.data());
+    MBED_ASSERT(conv_enc_len = conv_params.bits);
+    // Interleave
+    vector<uint8_t> int_enc_msg(enc_size, 0);
+    debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", int_enc_msg.size());
+    interleaveBits(conv_enc_msg, int_enc_msg);
+    debug_printf(DBG_INFO, "rsv-post-int %d\r\n", int_enc_msg.size());
+	MBED_ASSERT(int_enc_msg.size() == enc_size);
+    
+    enc_msg.resize(enc_size);
+    copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
+    return enc_msg.size();
+}
+
+
+int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    // Deinterleave
+    MBED_ASSERT(enc_msg.size() == enc_size);
+    vector<uint8_t> deint_msg(conv_params.bytes, 0);
+    deinterleaveBits(enc_msg, deint_msg);
+    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
+    // Convolutional decode
+    vector<uint8_t> rs_enc_msg(conv_params.bytes, 0);
+    size_t deconv_bytes = correct_convolutional_decode(corr_con, rs_enc_msg.data(), 
+                            conv_params.bits, rs_enc_msg.data());
+    MBED_ASSERT(deconv_bytes == rs_enc_msg_size);
+    MBED_ASSERT(rs_enc_msg.size() == rs_enc_msg_size);
+    // Reed-Solomon decode
+    dec_msg.resize(msg_len);  
+    int32_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), 
+                        rs_enc_msg_size, dec_msg.data());
+    MBED_ASSERT(rs_len == msg_len);
+
+    MBED_ASSERT(dec_msg.size() == msg_len);
     return dec_msg.size();
 }
 
 
-// Equation 4 in https://arxiv.org/pdf/1705.05899.pdf shows how to 
-// calculate the BER from the SNR and LoRa parameters (SF and CR)
-// The basic equation is: log 10(BER(SNRdB)) =α*exp (β*SNRdB)
-/* 
-SF | CR | α           | β      | rsquare | SNR cut-off (dB)
-------------------------------------------------------------
-7  | 1  | -30.2580    | 0.2857 | 0.9997  | -12.283373
-7  | 3  | -105.1966   | 0.3746 | 0.9999  | -12.696281
-8  | 1  | -77.1002    | 0.2993 | 0.9999  | -14.848583
-8  | 3  | -289.8133   | 0.3756 | 0.9995  | -15.358891
-9  | 1  | -244.6424   | 0.3223 | 0.9993  | -17.374993
-9  | 3  | -1114.3312  | 0.3969 | 0.9994  | -17.9260101
-10 | 1  | -725.9556   | 0.3340 | 0.9996  | -20.0254103
-10 | 3  | -4285.4440  | 0.4116 | 0.9991  | -20.5581111
-11 | 1  | -2109.8064  | 0.3407 | 1.0000  | -22.7568113
-11 | 3  | -20771.6945 | 0.4332 | 0.9996  | -23.1791121
-12 | 1  | -4452.3653  | 0.3317 | 0.9986  | -25.6243123
-12 | 3  | -98658.1166 | 0.4485 | 0.9993  | -25.8602
-*/
-static map<pair<int, int>, tuple<float, float, float, float> > ber_plot = {
-    {{7, 1}, {-30.2580, 0.2857, 0.997, -12.283373}},
-    {{7, 3}, {-105.1966, 0.3746, 0.9999, -12.696281}},
-    {{8, 1}, {-77.1002, 0.2993, 0.9999, -14.848583}},
-    {{8, 3}, {-289.8133, 0.3856, 0.9995, -15.358891}},
-    {{9, 1}, {-244.6424, 0.3223, 0.9993, -17.374993}},   
-    {{9, 3}, {-1114.3312, 0.3969, 0.9994, -17.9260101}},   
-    {{10, 1}, {-725.9556, 0.3340, 0.9996, -20.0254103}},         
-    {{10, 3}, {-4285.4440, 0.4116, 0.9991, -20.5581111}},
-    {{11, 1}, {-2109.8064, 0.3407, 1.0000, -22.7568113}},
-    {{11, 3}, {-20771.6945, 0.4332, 0.9996, -23.1791121}},
-    {{12, 1}, {-4452.3653, 0.3317, 0.9986, -25.6243123}},
-    {{12, 3}, {-98658.1166, 0.4485, 0.9993, -25.8602}},
-};
-float FEC::getBER(const float snr) {
-    int sf = radio_cb["SF"].get<int>();
-    int cr = radio_cb["CR"].get<int>();
-    //auto constants = ber_plot[make_tuple<float, float>(sf, cr)];
-    //float rhs = get<0>(constants) * expf(get<1>(constants)*snr);
-    //return powf(10.f, rhs);
-    return 1.0;
+FECInterleave::FECInterleave(const int32_t my_msg_len) : 
+    FEC(my_msg_len) {
+    name = "Dummy Interleaver";
+    msg_len = my_msg_len;
+    float num_bits_f = msg_len*8;
+    float row_size_f = floorf(sqrtf(num_bits_f));
+    float col_size_f = ceilf(num_bits_f/row_size_f);
+    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", row_size_f, col_size_f);
+    int_params.bits = (size_t) num_bits_f;
+    int_params.bytes = (size_t) ceilf((row_size_f*col_size_f)/8.0f);
+    int_params.row = (size_t) row_size_f;
+    int_params.col = (size_t) col_size_f;
+    enc_size = int_params.bytes;
 }

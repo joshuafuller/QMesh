@@ -92,21 +92,21 @@ void init_radio(void) {
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
     debug_printf(DBG_INFO, "FEC algorithm is %s\r\n", fec_algo.c_str()); 
     if(fec_algo == "None") {
-        frame_fec = make_shared<FEC>();
+        frame_fec = make_shared<FEC>(Frame::size());
     }
     else if(fec_algo == "Interleave") {
-        frame_fec = make_shared<FECInterleave>();
+        frame_fec = make_shared<FECInterleave>(Frame::size());
     }
     else if(fec_algo == "Convolutional") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
-        frame_fec = make_shared<FECConv>(conv_rate, conv_order);
+        frame_fec = make_shared<FECConv>(Frame::size(), conv_rate, conv_order);
     }
     else if(fec_algo == "RSV") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
         int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
-        frame_fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
+        frame_fec = make_shared<FECRSV>(Frame::size(), conv_rate, conv_order, rs_roots);
     }
     else {
         MBED_ASSERT(false);

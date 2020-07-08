@@ -131,8 +131,8 @@ int main()
     printf("Hello\r\n");
 
     // Start up the GPS code
-    debug_printf(DBG_INFO, "Starting the GPS...\r\n");
-    gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+    //debug_printf(DBG_INFO, "Starting the GPS...\r\n");
+    //gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
 
     // Set up the RDA1846 module control
     DRA818(PD_5, PD_6, PD_7, PD_4, PD_3, PE_2);
@@ -185,19 +185,19 @@ int main()
 #if 0
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
-    auto fec_frame = make_shared<Frame>();  
+    auto fec_frame = make_shared<Frame>(Frame::size());  
     debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
 
     print_memory_info();
 
     {
-    auto fec_test_fec = make_shared<FEC>();
+    auto fec_test_fec = make_shared<FEC>(Frame::size());
     fec_test_fec->benchmark(25);
-    auto fec_test_interleave = make_shared<FECInterleave>();
+    auto fec_test_interleave = make_shared<FECInterleave>(Frame::size());
     fec_test_interleave->benchmark(25);
-    auto fec_test_conv = make_shared<FECConv>(2, 9);
+    auto fec_test_conv = make_shared<FECConv>(Frame::size(), 2, 9);
     fec_test_conv->benchmark(25);
-    auto fec_test_rsv = make_shared<FECRSV>(2, 9, 8);
+    auto fec_test_rsv = make_shared<FECRSV>(Frame::size(), 2, 9, 8);
     fec_test_rsv->benchmark(25);
     } 
 #endif

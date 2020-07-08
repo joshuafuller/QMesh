@@ -91,21 +91,21 @@ void mesh_protocol_fsm(void) {
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
     debug_printf(DBG_INFO, "%s FEC was chosen\r\n", fec_algo.c_str());
     if(fec_algo == "None") {
-        fec = make_shared<FEC>();
+        fec = make_shared<FEC>(Frame::size());
     }
     else if(fec_algo == "Interleave") {
-        fec = make_shared<FECInterleave>();
+        fec = make_shared<FECInterleave>(Frame::size());
     }
     else if(fec_algo == "Convolutional") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
-        fec = make_shared<FECConv>(conv_rate, conv_order);
+        fec = make_shared<FECConv>(Frame::size(), conv_rate, conv_order);
     }
     else if(fec_algo == "RSV") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
         int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
-        fec = make_shared<FECRSV>(conv_rate, conv_order, rs_roots);
+        fec = make_shared<FECRSV>(Frame::size(), conv_rate, conv_order, rs_roots);
     }
     else {
         MBED_ASSERT(false);

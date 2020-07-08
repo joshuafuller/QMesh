@@ -80,18 +80,16 @@ void testFEC(void);
 class FEC {
 protected:
     string name;
-    vector<pair<int, int> > interleave_matrix;
-    virtual size_t getFECEncSize(const size_t msg_len) {
-        return msg_len*8;
-    }
-    void getInterleavingParams(const size_t msg_len, size_t &num_bits, size_t &num_bytes, 
-                                    size_t &row_size, size_t &col_size);
-    static void whitenData(vector<uint8_t> &buf, uint16_t seed);
+    int msg_len;
 
 public:
+    int enc_size;
+
     /// Constructor.
-    FEC(void) {
+    FEC(const int32_t my_msg_len) {
         name = "Dummy FEC";
+        msg_len = my_msg_len;
+        enc_size = my_msg_len;
     }
 
     /// Gets the name of the FEC.
@@ -100,40 +98,12 @@ public:
     }
 
     /**
-     * Takes the LoRa packet SNR and returns a corresponding a bit error rate.
-     * @param snr The LoRa SNR.
-     */
-    static float getBER(const float snr);
-
-    static bool getBit(const vector<uint8_t> &bytes, const size_t pos) {
-        uint8_t byte = bytes[pos/8];
-        size_t byte_pos = pos % 8;
-        return ((((1 << byte_pos) & byte) == 0) ? false : true);
-    }
-
-    static void setBit(const bool bit, const size_t pos, vector<uint8_t> &bytes) {
-		size_t byte_pos = pos % 8;
-        bytes[pos/8] &= ~(1 << byte_pos);
-        uint8_t my_bit = (bit == false) ? 0 : 1;
-        bytes[pos/8] |= (my_bit << byte_pos);
-    }
-
-    void interleaveBits(vector<uint8_t> &bytes);
-
-    void deinterleaveBits(vector<uint8_t> &bytes);
-
-    /**
-     * Get the encoded size.
-     * @param msg_len The unencoded size of the message.
-     */
-    size_t getEncSize(const size_t msg_len);
-
-    /**
      * Apply the FEC coding. Returns the encoded size, in bytes.
      * @param msg Byte vector of data to be encoded.
      * @param enc_msg Byte vector of encoded data.
      */
-    virtual size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    virtual int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+        MBED_ASSERT(msg.size() == msg_len);
         enc_msg = msg;
         return msg.size();
     }
@@ -143,24 +113,13 @@ public:
      * @param enc_msg Byte vector of encoded data.
      * @param dec_msg Byte vector of decoded data.
      */
-    virtual ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    virtual int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+        MBED_ASSERT(enc_msg.size() == msg_len);
         dec_msg = enc_msg;
-        return dec_msg.size();
-    }
- 
-    /**
-     * Basic soft decoding. This soft decoding uses the whole-packet SNR to get a BER and thus
-     * fake some sort of soft decoding from this information. Should modestly improve the coding
-     * gain vs. hard decoding (roughly 0.2-0.3dB).
-     * @param enc_msg Byte vector of encoded data.
-     * @param dec_msg Byte vector of decoded data.
-     * @param snr LoRa whole-packet signal-to-noise ratio (SNR).
-     */
-    virtual ssize_t decodeSoft(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg, const float snr) {
-        return decode(enc_msg, dec_msg);
+        return msg_len;
     }
 
-    void benchmark(size_t num_iters);
+    void benchmark(const size_t num_iters);
 };
 
 
@@ -168,50 +127,73 @@ public:
  * Derived class that just applies/removes the interleaving from the data.
  */
 class FECInterleave : public FEC {
-public:
-    FECInterleave(void) {
-        name = "Dummy Interleaver and Whitener";
+protected:
+    struct {
+        float bits_f, row_f, col_f;
+        int32_t bits, bytes, row, col;   
+        int32_t pre_bytes;
+    } int_params;
+    void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int);
+    void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint);
+
+    static bool getBit(const vector<uint8_t> &bytes, const int32_t pos) {
+        uint8_t byte = bytes[pos/8];
+        size_t byte_pos = pos % 8;
+        return ((((1 << byte_pos) & byte) == 0) ? false : true);
     }
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
+    static void setBit(const bool bit, const int32_t pos, vector<uint8_t> &bytes) {
+		size_t byte_pos = pos % 8;
+        bytes[pos/8] &= ~(1 << byte_pos);
+        uint8_t my_bit = (bit == false) ? 0 : 1;
+        bytes[pos/8] |= (my_bit << byte_pos);
+    }
 
-    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
+
+public:
+    FECInterleave(const int32_t my_msg_len);
+
+    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
+
+    int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
 };
 
 
 /**
  * Derived class that uses convolutional coding.
  */
-class FECConv: public FEC {
+class FECConv: public FECInterleave {
 protected:
     // Convolutional coding parameters
-    size_t inv_rate;
-    size_t order;
-    correct_convolutional *corr_con;    
+    int32_t inv_rate;
+    int32_t order;
+    correct_convolutional *corr_con;  
+    struct {
+        int32_t bits;
+        int32_t bytes;
+    } conv_params;  
 
 public:    
     /** 
      * Default constructor. Creates an FECConv object with 1/2 rate and n=9.
      */
-    FECConv(void) : FECConv(2, 9) { }
+    FECConv(const int32_t my_msg_len) : FECConv(my_msg_len, 2, 9) { }
 
     /**
      * Constructor parameterizable with coding rate and order.
      * @param inv_rate Coding rate. 2 and 3 are currently the only rates implemented.
      * @param order Order of the coder. Values supported are 6, 7, 8, and 9.
      */
-    FECConv(const size_t inv_rate, const size_t order);
+    FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order);
 
     /// Destructor.
     ~FECConv(void) {
         correct_convolutional_destroy(corr_con);
     }
 
-    size_t getFECEncSize(const size_t msg_len);
+    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
-
-    ssize_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
+    int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
 };
 
 
@@ -223,9 +205,9 @@ public:
  */
 class FECRSV: public FECConv {
 protected:
-    size_t rs_corr_bytes;
+    int32_t rs_corr_bytes;
     correct_reed_solomon *rs_con;
-    vector<uint8_t> rs_buf;
+    int32_t rs_enc_msg_size;
 
 public:
     /**
@@ -234,34 +216,23 @@ public:
      * @param order Convolutional coding order.
      * @param my_rs_corr_bytes Number of Reed-Solomon correction bytes.
      */
-    FECRSV(const size_t inv_rate, const size_t order, const size_t my_rs_corr_bytes) 
-        : FECConv(inv_rate, order) {
-        name = "RSV";
-        rs_corr_bytes = my_rs_corr_bytes;
-        rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
-                                                  1, 1, rs_corr_bytes);
-    }
+    FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
+            const int32_t my_rs_corr_bytes);
 
     /**
      * Default constructor. Initializes with a convolutional coding rate of 2,
      * n=9, and 32 Reed-Solomon correction bytes.
      */
-    FECRSV(void) : FECRSV(2, 9, 8) { };
+    FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, 2, 9, 8) { };
 
     /// Destructor.
     ~FECRSV(void) {
         correct_reed_solomon_destroy(rs_con);
     }
 
-    size_t encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg);
+    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg);
 
-    ssize_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg);
-
-    size_t getFECEncSize(const size_t msg_len) {
-        size_t enc_size = FECConv::getFECEncSize(msg_len+rs_corr_bytes);
-        MBED_ASSERT(enc_size <= 256);
-        return enc_size;
-    }
+    int32_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg);
 };
 
 #endif /* FEC_HPP */
