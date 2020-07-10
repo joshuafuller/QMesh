@@ -182,23 +182,24 @@ int main()
     led2.LEDOff();
     led3.LEDOff();
 
-#if 0
+#if 1
     // Test the FEC
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
-    auto fec_frame = make_shared<Frame>(Frame::size());  
-    debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->getPktSize());
+    auto fec_frame = make_shared<Frame>();  
+    debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->codedSize());
 
     print_memory_info();
 
     {
     auto fec_test_fec = make_shared<FEC>(Frame::size());
-    fec_test_fec->benchmark(25);
+    fec_test_fec->benchmark(100);
     auto fec_test_interleave = make_shared<FECInterleave>(Frame::size());
-    fec_test_interleave->benchmark(25);
+    fec_test_interleave->benchmark(100);
     auto fec_test_conv = make_shared<FECConv>(Frame::size(), 2, 9);
-    fec_test_conv->benchmark(25);
+    fec_test_conv->benchmark(100);
+    ThisThread::sleep_for(500);
     auto fec_test_rsv = make_shared<FECRSV>(Frame::size(), 2, 9, 8);
-    fec_test_rsv->benchmark(25);
+    fec_test_rsv->benchmark(100);
     } 
 #endif
 

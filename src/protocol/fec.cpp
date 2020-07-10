@@ -130,9 +130,10 @@ int FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_m
 // Using a technique similar to the AO-40 OSCAR interleaving setup
 void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) {
     MBED_ASSERT(bytes.size() == int_params.pre_bytes);
-    vector<uint8_t> new_bytes_preint(int_params.bytes, 0x00);
+    vector<uint8_t> new_bytes_preint(int_params.pre_bytes, 0x00);
     vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
     copy(bytes.begin(), bytes.end(), new_bytes_preint.begin());
+    //while(1);
     int32_t bit_idx = 0;
     for(int32_t row = 0; row < int_params.row; row++) {
         for(int32_t col = 0; col < int_params.col; col++) {
@@ -218,7 +219,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
     int_params.pre_bytes = conv_params.bytes;
 
     // Set up the interleaving parameters
-    int_params.bits_f = conv_params.bits*8;
+    int_params.bits_f = conv_params.bytes*8;
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
     debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
@@ -272,7 +273,7 @@ void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
     debug_printf(DBG_INFO, "Current frame size is %d\r\n", Frame::size());
     vector<uint8_t> msg_data(Frame::size());
-    vector<uint8_t> enc_data(Frame::size());
+    vector<uint8_t> enc_data(enc_size);
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");
     LowPowerTimer enc_timer;
     enc_timer.start();
@@ -365,6 +366,7 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
     // Get the post-convolutional encoding length
     conv_params.bits = correct_convolutional_encode_len(corr_con, rs_enc_msg_size);
     conv_params.bytes = ceilf((float) conv_params.bits/8.0f);
+    int_params.pre_bytes = conv_params.bytes;
 
     // Set up the various other parameters
     int_params.bits_f = conv_params.bytes*8;
@@ -385,19 +387,20 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     int32_t rs_size = correct_reed_solomon_encode(rs_con, msg.data(), msg_len, 
                                                     rs_enc_msg.data());
-    MBED_ASSERT(rs_size == rs_enc_msg_size);
+    //debug_printf(DBG_INFO, "rs_size is %d %d %d %d\r\n", msg_len, rs_size, rs_enc_msg_size,
+    //            conv_params.bytes);
     // Convolutional encode
     vector<uint8_t> conv_enc_msg(conv_params.bytes, 0);
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
-                            conv_params.bytes, conv_enc_msg.data());
+                            rs_enc_msg_size, conv_enc_msg.data());
     MBED_ASSERT(conv_enc_len = conv_params.bits);
+    MBED_ASSERT(conv_enc_msg.size() == int_params.pre_bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);
-    debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", int_enc_msg.size());
+    //debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", int_enc_msg.size());
     interleaveBits(conv_enc_msg, int_enc_msg);
-    debug_printf(DBG_INFO, "rsv-post-int %d\r\n", int_enc_msg.size());
+    //debug_printf(DBG_INFO, "rsv-post-int %d\r\n", int_enc_msg.size());
 	MBED_ASSERT(int_enc_msg.size() == enc_size);
-    
     enc_msg.resize(enc_size);
     copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
     return enc_msg.size();
@@ -407,11 +410,11 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
 int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     // Deinterleave
     MBED_ASSERT(enc_msg.size() == enc_size);
-    vector<uint8_t> deint_msg(conv_params.bytes, 0);
+    vector<uint8_t> deint_msg(int_params.pre_bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
+    MBED_ASSERT(deint_msg.size() == int_params.pre_bytes);
     // Convolutional decode
-    vector<uint8_t> rs_enc_msg(conv_params.bytes, 0);
+    vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     size_t deconv_bytes = correct_convolutional_decode(corr_con, rs_enc_msg.data(), 
                             conv_params.bits, rs_enc_msg.data());
     MBED_ASSERT(deconv_bytes == rs_enc_msg_size);
@@ -420,7 +423,7 @@ int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg)
     dec_msg.resize(msg_len);  
     int32_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), 
                         rs_enc_msg_size, dec_msg.data());
-    MBED_ASSERT(rs_len == msg_len);
+    //MBED_ASSERT(rs_len == msg_len);
 
     MBED_ASSERT(dec_msg.size() == msg_len);
     return dec_msg.size();
@@ -431,13 +434,14 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
     FEC(my_msg_len) {
     name = "Dummy Interleaver";
     msg_len = my_msg_len;
-    float num_bits_f = msg_len*8;
-    float row_size_f = floorf(sqrtf(num_bits_f));
-    float col_size_f = ceilf(num_bits_f/row_size_f);
-    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", row_size_f, col_size_f);
-    int_params.bits = (size_t) num_bits_f;
-    int_params.bytes = (size_t) ceilf((row_size_f*col_size_f)/8.0f);
-    int_params.row = (size_t) row_size_f;
-    int_params.col = (size_t) col_size_f;
+    int_params.pre_bytes = my_msg_len;
+    int_params.bits_f = msg_len*8;
+    int_params.row_f = floorf(sqrtf(int_params.bits_f));
+    int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
+    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
+    int_params.bits = (size_t) int_params.bits_f;
+    int_params.bytes = (size_t) ceilf((int_params.row_f*int_params.col_f)/8.0f);
+    int_params.row = (size_t) int_params.row_f;
+    int_params.col = (size_t) int_params.col_f;
     enc_size = int_params.bytes;
 }

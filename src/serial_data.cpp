@@ -230,7 +230,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     auto tx_str = make_shared<string>();
     JSONSerial json_ser;
     json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
-    MBED_ASSERT(tx_ser_queue.full() == false);
+    //MBED_ASSERT(tx_ser_queue.full() == false);
     while(tx_ser_queue.full() == true);
     auto tx_str_sptr = tx_ser_queue.alloc();
     *tx_str_sptr = tx_str;
