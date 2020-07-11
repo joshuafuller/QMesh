@@ -232,48 +232,31 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
 }
 
 
-int32_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
-    // Convolutional encode
-    MBED_ASSERT(msg.size() == msg_len);
-    vector<uint8_t> conv_msg(conv_params.bytes, 0);
-    int32_t conv_len = (int32_t) ceilf((float) correct_convolutional_encode(corr_con, msg.data(), 
-            msg.size(), conv_msg.data())/8.0f);
-    MBED_ASSERT(conv_len == conv_params.bytes);
-    MBED_ASSERT(conv_msg.size() == conv_params.bytes);
-    // Interleave
-    vector<uint8_t> int_msg(int_params.bytes, 0);
-    copy(conv_msg.begin(), conv_msg.end(), int_msg.begin());
-    interleaveBits(conv_msg, int_msg);
-    MBED_ASSERT(int_msg.size() == enc_size);
-
-    enc_msg.resize(int_params.bytes);
-    copy(int_msg.begin(), int_msg.end(), enc_msg.begin());
-    MBED_ASSERT(enc_msg.size() == enc_size);
-    return enc_msg.size();
-}
-
-
-int32_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
-    // Deinterleave
-	MBED_ASSERT(enc_msg.size() == enc_size);
-	vector<uint8_t> deint_msg(conv_params.bytes, 0);
-    deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
-    // Convolutional decode
-    dec_msg.resize(msg_len);
-    int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
-                            conv_params.bits, dec_msg.data());
-    MBED_ASSERT(dec_size == msg_len);
-    return dec_size;
-}
-
-
 void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
     debug_printf(DBG_INFO, "Current frame size is %d\r\n", Frame::size());
-    vector<uint8_t> msg_data(Frame::size());
-    vector<uint8_t> enc_data(enc_size);
+    vector<uint8_t> msg_data(Frame::size(), 0);
+    vector<uint8_t> enc_data(enc_size, 0);
+    vector<uint8_t> dec_data(Frame::size(), 0);
+    debug_printf(DBG_INFO, "Testing the correctness...\r\n");
+    int correct_test = 0;
+    int incorrect_test = 0;
+    for(int j = 0; j < 10; j++) {
+        for(int i = 0; i < Frame::size(); i++) {
+            msg_data[i] = rand();    
+        }
+        encode(msg_data, enc_data);
+        decode(enc_data, dec_data);
+        if(msg_data == dec_data) {
+            correct_test += 1;
+        }
+        else {
+            incorrect_test += 1;
+        }
+    }
+    debug_printf(DBG_INFO, "%d PASSED; %d FAILED\r\n", correct_test, incorrect_test);
+
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");
     LowPowerTimer enc_timer;
     enc_timer.start();
@@ -309,6 +292,7 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
             const int32_t my_rs_corr_bytes) 
     : FECConv(my_msg_len, inv_rate, order) {
     name = "RSV";
+#if 0    
     // Set up the convolutional outer code
     this->inv_rate = inv_rate;
     this->order = order;
@@ -353,6 +337,7 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
         break;
     }
     corr_con = correct_convolutional_create(inv_rate, order, poly);
+#endif
 
     // Set up all of the other major parameters
     msg_len = my_msg_len;
@@ -381,6 +366,27 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
 }
 
 
+int32_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    // Convolutional encode
+    MBED_ASSERT(msg.size() == msg_len);
+    vector<uint8_t> conv_msg(conv_params.bytes, 0);
+    int32_t conv_len = (int32_t) ceilf((float) correct_convolutional_encode(corr_con, msg.data(), 
+            msg.size(), conv_msg.data())/8.0f);
+    MBED_ASSERT(conv_len == conv_params.bytes);
+    MBED_ASSERT(conv_msg.size() == conv_params.bytes);
+    // Interleave
+    vector<uint8_t> int_msg(int_params.bytes, 0);
+    copy(conv_msg.begin(), conv_msg.end(), int_msg.begin());
+    interleaveBits(conv_msg, int_msg);
+    MBED_ASSERT(int_msg.size() == enc_size);
+
+    enc_msg.resize(int_params.bytes);
+    copy(int_msg.begin(), int_msg.end(), enc_msg.begin());
+    MBED_ASSERT(enc_msg.size() == enc_size);
+    return enc_msg.size();
+}
+
+
 int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     // Reed-Solomon encode
     MBED_ASSERT(msg.size() == msg_len);
@@ -394,7 +400,7 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
                             rs_enc_msg_size, conv_enc_msg.data());
     MBED_ASSERT(conv_enc_len = conv_params.bits);
-    MBED_ASSERT(conv_enc_msg.size() == int_params.pre_bytes);
+    MBED_ASSERT(conv_enc_msg.size() == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);
     //debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", int_enc_msg.size());
@@ -407,15 +413,30 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
 }
 
 
+int32_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    // Deinterleave
+	MBED_ASSERT(enc_msg.size() == enc_size);
+	vector<uint8_t> deint_msg(conv_params.bytes, 0);
+    deinterleaveBits(enc_msg, deint_msg);
+    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
+    // Convolutional decode
+    dec_msg.resize(msg_len);
+    int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
+                            conv_params.bits, dec_msg.data());
+    MBED_ASSERT(dec_size == msg_len);
+    return dec_size;
+}
+
+
 int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     // Deinterleave
     MBED_ASSERT(enc_msg.size() == enc_size);
-    vector<uint8_t> deint_msg(int_params.pre_bytes, 0);
+    vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(deint_msg.size() == int_params.pre_bytes);
+    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
     // Convolutional decode
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
-    size_t deconv_bytes = correct_convolutional_decode(corr_con, rs_enc_msg.data(), 
+    size_t deconv_bytes = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, rs_enc_msg.data());
     MBED_ASSERT(deconv_bytes == rs_enc_msg_size);
     MBED_ASSERT(rs_enc_msg.size() == rs_enc_msg_size);
