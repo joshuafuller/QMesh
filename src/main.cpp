@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
-#include "TinyGPSPlus.h"
 #include "LibAPRS.h"
 #include "AFSK.h"
 
