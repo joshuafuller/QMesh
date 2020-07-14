@@ -30,9 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "LibAPRS.h"
 #include "AFSK.h"
 
-//UARTSerial gps_serial(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, 9600);
-//TinyGPSPlus gps;
-GNSS *gnss;
+
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL");
 Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL");
@@ -131,15 +129,7 @@ int main()
     printf("Hello\r\n");
 
     // Start up the GPS code
-    debug_printf(DBG_INFO, "Starting the GPS...\r\n");
-    gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
-    gnss->init();
-#if 1
-    float lon, lat, acc;
-    fixType_t fix;
-    gnss->getCoodinates(lon, lat, fix, acc);
-    debug_printf(DBG_INFO, "lat %f, lon %f\r\n", lat, lon);
-#endif
+    gps_thread.start(gpsd_thread_fn);
 
     // Set up the RDA1846 module control
     DRA818(PD_5, PD_6, PD_7, PD_4, PD_3, PE_2);

@@ -13,6 +13,7 @@ Distributed as-is; no warranty is given.
 
 #include <cstdint>
 #include "mbed.h"
+#include <atomic>
 
 #if defined(ARDUINO)
 	#if ARDUINO >= 100
@@ -117,5 +118,9 @@ private:
                   		0x00, 0x00, 0x00, 0x07, 0x21, 0xAF};
 
 };
+
+
+bool gpsd_get_coordinates(float &lat, float &lon);
+void gpsd_thread_fn(void);
 
 #endif

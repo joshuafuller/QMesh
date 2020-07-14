@@ -242,7 +242,6 @@ do{
   fix = (fixType_t)res[26];
   acc = (float)((res[49] << 24) + (res[48] << 16) + (res[47] << 8) + res[46] ) / 1000.0f;
 
-  debug_printf(DBG_INFO, "\nlon: ", lon, "lat: ", lat, " - ", fix, " ~", acc, "m");
   if( acc < acc_min ) goto finish;
   else {
     ThisThread::sleep_for(2000);
@@ -266,7 +265,6 @@ bool GNSS::crc( uint8_t *msg, uint32_t size)
     CK_B = CK_B + CK_A;
   }
   bool checksum = ( CK_A == msg[s-2] && CK_B == msg[s-1]);
-  debug_printf(DBG_INFO, "CRC = ", checksum);
 
   return checksum;
 
@@ -299,4 +297,36 @@ void GNSS::factoryRST( void )
 bool GNSS::saveCFG()
 {
   return sendUBX( _saveCFG, sizeof(_saveCFG));
+}
+
+
+static struct {
+    atomic<bool> valid;
+    atomic<float> lat;
+    atomic<float> lon;
+} gpsd_stats;
+
+bool gpsd_get_coordinates(float &lat, float &lon) {
+    lat = gpsd_stats.lat.load();
+    lon = gpsd_stats.lon.load();
+    return gpsd_stats.valid.load();
+}
+
+void gpsd_thread_fn(void) {
+    GNSS *gnss;
+    debug_printf(DBG_INFO, "Starting the GPS...\r\n");
+    gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+    gnss->init();
+    while(1) {
+        float new_lon, new_lat, new_acc;
+        fixType_t fix;
+        float new_alt = 0.0f;
+        if(gnss->getCoodinates(new_lon, new_lat, fix, new_acc)) {
+            gpsd_stats.valid.store(true);
+            gpsd_stats.lat.store(new_lat);
+            gpsd_stats.lon.store(new_lon);
+        }
+        debug_printf(DBG_INFO, "GPSD: lat %f, lon %f\r\n", new_lat, new_lon);
+        ThisThread::sleep_for(1000);
+    }
 }
