@@ -34,8 +34,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //TinyGPSPlus gps;
 GNSS *gnss;
 JSONSerial rx_json_ser, tx_json_ser;
-Thread tx_serial_thread(osPriorityNormal, 4096, NULL, "TX-SERIAL");
-Thread rx_serial_thread(osPriorityNormal, 4096, NULL, "RX-SERIAL");
+Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL");
+Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL");
 Thread mesh_protocol_thread(osPriorityNormal, 4096, NULL, "MESH-FSM");
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
 Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
@@ -131,8 +131,15 @@ int main()
     printf("Hello\r\n");
 
     // Start up the GPS code
-    //debug_printf(DBG_INFO, "Starting the GPS...\r\n");
-    //gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+    debug_printf(DBG_INFO, "Starting the GPS...\r\n");
+    gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+    gnss->init();
+#if 1
+    float lon, lat, acc;
+    fixType_t fix;
+    gnss->getCoodinates(lon, lat, fix, acc);
+    debug_printf(DBG_INFO, "lat %f, lon %f\r\n", lat, lon);
+#endif
 
     // Set up the RDA1846 module control
     DRA818(PD_5, PD_6, PD_7, PD_4, PD_3, PE_2);
@@ -183,6 +190,7 @@ int main()
     led3.LEDOff();
 
     // Test the FEC
+#if 0
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
     auto fec_frame = make_shared<Frame>();  
     debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->codedSize());
@@ -194,9 +202,20 @@ int main()
     fec_test_interleave->benchmark(100);
     auto fec_test_conv = make_shared<FECConv>(Frame::size(), 2, 9);
     fec_test_conv->benchmark(100);
+    ThisThread::sleep_for(500);
     auto fec_test_rsv = make_shared<FECRSV>(Frame::size(), 2, 9, 8);
     fec_test_rsv->benchmark(100);
+    ThisThread::sleep_for(500);
+    print_memory_info();
+    auto fec_test_rsv_big = make_shared<FECRSV>(Frame::size(), 3, 9, 8);
+    fec_test_rsv_big->benchmark(100);
+    ThisThread::sleep_for(500);
+    print_memory_info();
     } 
+print_memory_info();
+ThisThread::sleep_for(500);
+while(1);
+#endif
 
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
