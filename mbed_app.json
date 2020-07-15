@@ -22,8 +22,8 @@
         "qspi-flash-io1":      { "value": "PD_12"},
         "qspi-flash-io2":      { "value": "PE_2"},
         "qspi-flash-io3":      { "value": "PD_13"},
-        "alt_uart_tx":         { "value": "PA_11" },
-        "alt_uart_rx":         { "value": "PA_12" },
+        "dra818_uart_tx":      { "value": "PA_11" },
+        "dra818_uart_rx":      { "value": "PA_12" },
         "gps_uart_tx":         { "value": "PD_5" },
         "gps_uart_rx":         { "value": "PD_6" },
         "rx_int_mon":          { "value": "PD_0"},
@@ -54,13 +54,13 @@
         },
 
         "NUCLEO_F746ZG" : {
-            "alt_uart_tx":       "PA_9" ,
-            "alt_uart_rx":       "PA_10"
+            "dra818_uart_tx":    "PA_9" ,
+            "dra818_uart_rx":    "PA_10"
         },
 
         "NUCLEO_H743ZI2" : {
-            "alt_uart_tx":       "PA_9" ,
-            "alt_uart_rx":       "PA_10",
+            "dra818_uart_tx":    "PA_9" ,
+            "dra818_uart_rx":    "PA_10",
             "qspi-flash-csn":    "PG_6"
         },
 

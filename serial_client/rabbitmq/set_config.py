@@ -53,7 +53,8 @@ settings["TX Power"] = tx_power
 settings["CW Test Mode"] = 0 # 1 to enable CW test mode
 settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
 settings["Test FEC"] = 0 # 1 to enable an FEC test
-settings["Number Timing Offset Increments"] = 0
+settings["Number Offsets"] = 0
+settings["Has GPS"] = 1
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

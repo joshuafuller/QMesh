@@ -127,11 +127,8 @@ int main()
     send_status();
     printf("Hello\r\n");
 
-    // Start up the GPS code
-    gps_thread.start(gpsd_thread_fn);
-
     // Set up the RDA1846 module control
-    DRA818(PD_5, PD_6, PD_7, PD_4, PD_3, PE_2);
+    DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);
 
     // Initialize the LibAPRS components
     debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
@@ -157,8 +154,12 @@ int main()
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
     load_settings_from_flash();
-    save_settings_to_flash();
     log_boot();
+
+    // Start up the GPS code
+    if(radio_cb["Has GPS"].get<int>() == 1) {
+        gps_thread.start(gpsd_thread_fn);
+    }
 
     // Wait for 2 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;

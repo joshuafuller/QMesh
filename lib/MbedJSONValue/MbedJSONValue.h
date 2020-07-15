@@ -31,7 +31,7 @@
 #ifndef _Mbed_RPC_VALUE_H_
 #define _Mbed_RPC_VALUE_H_
 
-#define NB_TOKEN 20
+#define NB_TOKEN 30
 /*!< Number maximum of MbedJSONValue in an array or an object */
 
 #include <string>

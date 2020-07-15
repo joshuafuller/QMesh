@@ -41,6 +41,8 @@ extern Adafruit_SSD1306_I2c *oled;
 void rescue_filesystem(void) {
     int err = bd.init();
 	err = fs.reformat(&bd);
+    ThisThread::sleep_for(2000);
+    reboot_system();
 }
 
 void init_filesystem(void) {
@@ -108,9 +110,11 @@ void load_settings_from_flash(void) {
         radio_cb["CW Test Mode"] = 0;
         radio_cb["Preamble Test Mode"] = 0;
         radio_cb["Test FEC"] = 0;
-        radio_cb["Number Timing Offset Increments"] = 0;
+        radio_cb["Number Offsets"] = 0;
+        radio_cb["Has GPS"] = 0;
         string settings_str = radio_cb.serialize();
-        fprintf(f, "%s\r\n", settings_str.c_str());
+        debug_printf(DBG_INFO, "%s %d\r\n", settings_str.c_str(), settings_str.size());
+        fwrite(settings_str.c_str(), 1, settings_str.size(), f);   
         fflush(f);
         fclose(f); 
         f = fopen("/fs/settings.json", "r");
@@ -140,7 +144,8 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb["Beacon Interval"].get<int>());
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb["Payload Length"].get<int>());
     debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
-                radio_cb["Number Timing Offset Increments"].get<int>());
+                radio_cb["Number Offsets"].get<int>());
+    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", radio_cb["Has GPS"].get<int>());
 
     // Check if low-power mode is set. If so, delete the UART
     rx_serial_thread.start(rx_serial_thread_fn);
@@ -160,7 +165,7 @@ void save_settings_to_flash(void) {
     MBED_ASSERT(f != 0);
     string settings_str = radio_cb.serialize();
     fwrite(settings_str.c_str(), 1, settings_str.size(), f);
-    fclose(f);
+    fclose(f);  
 }
 
 void log_boot(void) {
@@ -201,6 +206,11 @@ void nv_log_fn(void) {
         log_json["RX Size"] = (int) rx_size;
         log_json["Computed CRC"] = log_frame->calcCRC();
         log_json["CRC"] = log_frame->getCRC();
+        float gps_lat, gps_lon;
+        bool gps_valid = gpsd_get_coordinates(gps_lat, gps_lon);
+        log_json["GPS Valid"] = gps_valid;
+        log_json["GPS Lat"] = to_string(gps_lat);
+        log_json["GPS Lon"] = to_string(gps_lon);
         string log_json_str = log_json.serialize();
 		log_json_str.push_back('\n');
         comb_str.append(log_json_str);
