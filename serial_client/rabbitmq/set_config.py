@@ -52,7 +52,7 @@ settings["Reed-Solomon Number Roots"] = 8
 settings["TX Power"] = tx_power
 settings["CW Test Mode"] = 0 # 1 to enable CW test mode
 settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
-settings["Test FEC"] = 0 # 1 to enable an FEC test
+settings["Test FEC"] = 0 # 1 to enable anf FEC test
 settings["Number Offsets"] = 0
 settings["Has GPS"] = 1
 
