@@ -167,6 +167,7 @@ void mesh_protocol_fsm(void) {
                         rx_frame_sptr->incrementTTL();
 						rx_frame_sptr->tx_frame = false;
                         if(checkRedundantPkt(rx_frame_sptr)) {
+                            radio.standby();
                             debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
                             state = WAIT_FOR_EVENT;
                         }

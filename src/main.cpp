@@ -33,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 JSONSerial rx_json_ser, tx_json_ser;
 Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL");
 Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL");
-Thread mesh_protocol_thread(osPriorityNormal, 4096, NULL, "MESH-FSM");
+Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM");
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
 Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
