@@ -85,6 +85,13 @@ void RadioTiming::waitNoWarn(void) {
     wait_us(wait_duration_us-elapsed_us);
 }
 
+int32_t RadioTiming::getWaitNoWarn(void) {
+    int elapsed_us = tmr_sptr->read_us();
+    if(wait_duration_us-elapsed_us < 0) {
+        return 0;
+    }
+    return wait_duration_us-elapsed_us;
+}
 
 void RadioTiming::waitRxRemainder(const size_t sym_wait, const size_t pre_wait) {
     uint32_t wait_duration_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;

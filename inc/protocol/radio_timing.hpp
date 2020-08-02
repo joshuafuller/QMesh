@@ -121,6 +121,7 @@ void setTimer(shared_ptr<LowPowerTimer> my_tmr_sptr) {
  */
 void wait(void);
 void waitNoWarn(void);
+int32_t getWaitNoWarn(void);
 
 };
 
