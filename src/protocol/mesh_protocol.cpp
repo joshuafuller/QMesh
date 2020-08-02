@@ -145,7 +145,6 @@ void mesh_protocol_fsm(void) {
                 radio.receive();
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 if(radio_event->evt_enum == TX_FRAME_EVT) {
-                    radio.standby();
                     tx_frame_sptr = radio_event->frame;
                     tx_frame_sptr->fec = fec;
                     radio.set_channel(freq_dist(rand_gen));

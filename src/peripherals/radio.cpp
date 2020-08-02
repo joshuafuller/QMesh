@@ -183,7 +183,8 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Fram
 
 static void tx_done_cb(shared_ptr<LowPowerTimer> tmr_sptr)
 {
-    debug_printf(DBG_INFO, "TX done\r\n");
+    //debug_printf(DBG_INFO, "TX done\r\n");
+    radio.standby();
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT, tmr_sptr);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> > (tx_radio_evt_mail, radio_event);
@@ -192,10 +193,11 @@ static void tx_done_cb(shared_ptr<LowPowerTimer> tmr_sptr)
 
 static void rx_done_cb(uint8_t const *payload, shared_ptr<LowPowerTimer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)
 {
+    radio.standby();
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, tmr_sptr, payload, (size_t) size, rssi, snr);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
-    debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
+    //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
     if(deep_sleep_lock) {
         delete deep_sleep_lock;
     }   

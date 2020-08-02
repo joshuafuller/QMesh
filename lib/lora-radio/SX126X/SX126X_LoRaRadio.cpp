@@ -635,6 +635,31 @@ void SX126X_LoRaRadio::write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16
     _spi.unlock();
 }
 
+void SX126X_LoRaRadio::write_opmode_command_dangling(uint8_t cmd, uint8_t *buffer, uint16_t size)
+{
+    _spi.lock();
+    _chip_select = 0;
+
+    while (_busy) {
+        // do nothing
+    }
+
+    _spi.write(cmd);
+
+    for (int i = 0; i < size; i++) {
+        _spi.write(buffer[i]);
+    }
+
+    //_chip_select = 1;
+    //_spi.unlock();
+}
+
+void SX126X_LoRaRadio::write_opmode_command_finish(void)
+{
+    _chip_select = 1;
+    _spi.unlock();
+}
+
 void SX126X_LoRaRadio::read_opmode_command(uint8_t cmd,
                                            uint8_t *buffer, uint16_t size)
 {
@@ -1077,8 +1102,10 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
     buf[1] = (uint8_t) ((timeout_scalled >> 8) & 0xFF);
     buf[2] = (uint8_t) (timeout_scalled & 0xFF);
 
+    write_opmode_command_dangling(RADIO_SET_TX, buf, 3);
     radio_timing.waitNoWarn();
-    write_opmode_command(RADIO_SET_TX, buf, 3);
+    write_opmode_command_finish();
+
     tx_int_mon = 1;
     rx_int_mon = 0;
 

@@ -346,6 +346,8 @@ private:
     void wakeup();
     void read_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size);
     void write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size);
+    void write_opmode_command_dangling(uint8_t cmd, uint8_t *buffer, uint16_t size);
+    void write_opmode_command_finish(void);
     void set_dio2_as_rfswitch_ctrl(uint8_t enable);
     void set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage, uint32_t timeout);
     uint8_t get_device_variant(void);
