@@ -61,9 +61,12 @@ void RadioTiming::waitFullSlots(const size_t num_slots) {
 
 
 // Add in the per-symbol timing offset
-void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction) {
-    float sym_frac_us = 0.5f * sym_time_us * (float) symb_frac * direction;
-    wait_duration_us += sym_frac_us;
+void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction, 
+    const uint8_t num_inc) {
+    if(num_inc != 0) {
+        float sym_frac_us = 0.5f * ((sym_time_us*0.9f)/(float) num_inc+1) * ((float) symb_frac) * direction;
+        wait_duration_us += sym_frac_us;
+    }
 }
 
 

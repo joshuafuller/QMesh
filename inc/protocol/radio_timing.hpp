@@ -79,7 +79,8 @@ void waitFullSlots(const size_t num_slots);
  *  duration, to wait.
  * @papram direction should be either 1.0f or -1.0f, used to set the direction
  */
-void waitSymOffset(const uint8_t symb_frac, const float direction);
+void waitSymOffset(const uint8_t symb_frac, const float direction, const uint8_t num_inc);
+
 
 /**
  * Wait for the "remaining time" that includes various timing offsets
