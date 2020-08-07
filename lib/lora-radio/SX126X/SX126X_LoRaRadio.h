@@ -297,12 +297,14 @@ public:
      */
     virtual void unlock(void);
 
+    void set_tx_power(int8_t power);
+
     /**
      * Timers for tracking when the Rx interrupt was thrown
      */
     Semaphore *tmr_sem_ptr;
-    LowPowerTimer *cur_tmr;
-    shared_ptr<LowPowerTimer> cur_tmr_sptr;
+    Timer *cur_tmr;
+    shared_ptr<Timer> cur_tmr_sptr;
 
 private:
 
@@ -389,7 +391,6 @@ private:
     void set_whitening_seed(uint16_t seed);
     void set_pa_config( uint8_t pa_DC, uint8_t hp_max, uint8_t device_type,
                         uint8_t pa_LUT );
-    void set_tx_power(int8_t power);
     void calibrate_image(uint32_t freq);
     void configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
                            uint16_t dio2_mask, uint16_t dio3_mask);

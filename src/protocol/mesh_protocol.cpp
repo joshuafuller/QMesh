@@ -129,9 +129,11 @@ void mesh_protocol_fsm(void) {
     static mt19937 timing_rand_gen(my_addr);
     uniform_int_distribution<uint8_t> timing_off_dist(0, timing_off_inc-1);  
     uint8_t next_sym_off = timing_off_dist(timing_rand_gen);
+    static mt19937 pwr_diff_rand_gen(my_addr);
+    static uniform_int_distribution<int8_t> pwr_diff_dist(0, 6);
 
     // Set up an initial timer
-    auto initial_timer = make_shared<LowPowerTimer>();
+    auto initial_timer = make_shared<Timer>();
     initial_timer->reset();
     initial_timer->start();
     radio_timing.setTimer(initial_timer);
@@ -193,9 +195,9 @@ void mesh_protocol_fsm(void) {
             break;
 
             case TX_PACKET:
-                radio.standby();
                 total_tx_pkt.store(total_tx_pkt.load()+1);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
+                radio.set_tx_power(radio_pwr);
                 { 
                 led2.LEDOff();
                 led3.LEDSolid();
@@ -229,7 +231,8 @@ void mesh_protocol_fsm(void) {
 
             case RETRANSMIT_PACKET:
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
-                { 
+                {
+                radio.set_tx_power(radio_pwr-pwr_diff_dist(pwr_diff_rand_gen)); 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 MBED_ASSERT(rx_frame_size < 256);
@@ -278,8 +281,13 @@ void beacon_fn(void) {
         beacon_frame_sptr->setStreamID(stream_id++);
         auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
         MBED_ASSERT(!unified_radio_evt_mail.full());
-        enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-        ThisThread::sleep_for(beacon_interval*1000);
+        if(beacon_interval == -1) {
+            ThisThread::sleep_for(60000);
+        }
+        else {
+            enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
+            ThisThread::sleep_for(beacon_interval*1000);
+        }
     }
 }
 

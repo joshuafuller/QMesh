@@ -168,7 +168,9 @@ void SX126X_LoRaRadio::rf_irq_task(void)
 
 void SX126X_LoRaRadio::dio1_irq_isr()
 {
+    CriticalSectionLock lock;
     // Start timing the duration since the packet was receive
+#if 0
     if(tmr_sem_ptr->try_acquire()) {
         cur_tmr->stop();
         cur_tmr->reset();
@@ -178,6 +180,11 @@ void SX126X_LoRaRadio::dio1_irq_isr()
     else {
         MBED_ASSERT(false);
     }
+#else
+    cur_tmr->stop();
+    cur_tmr->reset();
+    cur_tmr->start();
+#endif
 
     rx_int_mon = 0;
     tx_int_mon = 0;
@@ -297,7 +304,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         tmr_sem_ptr->acquire();
         _radio_events->tx_done_tmr(cur_tmr_sptr);
-        cur_tmr_sptr = make_shared<LowPowerTimer>();
+        cur_tmr_sptr = make_shared<Timer>();
         cur_tmr = cur_tmr_sptr.get();
         tmr_sem_ptr->release();
     }
@@ -328,7 +335,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             }
             tmr_sem_ptr->acquire();
             _radio_events->rx_done_tmr(_data_buffer, cur_tmr_sptr, payload_len, rssi, snr);
-            cur_tmr_sptr = make_shared<LowPowerTimer>();
+            cur_tmr_sptr = make_shared<Timer>();
             cur_tmr = cur_tmr_sptr.get();
             tmr_sem_ptr->release();
         }
@@ -456,7 +463,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     // Allocate the first timer
     tmr_sem_ptr = new Semaphore(1);
     tmr_sem_ptr->acquire();
-    cur_tmr_sptr = make_shared<LowPowerTimer>();
+    cur_tmr_sptr = make_shared<Timer>();
     cur_tmr = cur_tmr_sptr.get();
     tmr_sem_ptr->release();
 
