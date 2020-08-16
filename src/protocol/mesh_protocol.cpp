@@ -232,7 +232,7 @@ void mesh_protocol_fsm(void) {
             case RETRANSMIT_PACKET:
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 {
-                radio.set_tx_power(radio_pwr-pwr_diff_dist(pwr_diff_rand_gen)); 
+                //radio.set_tx_power(radio_pwr-pwr_diff_dist(pwr_diff_rand_gen)); 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 MBED_ASSERT(rx_frame_size < 256);
@@ -298,8 +298,7 @@ void oled_mon_fn(void) {
         oled->clearDisplay();
         oled->printf("PACKET STATISTICS\r\n");
         oled->printf("Pkt Tx/Rx: %4d/%4d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
-        oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
-                        (float) total_rx_pkt.load())*100));
+        oled->printf("Pct Corr Rx: %3d/%3d\r\n", total_rx_corr_pkt.load(), total_rx_pkt.load());
         oled->printf("RSSI/SNR: %4d/%4d\r\n", last_rx_rssi.load(), last_rx_snr.load());
         oled->display();
         oled->display();
