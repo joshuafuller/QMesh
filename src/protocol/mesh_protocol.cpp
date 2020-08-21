@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2020 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,13 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mesh_protocol.hpp"
 #include "radio_timing.hpp"
 #include "radio.hpp"
-
-static LowPowerTimeout rx_mesh_time;
-typedef enum {
-    TX,
-    RX,
-} mesh_state_t;
-mesh_state_t mesh_state; 
 
 
 static list<uint32_t> past_crc;
@@ -73,6 +66,7 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
     return ret_val;
 }
 
+/// States that the mesh FSM can be in.
 static enum {
     WAIT_FOR_EVENT,
     TX_PACKET,
@@ -86,6 +80,10 @@ static atomic<int> total_rx_corr_pkt(0);
 static atomic<int> total_tx_pkt(0);
 static atomic<int> last_rx_rssi(0.0);
 static atomic<int> last_rx_snr(0.0);
+
+/**
+ * Main function handling the mesh protocol.
+ */
 void mesh_protocol_fsm(void) {
     shared_ptr<FEC> fec;
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
@@ -224,7 +222,6 @@ void mesh_protocol_fsm(void) {
                 next_sym_off = timing_off_dist(timing_rand_gen);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
                 radio_timing.waitSymOffset(next_sym_off, 1.0f, timing_off_inc);
-                //radio_timing.wait();
                 state = WAIT_FOR_EVENT;
                 }
             break;
@@ -268,6 +265,10 @@ void mesh_protocol_fsm(void) {
 
 
 string beacon_msg;
+/**
+ * Function called by the beacon thread. Periodically queues up for transmission
+ *  a beacon message.
+ */
 void beacon_fn(void) {
     auto beacon_frame_sptr = make_shared<Frame>();
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
@@ -293,6 +294,10 @@ void beacon_fn(void) {
 
 
 extern Adafruit_SSD1306_I2c *oled;
+/**
+ * Function called by the OLED display monitor thread. Every second, it 
+ *  updates the OLED display with new packet status information.
+ */
 void oled_mon_fn(void) {
     for(;;) {
         oled->clearDisplay();

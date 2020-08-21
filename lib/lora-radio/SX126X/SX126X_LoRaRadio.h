@@ -347,9 +347,35 @@ private:
     // helper functions
     void wakeup();
     void read_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size);
+    /**
+     * Write out a command to the SX126X.
+     *  @param cmd -- the SX126X command to be written
+     *  @param buffer -- pointer to the buffer containing the command's parameters.
+     *  @param size -- the size of the rest of the SX126X command.
+     */
     void write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size);
+    /**
+     * Write out a "dangling command" to the SX126X as a way to precisely control
+     *  the timing of certain radio commands. Basically, this function writes out
+     *  an SX126X command, but does not immediately raise the SPI select line, but
+     *  instead sets a Timeout for when retransmission should occur based on when
+     *  it is time to retransmit. The handler then raises the line once it's 
+     *  triggered. 
+     *  @param cmd -- the SX126X command to be written
+     *  @param buffer -- pointer to the buffer containing the command's parameters.
+     *  @param size -- the size of the rest of the SX126X command.
+     */
     void write_opmode_command_dangling(uint8_t cmd, uint8_t *buffer, uint16_t size);
+    /** 
+     * Unlocks the SPI bus after the "dangling command" finishes. Has to be a separate
+     *  function because the SPI lock/unlock functions cannot be called from and ISR
+     *  context.
+     */
     void write_opmode_command_finish(void);
+    /**
+     * Interrupt handler to raise the SPI select select line once the Timeout is 
+     *  triggered.
+     */
     void dangle_timeout_handler(void);
     void set_dio2_as_rfswitch_ctrl(uint8_t enable);
     void set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage, uint32_t timeout);

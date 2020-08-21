@@ -1,3 +1,21 @@
+/*
+QMesh
+Copyright (C) 2020 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "mbed.h"
 #include "serial_data.hpp"
 #include "radio_timing.hpp"
@@ -67,25 +85,6 @@ void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction,
         float sym_frac_us = 0.5f * ((sym_time_us*0.9f)/(float) num_inc+1) * ((float) symb_frac) * direction;
         wait_duration_us += sym_frac_us;
     }
-}
-
-
-// Actually do the waiting
-void RadioTiming::wait(void) {
-    int elapsed_us = tmr_sptr->read_us();
-    if(wait_duration_us-elapsed_us < 0) {
-        debug_printf(DBG_WARN, "Wait duration is negative!\r\n");
-        return;
-    }
-    wait_us(wait_duration_us-elapsed_us);
-}
-
-void RadioTiming::waitNoWarn(void) {
-    int elapsed_us = tmr_sptr->read_us();
-    if(wait_duration_us-elapsed_us < 0) {
-        return;
-    }
-    wait_us(wait_duration_us-elapsed_us);
 }
 
 int32_t RadioTiming::getWaitNoWarn(void) {

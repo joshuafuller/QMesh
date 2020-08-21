@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2020 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,16 +31,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 JSONSerial rx_json_ser, tx_json_ser;
-Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL");
-Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL");
-Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM");
-Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME");
-Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON");
-Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG");
-Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON");
-Thread oled_mon_thread(osPriorityNormal, 4096, NULL, "OLED-MON");
-Thread btn_evt_thread(osPriorityNormal, 4096, NULL, "BTN-EVT");
-Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD");
+Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
+Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
+Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
+Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
+Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON"); /// Periodic beaconing of the node's ID
+Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
+Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON"); /// Handles user button presses
+Thread oled_mon_thread(osPriorityNormal, 4096, NULL, "OLED-MON"); /// Outputs packet statistics to OLED display
+Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 Afsk my_afsk;
 
@@ -89,7 +88,7 @@ void print_stats()
 
 // main() runs in its own thread in the OS
 
-static int dummy = printf("Starting all the things\r\n");
+static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
 int main()
 {
     oled_i2c.frequency(400000);

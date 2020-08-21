@@ -1,11 +1,29 @@
+/*
+QMesh
+Copyright (C) 2020 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef RADIO_TIMING_HPP
 #define RADIO_TIMING_HPP
 
 #include "mbed.h"
 
-extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon;
+extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; /// GPIO signals to monitor timing accuracy/jitter
 
-const float lora_bw[] = {125e3f, 250e3f, 500e3f};
+const float lora_bw[] = {125e3f, 250e3f, 500e3f}; /// Different LoRa bandwidths, in KHz
 
 /**
  * A synchronized flooded mesh has all sort of timing-related things it needs to 
@@ -17,7 +35,6 @@ const float lora_bw[] = {125e3f, 250e3f, 500e3f};
  * to make sure transmissions are properly synchronized.
  * - Waiting the precise amount of time before e.g. retransmitting.
  */
-// Class that stores the different radio timing values.
 class RadioTiming {
 public:
     float sym_time_s;
@@ -118,10 +135,9 @@ void setTimer(shared_ptr<Timer> my_tmr_sptr) {
 }
 
 /**
- * Start the preset waiting period.
+ * Returns the wait duration, in microseconds. This wait duration factors in 
+ *  remaining time as well as any sort of intra-symbol timing offset.
  */
-void wait(void);
-void waitNoWarn(void);
 int32_t getWaitNoWarn(void);
 
 };
