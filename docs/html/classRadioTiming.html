@@ -70,6 +70,9 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Different LoRa bandwidths, in KHz.  
+ <a href="classRadioTiming.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="radio__timing_8hpp_source.html">radio_timing.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -78,6 +81,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8889214bcfb05975e8ed121a59ffb06c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5968dcc1c5dc7aa644e4fd4b3c44f373"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#a5968dcc1c5dc7aa644e4fd4b3c44f373">waitFullSlots</a> (const size_t num_slots)</td></tr>
 <tr class="separator:a5968dcc1c5dc7aa644e4fd4b3c44f373"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab7180a1d7b4eda3c0d56506ffc18b43"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#aab7180a1d7b4eda3c0d56506ffc18b43">waitSymOffset</a> (const uint8_t symb_frac, const float direction, const uint8_t num_inc)</td></tr>
+<tr class="separator:aab7180a1d7b4eda3c0d56506ffc18b43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab794bed8927778ed17a9cbbfe1cf4a5f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#ab794bed8927778ed17a9cbbfe1cf4a5f">waitRxRemainder</a> (const size_t sym_wait, const size_t pre_wait)</td></tr>
 <tr class="separator:ab794bed8927778ed17a9cbbfe1cf4a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a763af2aa098f7b311c149dbf062d40a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#a763af2aa098f7b311c149dbf062d40a2">calcWaitSymbol</a> (void)</td></tr>
@@ -86,13 +91,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab88cd62548731862e0a24c986bf095bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8451969371826cd733288652f5323053"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#a8451969371826cd733288652f5323053">waitTx</a> (void)</td></tr>
 <tr class="separator:a8451969371826cd733288652f5323053"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa02ff42eeac80549729fceff002a0f35"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#aa02ff42eeac80549729fceff002a0f35">setTimer</a> (shared_ptr&lt; LowPowerTimer &gt; my_tmr_sptr)</td></tr>
-<tr class="separator:aa02ff42eeac80549729fceff002a0f35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe0019845f38a6cf9c2f70d8bba547bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#abe0019845f38a6cf9c2f70d8bba547bb">wait</a> (void)</td></tr>
-<tr class="separator:abe0019845f38a6cf9c2f70d8bba547bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c321264323d0b27fd4cd4f660f48cd2"><td class="memItemLeft" align="right" valign="top"><a id="a6c321264323d0b27fd4cd4f660f48cd2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>waitNoWarn</b> (void)</td></tr>
-<tr class="separator:a6c321264323d0b27fd4cd4f660f48cd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f5c69b632a02ec4a43e27ba5e4efef4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#a3f5c69b632a02ec4a43e27ba5e4efef4">setTimer</a> (shared_ptr&lt; Timer &gt; my_tmr_sptr)</td></tr>
+<tr class="separator:a3f5c69b632a02ec4a43e27ba5e4efef4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50d3daa48f987d742b025d37789ed735"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadioTiming.html#a50d3daa48f987d742b025d37789ed735">getWaitNoWarn</a> (void)</td></tr>
+<tr class="separator:a50d3daa48f987d742b025d37789ed735"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -162,15 +164,16 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>pre_wait_factor</
 <tr class="memitem:ae1c4611a8d342a27c11d7b6f7adcb6a9"><td class="memItemLeft" align="right" valign="top"><a id="ae1c4611a8d342a27c11d7b6f7adcb6a9"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>pre_wait_us</b></td></tr>
 <tr class="separator:ae1c4611a8d342a27c11d7b6f7adcb6a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a512ac60af04abd6e12004338ca692c9d"><td class="memItemLeft" align="right" valign="top"><a id="a512ac60af04abd6e12004338ca692c9d"></a>
-shared_ptr&lt; LowPowerTimer &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>tmr_sptr</b></td></tr>
-<tr class="separator:a512ac60af04abd6e12004338ca692c9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4096268cfb4aa575c0eed20ebad0e788"><td class="memItemLeft" align="right" valign="top"><a id="a4096268cfb4aa575c0eed20ebad0e788"></a>
+shared_ptr&lt; Timer &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>tmr_sptr</b></td></tr>
+<tr class="separator:a4096268cfb4aa575c0eed20ebad0e788"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1c9c1a3f43df35fede3320b17ecfcef"><td class="memItemLeft" align="right" valign="top"><a id="ac1c9c1a3f43df35fede3320b17ecfcef"></a>
 int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>wait_duration_us</b></td></tr>
 <tr class="separator:ac1c9c1a3f43df35fede3320b17ecfcef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A synchronized flooded mesh has all sort of timing-related things it needs to handle. This class handles all of these different timing things. Specifically, it handles:</p><ul>
+<div class="textblock"><p>Different LoRa bandwidths, in KHz. </p>
+<p>A synchronized flooded mesh has all sort of timing-related things it needs to handle. This class handles all of these different timing things. Specifically, it handles:</p><ul>
 <li>Calculating LoRa timing values, such as symbol duration, preamble duration, payload duration, etc.</li>
 <li>Starting and stopping the fine-grained (millisecond or less) timer(s) necessary to make sure transmissions are properly synchronized.</li>
 <li>Waiting the precise amount of time before e.g. retransmitting. </li>
@@ -270,8 +273,27 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>wait_duration_us</
 
 </div>
 </div>
-<a id="aa02ff42eeac80549729fceff002a0f35"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa02ff42eeac80549729fceff002a0f35">&#9670;&nbsp;</a></span>setTimer()</h2>
+<a id="a50d3daa48f987d742b025d37789ed735"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50d3daa48f987d742b025d37789ed735">&#9670;&nbsp;</a></span>getWaitNoWarn()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t RadioTiming::getWaitNoWarn </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the wait duration, in microseconds. This wait duration factors in remaining time as well as any sort of intra-symbol timing offset. </p>
+
+</div>
+</div>
+<a id="a3f5c69b632a02ec4a43e27ba5e4efef4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f5c69b632a02ec4a43e27ba5e4efef4">&#9670;&nbsp;</a></span>setTimer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -282,7 +304,7 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>wait_duration_us</
         <tr>
           <td class="memname">void RadioTiming::setTimer </td>
           <td>(</td>
-          <td class="paramtype">shared_ptr&lt; LowPowerTimer &gt;&#160;</td>
+          <td class="paramtype">shared_ptr&lt; Timer &gt;&#160;</td>
           <td class="paramname"><em>my_tmr_sptr</em></td><td>)</td>
           <td></td>
         </tr>
@@ -294,25 +316,6 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>wait_duration_us</
 </table>
 </div><div class="memdoc">
 <p>Starts the protocol timer. </p>
-
-</div>
-</div>
-<a id="abe0019845f38a6cf9c2f70d8bba547bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe0019845f38a6cf9c2f70d8bba547bb">&#9670;&nbsp;</a></span>wait()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void RadioTiming::wait </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Start the preset waiting period. </p>
 
 </div>
 </div>
@@ -376,6 +379,46 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>wait_duration_us</
 </dl>
 </li>
 </ul>
+
+</div>
+</div>
+<a id="aab7180a1d7b4eda3c0d56506ffc18b43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab7180a1d7b4eda3c0d56506ffc18b43">&#9670;&nbsp;</a></span>waitSymOffset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RadioTiming::waitSymOffset </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t&#160;</td>
+          <td class="paramname"><em>symb_frac</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float&#160;</td>
+          <td class="paramname"><em>direction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint8_t&#160;</td>
+          <td class="paramname"><em>num_inc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Wait for a fraction of a symbol. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">symb_frac</td><td>The fraction of the symbol, in eigths of half a symbol duration, to wait. @papram direction should be either 1.0f or -1.0f, used to set the direction </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

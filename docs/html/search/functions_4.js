@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['fec_111',['FEC',['../classFEC.html#acff6b0b2b7266f73c45eeea65b7579f2',1,'FEC']]],
-  ['fecconv_112',['FECConv',['../classFECConv.html#ac0159362b45b9f7840e3bf7223cd6e48',1,'FECConv::FECConv(void)'],['../classFECConv.html#a884d27178ca0484f4692b78fa31fd898',1,'FECConv::FECConv(const size_t inv_rate, const size_t order)']]],
-  ['fecrsv_113',['FECRSV',['../classFECRSV.html#ac7d8897c02cdb41a46d895b14bfb976f',1,'FECRSV::FECRSV(const size_t inv_rate, const size_t order, const size_t my_rs_corr_bytes)'],['../classFECRSV.html#abe3a37b51594a1fd3ce2ea92c744575a',1,'FECRSV::FECRSV(void)']]],
-  ['frame_114',['Frame',['../classFrame.html#ad2e5946cf41d4817e750500acf05d02b',1,'Frame::Frame()'],['../classFrame.html#a230b093686859a8d614b81b19f0433a0',1,'Frame::Frame(shared_ptr&lt; FEC &gt; my_fec)']]]
+  ['fec_108',['FEC',['../classFEC.html#a0f673c71e8de7160c45439c335dd9de8',1,'FEC']]],
+  ['fecconv_109',['FECConv',['../classFECConv.html#aeb55d8cb6c71d9c296e19e952ec961a7',1,'FECConv::FECConv(const int32_t my_msg_len)'],['../classFECConv.html#a460433cb9d677bfc5ef8921a8c646266',1,'FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order)']]],
+  ['fecrsv_110',['FECRSV',['../classFECRSV.html#aa03ae357351b8428a28c3b72f9225c81',1,'FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, const int32_t my_rs_corr_bytes)'],['../classFECRSV.html#aa43088e55ff0f57eb0b54e6d31ee679f',1,'FECRSV::FECRSV(const int32_t my_msg_len)']]],
+  ['frame_111',['Frame',['../classFrame.html#ad2e5946cf41d4817e750500acf05d02b',1,'Frame::Frame()'],['../classFrame.html#a230b093686859a8d614b81b19f0433a0',1,'Frame::Frame(shared_ptr&lt; FEC &gt; my_fec)']]]
 ];

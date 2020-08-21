@@ -69,84 +69,105 @@ $(function() {
 <div class="title">radio_timing.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef RADIO_TIMING_HPP</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define RADIO_TIMING_HPP</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;mbed.h&quot;</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="keyword">extern</span> DigitalOut rx_int_mon, tx_int_mon, int_trig_mon;</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="keyword">const</span> <span class="keywordtype">float</span> lora_bw[] = {125e3f, 250e3f, 500e3f};</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">// Class that stores the different radio timing values.</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classRadioTiming.html">   21</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRadioTiming.html">RadioTiming</a> {</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">float</span> sym_time_s;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">float</span> pre_time_s;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">float</span> pld_time_s;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">float</span> pkt_time_s;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">float</span> sym_frac_s;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    uint32_t sym_time_ms;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    uint32_t pre_time_ms;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    uint32_t pld_time_ms;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    uint32_t pkt_time_ms;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    uint32_t sym_frac_ms;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    uint32_t sym_time_us;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    uint32_t pre_time_us;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    uint32_t pld_time_us;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    uint32_t pkt_time_us;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    uint32_t sym_frac_us;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    </div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    uint32_t n_sym_pre;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    uint32_t n_sym_pld;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    uint32_t n_sym_pkt;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    uint32_t sym_wait_factor;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    uint32_t sym_wait_us;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    uint32_t pre_wait_factor;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    uint32_t pre_wait_us;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    shared_ptr&lt;LowPowerTimer&gt; tmr_sptr;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    int32_t wait_duration_us;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a8889214bcfb05975e8ed121a59ffb06c">computeTimes</a>(<span class="keyword">const</span> uint32_t bw, <span class="keyword">const</span> uint8_t sf, <span class="keyword">const</span> uint8_t cr, </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keyword">const</span> uint32_t n_pre_sym, uint8_t n_pld_bytes);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a5968dcc1c5dc7aa644e4fd4b3c44f373">waitFullSlots</a>(<span class="keyword">const</span> <span class="keywordtype">size_t</span> num_slots);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#ab794bed8927778ed17a9cbbfe1cf4a5f">waitRxRemainder</a>(<span class="keyword">const</span> <span class="keywordtype">size_t</span> sym_wait, <span class="keyword">const</span> <span class="keywordtype">size_t</span> pre_wait);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a763af2aa098f7b311c149dbf062d40a2">calcWaitSymbol</a>(<span class="keywordtype">void</span>);</div>
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">QMesh</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">Copyright (C) 2020 Daniel R. Fay</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">This program is free software: you can redistribute it and/or modify</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment">it under the terms of the GNU General Public License as published by</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">the Free Software Foundation, either version 3 of the License, or</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">(at your option) any later version.</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment">This program is distributed in the hope that it will be useful,</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">but WITHOUT ANY WARRANTY; without even the implied warranty of</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment">GNU General Public License for more details.</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">You should have received a copy of the GNU General Public License</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#ifndef RADIO_TIMING_HPP</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#define RADIO_TIMING_HPP</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;mbed.h&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">extern</span> DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">const</span> <span class="keywordtype">float</span> lora_bw[] = {125e3f, 250e3f, 500e3f}; </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classRadioTiming.html">   38</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRadioTiming.html">RadioTiming</a> {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">float</span> sym_time_s;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">float</span> pre_time_s;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">float</span> pld_time_s;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">float</span> pkt_time_s;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">float</span> sym_frac_s;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    uint32_t sym_time_ms;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    uint32_t pre_time_ms;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    uint32_t pld_time_ms;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    uint32_t pkt_time_ms;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    uint32_t sym_frac_ms;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    uint32_t sym_time_us;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    uint32_t pre_time_us;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    uint32_t pld_time_us;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    uint32_t pkt_time_us;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    uint32_t sym_frac_us;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    </div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    uint32_t n_sym_pre;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    uint32_t n_sym_pld;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    uint32_t n_sym_pkt;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    uint32_t sym_wait_factor;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    uint32_t sym_wait_us;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    uint32_t pre_wait_factor;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    uint32_t pre_wait_us;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    shared_ptr&lt;Timer&gt; tmr_sptr;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    int32_t wait_duration_us;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a8889214bcfb05975e8ed121a59ffb06c">computeTimes</a>(<span class="keyword">const</span> uint32_t bw, <span class="keyword">const</span> uint8_t sf, <span class="keyword">const</span> uint8_t cr, </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keyword">const</span> uint32_t n_pre_sym, uint8_t n_pld_bytes);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a5968dcc1c5dc7aa644e4fd4b3c44f373">waitFullSlots</a>(<span class="keyword">const</span> <span class="keywordtype">size_t</span> num_slots);</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#ab88cd62548731862e0a24c986bf095bf">calcWaitPreamble</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a8451969371826cd733288652f5323053">waitTx</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00106"></a><span class="lineno"><a class="line" href="classRadioTiming.html#aa02ff42eeac80549729fceff002a0f35">  106</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#aa02ff42eeac80549729fceff002a0f35">setTimer</a>(shared_ptr&lt;LowPowerTimer&gt; my_tmr_sptr) {</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    tmr_sptr = my_tmr_sptr;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;}</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#abe0019845f38a6cf9c2f70d8bba547bb">wait</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="keywordtype">void</span> waitNoWarn(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;};</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="keyword">extern</span> <a class="code" href="classRadioTiming.html">RadioTiming</a> radio_timing;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* RADIO_TIMING_HPP */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#aab7180a1d7b4eda3c0d56506ffc18b43">waitSymOffset</a>(<span class="keyword">const</span> uint8_t symb_frac, <span class="keyword">const</span> <span class="keywordtype">float</span> direction, <span class="keyword">const</span> uint8_t num_inc);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#ab794bed8927778ed17a9cbbfe1cf4a5f">waitRxRemainder</a>(<span class="keyword">const</span> <span class="keywordtype">size_t</span> sym_wait, <span class="keyword">const</span> <span class="keywordtype">size_t</span> pre_wait);</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a763af2aa098f7b311c149dbf062d40a2">calcWaitSymbol</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#ab88cd62548731862e0a24c986bf095bf">calcWaitPreamble</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a8451969371826cd733288652f5323053">waitTx</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00133"></a><span class="lineno"><a class="line" href="classRadioTiming.html#a3f5c69b632a02ec4a43e27ba5e4efef4">  133</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classRadioTiming.html#a3f5c69b632a02ec4a43e27ba5e4efef4">setTimer</a>(shared_ptr&lt;Timer&gt; my_tmr_sptr) {</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    tmr_sptr = my_tmr_sptr;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;}</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;int32_t <a class="code" href="classRadioTiming.html#a50d3daa48f987d742b025d37789ed735">getWaitNoWarn</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;};</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="keyword">extern</span> <a class="code" href="classRadioTiming.html">RadioTiming</a> radio_timing;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* RADIO_TIMING_HPP */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclassRadioTiming_html_a5968dcc1c5dc7aa644e4fd4b3c44f373"><div class="ttname"><a href="classRadioTiming.html#a5968dcc1c5dc7aa644e4fd4b3c44f373">RadioTiming::waitFullSlots</a></div><div class="ttdeci">void waitFullSlots(const size_t num_slots)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:57</div></div>
-<div class="ttc" id="aclassRadioTiming_html_ab794bed8927778ed17a9cbbfe1cf4a5f"><div class="ttname"><a href="classRadioTiming.html#ab794bed8927778ed17a9cbbfe1cf4a5f">RadioTiming::waitRxRemainder</a></div><div class="ttdeci">void waitRxRemainder(const size_t sym_wait, const size_t pre_wait)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:82</div></div>
-<div class="ttc" id="aclassRadioTiming_html_a8889214bcfb05975e8ed121a59ffb06c"><div class="ttname"><a href="classRadioTiming.html#a8889214bcfb05975e8ed121a59ffb06c">RadioTiming::computeTimes</a></div><div class="ttdeci">void computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, const uint32_t n_pre_sym, uint8_t n_pld_bytes)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:9</div></div>
-<div class="ttc" id="aclassRadioTiming_html"><div class="ttname"><a href="classRadioTiming.html">RadioTiming</a></div><div class="ttdef"><b>Definition:</b> radio_timing.hpp:21</div></div>
-<div class="ttc" id="aclassRadioTiming_html_abe0019845f38a6cf9c2f70d8bba547bb"><div class="ttname"><a href="classRadioTiming.html#abe0019845f38a6cf9c2f70d8bba547bb">RadioTiming::wait</a></div><div class="ttdeci">void wait(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:64</div></div>
-<div class="ttc" id="aclassRadioTiming_html_a763af2aa098f7b311c149dbf062d40a2"><div class="ttname"><a href="classRadioTiming.html#a763af2aa098f7b311c149dbf062d40a2">RadioTiming::calcWaitSymbol</a></div><div class="ttdeci">void calcWaitSymbol(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:89</div></div>
-<div class="ttc" id="aclassRadioTiming_html_aa02ff42eeac80549729fceff002a0f35"><div class="ttname"><a href="classRadioTiming.html#aa02ff42eeac80549729fceff002a0f35">RadioTiming::setTimer</a></div><div class="ttdeci">void setTimer(shared_ptr&lt; LowPowerTimer &gt; my_tmr_sptr)</div><div class="ttdef"><b>Definition:</b> radio_timing.hpp:106</div></div>
-<div class="ttc" id="aclassRadioTiming_html_ab88cd62548731862e0a24c986bf095bf"><div class="ttname"><a href="classRadioTiming.html#ab88cd62548731862e0a24c986bf095bf">RadioTiming::calcWaitPreamble</a></div><div class="ttdeci">void calcWaitPreamble(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:94</div></div>
-<div class="ttc" id="aclassRadioTiming_html_a8451969371826cd733288652f5323053"><div class="ttname"><a href="classRadioTiming.html#a8451969371826cd733288652f5323053">RadioTiming::waitTx</a></div><div class="ttdeci">void waitTx(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:99</div></div>
+<div class="ttc" id="aclassRadioTiming_html_a3f5c69b632a02ec4a43e27ba5e4efef4"><div class="ttname"><a href="classRadioTiming.html#a3f5c69b632a02ec4a43e27ba5e4efef4">RadioTiming::setTimer</a></div><div class="ttdeci">void setTimer(shared_ptr&lt; Timer &gt; my_tmr_sptr)</div><div class="ttdef"><b>Definition:</b> radio_timing.hpp:133</div></div>
+<div class="ttc" id="aclassRadioTiming_html_aab7180a1d7b4eda3c0d56506ffc18b43"><div class="ttname"><a href="classRadioTiming.html#aab7180a1d7b4eda3c0d56506ffc18b43">RadioTiming::waitSymOffset</a></div><div class="ttdeci">void waitSymOffset(const uint8_t symb_frac, const float direction, const uint8_t num_inc)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:82</div></div>
+<div class="ttc" id="aclassRadioTiming_html_a5968dcc1c5dc7aa644e4fd4b3c44f373"><div class="ttname"><a href="classRadioTiming.html#a5968dcc1c5dc7aa644e4fd4b3c44f373">RadioTiming::waitFullSlots</a></div><div class="ttdeci">void waitFullSlots(const size_t num_slots)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:75</div></div>
+<div class="ttc" id="aclassRadioTiming_html_ab794bed8927778ed17a9cbbfe1cf4a5f"><div class="ttname"><a href="classRadioTiming.html#ab794bed8927778ed17a9cbbfe1cf4a5f">RadioTiming::waitRxRemainder</a></div><div class="ttdeci">void waitRxRemainder(const size_t sym_wait, const size_t pre_wait)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:98</div></div>
+<div class="ttc" id="aclassRadioTiming_html_a8889214bcfb05975e8ed121a59ffb06c"><div class="ttname"><a href="classRadioTiming.html#a8889214bcfb05975e8ed121a59ffb06c">RadioTiming::computeTimes</a></div><div class="ttdeci">void computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, const uint32_t n_pre_sym, uint8_t n_pld_bytes)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:27</div></div>
+<div class="ttc" id="aclassRadioTiming_html"><div class="ttname"><a href="classRadioTiming.html">RadioTiming</a></div><div class="ttdoc">Different LoRa bandwidths, in KHz.</div><div class="ttdef"><b>Definition:</b> radio_timing.hpp:38</div></div>
+<div class="ttc" id="aclassRadioTiming_html_a50d3daa48f987d742b025d37789ed735"><div class="ttname"><a href="classRadioTiming.html#a50d3daa48f987d742b025d37789ed735">RadioTiming::getWaitNoWarn</a></div><div class="ttdeci">int32_t getWaitNoWarn(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:90</div></div>
+<div class="ttc" id="aclassRadioTiming_html_a763af2aa098f7b311c149dbf062d40a2"><div class="ttname"><a href="classRadioTiming.html#a763af2aa098f7b311c149dbf062d40a2">RadioTiming::calcWaitSymbol</a></div><div class="ttdeci">void calcWaitSymbol(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:105</div></div>
+<div class="ttc" id="aclassRadioTiming_html_ab88cd62548731862e0a24c986bf095bf"><div class="ttname"><a href="classRadioTiming.html#ab88cd62548731862e0a24c986bf095bf">RadioTiming::calcWaitPreamble</a></div><div class="ttdeci">void calcWaitPreamble(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:110</div></div>
+<div class="ttc" id="aclassRadioTiming_html_a8451969371826cd733288652f5323053"><div class="ttname"><a href="classRadioTiming.html#a8451969371826cd733288652f5323053">RadioTiming::waitTx</a></div><div class="ttdeci">void waitTx(void)</div><div class="ttdef"><b>Definition:</b> radio_timing.cpp:115</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

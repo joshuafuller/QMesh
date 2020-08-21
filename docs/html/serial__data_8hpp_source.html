@@ -159,7 +159,7 @@ $(function() {
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">size_t</span> <a class="code" href="classFrame.html#aa38b49286989b869cd82ac064ead3628">size</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00118"></a><span class="lineno"><a class="line" href="classFrame.html#ad2e5946cf41d4817e750500acf05d02b">  118</a></span>&#160;    <a class="code" href="classFrame.html#ad2e5946cf41d4817e750500acf05d02b">Frame</a>() : <a class="code" href="classFrame.html">Frame</a>(make_shared&lt;<a class="code" href="classFEC.html">FEC</a>&gt;()) { }</div>
+<div class="line"><a name="l00118"></a><span class="lineno"><a class="line" href="classFrame.html#ad2e5946cf41d4817e750500acf05d02b">  118</a></span>&#160;    <a class="code" href="classFrame.html#ad2e5946cf41d4817e750500acf05d02b">Frame</a>() : <a class="code" href="classFrame.html">Frame</a>(make_shared&lt;<a class="code" href="classFEC.html">FEC</a>&gt;(<a class="code" href="classFrame.html">Frame</a>::<a class="code" href="classFrame.html#aa38b49286989b869cd82ac064ead3628">size</a>())) { }</div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
 <div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="classFrame.html#a230b093686859a8d614b81b19f0433a0">  124</a></span>&#160;    <a class="code" href="classFrame.html#a230b093686859a8d614b81b19f0433a0">Frame</a>(shared_ptr&lt;FEC&gt; my_fec) {</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        fec = my_fec;</div>
@@ -260,141 +260,141 @@ $(function() {
 <div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
 <div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classFrame.html#a14c155e1ec94aa20bec722efaff3b25d">codedSize</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
-<div class="line"><a name="l00300"></a><span class="lineno"><a class="line" href="classFrame.html#a66f58470ee6679fb3a46ad7a43e3c5be">  300</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a66f58470ee6679fb3a46ad7a43e3c5be">getOffsets</a>(uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset) {</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;        *pre_offset = hdr.pre_offset;</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        *nsym_offset = hdr.nsym_offset;</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        *sym_offset = hdr.sym_offset;</div>
+<div class="line"><a name="l00300"></a><span class="lineno"><a class="line" href="classFrame.html#ac93b8d79eb8cf07459bab3ef49ddb6e8">  300</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#ac93b8d79eb8cf07459bab3ef49ddb6e8">getOffsets</a>(uint8_t &amp;pre_offset, uint8_t &amp;nsym_offset, uint8_t &amp;sym_offset) {</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;        pre_offset = hdr.pre_offset;</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        nsym_offset = hdr.nsym_offset;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        sym_offset = hdr.sym_offset;</div>
 <div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    }</div>
 <div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
-<div class="line"><a name="l00312"></a><span class="lineno"><a class="line" href="classFrame.html#ac25e10413d25b9eea2502c1c02d457e0">  312</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#ac25e10413d25b9eea2502c1c02d457e0">setOffsets</a>(<span class="keyword">const</span> uint8_t *pre_offset, <span class="keyword">const</span> uint8_t *nsym_offset, <span class="keyword">const</span> uint8_t *sym_offset) {</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;        hdr.pre_offset = *pre_offset;</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;        hdr.nsym_offset = *nsym_offset;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        hdr.sym_offset = *sym_offset;</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    }</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160; </div>
-<div class="line"><a name="l00324"></a><span class="lineno"><a class="line" href="classFrame.html#a1caeb909554201233a464f24e445a5e1">  324</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a1caeb909554201233a464f24e445a5e1">getRxStats</a>(int16_t &amp;rssi, int8_t &amp;snr, uint16_t &amp;rx_size) {</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        rssi = this-&gt;rssi;</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        snr = this-&gt;snr;</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        rx_size = this-&gt;rx_size;</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    }</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160; </div>
-<div class="line"><a name="l00336"></a><span class="lineno"><a class="line" href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">  336</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">setRxStats</a>(<span class="keyword">const</span> int16_t rssi, <span class="keyword">const</span> int8_t snr, <span class="keyword">const</span> uint16_t rx_size) {</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        this-&gt;rssi = rssi;</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;        this-&gt;snr = snr;</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;        this-&gt;rx_size = rx_size;</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;    }</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160; </div>
-<div class="line"><a name="l00345"></a><span class="lineno"><a class="line" href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">  345</a></span>&#160;    uint16_t <a class="code" href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">getCRC</a>(<span class="keywordtype">void</span>) {</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        <span class="keywordflow">return</span> crc.s;</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;    }</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160; </div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a6fba80bf6639a27ffffb612e64cf6844">prettyPrint</a>(<span class="keyword">const</span> <span class="keyword">enum</span> DBG_TYPES dbg_type);</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160; </div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a2ef721542c17f972913df4375d72f7bf">loadFromJSON</a>(MbedJSONValue &amp;json);</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160; </div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a865ca9d9a5584fab74d7258012509b97">saveToJSON</a>(MbedJSONValue &amp;json);</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;};</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160; </div>
+<div class="line"><a name="l00312"></a><span class="lineno"><a class="line" href="classFrame.html#ad49bfde5dc426762cc1058b95052ca70">  312</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#ad49bfde5dc426762cc1058b95052ca70">setOffsets</a>(<span class="keyword">const</span> uint8_t pre_offset, <span class="keyword">const</span> uint8_t nsym_offset, <span class="keyword">const</span> uint8_t sym_offset) {</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;        hdr.pre_offset = pre_offset;</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;        hdr.nsym_offset = nsym_offset;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        hdr.sym_offset = sym_offset;</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        <a class="code" href="classFrame.html#aa2de2dba681188cc6ab00dfc42d15426">setCRC</a>();</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    }</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160; </div>
+<div class="line"><a name="l00325"></a><span class="lineno"><a class="line" href="classFrame.html#a1caeb909554201233a464f24e445a5e1">  325</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a1caeb909554201233a464f24e445a5e1">getRxStats</a>(int16_t &amp;rssi, int8_t &amp;snr, uint16_t &amp;rx_size) {</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        rssi = this-&gt;rssi;</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        snr = this-&gt;snr;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;        rx_size = this-&gt;rx_size;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    }</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160; </div>
+<div class="line"><a name="l00337"></a><span class="lineno"><a class="line" href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">  337</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">setRxStats</a>(<span class="keyword">const</span> int16_t rssi, <span class="keyword">const</span> int8_t snr, <span class="keyword">const</span> uint16_t rx_size) {</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;        this-&gt;rssi = rssi;</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;        this-&gt;snr = snr;</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        this-&gt;rx_size = rx_size;</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    }</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160; </div>
+<div class="line"><a name="l00346"></a><span class="lineno"><a class="line" href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">  346</a></span>&#160;    uint16_t <a class="code" href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">getCRC</a>(<span class="keywordtype">void</span>) {</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keywordflow">return</span> crc.s;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;    }</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160; </div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a6fba80bf6639a27ffffb612e64cf6844">prettyPrint</a>(<span class="keyword">const</span> <span class="keyword">enum</span> DBG_TYPES dbg_type);</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160; </div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a2ef721542c17f972913df4375d72f7bf">loadFromJSON</a>(MbedJSONValue &amp;json);</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160; </div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classFrame.html#a865ca9d9a5584fab74d7258012509b97">saveToJSON</a>(MbedJSONValue &amp;json);</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;};</div>
 <div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160; </div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    TX_FRAME_EVT,</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    TX_DONE_EVT,</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    RX_DONE_EVT,</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    TX_TIMEOUT_EVT,</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    RX_TIMEOUT_EVT,</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;    RX_ERROR_EVT,</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;} radio_evt_enum_t;</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160; </div>
-<div class="line"><a name="l00378"></a><span class="lineno"><a class="line" href="classRadioEvent.html">  378</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRadioEvent.html">RadioEvent</a> {</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;    radio_evt_enum_t evt_enum;</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    shared_ptr&lt;LowPowerTimer&gt; tmr_sptr;</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    int16_t rssi;</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    int8_t snr;</div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;    shared_ptr&lt;vector&lt;uint8_t&gt;&gt; buf;</div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    shared_ptr&lt;Frame&gt; frame;</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160; </div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum);</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160; </div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum, shared_ptr&lt;LowPowerTimer&gt; my_tmr);</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160; </div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum, shared_ptr&lt;LowPowerTimer&gt; my_tmr, <span class="keyword">const</span> uint8_t *my_buf, </div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;                <span class="keyword">const</span> <span class="keywordtype">size_t</span> my_size, <span class="keyword">const</span> int16_t my_rssi, <span class="keyword">const</span> int8_t my_snr);</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160; </div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum, <span class="keyword">const</span> shared_ptr&lt;Frame&gt; &amp;frame);</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;};</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160; </div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;<span class="keyword">extern</span> Mail&lt;shared_ptr&lt;RadioEvent&gt;, QUEUE_DEPTH&gt; unified_radio_evt_mail, tx_radio_evt_mail;</div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160; </div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160; </div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    TX_FRAME_EVT,</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    TX_DONE_EVT,</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    RX_DONE_EVT,</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    TX_TIMEOUT_EVT,</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;    RX_TIMEOUT_EVT,</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    RX_ERROR_EVT,</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;} radio_evt_enum_t;</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
+<div class="line"><a name="l00379"></a><span class="lineno"><a class="line" href="classRadioEvent.html">  379</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRadioEvent.html">RadioEvent</a> {</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    radio_evt_enum_t evt_enum;</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    shared_ptr&lt;Timer&gt; tmr_sptr;</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    int16_t rssi;</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;    int8_t snr;</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    shared_ptr&lt;vector&lt;uint8_t&gt;&gt; buf;</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    shared_ptr&lt;Frame&gt; frame;</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160; </div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum);</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160; </div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum, shared_ptr&lt;Timer&gt; my_tmr);</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160; </div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum, shared_ptr&lt;Timer&gt; my_tmr, <span class="keyword">const</span> uint8_t *my_buf, </div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;                <span class="keyword">const</span> <span class="keywordtype">size_t</span> my_size, <span class="keyword">const</span> int16_t my_rssi, <span class="keyword">const</span> int8_t my_snr);</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160; </div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    <a class="code" href="classRadioEvent.html">RadioEvent</a>(<span class="keyword">const</span> radio_evt_enum_t my_evt_enum, <span class="keyword">const</span> shared_ptr&lt;Frame&gt; &amp;frame);</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;};</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160; </div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="keyword">extern</span> Mail&lt;shared_ptr&lt;RadioEvent&gt;, QUEUE_DEPTH&gt; unified_radio_evt_mail, tx_radio_evt_mail;</div>
 <div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160; </div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="keyword">extern</span> Mail&lt;shared_ptr&lt;Frame&gt;, QUEUE_DEPTH&gt; tx_frame_mail, rx_frame_mail, nv_logger_mail;</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160; </div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; </div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;<span class="keywordtype">void</span> enqueue_mail(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue, T val) {</div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;    <span class="keyword">auto</span> mail_item = mail_queue.alloc_for(osWaitForever);</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    MBED_ASSERT(mail_item != NULL);</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;    *mail_item = val;</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;    <span class="keywordflow">while</span>(mail_queue.full());</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;    mail_queue.put(mail_item);</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;}</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160; </div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160; </div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;<span class="keyword">extern</span> Mail&lt;shared_ptr&lt;Frame&gt;, QUEUE_DEPTH&gt; tx_frame_mail, rx_frame_mail, nv_logger_mail;</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160; </div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; </div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;<span class="keywordtype">void</span> enqueue_mail(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue, T val) {</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    <span class="keyword">auto</span> mail_item = mail_queue.alloc_for(osWaitForever);</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;    MBED_ASSERT(mail_item != NULL);</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;    *mail_item = val;</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;    <span class="keywordflow">while</span>(mail_queue.full());</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;    mail_queue.put(mail_item);</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;}</div>
 <div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160; </div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; </div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="keywordtype">void</span> enqueue_mail_nonblocking(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue, T val) {</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    <span class="keyword">auto</span> mail_item = mail_queue.alloc();</div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;    <span class="keywordflow">if</span>(mail_item == NULL) {</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;    }</div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;    *mail_item = val;</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;    mail_queue.put(mail_item);</div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;}</div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160; </div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;T dequeue_mail(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue) {</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;    T mail_item; </div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    <span class="keywordflow">for</span>(;;) {</div>
-<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;        osEvent evt = mail_queue.get();</div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;        <span class="keywordflow">if</span>(evt.status == osEventMail) {</div>
-<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;            mail_item = *((T *) evt.value.p);</div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;            mail_queue.free((T *) evt.value.p);</div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;        }</div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;        <span class="keywordflow">else</span> { MBED_ASSERT(<span class="keyword">false</span>); }</div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;    } </div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;    <span class="keywordflow">return</span> mail_item;</div>
-<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;}</div>
-<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160; </div>
-<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;T dequeue_mail_timeout(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue, <span class="keyword">const</span> uint32_t timeout_ms, <span class="keywordtype">bool</span> &amp;timed_out) {</div>
-<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;    T mail_item; </div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;    timed_out = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;    osEvent evt = mail_queue.get(timeout_ms);</div>
-<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;    <span class="keywordflow">if</span>(evt.status == osEventMail) {</div>
-<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;        mail_item = *((T *) evt.value.p);</div>
-<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;        mail_queue.free((T *) evt.value.p);</div>
-<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;    }</div>
-<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(evt.status == osEventTimeout) {</div>
-<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;        timed_out = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;    }</div>
-<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;    <span class="keywordflow">else</span> { MBED_ASSERT(<span class="keyword">false</span>); }</div>
-<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;    <span class="keywordflow">return</span> mail_item;</div>
-<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;}</div>
-<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160; </div>
-<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SERIAL_DATA_HPP */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160; </div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; </div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="keywordtype">void</span> enqueue_mail_nonblocking(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue, T val) {</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;    <span class="keyword">auto</span> mail_item = mail_queue.alloc();</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;    <span class="keywordflow">if</span>(mail_item == NULL) {</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;    }</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;    *mail_item = val;</div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;    mail_queue.put(mail_item);</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;}</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160; </div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;T dequeue_mail(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue) {</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    T mail_item; </div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;    <span class="keywordflow">for</span>(;;) {</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;        osEvent evt = mail_queue.get();</div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;        <span class="keywordflow">if</span>(evt.status == osEventMail) {</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;            mail_item = *((T *) evt.value.p);</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;            mail_queue.free((T *) evt.value.p);</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;        }</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;        <span class="keywordflow">else</span> { MBED_ASSERT(<span class="keyword">false</span>); }</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;    } </div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;    <span class="keywordflow">return</span> mail_item;</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;}</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160; </div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;T dequeue_mail_timeout(Mail&lt;T, QUEUE_DEPTH&gt; &amp;mail_queue, <span class="keyword">const</span> uint32_t timeout_ms, <span class="keywordtype">bool</span> &amp;timed_out) {</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;    T mail_item; </div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;    timed_out = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;    osEvent evt = mail_queue.get(timeout_ms);</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;    <span class="keywordflow">if</span>(evt.status == osEventMail) {</div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;        mail_item = *((T *) evt.value.p);</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;        mail_queue.free((T *) evt.value.p);</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;    }</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(evt.status == osEventTimeout) {</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;        timed_out = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;    }</div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;    <span class="keywordflow">else</span> { MBED_ASSERT(<span class="keyword">false</span>); }</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;    <span class="keywordflow">return</span> mail_item;</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;}</div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160; </div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SERIAL_DATA_HPP */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassFrame_html_a2ef721542c17f972913df4375d72f7bf"><div class="ttname"><a href="classFrame.html#a2ef721542c17f972913df4375d72f7bf">Frame::loadFromJSON</a></div><div class="ttdeci">void loadFromJSON(MbedJSONValue &amp;json)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:135</div></div>
 <div class="ttc" id="aclassFrame_html_a690b8728c8215af874f0aed2c643d7a6"><div class="ttname"><a href="classFrame.html#a690b8728c8215af874f0aed2c643d7a6">Frame::calcUniqueCRC</a></div><div class="ttdeci">uint32_t calcUniqueCRC(void)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:90</div></div>
 <div class="ttc" id="aclassFrame_html_a2e1d5421694ec4d9abaadacf2b32b492"><div class="ttname"><a href="classFrame.html#a2e1d5421694ec4d9abaadacf2b32b492">Frame::serializeCoded</a></div><div class="ttdeci">size_t serializeCoded(vector&lt; uint8_t &gt; &amp;buf)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:70</div></div>
 <div class="ttc" id="aclassFrame_html_a14c155e1ec94aa20bec722efaff3b25d"><div class="ttname"><a href="classFrame.html#a14c155e1ec94aa20bec722efaff3b25d">Frame::codedSize</a></div><div class="ttdeci">size_t codedSize(void)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:48</div></div>
 <div class="ttc" id="aclassFrame_html_a84bdc2969f8962206c89c5f916d80973"><div class="ttname"><a href="classFrame.html#a84bdc2969f8962206c89c5f916d80973">Frame::calcCRC</a></div><div class="ttdeci">uint16_t calcCRC(void)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:78</div></div>
-<div class="ttc" id="aclassFrame_html_ac25e10413d25b9eea2502c1c02d457e0"><div class="ttname"><a href="classFrame.html#ac25e10413d25b9eea2502c1c02d457e0">Frame::setOffsets</a></div><div class="ttdeci">void setOffsets(const uint8_t *pre_offset, const uint8_t *nsym_offset, const uint8_t *sym_offset)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:312</div></div>
 <div class="ttc" id="aclassFrame_html_a57812c04330da0044155af6e2ca9a6a7"><div class="ttname"><a href="classFrame.html#a57812c04330da0044155af6e2ca9a6a7">Frame::getPayload</a></div><div class="ttdeci">size_t getPayload(vector&lt; uint8_t &gt; &amp;buf)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:159</div></div>
 <div class="ttc" id="aclassFrame_html_a1807a7893ff81064f2e92cb5ab065ec8"><div class="ttname"><a href="classFrame.html#a1807a7893ff81064f2e92cb5ab065ec8">Frame::hdrSize</a></div><div class="ttdeci">static size_t hdrSize(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:285</div></div>
 <div class="ttc" id="aclassFrame_html_a99bf5c1a41572292c07bc9699a491a96"><div class="ttname"><a href="classFrame.html#a99bf5c1a41572292c07bc9699a491a96">Frame::checkCRC</a></div><div class="ttdeci">bool checkCRC(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:208</div></div>
-<div class="ttc" id="aclassFrame_html_a66f58470ee6679fb3a46ad7a43e3c5be"><div class="ttname"><a href="classFrame.html#a66f58470ee6679fb3a46ad7a43e3c5be">Frame::getOffsets</a></div><div class="ttdeci">void getOffsets(uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:300</div></div>
 <div class="ttc" id="aclassFrame_html_a383e2fb65096f4c57f37b48d3d74f07d"><div class="ttname"><a href="classFrame.html#a383e2fb65096f4c57f37b48d3d74f07d">Frame::getTTL</a></div><div class="ttdeci">uint8_t getTTL(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:278</div></div>
 <div class="ttc" id="aclassFrame_html_ad98ec7af45ce4428441d2ee3d28bae7e"><div class="ttname"><a href="classFrame.html#ad98ec7af45ce4428441d2ee3d28bae7e">Frame::getStreamID</a></div><div class="ttdeci">uint32_t getStreamID(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:248</div></div>
-<div class="ttc" id="aclassFrame_html_ab6513ed996012cf14141615c1ed47e38"><div class="ttname"><a href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">Frame::getCRC</a></div><div class="ttdeci">uint16_t getCRC(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:345</div></div>
+<div class="ttc" id="aclassFrame_html_ad49bfde5dc426762cc1058b95052ca70"><div class="ttname"><a href="classFrame.html#ad49bfde5dc426762cc1058b95052ca70">Frame::setOffsets</a></div><div class="ttdeci">void setOffsets(const uint8_t pre_offset, const uint8_t nsym_offset, const uint8_t sym_offset)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:312</div></div>
+<div class="ttc" id="aclassFrame_html_ab6513ed996012cf14141615c1ed47e38"><div class="ttname"><a href="classFrame.html#ab6513ed996012cf14141615c1ed47e38">Frame::getCRC</a></div><div class="ttdeci">uint16_t getCRC(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:346</div></div>
 <div class="ttc" id="aclassFrame_html_aa38b49286989b869cd82ac064ead3628"><div class="ttname"><a href="classFrame.html#aa38b49286989b869cd82ac064ead3628">Frame::size</a></div><div class="ttdeci">static size_t size(void)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:32</div></div>
 <div class="ttc" id="aclassFrame_html"><div class="ttname"><a href="classFrame.html">Frame</a></div><div class="ttdef"><b>Definition:</b> serial_data.hpp:81</div></div>
 <div class="ttc" id="aclassFrame_html_ae0082da89627bc112701735227104eec"><div class="ttname"><a href="classFrame.html#ae0082da89627bc112701735227104eec">Frame::loadTestFrame</a></div><div class="ttdeci">void loadTestFrame(vector&lt; uint8_t &gt; &amp;buf)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:36</div></div>
@@ -403,16 +403,17 @@ $(function() {
 <div class="ttc" id="aclassFrame_html_a40746b6fa955619e185573c1d38022dd"><div class="ttname"><a href="classFrame.html#a40746b6fa955619e185573c1d38022dd">Frame::operator==</a></div><div class="ttdeci">bool operator==(const Frame &amp;L)</div><div class="ttdoc">Equality operator for Frames.</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:131</div></div>
 <div class="ttc" id="aclassFrame_html_aa2de2dba681188cc6ab00dfc42d15426"><div class="ttname"><a href="classFrame.html#aa2de2dba681188cc6ab00dfc42d15426">Frame::setCRC</a></div><div class="ttdeci">uint16_t setCRC(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:216</div></div>
 <div class="ttc" id="aclassFrame_html_ad2e5946cf41d4817e750500acf05d02b"><div class="ttname"><a href="classFrame.html#ad2e5946cf41d4817e750500acf05d02b">Frame::Frame</a></div><div class="ttdeci">Frame()</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:118</div></div>
-<div class="ttc" id="aclassFrame_html_a6f48959a7d7971ad25d25bf5c5237b22"><div class="ttname"><a href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">Frame::setRxStats</a></div><div class="ttdeci">void setRxStats(const int16_t rssi, const int8_t snr, const uint16_t rx_size)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:336</div></div>
+<div class="ttc" id="aclassFrame_html_a6f48959a7d7971ad25d25bf5c5237b22"><div class="ttname"><a href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">Frame::setRxStats</a></div><div class="ttdeci">void setRxStats(const int16_t rssi, const int8_t snr, const uint16_t rx_size)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:337</div></div>
+<div class="ttc" id="aclassFrame_html_ac93b8d79eb8cf07459bab3ef49ddb6e8"><div class="ttname"><a href="classFrame.html#ac93b8d79eb8cf07459bab3ef49ddb6e8">Frame::getOffsets</a></div><div class="ttdeci">void getOffsets(uint8_t &amp;pre_offset, uint8_t &amp;nsym_offset, uint8_t &amp;sym_offset)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:300</div></div>
 <div class="ttc" id="aclassFrame_html_a448b698fd4cc568e610f87f971354dc6"><div class="ttname"><a href="classFrame.html#a448b698fd4cc568e610f87f971354dc6">Frame::deserializeCoded</a></div><div class="ttdeci">PKT_STATUS_ENUM deserializeCoded(const shared_ptr&lt; vector&lt; uint8_t &gt;&gt; buf)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:101</div></div>
 <div class="ttc" id="aclassFrame_html_a604c4dc3f60c7bf4e861243f05ace9b8"><div class="ttname"><a href="classFrame.html#a604c4dc3f60c7bf4e861243f05ace9b8">Frame::operator!=</a></div><div class="ttdeci">bool operator!=(const Frame &amp;L)</div><div class="ttdoc">Inequality operator for Frames.</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:145</div></div>
 <div class="ttc" id="aclassFrame_html_a230b093686859a8d614b81b19f0433a0"><div class="ttname"><a href="classFrame.html#a230b093686859a8d614b81b19f0433a0">Frame::Frame</a></div><div class="ttdeci">Frame(shared_ptr&lt; FEC &gt; my_fec)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:124</div></div>
 <div class="ttc" id="aclassFrame_html_a278632174fa07b44e0dabda3d010f000"><div class="ttname"><a href="classFrame.html#a278632174fa07b44e0dabda3d010f000">Frame::getSender</a></div><div class="ttdeci">uint32_t getSender(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:233</div></div>
-<div class="ttc" id="aclassFrame_html_a1caeb909554201233a464f24e445a5e1"><div class="ttname"><a href="classFrame.html#a1caeb909554201233a464f24e445a5e1">Frame::getRxStats</a></div><div class="ttdeci">void getRxStats(int16_t &amp;rssi, int8_t &amp;snr, uint16_t &amp;rx_size)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:324</div></div>
+<div class="ttc" id="aclassFrame_html_a1caeb909554201233a464f24e445a5e1"><div class="ttname"><a href="classFrame.html#a1caeb909554201233a464f24e445a5e1">Frame::getRxStats</a></div><div class="ttdeci">void getRxStats(int16_t &amp;rssi, int8_t &amp;snr, uint16_t &amp;rx_size)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:325</div></div>
 <div class="ttc" id="aclassFrame_html_a6fba80bf6639a27ffffb612e64cf6844"><div class="ttname"><a href="classFrame.html#a6fba80bf6639a27ffffb612e64cf6844">Frame::prettyPrint</a></div><div class="ttdeci">void prettyPrint(const enum DBG_TYPES dbg_type)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:173</div></div>
 <div class="ttc" id="aclassFEC_html"><div class="ttname"><a href="classFEC.html">FEC</a></div><div class="ttdef"><b>Definition:</b> fec.hpp:80</div></div>
 <div class="ttc" id="aclassFrame_html_a865ca9d9a5584fab74d7258012509b97"><div class="ttname"><a href="classFrame.html#a865ca9d9a5584fab74d7258012509b97">Frame::saveToJSON</a></div><div class="ttdeci">void saveToJSON(MbedJSONValue &amp;json)</div><div class="ttdef"><b>Definition:</b> serial_data.cpp:154</div></div>
-<div class="ttc" id="aclassRadioEvent_html"><div class="ttname"><a href="classRadioEvent.html">RadioEvent</a></div><div class="ttdef"><b>Definition:</b> serial_data.hpp:378</div></div>
+<div class="ttc" id="aclassRadioEvent_html"><div class="ttname"><a href="classRadioEvent.html">RadioEvent</a></div><div class="ttdef"><b>Definition:</b> serial_data.hpp:379</div></div>
 <div class="ttc" id="aclassFrame_html_a46139e40aaadc65459f1d094e6f7fc20"><div class="ttname"><a href="classFrame.html#a46139e40aaadc65459f1d094e6f7fc20">Frame::incrementTTL</a></div><div class="ttdeci">void incrementTTL(void)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:270</div></div>
 <div class="ttc" id="aclassFrame_html_a982cef0e09413cc2a5c55298e2cc7c5f"><div class="ttname"><a href="classFrame.html#a982cef0e09413cc2a5c55298e2cc7c5f">Frame::setSender</a></div><div class="ttdeci">void setSender(uint8_t sender_addr)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:225</div></div>
 <div class="ttc" id="aclassFrame_html_af3cc33a2ea60ad84db23097da6df3c31"><div class="ttname"><a href="classFrame.html#af3cc33a2ea60ad84db23097da6df3c31">Frame::setStreamID</a></div><div class="ttdeci">void setStreamID(uint8_t id)</div><div class="ttdef"><b>Definition:</b> serial_data.hpp:240</div></div>

@@ -6,8 +6,7 @@
 
 
 
-Collaboration diagram for Frame\+:
-\nopagebreak
+Collaboration diagram for Frame\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -73,9 +72,9 @@ uint8\+\_\+t \mbox{\hyperlink{classFrame_a383e2fb65096f4c57f37b48d3d74f07d}{get\
 \item 
 size\+\_\+t \mbox{\hyperlink{classFrame_a14c155e1ec94aa20bec722efaff3b25d}{coded\+Size}} (void)
 \item 
-void \mbox{\hyperlink{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}{get\+Offsets}} (uint8\+\_\+t $\ast$pre\+\_\+offset, uint8\+\_\+t $\ast$nsym\+\_\+offset, uint8\+\_\+t $\ast$sym\+\_\+offset)
+void \mbox{\hyperlink{classFrame_ac93b8d79eb8cf07459bab3ef49ddb6e8}{get\+Offsets}} (uint8\+\_\+t \&pre\+\_\+offset, uint8\+\_\+t \&nsym\+\_\+offset, uint8\+\_\+t \&sym\+\_\+offset)
 \item 
-void \mbox{\hyperlink{classFrame_ac25e10413d25b9eea2502c1c02d457e0}{set\+Offsets}} (const uint8\+\_\+t $\ast$pre\+\_\+offset, const uint8\+\_\+t $\ast$nsym\+\_\+offset, const uint8\+\_\+t $\ast$sym\+\_\+offset)
+void \mbox{\hyperlink{classFrame_ad49bfde5dc426762cc1058b95052ca70}{set\+Offsets}} (const uint8\+\_\+t pre\+\_\+offset, const uint8\+\_\+t nsym\+\_\+offset, const uint8\+\_\+t sym\+\_\+offset)
 \item 
 void \mbox{\hyperlink{classFrame_a1caeb909554201233a464f24e445a5e1}{get\+Rx\+Stats}} (int16\+\_\+t \&rssi, int8\+\_\+t \&snr, uint16\+\_\+t \&rx\+\_\+size)
 \item 
@@ -219,11 +218,11 @@ Takes a vector of bytes and loads it into the \mbox{\hyperlink{classFrame}{Frame
 \doxysubsubsection{\texorpdfstring{getCRC()}{getCRC()}}
 {\footnotesize\ttfamily uint16\+\_\+t Frame\+::get\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Returns the payload C\+RC stored within the \mbox{\hyperlink{classFrame}{Frame}} object. \mbox{\Hypertarget{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}\label{classFrame_a66f58470ee6679fb3a46ad7a43e3c5be}} 
+Returns the payload C\+RC stored within the \mbox{\hyperlink{classFrame}{Frame}} object. \mbox{\Hypertarget{classFrame_ac93b8d79eb8cf07459bab3ef49ddb6e8}\label{classFrame_ac93b8d79eb8cf07459bab3ef49ddb6e8}} 
 \index{Frame@{Frame}!getOffsets@{getOffsets}}
 \index{getOffsets@{getOffsets}!Frame@{Frame}}
 \doxysubsubsection{\texorpdfstring{getOffsets()}{getOffsets()}}
-{\footnotesize\ttfamily void Frame\+::get\+Offsets (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{pre\+\_\+offset,  }\item[{uint8\+\_\+t $\ast$}]{nsym\+\_\+offset,  }\item[{uint8\+\_\+t $\ast$}]{sym\+\_\+offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily void Frame\+::get\+Offsets (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \&}]{pre\+\_\+offset,  }\item[{uint8\+\_\+t \&}]{nsym\+\_\+offset,  }\item[{uint8\+\_\+t \&}]{sym\+\_\+offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 Get the offsets from the packet header 
 \begin{DoxyParams}{Parameters}
@@ -362,11 +361,11 @@ Set the beacon string. Returns the size of the beacon string.
 \doxysubsubsection{\texorpdfstring{setCRC()}{setCRC()}}
 {\footnotesize\ttfamily uint16\+\_\+t Frame\+::set\+C\+RC (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-Sets the payload C\+RC by computing it based on the curent payload data. Also returns the computed C\+RC. \mbox{\Hypertarget{classFrame_ac25e10413d25b9eea2502c1c02d457e0}\label{classFrame_ac25e10413d25b9eea2502c1c02d457e0}} 
+Sets the payload C\+RC by computing it based on the curent payload data. Also returns the computed C\+RC. \mbox{\Hypertarget{classFrame_ad49bfde5dc426762cc1058b95052ca70}\label{classFrame_ad49bfde5dc426762cc1058b95052ca70}} 
 \index{Frame@{Frame}!setOffsets@{setOffsets}}
 \index{setOffsets@{setOffsets}!Frame@{Frame}}
 \doxysubsubsection{\texorpdfstring{setOffsets()}{setOffsets()}}
-{\footnotesize\ttfamily void Frame\+::set\+Offsets (\begin{DoxyParamCaption}\item[{const uint8\+\_\+t $\ast$}]{pre\+\_\+offset,  }\item[{const uint8\+\_\+t $\ast$}]{nsym\+\_\+offset,  }\item[{const uint8\+\_\+t $\ast$}]{sym\+\_\+offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily void Frame\+::set\+Offsets (\begin{DoxyParamCaption}\item[{const uint8\+\_\+t}]{pre\+\_\+offset,  }\item[{const uint8\+\_\+t}]{nsym\+\_\+offset,  }\item[{const uint8\+\_\+t}]{sym\+\_\+offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 Get the offsets in the packet header 
 \begin{DoxyParams}{Parameters}

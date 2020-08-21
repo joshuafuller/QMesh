@@ -145,10 +145,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>whiten</b> (const vec
 <tr class="separator:a383e2fb65096f4c57f37b48d3d74f07d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14c155e1ec94aa20bec722efaff3b25d"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#a14c155e1ec94aa20bec722efaff3b25d">codedSize</a> (void)</td></tr>
 <tr class="separator:a14c155e1ec94aa20bec722efaff3b25d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66f58470ee6679fb3a46ad7a43e3c5be"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#a66f58470ee6679fb3a46ad7a43e3c5be">getOffsets</a> (uint8_t *pre_offset, uint8_t *nsym_offset, uint8_t *sym_offset)</td></tr>
-<tr class="separator:a66f58470ee6679fb3a46ad7a43e3c5be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac25e10413d25b9eea2502c1c02d457e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#ac25e10413d25b9eea2502c1c02d457e0">setOffsets</a> (const uint8_t *pre_offset, const uint8_t *nsym_offset, const uint8_t *sym_offset)</td></tr>
-<tr class="separator:ac25e10413d25b9eea2502c1c02d457e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac93b8d79eb8cf07459bab3ef49ddb6e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#ac93b8d79eb8cf07459bab3ef49ddb6e8">getOffsets</a> (uint8_t &amp;pre_offset, uint8_t &amp;nsym_offset, uint8_t &amp;sym_offset)</td></tr>
+<tr class="separator:ac93b8d79eb8cf07459bab3ef49ddb6e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad49bfde5dc426762cc1058b95052ca70"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#ad49bfde5dc426762cc1058b95052ca70">setOffsets</a> (const uint8_t pre_offset, const uint8_t nsym_offset, const uint8_t sym_offset)</td></tr>
+<tr class="separator:ad49bfde5dc426762cc1058b95052ca70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1caeb909554201233a464f24e445a5e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#a1caeb909554201233a464f24e445a5e1">getRxStats</a> (int16_t &amp;rssi, int8_t &amp;snr, uint16_t &amp;rx_size)</td></tr>
 <tr class="separator:a1caeb909554201233a464f24e445a5e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f48959a7d7971ad25d25bf5c5237b22"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFrame.html#a6f48959a7d7971ad25d25bf5c5237b22">setRxStats</a> (const int16_t rssi, const int8_t snr, const uint16_t rx_size)</td></tr>
@@ -421,8 +421,8 @@ vector&lt; uint8_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>da
 
 </div>
 </div>
-<a id="a66f58470ee6679fb3a46ad7a43e3c5be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66f58470ee6679fb3a46ad7a43e3c5be">&#9670;&nbsp;</a></span>getOffsets()</h2>
+<a id="ac93b8d79eb8cf07459bab3ef49ddb6e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac93b8d79eb8cf07459bab3ef49ddb6e8">&#9670;&nbsp;</a></span>getOffsets()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -433,19 +433,19 @@ vector&lt; uint8_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>da
         <tr>
           <td class="memname">void Frame::getOffsets </td>
           <td>(</td>
-          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramtype">uint8_t &amp;&#160;</td>
           <td class="paramname"><em>pre_offset</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramtype">uint8_t &amp;&#160;</td>
           <td class="paramname"><em>nsym_offset</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramtype">uint8_t &amp;&#160;</td>
           <td class="paramname"><em>sym_offset</em>&#160;</td>
         </tr>
         <tr>
@@ -867,8 +867,8 @@ vector&lt; uint8_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>da
 
 </div>
 </div>
-<a id="ac25e10413d25b9eea2502c1c02d457e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac25e10413d25b9eea2502c1c02d457e0">&#9670;&nbsp;</a></span>setOffsets()</h2>
+<a id="ad49bfde5dc426762cc1058b95052ca70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad49bfde5dc426762cc1058b95052ca70">&#9670;&nbsp;</a></span>setOffsets()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -879,19 +879,19 @@ vector&lt; uint8_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>da
         <tr>
           <td class="memname">void Frame::setOffsets </td>
           <td>(</td>
-          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramtype">const uint8_t&#160;</td>
           <td class="paramname"><em>pre_offset</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramtype">const uint8_t&#160;</td>
           <td class="paramname"><em>nsym_offset</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramtype">const uint8_t&#160;</td>
           <td class="paramname"><em>sym_offset</em>&#160;</td>
         </tr>
         <tr>

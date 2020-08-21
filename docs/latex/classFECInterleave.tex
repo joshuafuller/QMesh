@@ -6,8 +6,7 @@
 
 
 
-Inheritance diagram for F\+E\+C\+Interleave\+:
-\nopagebreak
+Inheritance diagram for F\+E\+C\+Interleave\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -16,8 +15,7 @@ Inheritance diagram for F\+E\+C\+Interleave\+:
 \end{figure}
 
 
-Collaboration diagram for F\+E\+C\+Interleave\+:
-\nopagebreak
+Collaboration diagram for F\+E\+C\+Interleave\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -27,10 +25,49 @@ Collaboration diagram for F\+E\+C\+Interleave\+:
 \doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-size\+\_\+t \mbox{\hyperlink{classFECInterleave_a10d868d7b117193667d0406edec2ef59}{encode}} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\mbox{\Hypertarget{classFECInterleave_a635b44e0c48d4231b0c784b4d986f6ea}\label{classFECInterleave_a635b44e0c48d4231b0c784b4d986f6ea}} 
+{\bfseries F\+E\+C\+Interleave} (const int32\+\_\+t my\+\_\+msg\+\_\+len)
 \item 
-ssize\+\_\+t \mbox{\hyperlink{classFECInterleave_a7e45a890ff7061e0a5c3234d29ac8954}{decode}} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
+int32\+\_\+t \mbox{\hyperlink{classFECInterleave_a8f610cefb54ad7488b20731649087546}{encode}} (const vector$<$ uint8\+\_\+t $>$ \&msg, vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg)
+\item 
+int32\+\_\+t \mbox{\hyperlink{classFECInterleave_a110fd3393736f1a8cb0ff0acbce0e5ef}{decode}} (const vector$<$ uint8\+\_\+t $>$ \&enc\+\_\+msg, vector$<$ uint8\+\_\+t $>$ \&dec\+\_\+msg)
 \end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECInterleave_adde439ca0f67fbb55d60635ba26ccb7e}\label{classFECInterleave_adde439ca0f67fbb55d60635ba26ccb7e}} 
+void {\bfseries interleave\+Bits} (const vector$<$ uint8\+\_\+t $>$ \&bytes, vector$<$ uint8\+\_\+t $>$ \&bytes\+\_\+int)
+\item 
+\mbox{\Hypertarget{classFECInterleave_a9127d3baab06537309c34091a8d7a7a2}\label{classFECInterleave_a9127d3baab06537309c34091a8d7a7a2}} 
+void {\bfseries deinterleave\+Bits} (const vector$<$ uint8\+\_\+t $>$ \&bytes\+\_\+int, vector$<$ uint8\+\_\+t $>$ \&bytes\+\_\+deint)
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECInterleave_adfb70d1b22dda05d82e7930d6cfdeff6}\label{classFECInterleave_adfb70d1b22dda05d82e7930d6cfdeff6}} 
+static bool {\bfseries get\+Bit} (const vector$<$ uint8\+\_\+t $>$ \&bytes, const int32\+\_\+t pos)
+\item 
+\mbox{\Hypertarget{classFECInterleave_a0c693e204c3b7bc66e70dab517f0c02b}\label{classFECInterleave_a0c693e204c3b7bc66e70dab517f0c02b}} 
+static void {\bfseries set\+Bit} (const bool bit, const int32\+\_\+t pos, vector$<$ uint8\+\_\+t $>$ \&bytes)
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFECInterleave_a931277368ecd08c25e99d42aa32a8489}\label{classFECInterleave_a931277368ecd08c25e99d42aa32a8489}} 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>float {\bfseries bits\_f}\\
+\>float {\bfseries row\_f}\\
+\>float {\bfseries col\_f}\\
+\>int32\_t {\bfseries bits}\\
+\>int32\_t {\bfseries bytes}\\
+\>int32\_t {\bfseries row}\\
+\>int32\_t {\bfseries col}\\
+\>int32\_t {\bfseries pre\_bytes}\\
+\} {\bfseries int\_params}\\
+
+\end{tabbing}\end{DoxyCompactItemize}
 \doxysubsection*{Additional Inherited Members}
 
 
@@ -38,11 +75,11 @@ ssize\+\_\+t \mbox{\hyperlink{classFECInterleave_a7e45a890ff7061e0a5c3234d29ac89
 Derived class that just applies/removes the interleaving from the data. 
 
 \doxysubsection{Member Function Documentation}
-\mbox{\Hypertarget{classFECInterleave_a7e45a890ff7061e0a5c3234d29ac8954}\label{classFECInterleave_a7e45a890ff7061e0a5c3234d29ac8954}} 
+\mbox{\Hypertarget{classFECInterleave_a110fd3393736f1a8cb0ff0acbce0e5ef}\label{classFECInterleave_a110fd3393736f1a8cb0ff0acbce0e5ef}} 
 \index{FECInterleave@{FECInterleave}!decode@{decode}}
 \index{decode@{decode}!FECInterleave@{FECInterleave}}
 \doxysubsubsection{\texorpdfstring{decode()}{decode()}}
-{\footnotesize\ttfamily ssize\+\_\+t F\+E\+C\+Interleave\+::decode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{dec\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+{\footnotesize\ttfamily int F\+E\+C\+Interleave\+::decode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{dec\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
 
 Decode F\+E\+C-\/coded data. Returns the decoded data size, in bytes. 
 \begin{DoxyParams}{Parameters}
@@ -53,13 +90,17 @@ Decode F\+E\+C-\/coded data. Returns the decoded data size, in bytes.
 \end{DoxyParams}
 
 
-Reimplemented from \mbox{\hyperlink{classFEC_aec87f2d9c2305283d226197bf76891cf}{F\+EC}}.
+Reimplemented from \mbox{\hyperlink{classFEC_a04b574b82bebfb6388ee2274e17f0222}{F\+EC}}.
 
-\mbox{\Hypertarget{classFECInterleave_a10d868d7b117193667d0406edec2ef59}\label{classFECInterleave_a10d868d7b117193667d0406edec2ef59}} 
+
+
+Reimplemented in \mbox{\hyperlink{classFECRSV_a2eb1f75ca4d24879c3ec89b5358d8291}{F\+E\+C\+R\+SV}}, and \mbox{\hyperlink{classFECConv_a6bec28009aa10bbf34f13b3f3f9315fe}{F\+E\+C\+Conv}}.
+
+\mbox{\Hypertarget{classFECInterleave_a8f610cefb54ad7488b20731649087546}\label{classFECInterleave_a8f610cefb54ad7488b20731649087546}} 
 \index{FECInterleave@{FECInterleave}!encode@{encode}}
 \index{encode@{encode}!FECInterleave@{FECInterleave}}
 \doxysubsubsection{\texorpdfstring{encode()}{encode()}}
-{\footnotesize\ttfamily size\+\_\+t F\+E\+C\+Interleave\+::encode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+{\footnotesize\ttfamily int F\+E\+C\+Interleave\+::encode (\begin{DoxyParamCaption}\item[{const vector$<$ uint8\+\_\+t $>$ \&}]{msg,  }\item[{vector$<$ uint8\+\_\+t $>$ \&}]{enc\+\_\+msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
 
 Apply the \mbox{\hyperlink{classFEC}{F\+EC}} coding. Returns the encoded size, in bytes. 
 \begin{DoxyParams}{Parameters}
@@ -70,7 +111,11 @@ Apply the \mbox{\hyperlink{classFEC}{F\+EC}} coding. Returns the encoded size, i
 \end{DoxyParams}
 
 
-Reimplemented from \mbox{\hyperlink{classFEC_abc86f45390c50b3cd90cade73a137355}{F\+EC}}.
+Reimplemented from \mbox{\hyperlink{classFEC_adbb1c8a7c0b252bad75aab2bad731330}{F\+EC}}.
+
+
+
+Reimplemented in \mbox{\hyperlink{classFECRSV_ae380d2a02345562d7174ab7f8dc8d192}{F\+E\+C\+R\+SV}}, and \mbox{\hyperlink{classFECConv_a00c8d7fb39380c66a5038d288179587d}{F\+E\+C\+Conv}}.
 
 
 
