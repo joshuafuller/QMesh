@@ -4,7 +4,7 @@ history_buffer *history_buffer_create(unsigned int min_traceback_length,
                                       unsigned int traceback_group_length,
                                       unsigned int renormalize_interval, unsigned int num_states,
                                       shift_register_t highbit) {
-    history_buffer *buf = calloc(1, sizeof(history_buffer));
+    history_buffer *buf = calloc_ot(1, sizeof(history_buffer));
 
     *(unsigned int *)&buf->min_traceback_length = min_traceback_length;
     *(unsigned int *)&buf->traceback_group_length = traceback_group_length;
@@ -12,11 +12,11 @@ history_buffer *history_buffer_create(unsigned int min_traceback_length,
     *(unsigned int *)&buf->num_states = num_states;
     *(shift_register_t *)&buf->highbit = highbit;
 
-    buf->history = malloc(buf->cap * sizeof(uint8_t *));
+    buf->history = malloc_ot(buf->cap * sizeof(uint8_t *));
     for (unsigned int i = 0; i < buf->cap; i++) {
-        buf->history[i] = calloc(num_states, sizeof(uint8_t));
+        buf->history[i] = calloc_ot(num_states, sizeof(uint8_t));
     }
-    buf->fetched = malloc(buf->cap * sizeof(uint8_t));
+    buf->fetched = malloc_ot(buf->cap * sizeof(uint8_t));
 
     buf->index = 0;
     buf->len = 0;
@@ -29,11 +29,11 @@ history_buffer *history_buffer_create(unsigned int min_traceback_length,
 
 void history_buffer_destroy(history_buffer *buf) {
     for (unsigned int i = 0; i < buf->cap; i++) {
-        free(buf->history[i]);
+        free_ot(buf->history[i]);
     }
-    free(buf->history);
-    free(buf->fetched);
-    free(buf);
+    free_ot(buf->history);
+    free_ot(buf->fetched);
+    free_ot(buf);
 }
 
 void history_buffer_reset(history_buffer *buf) {

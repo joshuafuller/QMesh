@@ -29,8 +29,8 @@ static inline field_t field_create(field_operation_t primitive_poly) {
     // bits are in GF(2), compute alpha^val in GF(2^8)
     // exp should be of size 512 so that it can hold a "wraparound" which prevents some modulo ops
     // log should be of size 256. no wraparound here, the indices into this table are field elements
-    field_element_t *exp = malloc(512 * sizeof(field_element_t));
-    field_logarithm_t *log = malloc(256 * sizeof(field_logarithm_t));
+    field_element_t *exp = malloc_ot(512 * sizeof(field_element_t));
+    field_logarithm_t *log = malloc_ot(256 * sizeof(field_logarithm_t));
 
     // assume alpha is a primitive element, p(x) (primitive_poly) irreducible in GF(2^8)
     // addition is xor
@@ -62,8 +62,8 @@ static inline field_t field_create(field_operation_t primitive_poly) {
 }
 
 static inline void field_destroy(field_t field) {
-    free(*(field_element_t **)&field.exp);
-    free(*(field_element_t **)&field.log);
+    free_ot(*(field_element_t **)&field.exp);
+    free_ot(*(field_element_t **)&field.log);
 }
 
 static inline field_element_t field_add(field_t field, field_element_t l, field_element_t r) {

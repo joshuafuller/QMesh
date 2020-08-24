@@ -2,13 +2,13 @@
 
 polynomial_t polynomial_create(unsigned int order) {
     polynomial_t polynomial;
-    polynomial.coeff = malloc(sizeof(field_element_t) * (order + 1));
+    polynomial.coeff = malloc_ot(sizeof(field_element_t) * (order + 1));
     polynomial.order = order;
     return polynomial;
 }
 
 void polynomial_destroy(polynomial_t polynomial) {
-    free(polynomial.coeff);
+    free_ot(polynomial.coeff);
 }
 
 // if you want a full multiplication, then make res.order = l.order + r.order
@@ -215,14 +215,14 @@ polynomial_t polynomial_create_from_roots(field_t field, unsigned int nroots, fi
     unsigned int order = nroots;
     polynomial_t l;
     l.order = 1;
-    l.coeff = calloc(2, sizeof(field_element_t));
+    l.coeff = calloc_ot(2, sizeof(field_element_t));
 
     polynomial_t r[2];
     // we'll keep two temporary stores of rightside polynomial
     // each time through the loop, we take the previous result and use it as new rightside
     // swap back and forth (prevents the need for a copy)
-    r[0].coeff = calloc(order + 1, sizeof(field_element_t));
-    r[1].coeff = calloc(order + 1, sizeof(field_element_t));
+    r[0].coeff = calloc_ot(order + 1, sizeof(field_element_t));
+    r[1].coeff = calloc_ot(order + 1, sizeof(field_element_t));
     unsigned int rcoeffres = 0;
 
     // initialize the result with x + roots[0]
@@ -247,9 +247,9 @@ polynomial_t polynomial_create_from_roots(field_t field, unsigned int nroots, fi
     memcpy(poly.coeff, r[rcoeffres].coeff, (order + 1) * sizeof(field_element_t));
     poly.order = order;
 
-    free(l.coeff);
-    free(r[0].coeff);
-    free(r[1].coeff);
+    free_ot(l.coeff);
+    free_ot(r[0].coeff);
+    free_ot(r[1].coeff);
 
     return poly;
 }

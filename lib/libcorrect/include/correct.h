@@ -33,7 +33,7 @@ typedef uint8_t correct_convolutional_soft_t;
 struct correct_convolutional;
 typedef struct correct_convolutional correct_convolutional;
 
-/* correct_convolutional_create allocates and initializes an encoder/decoder for
+/** correct_convolutional_create allocates and initializes an encoder/decoder for
  * a convolutional code with the given parameters. This function expects that
  * poly will contain inv_rate elements. E.g., to create a conv. code instance
  * with rate 1/2, order 7 and polynomials 0161, 0127, call
@@ -44,13 +44,13 @@ typedef struct correct_convolutional correct_convolutional;
 correct_convolutional *correct_convolutional_create(size_t inv_rate, size_t order,
                                                     const correct_convolutional_polynomial_t *poly);
 
-/* correct_convolutional_destroy releases all resources associated
+/** correct_convolutional_destroy releases all resources associated
  * with conv. This pointer should not be used for further calls
  * after calling destroy.
  */
 void correct_convolutional_destroy(correct_convolutional *conv);
 
-/* correct_convolutional_encode_len returns the number of *bits*
+/** correct_convolutional_encode_len returns the number of *bits*
  * in a msg_len of given size, in *bytes*. In order to convert
  * this returned length to bytes, save the result of the length
  * modulo 8. If it's nonzero, then the length in bytes is
@@ -59,7 +59,7 @@ void correct_convolutional_destroy(correct_convolutional *conv);
  */
 size_t correct_convolutional_encode_len(correct_convolutional *conv, size_t msg_len);
 
-/* correct_convolutional_encode uses the given conv instance to
+/** correct_convolutional_encode uses the given conv instance to
  * encode a block of data and write it to encoded. The length of
  * encoded must be long enough to hold the resulting encoded length,
  * which can be calculated by calling correct_convolutional_encode_len.
@@ -73,7 +73,7 @@ size_t correct_convolutional_encode_len(correct_convolutional *conv, size_t msg_
 size_t correct_convolutional_encode(correct_convolutional *conv, const uint8_t *msg, size_t msg_len,
                                     uint8_t *encoded);
 
-/* correct_convolutional_decode uses the given conv instance to
+/** correct_convolutional_decode uses the given conv instance to
  * decode a block encoded by correct_convolutional_encode. This
  * call can cope with some bits being corrupted. This function
  * cannot detect if there are too many bits corrupted, however,
@@ -99,7 +99,7 @@ size_t correct_convolutional_encode(correct_convolutional *conv, const uint8_t *
 ssize_t correct_convolutional_decode(correct_convolutional *conv, const uint8_t *encoded,
                                      size_t num_encoded_bits, uint8_t *msg);
 
-/* correct_convolutional_decode_soft uses the given conv instance
+/** correct_convolutional_decode_soft uses the given conv instance
  * to decode a block encoded by correct_convolutional_encode and
  * then modulated/demodulated to 8-bit symbols. This function expects
  * that 1 is mapped to 255 and 0 to 0. An erased symbol should be
@@ -200,7 +200,7 @@ correct_reed_solomon *correct_reed_solomon_create(uint16_t primitive_polynomial,
                                                   uint8_t generator_root_gap,
                                                   size_t num_roots);
 
-/* correct_reed_solomon_encode uses the rs instance to encode
+/** correct_reed_solomon_encode uses the rs instance to encode
  * parity information onto a block of data. msg_length should be
  * no more than the payload size for one block e.g. no more
  * than 223 for a (255, 223) code. Shorter blocks will be encoded
@@ -217,7 +217,7 @@ correct_reed_solomon *correct_reed_solomon_create(uint16_t primitive_polynomial,
 ssize_t correct_reed_solomon_encode(correct_reed_solomon *rs, const uint8_t *msg, size_t msg_length,
                                     uint8_t *encoded);
 
-/* correct_reed_solomon_decode uses the rs instance to decode
+/** correct_reed_solomon_decode uses the rs instance to decode
  * a payload from a block containing payload and parity bytes.
  * This function can recover in spite of some bytes being corrupted.
  *
@@ -235,7 +235,7 @@ ssize_t correct_reed_solomon_encode(correct_reed_solomon *rs, const uint8_t *msg
 ssize_t correct_reed_solomon_decode(correct_reed_solomon *rs, const uint8_t *encoded,
                                     size_t encoded_length, uint8_t *msg);
 
-/* correct_reed_solomon_decode_with_erasures uses the rs
+/** correct_reed_solomon_decode_with_erasures uses the rs
  * instance to decode a payload from a block containing payload
  * and parity bytes. Additionally, the user can provide the
  * indices of bytes which have been suspected to be corrupted.
@@ -267,11 +267,17 @@ ssize_t correct_reed_solomon_decode_with_erasures(correct_reed_solomon *rs, cons
                                                   const uint8_t *erasure_locations,
                                                   size_t erasure_length, uint8_t *msg);
 
-/* correct_reed_solomon_destroy releases the resources
+/** correct_reed_solomon_destroy releases the resources
  * associated with rs. This pointer should not be
  * used for any functions after this call.
  */
 void correct_reed_solomon_destroy(correct_reed_solomon *rs);
+
+void *malloc_ot(size_t size);
+
+void *calloc_ot(size_t nmemb, size_t size);
+
+void free_ot(void *ptr);
 
 #ifdef __cplusplus
 }
