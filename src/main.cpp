@@ -35,10 +35,10 @@ Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL"); /// Outgoing
 Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
 Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
-Thread beacon_thread(osPriorityNormal, 4096, NULL, "BEACON"); /// Periodic beaconing of the node's ID
+Thread beacon_thread(osPriorityNormal, 512, NULL, "BEACON"); /// Periodic beaconing of the node's ID
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
-Thread button_thread(osPriorityNormal, 4096, NULL, "BUTTON"); /// Handles user button presses
-Thread oled_mon_thread(osPriorityNormal, 4096, NULL, "OLED-MON"); /// Outputs packet statistics to OLED display
+Thread button_thread(osPriorityNormal, 512, NULL, "BUTTON"); /// Handles user button presses
+Thread oled_mon_thread(osPriorityNormal, 1024, NULL, "OLED-MON"); /// Outputs packet statistics to OLED display
 Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 Afsk my_afsk;
