@@ -16,17 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import sys, os
 import time
 import json
 import base64
 import pika
-import time
 
-# Set the RTC on the board to the current system time.
-settings_rx = False
-cur_status = "None"
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')
@@ -34,12 +29,14 @@ def dbg_process(ch, method, properties, body):
     parsed_line["Type"] = ""
     try: parsed_line = json.loads(line)
     except Exception as e: pass
-    print(parsed_line)
+    #print(parsed_line)
     if parsed_line["Type"] == "Status":
         cur_status = parsed_line["Status"]
         print("Current status is " + parsed_line["Status"])
         print("Current time is " + str(parsed_line["Time"]))
-        ch.stop_consuming()
+        if parsed_line["Status"] == "MANAGEMENT":
+            print("Consuming done!\r\n")
+            ch.stop_consuming()
 
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
@@ -51,11 +48,17 @@ channel.queue_bind(exchange='board_output', queue=queue_name)
 channel.basic_consume(queue=queue_name, auto_ack=True, \
         on_message_callback=dbg_process)
 
-# Check what mode the board is currently in
-cur_status = "None"
-print("Now checking the status of the board...")
+# Reboot the board
 msg_req = {}
-msg_req["Type"] = "Get Status"
+msg_req["Type"] = "Reboot"
+msg_req_str = json.dumps(msg_req)
+msg_req_str += str("\n")
+channel.basic_publish(exchange='', routing_key='board_input', \
+        body=bytes(msg_req_str.encode('ascii')))
+channel.start_consuming()
+
+msg_req = {}
+msg_req["Type"] = "Stay in Management"
 msg_req_str = json.dumps(msg_req)
 msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
@@ -69,9 +72,12 @@ msg_req["Time"] = str(int(time.time()))
 msg_req_str = json.dumps(msg_req)
 msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
+		body=bytes(msg_req_str.encode('ascii')))
+print(msg_req_str)
+channel.basic_consume(queue=queue_name, auto_ack=True, \
+       on_message_callback=dbg_process)
 channel.start_consuming()
-
+	
 # Reboot the board
 msg_req = {}
 msg_req["Type"] = "Reboot"
@@ -79,5 +85,6 @@ msg_req_str = json.dumps(msg_req)
 msg_req_str += str("\n")
 channel.basic_publish(exchange='', routing_key='board_input', \
         body=bytes(msg_req_str.encode('ascii')))
-channel.start_consuming()
+
+
 
