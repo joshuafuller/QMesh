@@ -270,26 +270,16 @@ string beacon_msg;
  *  a beacon message.
  */
 void beacon_fn(void) {
+    debug_printf(DBG_INFO, "beacon set\r\n");
     auto beacon_frame_sptr = make_shared<Frame>();
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
     beacon_frame_sptr->setSender(radio_cb["Address"].get<int>());
-    int beacon_interval = radio_cb["Beacon Interval"].get<int>();
-    uint8_t stream_id = 0;
-    for(;;) {
-		if(rebooting) {
-			return;
-		}
-        beacon_frame_sptr->setStreamID(stream_id++);
-        auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
-        MBED_ASSERT(!unified_radio_evt_mail.full());
-        if(beacon_interval == -1) {
-            ThisThread::sleep_for(60000);
-        }
-        else {
-            enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-            ThisThread::sleep_for(beacon_interval*1000);
-        }
-    }
+    static uint8_t stream_id = 0;
+    beacon_frame_sptr->setStreamID(stream_id++);
+    auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
+    //MBED_ASSERT(!unified_radio_evt_mail.full());
+    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
+    debug_printf(DBG_INFO, "beacon set again\r\n");    
 }
 
 
@@ -299,15 +289,12 @@ extern Adafruit_SSD1306_I2c *oled;
  *  updates the OLED display with new packet status information.
  */
 void oled_mon_fn(void) {
-    for(;;) {
-        oled->clearDisplay();
-        oled->printf("PACKET STATISTICS\r\n");
-        oled->printf("Pkt Tx/Rx: %4d/%4d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
-        oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
-                        (float) total_rx_pkt.load())*100));
-        oled->printf("RSSI/SNR: %4d/%4d\r\n", last_rx_rssi.load(), last_rx_snr.load());
-        oled->display();
-        oled->display();
-        ThisThread::sleep_for(1000);
-    }
+    oled->clearDisplay();
+    oled->printf("PACKET STATISTICS\r\n");
+    oled->printf("Pkt Tx/Rx: %4d/%4d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
+    oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
+                    (float) total_rx_pkt.load())*100));
+    oled->printf("RSSI/SNR: %4d/%4d\r\n", last_rx_rssi.load(), last_rx_snr.load());
+    oled->display();
+    oled->display();
 }

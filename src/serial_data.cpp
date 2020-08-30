@@ -199,7 +199,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     dbg_printf_mutex.lock();
     va_list args;
     va_start(args, fmt);
-    char tmp_str[512];
+    static char tmp_str[512];
     vsprintf(tmp_str, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
@@ -224,7 +224,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     string dbg_str;
-    char dbg_str_data[sizeof(tmp_str)+32];
+    static char dbg_str_data[sizeof(tmp_str)+32];
     sprintf(dbg_str_data, "[+] %s -- %s", msg_type.c_str(), tmp_str);
     dbg_str = dbg_str_data;
     auto tx_str = make_shared<string>();
@@ -245,7 +245,7 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    char tmp_str[512];
+    static char tmp_str[512];
     vsprintf(tmp_str, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {

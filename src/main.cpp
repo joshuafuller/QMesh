@@ -35,11 +35,13 @@ Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL"); /// Outgoing
 Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
 Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
-Thread beacon_thread(osPriorityNormal, 512, NULL, "BEACON"); /// Periodic beaconing of the node's ID
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
 Thread button_thread(osPriorityNormal, 512, NULL, "BUTTON"); /// Handles user button presses
-Thread oled_mon_thread(osPriorityNormal, 1024, NULL, "OLED-MON"); /// Outputs packet statistics to OLED display
 Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
+
+EventQueue background_queue;
+Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
+
 
 Afsk my_afsk;
 
@@ -228,17 +230,22 @@ while(1);
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon thread\r\n");
-    beacon_thread.start(beacon_fn);
+    background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
+    int beacon_interval = radio_cb["Beacon Interval"].get<int>();
+    if(beacon_interval == -1) {
+        beacon_interval = 60000;
+    }
+    background_queue.call_every(beacon_interval*1000, beacon_fn);
 
     ThisThread::sleep_for(250);
  
     // Start the OLED monitoring thread
-    oled_mon_thread.start(oled_mon_fn);
+    background_queue.call_every(1000, oled_mon_fn);
 
     debug_printf(DBG_INFO, "Started all threads\r\n");
 
     for(;;) {
-        print_stats();
+//        print_stats();
         ThisThread::sleep_for(5000);
     }
 }
