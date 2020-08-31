@@ -34,11 +34,12 @@ protected:
         LED_BLINK
     } led_state;
     DigitalOut *pin;
-    Thread thread;
     bool blink_led;
     int blink_period;
 
 public:
+    EventQueue *evt_queue;
+
     /// Function resonsible for blinking the LED.
     void blinkFn(void);
     /**

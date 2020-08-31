@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 JSONSerial rx_json_ser, tx_json_ser;
+extern IndicatorLED led1, led2, led3;
 Thread tx_serial_thread(osPriorityNormal, 8192, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
 Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
 Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
@@ -93,6 +94,13 @@ void print_stats()
 static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
 int main()
 {
+    background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
+
+    // Set up the LEDs
+    led1.evt_queue = &background_queue;
+    led2.evt_queue = &background_queue;
+    led3.evt_queue = &background_queue;  
+
     oled_i2c.frequency(400000);
     oled_i2c.start();
     
@@ -226,11 +234,10 @@ while(1);
     
     debug_printf(DBG_INFO, "Time to chill...\r\n");
 
-    ThisThread::sleep_for(250);
+    ThisThread::sleep_for(250);  
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon thread\r\n");
-    background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
     int beacon_interval = radio_cb["Beacon Interval"].get<int>();
     if(beacon_interval == -1) {
         beacon_interval = 60000;
