@@ -43,43 +43,37 @@ void reboot_system(void) {
 }
 
 
-Semaphore btn_pressed_irq(0);
-void button_thread_fn(void) {
-    for(;;) {
-        btn_pressed_irq.acquire();
-        FILE *f = fopen("/fs/low_power.mode", "r");
-        if(f) {
-            fclose(f);
-            int remove_results = fs.remove("low_power.mode");
-            mbed_file_handle(STDIN_FILENO)->enable_input(true);
-            //gps_serial.enable_input(true);
-            oled->displayOn();
-            debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
-            ThisThread::sleep_for(1000);
-            reboot_system();
-        }
-        else {
-            FILE *f = fopen("/fs/low_power.mode", "w");
-            fprintf(f, "In low power mode\r\n");
-            fclose(f);
-            mbed_file_handle(STDIN_FILENO)->enable_input(false);   
-            rx_serial_thread.terminate();
-            //gps_serial.enable_input(false);
-            oled->displayOff();
-        }
-    } 
-}
+void button_thread_fn(void);
+void button_fn(void) {
+    FILE *f = fopen("/fs/low_power.mode", "r");
+    if(f) {
+        fclose(f);
+        int remove_results = fs.remove("low_power.mode");
+        mbed_file_handle(STDIN_FILENO)->enable_input(true);
+        //gps_serial.enable_input(true);
+        oled->displayOn();
+        debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
+        ThisThread::sleep_for(1000);
+        reboot_system();
+    }
+    else {
+        FILE *f = fopen("/fs/low_power.mode", "w");
+        fprintf(f, "In low power mode\r\n");
+        fclose(f);
+        mbed_file_handle(STDIN_FILENO)->enable_input(false);   
+        rx_serial_thread.terminate();
+        //gps_serial.enable_input(false);
+        oled->displayOff();
+    }
+} 
 
 PushButton::PushButton(PinName button) {
     was_pressed = false;
     btn = new InterruptIn(button);
-    btn->rise(callback(this, &PushButton::btnInterrupt));
 }
 
-void PushButton::btnInterrupt(void) {
-    was_pressed = true;
-    btn_pressed_irq.release();
-    oled->displayOff();
+void PushButton::SetQueue(EventQueue &evt_queue) {
+    btn->rise(evt_queue.event(button_fn));
 }
     
 bool PushButton::getPressed(void) {

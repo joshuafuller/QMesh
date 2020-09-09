@@ -19,11 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BUTTONS_HPP
 #define BUTTONS_HPP
 
+#include "mbed.h"
+
 extern volatile bool rebooting;
 
 void reboot_system(void);
-
-void button_thread_fn(void);
 
 /**
  * Class that provides useful functionality around the board's
@@ -33,13 +33,18 @@ class PushButton {
 protected:
     bool was_pressed;
     InterruptIn *btn;
-    Thread btn_thread;
 public:
     /**
      * Constructor.
      * @param button The pin controlled by the pushbutton.
      */
     PushButton(PinName button);
+
+    /**
+     * Set the event queue to be used.
+     * @param evt_queue reference to the EventQueue to be used.
+     */
+    void SetQueue(EventQueue &evt_queue);
 
     /// Interrupt handler that gets called on a button press.
     void btnInterrupt(void);

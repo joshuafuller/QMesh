@@ -37,7 +37,6 @@ Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming
 Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
-Thread button_thread(osPriorityNormal, 512, NULL, "BUTTON"); /// Handles user button presses
 Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 EventQueue background_queue;
@@ -122,7 +121,7 @@ int main()
 	}
 	led1.LEDSolid();
     auto push_button = new PushButton(USER_BUTTON);
-    button_thread.start(button_thread_fn);
+    push_button->SetQueue(background_queue);
 	
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
@@ -236,8 +235,10 @@ while(1);
 
     ThisThread::sleep_for(250);  
 
+    // Start the 
+
     // Start the beacon thread
-    debug_printf(DBG_INFO, "Starting the beacon thread\r\n");
+    debug_printf(DBG_INFO, "Starting the beacon\r\n");
     int beacon_interval = radio_cb["Beacon Interval"].get<int>();
     if(beacon_interval == -1) {
         beacon_interval = 60000;
@@ -246,10 +247,10 @@ while(1);
 
     ThisThread::sleep_for(250);
  
-    // Start the OLED monitoring thread
+    // Start the OLED monitoring
     background_queue.call_every(1000, oled_mon_fn);
 
-    debug_printf(DBG_INFO, "Started all threads\r\n");
+    debug_printf(DBG_INFO, "Started everything\r\n");
 
     for(;;) {
 //        print_stats();
