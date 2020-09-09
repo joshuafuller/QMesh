@@ -74,6 +74,13 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
 
     command(SSD1306_MEMORYMODE);
     command(0x00);                                  // 0x0 act like ks0108
+ 
+    // Attempt to fix weird screen offset problem
+    // I was hitting a problem where the start line was not going back to zero during reset
+    // Setting the page start and end addresses seems to fix that.
+    command(0x22); // Set page start and end addresses
+    command(0x00); // start at zero
+    command(0x07); // end at seven.
 
     command(SSD1306_SEGREMAP | 0x1);
 
