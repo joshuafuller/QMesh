@@ -226,6 +226,14 @@ while(1);
     init_radio();
     ThisThread::sleep_for(250);
 
+    // Send out a POCSAG message
+    debug_printf(DBG_INFO, "Sending a POCSAG pager message\r\n");
+    string pocsag_msg = "KG5VBY Testing is here";
+    while(1) {
+        send_pocsag_msg(pocsag_msg);
+        ThisThread::sleep_for(5000);
+    }
+
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread.start(mesh_protocol_fsm);

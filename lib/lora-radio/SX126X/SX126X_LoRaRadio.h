@@ -168,6 +168,12 @@ public:
                               uint8_t coderate, uint16_t preamble_len,
                               bool fix_len, bool crc_on, bool freq_hop_on,
                               uint8_t hop_period, bool iq_inverted, uint32_t timeout);
+    
+    /*
+     * Sets the transmission parameters for 1200bps POCSAG transmissions.
+     * @param power transmit power, in dBm.
+     */
+    virtual void set_tx_config_pocsag(int8_t power);
 
     /**
      *  Sends the buffer of size

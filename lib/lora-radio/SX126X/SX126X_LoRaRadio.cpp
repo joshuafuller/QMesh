@@ -817,6 +817,34 @@ void SX126X_LoRaRadio::set_max_payload_length(radio_modems_t modem, uint8_t max)
     }
 }
 
+void SX126X_LoRaRadio::set_tx_config_pocsag(int8_t power)
+{
+    _mod_params.modem_type = MODEM_FSK;
+    _mod_params.params.gfsk.bit_rate = 1200;
+
+    _mod_params.params.gfsk.modulation_shaping = MOD_SHAPING_OFF;
+    _mod_params.params.gfsk.bandwidth = get_fsk_bw_reg_val(9000);
+    _mod_params.params.gfsk.fdev = 4500;
+
+    _packet_params.modem_type = MODEM_FSK;
+    _packet_params.params.gfsk.preamble_length = (1 << 3); // convert byte into bit
+    _packet_params.params.gfsk.preamble_min_detect = RADIO_PREAMBLE_DETECTOR_OFF;
+    _packet_params.params.gfsk.syncword_length = 0 << 3; // convert byte into bit
+    _packet_params.params.gfsk.addr_comp = RADIO_ADDRESSCOMP_FILT_OFF;
+    _packet_params.params.gfsk.header_type = RADIO_PACKET_FIXED_LENGTH;
+
+    _packet_params.params.gfsk.crc_length = RADIO_CRC_OFF;
+    _packet_params.params.gfsk.whitening_mode = RADIO_DC_FREE_OFF;
+
+    set_modem(MODEM_FSK);
+
+    write_to_register(REG_LR_SYNCWORDBASEADDRESS, (uint8_t *) sync_word, 8);
+    set_whitening_seed(0x01FF);
+
+    _tx_power = power;
+    _tx_timeout = 10000;
+}
+
 void SX126X_LoRaRadio::set_tx_config(radio_modems_t modem,
                                      int8_t power,
                                      uint32_t fdev,
@@ -1058,6 +1086,7 @@ void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
                       IRQ_RADIO_NONE );
 
     set_modulation_params(&_mod_params);
+    _packet_params.params.gfsk.payload_length = size;
     set_packet_params(&_packet_params);
 
     write_fifo(buffer, size);
@@ -1103,7 +1132,6 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
 
     set_modulation_params(&_mod_params);
     set_packet_params(&_packet_params);
-
     write_fifo(buffer, size);
     uint8_t buf[3];
 

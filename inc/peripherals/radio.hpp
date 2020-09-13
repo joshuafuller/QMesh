@@ -51,6 +51,9 @@ extern MbedJSONValue radio_cb;
 // Main thread for working with the LoRa radio
 extern Thread radio_thread;
 
+// Send out a POCSAG pager message
+void send_pocsag_msg(string &msg);
+
 // Initialize the radio
 void init_radio(void);
 
