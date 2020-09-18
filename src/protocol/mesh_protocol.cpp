@@ -71,6 +71,7 @@ static enum {
     WAIT_FOR_EVENT,
     TX_PACKET,
     RETRANSMIT_PACKET,
+    TX_POCSAG
 } state = WAIT_FOR_EVENT;
 
 RadioTiming radio_timing;
@@ -121,6 +122,7 @@ void mesh_protocol_fsm(void) {
     int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
     int my_addr = radio_cb["Address"].get<int>();
     int timing_off_inc = radio_cb["Number Offsets"].get<int>();
+    int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
     static mt19937 rand_gen(my_addr);
     int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
     static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
@@ -144,7 +146,15 @@ void mesh_protocol_fsm(void) {
                 radio.set_channel(radio_freq);
                 radio.receive();
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
-                if(radio_event->evt_enum == TX_FRAME_EVT) {
+                if(radio_event->evt_enum == TX_POCSAG_EVT) {
+                    debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
+                    radio.set_channel(pocsag_tx_freq);
+                    send_pocsag_msg(radio_event->pocsag_msg);
+                    tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                    init_radio();
+                    state = WAIT_FOR_EVENT;
+                }
+                else if(radio_event->evt_enum == TX_FRAME_EVT) {
                     tx_frame_sptr = radio_event->frame;
                     tx_frame_sptr->fec = fec;
                     radio.set_channel(freq_dist(rand_gen));
@@ -266,8 +276,7 @@ void mesh_protocol_fsm(void) {
 
 string beacon_msg;
 /**
- * Function called by the beacon thread. Periodically queues up for transmission
- *  a beacon message.
+ * Periodically queues up for transmission a beacon message.
  */
 void beacon_fn(void) {
     debug_printf(DBG_INFO, "beacon set\r\n");
@@ -280,6 +289,16 @@ void beacon_fn(void) {
     //MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
     debug_printf(DBG_INFO, "beacon set again\r\n");    
+}
+
+/**
+ * Periodically queues up for transmission a beacon message.
+ */
+void beacon_pocsag_fn(void) {
+    debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
+    string pocsag_msg = "KG5VBY POCSAG Test Message\r\n";
+    auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
+    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);   
 }
 
 

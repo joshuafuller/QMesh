@@ -107,6 +107,10 @@ void init_radio(void) {
     debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_pwr);    
     int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
     debug_printf(DBG_INFO, "Radio Preamble Length is %d\r\n", radio_preamble_len); 
+    int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
+    debug_printf(DBG_INFO, "POCSAG Frequency is %d\r\n", pocsag_tx_freq); 
+    int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
+    debug_printf(DBG_INFO, "POCSAG Beacon Interval is %d\r\n", pocsag_beacon_interval);
     string fec_algo = radio_cb["FEC Algorithm"].get<string>();
     debug_printf(DBG_INFO, "FEC algorithm is %s\r\n", fec_algo.c_str()); 
     if(fec_algo == "None") {
@@ -174,6 +178,11 @@ void init_radio(void) {
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {
     evt_enum = my_evt_enum;
+}
+
+RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, string &my_pocsag_msg) {
+    evt_enum = my_evt_enum;
+    pocsag_msg = my_pocsag_msg;
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<Timer> my_tmr_sptr) {

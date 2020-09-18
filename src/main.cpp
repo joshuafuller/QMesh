@@ -226,6 +226,7 @@ while(1);
     init_radio();
     ThisThread::sleep_for(250);
 
+#if 0
     // Send out a POCSAG message
     debug_printf(DBG_INFO, "Sending a POCSAG pager message\r\n");
     string pocsag_msg = "KG5VBY Testing is here";
@@ -233,6 +234,7 @@ while(1);
         send_pocsag_msg(pocsag_msg);
         ThisThread::sleep_for(5000);
     }
+#endif
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
@@ -243,8 +245,6 @@ while(1);
 
     ThisThread::sleep_for(250);  
 
-    // Start the 
-
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
     int beacon_interval = radio_cb["Beacon Interval"].get<int>();
@@ -252,6 +252,13 @@ while(1);
         beacon_interval = 60000;
     }
     background_queue.call_every(beacon_interval*1000, beacon_fn);
+
+    debug_printf(DBG_INFO, "Starting the POCSAG beacon\r\n");
+    int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
+    if(pocsag_beacon_interval == -1) {
+        pocsag_beacon_interval = 60000;
+    }
+    background_queue.call_every(pocsag_beacon_interval*1000, beacon_pocsag_fn);
 
     ThisThread::sleep_for(250);
  

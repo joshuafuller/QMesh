@@ -48,7 +48,7 @@ settings["Payload Length"] = len(beacon_str)
 #settings["FEC Algorithm"] = "None"
 settings["FEC Algorithm"] = "RSV"
 settings["Conv Rate"] = 2
-settings["Conv Order"] = 7
+settings["Conv Order"] = 9
 settings["Reed-Solomon Number Roots"] = 8
 settings["TX Power"] = tx_power
 settings["CW Test Mode"] = 0 # 1 to enable CW test mode
@@ -56,6 +56,8 @@ settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
 settings["Test FEC"] = 0 # 1 to enable anf FEC test
 settings["Number Offsets"] = 4
 settings["Has GPS"] = 0
+settings["POCSAG Frequency"] = 439987500
+settings["POCSAG Beacon Interval"] = 10
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

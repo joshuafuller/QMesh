@@ -41,7 +41,7 @@ extern string beacon_msg;
  * Core function that periodically sends out a beacon message.
  */
 void beacon_fn(void);
-
+void beacon_pocsag_fn(void);
 
 void oled_mon_fn(void);
 

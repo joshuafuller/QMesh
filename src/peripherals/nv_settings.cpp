@@ -112,6 +112,8 @@ void load_settings_from_flash(void) {
         radio_cb["Test FEC"] = 0;
         radio_cb["Number Offsets"] = 0;
         radio_cb["Has GPS"] = 0;
+        radio_cb["POCSAG Frequency"] = 439987500;
+        radio_cb["POCSAG Beacon Interval"] = 600;
         string settings_str = radio_cb.serialize();
         debug_printf(DBG_INFO, "%s %d\r\n", settings_str.c_str(), settings_str.size());
         fwrite(settings_str.c_str(), 1, settings_str.size(), f);   
@@ -146,6 +148,8 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
                 radio_cb["Number Offsets"].get<int>());
     debug_printf(DBG_INFO, "Has a GPS: %d\r\n", radio_cb["Has GPS"].get<int>());
+    debug_printf(DBG_INFO, "POCSAG frequency %d\r\n", radio_cb["POCSAG Frequency"].get<int>());
+    debug_printf(DBG_INFO, "POCSAG Beacon Interval %d\r\n", radio_cb["POCSAG Beacon Interval"].get<int>());
 
     // Check if low-power mode is set. If so, delete the UART
     rx_serial_thread.start(rx_serial_thread_fn);

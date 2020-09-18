@@ -374,6 +374,7 @@ typedef enum {
     TX_TIMEOUT_EVT,
     RX_TIMEOUT_EVT,
     RX_ERROR_EVT,
+    TX_POCSAG_EVT,
 } radio_evt_enum_t;
 
 class RadioEvent {
@@ -384,8 +385,11 @@ public:
     int8_t snr;
     shared_ptr<vector<uint8_t>> buf;
     shared_ptr<Frame> frame;
+    string pocsag_msg;
 
     RadioEvent(const radio_evt_enum_t my_evt_enum);
+
+    RadioEvent(const radio_evt_enum_t my_evt_enum, string &pocsag_msg);
 
     RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<Timer> my_tmr);
 
