@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mbed.h"
-#include "MbedJSONValue.h"
+#include "MbedJSONValue.hpp"
 #include "peripherals.hpp"
 #include "serial_data.hpp"
 #include <string>

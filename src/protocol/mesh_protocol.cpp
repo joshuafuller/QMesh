@@ -146,12 +146,16 @@ void mesh_protocol_fsm(void) {
                 radio.set_channel(radio_freq);
                 radio.receive();
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
+                debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
                     debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
+                    radio.standby();
+                    led2.LEDFastBlink();
                     radio.set_channel(pocsag_tx_freq);
                     send_pocsag_msg(radio_event->pocsag_msg);
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                    init_radio();
+                    reinit_radio();
+                    led2.LEDOff();
                     state = WAIT_FOR_EVENT;
                 }
                 else if(radio_event->evt_enum == TX_FRAME_EVT) {
@@ -288,7 +292,7 @@ void beacon_fn(void) {
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
     //MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-    debug_printf(DBG_INFO, "beacon set again\r\n");    
+    debug_printf(DBG_INFO, "beacon set again\r\n");   
 }
 
 /**

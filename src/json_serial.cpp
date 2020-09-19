@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "json_serial.hpp"
 #include "mbed.h"
-#include "MbedJSONValue.h"
+#include "MbedJSONValue.hpp"
 #include <string>
 #include <memory>
 #include <fstream>

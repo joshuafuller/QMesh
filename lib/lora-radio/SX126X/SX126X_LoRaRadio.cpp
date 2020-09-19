@@ -842,7 +842,7 @@ void SX126X_LoRaRadio::set_tx_config_pocsag(int8_t power)
     set_whitening_seed(0x01FF);
 
     _tx_power = power;
-    _tx_timeout = 10000;
+    _tx_timeout = 0;
 }
 
 void SX126X_LoRaRadio::set_tx_config(radio_modems_t modem,

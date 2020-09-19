@@ -1,10 +1,13 @@
-#include "MbedJSONValue.h"
+#include "MbedJSONValue.hpp"
 
-# include <stdlib.h>
-# include <stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <mutex>
+#include "mbed.h"
 
 // Clean up
 void MbedJSONValue::clean() {
+    mtx.lock();
     switch (_type) {
         case TypeString:
             delete _value.asString;
@@ -26,6 +29,8 @@ void MbedJSONValue::clean() {
     }
     _type = TypeNull;
     _type = TypeNull;
+
+    mtx.unlock();
 }
 
 bool MbedJSONValue::hasMember(char * name)
@@ -100,6 +105,7 @@ std::string MbedJSONValue::to_str(){
 
 
 void MbedJSONValue::serialize(std::back_insert_iterator<std::string> oi) {
+    mtx.lock();
     switch (_type) {
         case TypeString:
             serialize_str(*_value.asString, oi);
@@ -130,11 +136,14 @@ void MbedJSONValue::serialize(std::back_insert_iterator<std::string> oi) {
             copy(to_str(), oi);
             break;
     }
+
+    mtx.unlock();
 }
 
 
 
 MbedJSONValue& MbedJSONValue::operator[](int i) {
+    mtx.lock();
     _type = TypeArray;
     if (i < NB_TOKEN && index_array == i ) {
 #ifdef DEBUG
@@ -142,16 +151,20 @@ MbedJSONValue& MbedJSONValue::operator[](int i) {
 #endif
         array[i] = new MbedJSONValue();
         index_array++;
+        mtx.unlock();
         return *(array[i]);
     }
     if (i < NB_TOKEN && index_array > i)
+        mtx.unlock();
         return *(array[i]);
 
     //if the user is not doing something wrong, this code is never executed!!
+    mtx.unlock();
     return *(new MbedJSONValue());
 }
 
 MbedJSONValue& MbedJSONValue::operator[](std::string k) {
+    mtx.lock();
     _type = TypeObject;
     for (int i = 0; i < index_token; i++) {
 #ifdef DEBUG
@@ -163,6 +176,7 @@ MbedJSONValue& MbedJSONValue::operator[](std::string k) {
 #ifdef DEBUG
             printf("token found: %d\r\n", i);
 #endif
+            mtx.unlock();
             return *(token[i]);
         }
     }
@@ -173,6 +187,7 @@ MbedJSONValue& MbedJSONValue::operator[](std::string k) {
     token_name[index_token] = new std::string(k);
     token[index_token] = new MbedJSONValue();
     index_token++;
+    mtx.unlock();
     return *(token[index_token - 1]);
 }
 
@@ -198,6 +213,7 @@ MbedJSONValue& MbedJSONValue::operator[](std::string k) const
 
 // Operators
 MbedJSONValue& MbedJSONValue::operator=(MbedJSONValue const& rhs) {
+    mtx.lock();
     if (this != &rhs) {
         clean();
         _type = rhs._type;
@@ -224,6 +240,7 @@ MbedJSONValue& MbedJSONValue::operator=(MbedJSONValue const& rhs) {
                 break;
         }
     }
+    mtx.unlock();
     return *this;
 }
 

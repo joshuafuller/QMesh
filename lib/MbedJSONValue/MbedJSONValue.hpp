@@ -38,6 +38,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mutex>
+#include "mbed.h"
 
 /** MbedJSONValue class
  *
@@ -100,7 +102,7 @@
  */
 class MbedJSONValue {
 public:
-
+    Mutex mtx;
     /**
     * \enum Type
     * \brief All types which can be used

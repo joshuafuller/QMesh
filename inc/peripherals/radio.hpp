@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 #include <vector>
 #include "SX126X_LoRaRadio.h"
-#include "MbedJSONValue.h"
+#include "MbedJSONValue.hpp"
 #include "serial_data.hpp"
 
 extern SX126X_LoRaRadio radio;
@@ -56,6 +56,8 @@ void send_pocsag_msg(string &msg);
 
 // Initialize the radio
 void init_radio(void);
+void reinit_radio(void);
+void reinit_radio_pocsag(void);
 
 // Test functions, one for transmitting and one for receiving
 #define RX_DONE_SIGNAL 0xAB

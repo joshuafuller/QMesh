@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
 #include "QSPIFBlockDevice.h"
-#include "MbedJSONValue.h"
+#include "MbedJSONValue.hpp"
 
 extern QSPIFBlockDevice bd;
 extern LittleFileSystem fs;
