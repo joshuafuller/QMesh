@@ -67,13 +67,16 @@ def input_thread_fn():
 if __name__ == "__main__":
     # Open the serial port
     print("Opening serial port...")
-    serial_port = sys.argv[1]
+    serial_ports = sys.argv[1:]
     while True:
         try:
-            ser = serial.Serial(serial_port, baudrate=230400)
+            print("Trying serial port " + str(serial_ports[0]))
+            ser = serial.Serial(serial_ports[0], baudrate=230400)
             break
         except serial.serialutil.SerialException:
             print("Failed to open port. Trying again in 1s...")
+            if len(serial_ports) > 1:
+                serial_ports = serial_ports[1:] + serial_ports[0:0]
             time.sleep(1)
 
     input_thread = threading.Thread(target=input_thread_fn)
