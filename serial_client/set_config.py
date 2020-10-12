@@ -57,7 +57,7 @@ settings["Test FEC"] = 0 # 1 to enable anf FEC test
 settings["Number Offsets"] = 4
 settings["Has GPS"] = 0
 settings["POCSAG Frequency"] = 439987500
-settings["POCSAG Beacon Interval"] = 10
+settings["POCSAG Beacon Interval"] = 120
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

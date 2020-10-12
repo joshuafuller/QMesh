@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # QMesh
 # Copyright (C) 2019 Daniel R. Fay
 
@@ -16,65 +18,78 @@
 
 
 import serial
-import sys, os
-import logging
-import json
-import base64
+import pika
+import sys
 import time
+import threading
+
+ser = None
+params = pika.ConnectionParameters('127.0.0.1', heartbeat=600, 
+        blocked_connection_timeout=300)
+
+# Callback whenever new received messages come in from the broker
+def input_cb(ch, method, properties, body):
+    global ser
+    print(body)
+    ser.write(body)
 
 
-# Open the serial port
-serial_port = sys.argv[1]
+def output_thread_fn():
+    # Set up the RabbitMQ connections
+    connection = pika.BlockingConnection(params)
+    channel = connection.channel()
+    channel.queue_declare(queue='board_input')
+    channel.basic_consume(queue='board_input', auto_ack=True, \
+                on_message_callback=input_cb)
+    channel.start_consuming()
 
-while True:
-	try: 
-		ser = serial.Serial(serial_port, baudrate=921600)
-		break
-	except serial.serialutil.SerialException:
-		print("Failed to open port. Trying again in 1s...")
-		time.sleep(1)
 
-while True:
-    try:
-        try: line = ser.readline().decode('utf-8')
-        except Exception as e: continue
-    except serial.serialutil.SerialException:
-        print("Lost serial connection. Reconnecting in 1s...")
-        time.sleep(1)
-        try: ser = serial.Serial(serial_port, baudrate=921600)
+def input_thread_fn():
+    connection = pika.BlockingConnection(params)
+    channel = connection.channel()
+    channel.exchange_declare(exchange='board_output', exchange_type='fanout')
+    global ser
+    while True:
+        try:
+            line = ser.readline();
         except serial.serialutil.SerialException:
-            time.sleep(1)
+            try:
+                ser = serial.Serial(serial_port, baudrate=230400)
+            except serial.serialutil.SerialException:
+                print("Failed to open port. Trying again in 1s...")
+                time.sleep(1)
             continue
-			
-    parsed_line = {}
-    parsed_line["Type"] = ""
-    try: 
-        parsed_line = json.loads(line)
-    except Exception as e:
-        print("\033[1;31;40m" + str(line[:-2]) + "\033[1;37;40m")
-    if parsed_line["Type"] == "Debug Msg":
-        try: 
-            msg = base64.b64decode(parsed_line["Message"]).decode('utf-8')
-            print("\033[1;32;40m" + str(msg[:-2]) + "\033[1;37;40m")
-        except Exception as e: pass
-    elif parsed_line["Type"] == "Status":
-        status = parsed_line["Status"]
-        value = parsed_line["Value"]
-        print("Status Msg: %s, %s" % (status, value))
-    elif parsed_line["Type"] == "Settings":
-        freq = parsed_line["Freq"]
-        sf = parsed_line["SF"]
-        bw = parsed_line["BW"]
-        cr = parsed_line["CR"]
-        mode = parsed_line["Mode"]
-    elif parsed_line["Type"] == "Frame":
-        frame["HDR Pkt Type"] = parsed_line["HDR Pkt Type"]
-        frame["HDR Stream ID"] = parsed_line["HDR Stream ID"]
-        frame["HDR TTL"] = parsed_line["HDR TTL"]
-        frame["HDR Sender"] = parsed_line["HDR Sender"]
-        frame["HDR Pre Offset"] = parsed_line["HDR Pre Offset"]
-        frame["HDR Num Sym Offset"] = parsed_line["HDR Num Sym Offset"]
-        frame["HDR Sym Offset"] = parsed_line["HDR Sym Offset"]
-        frame["Header CRC"] = parsed_line["Header CRC"]
-        frame["Data CRC"] = parsed_line["Data CRC"]
-        frame["Data Payload"] = base64.base64decode(frame["Data Payload"])
+
+        print(line)
+        channel.basic_publish(exchange='board_output', routing_key='', body=line)
+
+
+if __name__ == "__main__":
+    # Open the serial port
+    print("Opening serial port...")
+    serial_ports = sys.argv[1:]
+    while True:
+        try:
+            print("Trying serial port " + str(serial_ports[0]))
+            ser = serial.Serial(serial_ports[0], baudrate=230400)
+            break
+        except serial.serialutil.SerialException:
+            print("Failed to open port. Trying again in 1s...")
+            if len(serial_ports) > 1:
+                serial_ports = serial_ports[1:] + serial_ports[0:0]
+            time.sleep(1)
+
+    input_thread = threading.Thread(target=input_thread_fn)
+    input_thread.start()
+    output_thread = threading.Thread(target=output_thread_fn)
+    output_thread.start()
+
+    while True: 
+        try: time.sleep(1)
+        except (KeyboardInterrupt, SystemExit):
+            input_thread.join()
+            output_thread.join()
+            sys.exit(0)
+
+
+
