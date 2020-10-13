@@ -76,7 +76,7 @@ if __name__ == "__main__":
         except serial.serialutil.SerialException:
             print("Failed to open port. Trying again in 1s...")
             if len(serial_ports) > 1:
-                serial_ports = serial_ports[1:] + serial_ports[0:0]
+                serial_ports = serial_ports[1:] + [serial_ports[0]]
             time.sleep(1)
 
     input_thread = threading.Thread(target=input_thread_fn)
