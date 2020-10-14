@@ -42,6 +42,7 @@ Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS rec
 EventQueue background_queue;
 Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
 
+time_t boot_timestamp;
 
 Afsk my_afsk;
 
@@ -93,6 +94,8 @@ void print_stats()
 static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
 int main()
 {
+    time(&boot_timestamp);
+
     background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
 
     // Set up the LEDs
@@ -135,8 +138,10 @@ int main()
     send_status();
     printf("Hello\r\n");
 
+#if 0
     // Set up the RDA1846 module control
     DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);
+#endif
 
     // Initialize the LibAPRS components
     debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
