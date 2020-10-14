@@ -149,7 +149,9 @@ Ticker sample_timer;
 void dac_isr(void) {
     uint8_t sample = AFSK_dac_isr(AFSK_modem);
     uint16_t sample_shifted = (uint16_t) sample << 8;
+#if defined (TARGET_NUCLEO_F746ZG) || defined (TARGET_NUCLEO_H743ZI2)
     audio_out.write_u16(sample_shifted);
+#endif
 }
 
  
