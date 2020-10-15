@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <algorithm>
 #include <atomic>
+#include <sstream>
 #include "Adafruit_SSD1306.h"
 #include "LoRaRadio.h"
 #include "mesh_protocol.hpp"
@@ -282,8 +283,12 @@ string beacon_msg;
 /**
  * Periodically queues up for transmission a beacon message.
  */
+extern time_t boot_timestamp;
 void beacon_fn(void) {
     debug_printf(DBG_INFO, "beacon set\r\n");
+    time_t cur_time;
+    time(&cur_time);
+    time_t uptime = cur_time - boot_timestamp;
     auto beacon_frame_sptr = make_shared<Frame>();
     beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
     beacon_frame_sptr->setSender(radio_cb["Address"].get<int>());
@@ -300,7 +305,25 @@ void beacon_fn(void) {
  */
 void beacon_pocsag_fn(void) {
     debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
-    string pocsag_msg = "KG5VBY POCSAG Test Message\r\n";
+    time_t cur_time;
+    time(&cur_time);
+    time_t uptime = cur_time - boot_timestamp;
+    stringstream msg;
+    int uptime_rem = uptime;
+    int uptime_d = uptime_rem / 86400;
+    uptime_rem %= 86400;
+    int uptime_h = uptime_rem / 3600;
+    uptime_rem %= 3600;
+    int uptime_m = uptime_rem / 60;
+    uptime_rem %= 60;
+    int uptime_s = uptime_rem;
+    msg << "KG5VBY: " << "SF=" << radio_cb["SF"].get<int>() << ", " << \
+        "BW=" << radio_cb["BW"].get<int>() << ", " << \
+        "F=" << radio_cb["Frequency"].get<int>() << ", " << \
+        "Up=" << uptime_d << "d:" << uptime_h << "h:" << uptime_m << "m:" << uptime_s << "s" << \
+        "\r\n";
+    //string pocsag_msg = "KG5VBY POCSAG Test Message\r\n";
+    string pocsag_msg = msg.str();
     auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);   
 }

@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "MbedJSONValue.hpp"
 
 
@@ -187,10 +188,85 @@ void log_boot(void) {
 	fclose(f);
 }
 
+
+FILE *open_logfile(void) {
+    // Go through directory, figure out how many files there are
+    DIR *log_dir = opendir("/fs/log");
+    MBED_ASSERT(log_dir);
+    int logfile_count = 0;
+    while(readdir(log_dir) != NULL) {
+        logfile_count += 1;
+    }
+    // We keep a maximum of 12 logfiles
+    if(logfile_count > 11) {
+        logfile_count = 0;
+    }
+    stringstream logfile_name;
+    logfile_name << "/fs/log/logfile" << logfile_count << ".json";
+    // If the file is 1 MiB or larger, open a new file instead
+    struct stat logfile_statbuf;
+    fs.stat(logfile_name.str().c_str(), &logfile_statbuf);
+    debug_printf(DBG_INFO, "We got this far %s\r\n", logfile_name.str().c_str());
+    FILE *f;
+    if(logfile_statbuf.st_size > LOGFILE_SIZE) {
+        debug_printf(DBG_INFO, "Starting new logfile: %d\r\n", logfile_count);
+        logfile_count += 1;
+        if(logfile_count > 11) {
+            logfile_count = 0;
+        }
+        logfile_name.str(string());
+        logfile_name << "/fs/log/logfile" << logfile_count << ".json";
+        debug_printf(DBG_INFO, logfile_name.str().c_str());
+	    f = fopen(logfile_name.str().c_str(), "w");
+        switch(errno) {
+            case EACCES:  debug_printf(DBG_INFO, "EACCES\r\n"); break;
+            case EBADF:   debug_printf(DBG_INFO, "EBADF\r\n"); break;
+            case EMFILE:  debug_printf(DBG_INFO, "EMFILE\r\n"); break;
+            case ENFILE:  debug_printf(DBG_INFO, "ENFILE\r\n"); break;
+            case ENOENT:  debug_printf(DBG_INFO, "ENOENT\r\n"); break;
+            case ENOMEM:  debug_printf(DBG_INFO, "ENOMEM\r\n"); break;
+            case ENOTDIR: debug_printf(DBG_INFO, "ENOTDIR\r\n"); break;
+            default: break;
+        }
+        debug_printf(DBG_INFO, "Error is %d\r\n", errno);
+        ThisThread::sleep_for(2000);
+        MBED_ASSERT(f);
+    }
+    else {
+        logfile_name << "/fs/log/logfile" << logfile_count << ".json";
+	    f = fopen(logfile_name.str().c_str(), "a+");
+        MBED_ASSERT(f);
+    }
+    debug_printf(DBG_INFO, "Logfile successfully opened\r\n");
+    return f;
+}
+
+
 void nv_log_fn(void) {
-	FILE *f = fopen("/fs/logfile.json", "a+");
-    MBED_ASSERT(f);
-    int write_count = 0;
+    DIR *log_dir = opendir("/fs/log");
+    if(!log_dir && errno == ENOENT) {
+        debug_printf(DBG_INFO, "Log directory does not exist. Creating...\r\n");
+        if(!mkdir("/fs/log", 777)) {
+            MBED_ASSERT(false);
+        }
+        log_dir = opendir("/fs/log");
+        if(!log_dir) {
+            switch(errno) {
+                case EACCES:  debug_printf(DBG_INFO, "EACCES\r\n"); break;
+                case EBADF:   debug_printf(DBG_INFO, "EBADF\r\n"); break;
+                case EMFILE:  debug_printf(DBG_INFO, "EMFILE\r\n"); break;
+                case ENFILE:  debug_printf(DBG_INFO, "ENFILE\r\n"); break;
+                case ENOENT:  debug_printf(DBG_INFO, "ENOENT\r\n"); break;
+                case ENOMEM:  debug_printf(DBG_INFO, "ENOMEM\r\n"); break;
+                case ENOTDIR: debug_printf(DBG_INFO, "ENOTDIR\r\n"); break;
+                default: break;
+            }
+            MBED_ASSERT(false);
+        }
+    }
+    debug_printf(DBG_INFO, "Now opening the logfile\r\n");
+    debug_printf(DBG_INFO, "First set\r\n");
+    FILE *f = open_logfile();
     string comb_str;
     for(;;) {
         // Write the latest frame to disk
@@ -221,6 +297,6 @@ void nv_log_fn(void) {
         fwrite(comb_str.c_str(), 1, comb_str.size(), f);
         comb_str.clear();
         fclose(f);
-        f = fopen("/fs/logfile.json", "a+");
+        f = open_logfile();
     }
 }

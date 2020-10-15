@@ -181,8 +181,8 @@ void SX126X_LoRaRadio::dio1_irq_isr()
         MBED_ASSERT(false);
     }
 #else
-    cur_tmr->stop();
-    cur_tmr->reset();
+    //cur_tmr->stop();
+    //cur_tmr->reset();
     cur_tmr->start();
 #endif
 
@@ -293,20 +293,16 @@ void SX126X_LoRaRadio::set_tx_continuous_preamble(void)
     }
 
     write_opmode_command((uint8_t) RADIO_SET_TXCONTINUOUSPREAMBLE, NULL, 0);
-
 }
 
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
+#warning Need to manage the timers better here
     uint16_t irq_status = get_irq_status();
     clear_irq_status(IRQ_RADIO_ALL);
 
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
-        tmr_sem_ptr->acquire();
         _radio_events->tx_done_tmr(cur_tmr_sptr);
-        cur_tmr_sptr = make_shared<Timer>();
-        cur_tmr = cur_tmr_sptr.get();
-        tmr_sem_ptr->release();
     }
 
     if ((irq_status & IRQ_PREAMBLE_DETECTED) == IRQ_PREAMBLE_DETECTED) {
@@ -333,11 +329,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 rssi = pkt_status.params.lora.rssi_pkt;
                 snr = pkt_status.params.lora.snr_pkt;
             }
-            tmr_sem_ptr->acquire();
             _radio_events->rx_done_tmr(_data_buffer, cur_tmr_sptr, payload_len, rssi, snr);
-            cur_tmr_sptr = make_shared<Timer>();
-            cur_tmr = cur_tmr_sptr.get();
-            tmr_sem_ptr->release();
         }
     }
 
@@ -355,6 +347,11 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             _radio_events->rx_timeout();
         }
     }
+
+    tmr_sem_ptr->acquire();
+    cur_tmr_sptr = make_shared<Timer>();
+    cur_tmr = cur_tmr_sptr.get();
+    tmr_sem_ptr->release();
 }
 
 void SX126X_LoRaRadio::set_device_ready(void)
@@ -1108,6 +1105,7 @@ void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
 }
 
 void SX126X_LoRaRadio::dangle_timeout_handler(void) {
+    CriticalSectionLock lock;
     _chip_select = 1;
     tx_int_mon = 1;
     rx_int_mon = 0;
@@ -1147,9 +1145,12 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
     //  don't raise the SPI select line right away. Instead, set a Timeout, and raise
     //  the line when the Timeout handler gets triggered.
     write_opmode_command_dangling(RADIO_SET_TX, buf, 3);
-    Timeout dangle_timeout;
-    dangle_timeout.attach_us(callback(this, &SX126X_LoRaRadio::dangle_timeout_handler), 
-    radio_timing.getWaitNoWarn());
+    {   
+        CriticalSectionLock lock;
+        Timeout dangle_timeout;
+        dangle_timeout.attach_us(callback(this, &SX126X_LoRaRadio::dangle_timeout_handler), 
+                                    radio_timing.getWaitNoWarn());
+    }   
     dangling_flags.wait_any(0x1);
     write_opmode_command_finish();
 

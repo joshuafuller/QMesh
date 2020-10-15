@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <memory>
 #include <fstream>
+#include <sstream>
 #include <stdio.h>
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
@@ -178,24 +179,54 @@ void rx_serial_thread_fn(void) {
             reboot_system();
         }
         else if(type_str == "Read Log") {
+            static int logfile_count, cur_logfile;
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
 				if(!reading_log) {
+                    logfile_count = 0;
+                    cur_logfile = 0;
 					reading_log = true;
-					f = fopen("/fs/logfile.json", "r");
+                    // Step one: get a list of all of the existing logfiles
+                    DIR *log_dir = opendir("/fs/log");
+                    MBED_ASSERT(log_dir);
+                    int logfile_count = 0;
+                    while(readdir(log_dir) != NULL) {
+                        logfile_count += 1;
+                    }
+                    stringstream logfile_name;
+                    logfile_name << "/fs/log/logfile" << cur_logfile << ".json";
+                    f = fopen(logfile_name.str().c_str(), "r");
 					MBED_ASSERT(f);
+                    cur_logfile += 1;
 				}
 				string cur_line;
 				get_next_line(f, cur_line);
-				if(cur_line.size() == 0) {
-					MbedJSONValue log_json;
-                    log_json["Type"] = "Log Entry";
-					log_json["Count"] = -1;					
-                    auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
-					debug_printf(DBG_WARN, "Now rebooting...\r\n");
-					reboot_system();	
+				if(cur_line.size() == 0) { // Go to the next file if it exists
+                    if(cur_logfile == logfile_count) {
+                        MbedJSONValue log_json;
+                        log_json["Type"] = "Log Entry";
+                        log_json["Count"] = -1;					
+                        auto json_str = make_shared<string>(log_json.serialize());
+                        enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
+                        debug_printf(DBG_WARN, "Now rebooting...\r\n");
+                        reboot_system();	
+                    }
+                    else {
+                        stringstream logfile_name;
+                        logfile_name << "/fs/log/logfile" << cur_logfile << ".json";
+                        f = fopen(logfile_name.str().c_str(), "r");
+                        cur_logfile += 1;
+                        MBED_ASSERT(f);
+                        string cur_line;
+				        get_next_line(f, cur_line);
+                        MbedJSONValue log_json;
+                        parse(log_json, cur_line.c_str());
+                        log_json["Type"] = "Log Entry";
+                        log_json["Count"] = line_count++;					
+                        auto json_str = make_shared<string>(log_json.serialize());
+                        enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);		
+                    }
 				}
 				else {
                     MbedJSONValue log_json;
