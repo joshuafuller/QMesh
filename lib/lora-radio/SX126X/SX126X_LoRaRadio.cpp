@@ -1146,7 +1146,7 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
     //  the line when the Timeout handler gets triggered.
     write_opmode_command_dangling(RADIO_SET_TX, buf, 3);
     {   
-        CriticalSectionLock lock;
+        //CriticalSectionLock lock;
         Timeout dangle_timeout;
         dangle_timeout.attach_us(callback(this, &SX126X_LoRaRadio::dangle_timeout_handler), 
                                     radio_timing.getWaitNoWarn());

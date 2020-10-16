@@ -235,7 +235,10 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     auto tx_str_sptr = tx_ser_queue.alloc();
     *tx_str_sptr = tx_str;
     tx_ser_queue.put(tx_str_sptr);
-
+    if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
+        ThisThread::sleep_for(2000);
+        MBED_ASSERT(false);
+    }
     va_end(args);
     dbg_printf_mutex.unlock();
     return 0;

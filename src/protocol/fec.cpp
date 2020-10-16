@@ -178,7 +178,6 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
                 case 9: poly = conv_r12_9_polynomial; break;
                 default:
                     debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                    MBED_ASSERT(false);
                 break;
             }
         break;
@@ -190,7 +189,6 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
                 case 9: poly = libfec_r13_9_polynomial; break;
                 default:
                     debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                    MBED_ASSERT(false);
                 break;
             }
         break;
@@ -199,13 +197,11 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
                 poly = libfec_r16_15_polynomial;
             }
             else {
-                debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                MBED_ASSERT(false);                    
+                debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");                   
             }
         break;
         default:
             debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-            MBED_ASSERT(false);
         break;
     }
     corr_con = correct_convolutional_create(inv_rate, order, poly);
@@ -306,7 +302,6 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
                 case 9: poly = conv_r12_9_polynomial; break;
                 default:
                     debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                    MBED_ASSERT(false);
                 break;
             }
         break;
@@ -318,7 +313,6 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
                 case 9: poly = libfec_r13_9_polynomial; break;
                 default:
                     debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                    MBED_ASSERT(false);
                 break;
             }
         break;
@@ -327,13 +321,11 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
                 poly = libfec_r16_15_polynomial;
             }
             else {
-                debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                MBED_ASSERT(false);                    
+                debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");                
             }
         break;
         default:
             debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-            MBED_ASSERT(false);
         break;
     }
     corr_con = correct_convolutional_create(inv_rate, order, poly);

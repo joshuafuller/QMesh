@@ -152,7 +152,19 @@ void rx_serial_thread_fn(void) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                fs.remove("logfile.json");
+                DIR *log_dir = opendir("/fs/log");
+                MBED_ASSERT(log_dir);
+                for(;;) {
+                    struct dirent *dir_entry = readdir(log_dir);
+                    if(!dir_entry) { break; }
+                    stringstream fname;
+                    fname << "/fs/log/" << dir_entry->d_name; 
+                    debug_printf(DBG_INFO, "Deleting %s\r\n", fname.str().c_str());
+                    int rem_err = fs.remove(fname.str().c_str());
+                    if(rem_err) {
+                        debug_printf(DBG_ERR, "File remove failed with code %d\r\n", rem_err);
+                    }
+                }
             }
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");

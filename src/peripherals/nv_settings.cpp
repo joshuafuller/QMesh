@@ -219,18 +219,16 @@ FILE *open_logfile(void) {
         debug_printf(DBG_INFO, logfile_name.str().c_str());
 	    f = fopen(logfile_name.str().c_str(), "w");
         switch(errno) {
-            case EACCES:  debug_printf(DBG_INFO, "EACCES\r\n"); break;
-            case EBADF:   debug_printf(DBG_INFO, "EBADF\r\n"); break;
-            case EMFILE:  debug_printf(DBG_INFO, "EMFILE\r\n"); break;
-            case ENFILE:  debug_printf(DBG_INFO, "ENFILE\r\n"); break;
-            case ENOENT:  debug_printf(DBG_INFO, "ENOENT\r\n"); break;
-            case ENOMEM:  debug_printf(DBG_INFO, "ENOMEM\r\n"); break;
-            case ENOTDIR: debug_printf(DBG_INFO, "ENOTDIR\r\n"); break;
+            case EACCES:  debug_printf(DBG_ERR, "EACCES\r\n"); break;
+            case EBADF:   debug_printf(DBG_ERR, "EBADF\r\n"); break;
+            case EMFILE:  debug_printf(DBG_ERR, "EMFILE\r\n"); break;
+            case ENFILE:  debug_printf(DBG_ERR, "ENFILE\r\n"); break;
+            case ENOENT:  debug_printf(DBG_ERR, "ENOENT\r\n"); break;
+            case ENOMEM:  debug_printf(DBG_ERR, "ENOMEM\r\n"); break;
+            case ENOTDIR: debug_printf(DBG_ERR, "ENOTDIR\r\n"); break;
             default: break;
         }
-        debug_printf(DBG_INFO, "Error is %d\r\n", errno);
-        ThisThread::sleep_for(2000);
-        MBED_ASSERT(f);
+        //debug_printf(DBG_ERR, "Error is %d\r\n", errno);
     }
     else {
         logfile_name << "/fs/log/logfile" << logfile_count << ".json";
