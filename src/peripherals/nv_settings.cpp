@@ -46,6 +46,36 @@ void rescue_filesystem(void) {
     reboot_system();
 }
 
+static void print_dir(string &base_str);
+static void print_dir(string &base_str) {
+    DIR *d = opendir(base_str.c_str());
+	for(;;) {
+		struct dirent *dir_val = readdir(d);
+		if(dir_val == NULL) {
+			break;
+		}
+        stringstream fname;
+        fname << base_str << "/" << dir_val->d_name;
+		struct stat file_stat;
+        if(string(dir_val->d_name) != "." && string(dir_val->d_name) != "..") {
+            string scrubbed_fs_name(fname.str());
+            scrubbed_fs_name.erase(0, 3);
+		    MBED_ASSERT(fs.stat(scrubbed_fs_name.c_str(), &file_stat) == 0);
+		    debug_printf(DBG_INFO, "%s/%s, Size: %d\r\n", base_str.c_str(), dir_val->d_name, 
+                            file_stat.st_size);
+        }
+        if(dir_val->d_type == DT_DIR) {
+            if(string(dir_val->d_name) == "." || string(dir_val->d_name) == "..") {
+                continue;
+            }
+            stringstream dir_path;
+            dir_path << base_str << "/" << dir_val->d_name;
+            string new_dir_path(dir_path.str());
+            print_dir(new_dir_path);
+        }
+	}
+}
+
 void init_filesystem(void) {
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
     int err = bd.init();
@@ -68,20 +98,13 @@ void init_filesystem(void) {
 	// Display the root directory
     debug_printf(DBG_INFO, "Opening the root directory... \r\n");
     fflush(stdout);
-    DIR *d = opendir("/fs/");
+    string base_str("/fs");
+    DIR *d = opendir(base_str.c_str());
     debug_printf(DBG_INFO, "%s\n", (!d ? "Fail :(\r\n" : "OK\r\n"));
     if (!d) {
         error("error: %s (%d)\n", strerror(errno), -errno);
     }
-	for(;;) {
-		struct dirent *dir_val = readdir(d);
-		if(dir_val == NULL) {
-			break;
-		}
-		struct stat file_stat;
-		fs.stat(dir_val->d_name, &file_stat);
-		debug_printf(DBG_INFO, "%s, Size: %d\r\n", dir_val->d_name, file_stat.st_size);
-	}
+    print_dir(base_str);
 }
 
 extern Thread rx_serial_thread;
@@ -190,52 +213,29 @@ void log_boot(void) {
 
 
 FILE *open_logfile(void) {
-    // Go through directory, figure out how many files there are
-    DIR *log_dir = opendir("/fs/log");
-    MBED_ASSERT(log_dir);
-    int logfile_count = 0;
-    while(readdir(log_dir) != NULL) {
-        logfile_count += 1;
-    }
-    // We keep a maximum of 12 logfiles
-    if(logfile_count > 11) {
-        logfile_count = 0;
-    }
-    stringstream logfile_name;
-    logfile_name << "/fs/log/logfile" << logfile_count << ".json";
-    // If the file is 1 MiB or larger, open a new file instead
-    struct stat logfile_statbuf;
-    fs.stat(logfile_name.str().c_str(), &logfile_statbuf);
-    debug_printf(DBG_INFO, "We got this far %s\r\n", logfile_name.str().c_str());
-    FILE *f;
-    if(logfile_statbuf.st_size > LOGFILE_SIZE) {
-        debug_printf(DBG_INFO, "Starting new logfile: %d\r\n", logfile_count);
-        logfile_count += 1;
-        if(logfile_count > 11) {
-            logfile_count = 0;
-        }
-        logfile_name.str(string());
-        logfile_name << "/fs/log/logfile" << logfile_count << ".json";
-        debug_printf(DBG_INFO, logfile_name.str().c_str());
-	    f = fopen(logfile_name.str().c_str(), "w");
-        switch(errno) {
-            case EACCES:  debug_printf(DBG_ERR, "EACCES\r\n"); break;
-            case EBADF:   debug_printf(DBG_ERR, "EBADF\r\n"); break;
-            case EMFILE:  debug_printf(DBG_ERR, "EMFILE\r\n"); break;
-            case ENFILE:  debug_printf(DBG_ERR, "ENFILE\r\n"); break;
-            case ENOENT:  debug_printf(DBG_ERR, "ENOENT\r\n"); break;
-            case ENOMEM:  debug_printf(DBG_ERR, "ENOMEM\r\n"); break;
-            case ENOTDIR: debug_printf(DBG_ERR, "ENOTDIR\r\n"); break;
-            default: break;
-        }
-        //debug_printf(DBG_ERR, "Error is %d\r\n", errno);
-    }
-    else {
-        logfile_name << "/fs/log/logfile" << logfile_count << ".json";
-	    f = fopen(logfile_name.str().c_str(), "a+");
+    // Step one: get the size of the current logfile. If current logfile is too big,
+    //  move it down the "logfile stack".
+    debug_printf(DBG_INFO, "opening the logfile\r\n");
+    FILE *f = fopen("/fs/log/logfile.json", "r");
+    if(!f) {
+        debug_printf(DBG_INFO, "Need to create the logfile\r\n");
+        f = fopen("/fs/log/logfile.json", "w");
         MBED_ASSERT(f);
     }
-    debug_printf(DBG_INFO, "Logfile successfully opened\r\n");
+    fclose(f);
+    struct stat logfile_statbuf;
+    fs.stat("/fs/log/logfile.json", &logfile_statbuf);
+    if(logfile_statbuf.st_size > LOGFILE_SIZE) {
+        for(int i = 0; i < 11; i++) {
+            stringstream logfile_name, logfile_name_plusone;
+            logfile_name << "/fs/log/logfile" << i << ".json";
+            logfile_name_plusone << "/fs/log/logfile" << i+1 << ".json";
+            fs.rename(logfile_name.str().c_str(), logfile_name_plusone.str().c_str());
+        }
+        fs.rename("/fs/log/logfile.json", "/fs/log/logfile0.json");
+    }
+    f = fopen("/fs/log/logfile.json", "a+");
+    MBED_ASSERT(f != NULL);
     return f;
 }
 
