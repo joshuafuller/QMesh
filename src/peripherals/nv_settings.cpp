@@ -224,15 +224,16 @@ FILE *open_logfile(void) {
     }
     fclose(f);
     struct stat logfile_statbuf;
-    fs.stat("/fs/log/logfile.json", &logfile_statbuf);
+    fs.stat("log/logfile.json", &logfile_statbuf);
+    debug_printf(DBG_INFO, "logfile size is %d\r\n", logfile_statbuf.st_size);
     if(logfile_statbuf.st_size > LOGFILE_SIZE) {
-        for(int i = 0; i < 11; i++) {
+        for(int i = 11; i >= 0; i--) {
             stringstream logfile_name, logfile_name_plusone;
-            logfile_name << "/fs/log/logfile" << i << ".json";
-            logfile_name_plusone << "/fs/log/logfile" << i+1 << ".json";
+            logfile_name << "log/logfile" << setw(3) << i << ".json";
+            logfile_name_plusone << "log/logfile" << i+1 << ".json";
             fs.rename(logfile_name.str().c_str(), logfile_name_plusone.str().c_str());
         }
-        fs.rename("/fs/log/logfile.json", "/fs/log/logfile0.json");
+        fs.rename("log/logfile.json", "log/logfile000.json");
     }
     f = fopen("/fs/log/logfile.json", "a+");
     MBED_ASSERT(f != NULL);
