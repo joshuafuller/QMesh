@@ -229,8 +229,9 @@ FILE *open_logfile(void) {
     if(logfile_statbuf.st_size > LOGFILE_SIZE) {
         for(int i = 11; i >= 0; i--) {
             stringstream logfile_name, logfile_name_plusone;
-            logfile_name << "log/logfile" << setw(3) << i << ".json";
-            logfile_name_plusone << "log/logfile" << i+1 << ".json";
+            logfile_name << "log/logfile" << setw(3) << setfill('0') << i << ".json";
+            debug_printf(DBG_INFO, "Now moving %s\r\n", logfile_name.str().c_str());
+            logfile_name_plusone << "log/logfile" << setw(3) << setfill('0') << i+1 << ".json";
             fs.rename(logfile_name.str().c_str(), logfile_name_plusone.str().c_str());
         }
         fs.rename("log/logfile.json", "log/logfile000.json");
@@ -241,6 +242,7 @@ FILE *open_logfile(void) {
 }
 
 
+extern time_t boot_timestamp;
 void nv_log_fn(void) {
     DIR *log_dir = opendir("/fs/log");
     if(!log_dir && errno == ENOENT) {
@@ -290,6 +292,21 @@ void nv_log_fn(void) {
         log_json["GPS Valid"] = gps_valid;
         log_json["GPS Lat"] = to_string(gps_lat);
         log_json["GPS Lon"] = to_string(gps_lon);
+        time_t cur_time;
+        time(&cur_time);
+        time_t uptime = cur_time - boot_timestamp;
+        stringstream msg;
+        int uptime_rem = uptime;
+        int uptime_d = uptime_rem / 86400;
+        uptime_rem %= 86400;
+        int uptime_h = uptime_rem / 3600;
+        uptime_rem %= 3600;
+        int uptime_m = uptime_rem / 60;
+        uptime_rem %= 60;
+        int uptime_s = uptime_rem;
+        msg << uptime_d << "d:" << uptime_h << \
+            "h:" << uptime_m << "m:" << uptime_s << "s";
+        log_json["Uptime"] = msg.str();
         string log_json_str = log_json.serialize();
 		log_json_str.push_back('\n');
         comb_str.append(log_json_str);

@@ -192,30 +192,33 @@ void rx_serial_thread_fn(void) {
         }
         else if(type_str == "Read Log") {
             static int logfile_count, cur_logfile;
+            static vector<string> logfile_names;
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
 				if(!reading_log) {
-                    logfile_count = 0;
-                    cur_logfile = 0;
-					reading_log = true;
-                    // Step one: get a list of all of the existing logfiles
+                    logfile_names.clear();
                     DIR *log_dir = opendir("/fs/log");
                     MBED_ASSERT(log_dir);
-                    int logfile_count = 0;
-                    while(readdir(log_dir) != NULL) {
-                        logfile_count += 1;
+                    for(;;) {
+                        struct dirent *my_dirent = readdir(log_dir);
+                        if(!my_dirent) { break; }
+                        stringstream file_path;
+                        file_path << "/fs/log/" << my_dirent->d_name;
+                        if(string(my_dirent->d_name) == "." || 
+                            string(my_dirent->d_name) == "..") { continue; }
+                        debug_printf(DBG_INFO, "STUFF: %s\r\n", file_path.str().c_str());
+                        logfile_names.push_back(file_path.str());
                     }
-                    stringstream logfile_name;
-                    logfile_name << "/fs/log/logfile" << cur_logfile << ".json";
-                    f = fopen(logfile_name.str().c_str(), "r");
+                    reading_log = true;
+                    f = fopen(logfile_names[0].c_str(), "r");
 					MBED_ASSERT(f);
-                    cur_logfile += 1;
+                    logfile_names.erase(logfile_names.begin());
 				}
 				string cur_line;
 				get_next_line(f, cur_line);
 				if(cur_line.size() == 0) { // Go to the next file if it exists
-                    if(cur_logfile == logfile_count) {
+                    if(logfile_names.size() == 0) {
                         MbedJSONValue log_json;
                         log_json["Type"] = "Log Entry";
                         log_json["Count"] = -1;					
@@ -225,11 +228,9 @@ void rx_serial_thread_fn(void) {
                         reboot_system();	
                     }
                     else {
-                        stringstream logfile_name;
-                        logfile_name << "/fs/log/logfile" << cur_logfile << ".json";
-                        f = fopen(logfile_name.str().c_str(), "r");
-                        cur_logfile += 1;
+                        f = fopen(logfile_names[0].c_str(), "r");
                         MBED_ASSERT(f);
+                        logfile_names.erase(logfile_names.begin());   
                         string cur_line;
 				        get_next_line(f, cur_line);
                         MbedJSONValue log_json;
