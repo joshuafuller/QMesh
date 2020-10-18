@@ -87,7 +87,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LOG_BASEADDR 1024
 
-#define LOGFILE_SIZE 1024
+#define LOGFILE_SIZE (1 << 20)
 
 // Debug options
 #define DEBUG_INFO
