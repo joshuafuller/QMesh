@@ -305,6 +305,15 @@ void beacon_fn(void) {
  */
 void beacon_pocsag_fn(void) {
     debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
+    {
+    stringstream msg;
+    msg << "KG5VBY:" << "SF" << radio_cb["SF"].get<int>() << "," << \
+        "BW" << radio_cb["BW"].get<int>() << "," << \
+        "F" << radio_cb["Frequency"].get<int>() << "," << "\r\n";  
+    string pocsag_msg = msg.str();
+    auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
+    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+    }
     time_t cur_time;
     time(&cur_time);
     time_t uptime = cur_time - boot_timestamp;
@@ -317,15 +326,14 @@ void beacon_pocsag_fn(void) {
     int uptime_m = uptime_rem / 60;
     uptime_rem %= 60;
     int uptime_s = uptime_rem;
-    msg << "KG5VBY: " << "SF=" << radio_cb["SF"].get<int>() << ", " << \
-        "BW=" << radio_cb["BW"].get<int>() << ", " << \
-        "F=" << radio_cb["Frequency"].get<int>() << ", " << \
-        "Up=" << uptime_d << "d:" << uptime_h << "h:" << uptime_m << "m:" << uptime_s << "s" << \
-        "\r\n";
-    //string pocsag_msg = "KG5VBY POCSAG Test Message\r\n";
+    {
+    stringstream msg;
+    msg << "KG5VBY:" << "Uptime:" << uptime_d << "d:" << uptime_h << \
+        "h:" << uptime_m << "m:" << uptime_s << "s" << "\r\n";  
     string pocsag_msg = msg.str();
     auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);   
+    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
+    } 
 }
 
 
