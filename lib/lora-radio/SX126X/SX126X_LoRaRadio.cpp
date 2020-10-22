@@ -170,22 +170,7 @@ void SX126X_LoRaRadio::dio1_irq_isr()
 {
     CriticalSectionLock lock;
     // Start timing the duration since the packet was receive
-#if 0
-    if(tmr_sem_ptr->try_acquire()) {
-        cur_tmr->stop();
-        cur_tmr->reset();
-        cur_tmr->start();
-        tmr_sem_ptr->release();
-    }
-    else {
-        MBED_ASSERT(false);
-    }
-#else
-    //cur_tmr->stop();
-    //cur_tmr->reset();
     cur_tmr->start();
-#endif
-
     rx_int_mon = 0;
     tx_int_mon = 0;
 
@@ -348,10 +333,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         }
     }
 
-    tmr_sem_ptr->acquire();
     cur_tmr_sptr = make_shared<Timer>();
     cur_tmr = cur_tmr_sptr.get();
-    tmr_sem_ptr->release();
 }
 
 void SX126X_LoRaRadio::set_device_ready(void)
