@@ -174,6 +174,10 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Has a GPS: %d\r\n", radio_cb["Has GPS"].get<int>());
     debug_printf(DBG_INFO, "POCSAG frequency %d\r\n", radio_cb["POCSAG Frequency"].get<int>());
     debug_printf(DBG_INFO, "POCSAG Beacon Interval %d\r\n", radio_cb["POCSAG Beacon Interval"].get<int>());
+    // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
+    //  anything else from occurring and leading to weird crashes
+    MBED_ASSERT(radio_cb["Conv Rate"].get<int>() == 2);
+    MBED_ASSERT(radio_cb["Conv Order"].get<int>() == 7);
 
     // Check if low-power mode is set. If so, delete the UART
     rx_serial_thread.start(rx_serial_thread_fn);
