@@ -82,7 +82,8 @@ void RadioTiming::waitFullSlots(const size_t num_slots) {
 void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction, 
     const uint8_t num_inc) {
     if(num_inc != 0) {
-        float sym_frac_us = 0.5f * ((sym_time_us*0.9f)/(float) num_inc+1) * ((float) symb_frac) * direction;
+        float sym_frac_us = 0.5f * ((sym_time_us*0.9f)/(float) num_inc + 1) \
+                            * ((float) symb_frac) * direction;
         wait_duration_us += sym_frac_us;
     }
 }
@@ -94,25 +95,3 @@ int32_t RadioTiming::getWaitNoWarn(void) {
     }
     return wait_duration_us-elapsed_us;
 }
-
-void RadioTiming::waitRxRemainder(const size_t sym_wait, const size_t pre_wait) {
-    uint32_t wait_duration_us = (8-sym_wait)*sym_frac_us + (4-pre_wait)*pre_time_us;
-    wait_duration_us += 16*sym_time_us; // 16 symbol padding for right now
-    int elapsed_us = tmr_sptr->read_us();
-    wait_us(wait_duration_us-elapsed_us);
-}
-
-void RadioTiming::calcWaitSymbol(void) {
-    sym_wait_factor = rand() & 0x07; // 8 different symbol wait options
-    sym_wait_us = sym_frac_us*sym_wait_factor;
-}
-
-void RadioTiming::calcWaitPreamble(void) {
-    pre_wait_factor = rand() & 0x03; // 4 different preamble wait options
-    pre_wait_us = pre_time_us*pre_wait_factor;
-}
-
-void RadioTiming::waitTx(void) {
-    wait_us(sym_wait_us+pre_wait_us);
-}
-

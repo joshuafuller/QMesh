@@ -98,34 +98,12 @@ void waitFullSlots(const size_t num_slots);
  */
 void waitSymOffset(const uint8_t symb_frac, const float direction, const uint8_t num_inc);
 
-
-/**
- * Wait for the "remaining time" that includes various timing offsets
- * used to implement QMesh's collision resistance:
- * - Number of Preamble durations to wait
- * - Intra-symbol delay fraction
- * @param sym_wait How many eighths of a symbol to delay
- * @param pre_wait Number of preambles to wait
- */
-void waitRxRemainder(const size_t sym_wait, const size_t pre_wait);
-
 /**
  * Calculate a random intra-symbol wait duration. Chooses between [0,7]
  * eights of the symbol duration. Stores the result internally within
  * the object.
  */
 void calcWaitSymbol(void);
-
-/**
- * Calculate the random preamble-length wait period. Chooses between [0,3]
- * different preamble offsets.
- */
-void calcWaitPreamble(void);
-
-/**
- * Wait for the symbol and preamble offset durations.
- */
-void waitTx(void);
 
 /** 
  * Starts the protocol timer.
