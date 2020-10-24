@@ -34,7 +34,7 @@ tx_power = int(sys.argv[3])
 # file as the one setting it.
 settings = {}
 settings["Address"] = node_id
-settings["Frequency"] = 433000000
+settings["Frequency"] = 426000000
 settings["BW"] = 1 # 0=125KHz, 1=250KHz, 2=500KHz
 settings["CR"] = 0
 settings["SF"] = 9

@@ -82,7 +82,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define FEC_ALGORITHM "None"
 #define FEC_CONV_RATE 2
-#define FEC_CONV_ORDER 9
+#define FEC_CONV_ORDER 7
 #define FEC_RS_NUM_ROOTS 8
 
 #define LOG_BASEADDR 1024
