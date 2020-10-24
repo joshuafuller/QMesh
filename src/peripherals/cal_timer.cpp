@@ -10,7 +10,7 @@ static Timer tmr;
 static LowPowerTicker lpticker;
 extern EventQueue background_queue;
 atomic<float> tmr_factor;
-bool running = false;
+static volatile bool cal_running = false;
 
 static void cal_handler(void);
 static void cal_subhandler(const int tmr_val);
@@ -19,7 +19,7 @@ static void cal_subhandler(const int tmr_val);
 void start_cal(void) {
     tmr_factor.store(1.0f);
     lpticker.attach_us(cal_handler, 1e6/BINS_PER_SEC);
-    running = true;
+    cal_running = true;
 }
 
 
@@ -42,15 +42,20 @@ static void cal_subhandler(const int tmr_val) {
 }
 
 
-    int32_t CalTimer::read_us(void) {
+int32_t CalTimer::read_us(void) {
+    if(cal_running) {
         float tmr_fact = tmr_factor.load()*Timer::read_us();
         return (int32_t) tmr_fact;
     }
-
-    int32_t CalTimer::read_ms(void) {
-        return CalTimer::read_us()/1000;
+    else {
+        return Timer::read_us();
     }
+}
 
-    int32_t CalTimer::read_s(void) {
-        return CalTimer::read_us()/1e6;
-    }
+int32_t CalTimer::read_ms(void) {
+    return CalTimer::read_us()/1000;
+}
+
+int32_t CalTimer::read_s(void) {
+    return CalTimer::read_us()/1e6;
+}
