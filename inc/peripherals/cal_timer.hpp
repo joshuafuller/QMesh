@@ -13,4 +13,10 @@ class CalTimer : public Timer {
     int32_t read_s(void); 
 };
 
+
+class CalTimeout : public Timeout {
+public:
+	void attach_us(Callback< void()> func, us_timestamp_t t);
+};
+
 #endif /* CAL_TIMER_HPP */
