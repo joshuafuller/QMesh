@@ -43,6 +43,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "mbed.h"
 #include "radio_timing.hpp"
 #include "params.hpp"
+#include "cal_timer.hpp"
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #define MAX_DATA_BUFFER_SIZE_SX126X                        MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -309,8 +310,8 @@ public:
      * Timers for tracking when the Rx interrupt was thrown
      */
     Semaphore *tmr_sem_ptr;
-    Timer *cur_tmr;
-    shared_ptr<Timer> cur_tmr_sptr;
+    CalTimer *cur_tmr;
+    shared_ptr<CalTimer> cur_tmr_sptr;
 
 private:
 

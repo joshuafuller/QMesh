@@ -333,7 +333,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         }
     }
 
-    cur_tmr_sptr = make_shared<Timer>();
+    cur_tmr_sptr = make_shared<CalTimer>();
     cur_tmr = cur_tmr_sptr.get();
 }
 
@@ -443,7 +443,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
     // Allocate the first timer
     tmr_sem_ptr = new Semaphore(1);
     tmr_sem_ptr->acquire();
-    cur_tmr_sptr = make_shared<Timer>();
+    cur_tmr_sptr = make_shared<CalTimer>();
     cur_tmr = cur_tmr_sptr.get();
     tmr_sem_ptr->release();
 
@@ -1128,7 +1128,7 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
     //  don't raise the SPI select line right away. Instead, set a Timeout, and raise
     //  the line when the Timeout handler gets triggered.
     write_opmode_command_dangling(RADIO_SET_TX, buf, 3);  
-    Timeout dangle_timeout;
+    LowPowerTimeout dangle_timeout;
     dangle_timeout.attach_us(callback(this, &SX126X_LoRaRadio::dangle_timeout_handler), 
                                 radio_timing.getWaitNoWarn());
     dangling_flags.wait_any(0x1);

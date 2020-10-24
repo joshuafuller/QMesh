@@ -94,6 +94,7 @@ void print_stats()
 static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
 int main()
 {
+    start_cal();
     time(&boot_timestamp);
 
     background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));

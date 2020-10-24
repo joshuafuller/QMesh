@@ -26,6 +26,7 @@
 #include "platform/Callback.h"
 #include "PinNames.h"
 #include "mbed.h"
+#include "cal_timer.hpp"
 
 /**
  * Structure to hold RF controls for LoRa Radio.
@@ -392,7 +393,7 @@ typedef struct radio_events {
      * Callback when Transmission is done.
      */
     mbed::Callback<void()> tx_done;
-    mbed::Callback<void(shared_ptr<Timer> tmr_sptr)> tx_done_tmr;
+    mbed::Callback<void(shared_ptr<CalTimer> tmr_sptr)> tx_done_tmr;
 
     /**
      * Callback when Transmission is timed out.
@@ -410,7 +411,7 @@ typedef struct radio_events {
      *                     LoRa: SNR value in dB
      */
     mbed::Callback<void(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)> rx_done;
-    mbed::Callback<void(const uint8_t *payload, shared_ptr<Timer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)> rx_done_tmr;
+    mbed::Callback<void(const uint8_t *payload, shared_ptr<CalTimer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)> rx_done_tmr;
 
     /**
      * Callback when Reception is timed out.

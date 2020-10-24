@@ -233,7 +233,7 @@ void mesh_protocol_fsm(void) {
                 radio_timing.waitFullSlots(2);              
                 uint8_t pre_off, nsym_off, sym_off;
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                radio_timing.waitSymOffset(sym_off, -1.0f, timing_off_inc);
+                //radio_timing.waitSymOffset(sym_off, -1.0f, timing_off_inc);
                 next_sym_off = timing_off_dist(timing_rand_gen);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
                 radio_timing.waitSymOffset(next_sym_off, 1.0f, timing_off_inc);
@@ -256,11 +256,11 @@ void mesh_protocol_fsm(void) {
 				radio_timing.waitFullSlots(1);
                 uint8_t pre_off, nsym_off, sym_off;
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                radio_timing.waitSymOffset(sym_off, -1.0f, timing_off_inc);
+                //radio_timing.waitSymOffset(sym_off, -1.0f, timing_off_inc);
                 rx_frame_sptr->setOffsets(0, 0, timing_off_dist(timing_rand_gen));
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", sym_off);
-                radio_timing.waitSymOffset(sym_off, 1.0f, timing_off_inc);
+                //radio_timing.waitSymOffset(sym_off, 1.0f, timing_off_inc);
                 radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
                 
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
