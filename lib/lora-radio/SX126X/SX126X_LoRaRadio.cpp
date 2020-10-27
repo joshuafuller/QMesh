@@ -27,6 +27,10 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "Timer.h"
 #include "radio_timing.hpp"
 #include "SX126X_LoRaRadio.h"
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include "json_serial.hpp"
 
 // Squash a warning about wait_ms being deprecated
 #define wait_ms(x) wait_us(x*1000)
@@ -111,7 +115,7 @@ SX126X_LoRaRadio::SX126X_LoRaRadio(PinName mosi,
       _txen(txen),
       _pwr_ctl(pwrctl)
 #ifdef MBED_CONF_RTOS_PRESENT
-        , irq_thread(osPriorityRealtime, 1024, NULL, "LR-SX126X")
+        , irq_thread(osPriorityRealtime, 4096, NULL, "LR-SX126X")
 #endif
 {
     _radio_events = NULL;
@@ -620,6 +624,15 @@ void SX126X_LoRaRadio::write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16
 
     _chip_select = 1;
     _spi.unlock();
+#ifdef TRACE_SX1262_SPI
+    stringstream reg_info;
+    reg_info << "SX1262: CMD WRITE 0x" << setw(2) << setfill('0') << std::hex << (uint32_t) cmd << "; ";
+    for(int i = 0; i < size; i++) {
+        reg_info << "0x" << setw(2) << setfill('0') << std::hex << (uint32_t) buffer[i] << " ";
+    }
+    reg_info << "\r\n";
+    debug_printf(DBG_WARN, reg_info.str().c_str());
+#endif /* TRACE_SX1262_SPI */
 }
 
 void SX126X_LoRaRadio::write_opmode_command_dangling(uint8_t cmd, uint8_t *buffer, uint16_t size)
@@ -639,6 +652,15 @@ void SX126X_LoRaRadio::write_opmode_command_dangling(uint8_t cmd, uint8_t *buffe
 
     //_chip_select = 1;
     //_spi.unlock();
+#ifdef TRACE_SX1262_SPI
+    stringstream reg_info;
+    reg_info << "SX1262: CMD WRITE 0x" << setw(2) << setfill('0') << std::hex << (uint32_t) cmd << "; ";
+    for(int i = 0; i < size; i++) {
+        reg_info << "0x" << setw(2) << setfill('0') << std::hex << (uint32_t) buffer[i] << " ";
+    }
+    reg_info << "\r\n";
+    debug_printf(DBG_WARN, reg_info.str().c_str());
+#endif /* TRACE_SX1262_SPI */
 }
 
 void SX126X_LoRaRadio::write_opmode_command_finish(void)
@@ -689,6 +711,16 @@ void SX126X_LoRaRadio::write_to_register(uint16_t addr, uint8_t *data,
 
     _chip_select = 1;
     _spi.unlock();
+
+#ifdef TRACE_SX1262_SPI
+    stringstream reg_info;
+    reg_info << "SX1262: REG WRITE 0x" << setw(4) << setfill('0') << std::hex << addr << "; ";
+    for(int i = 0; i < size; i++) {
+        reg_info << "0x" << setw(2) << setfill('0') << std::hex << (uint32_t) data[i] << " ";
+    }
+    reg_info << "\r\n";
+    debug_printf(DBG_WARN, reg_info.str().c_str());
+#endif /* TRACE_SX1262_SPI */
 }
 
 uint8_t SX126X_LoRaRadio::read_register(uint16_t addr)
@@ -696,7 +728,6 @@ uint8_t SX126X_LoRaRadio::read_register(uint16_t addr)
     uint8_t data;
     read_register(addr, &data, 1);
     return data;
-
 }
 
 void SX126X_LoRaRadio::read_register(uint16_t addr, uint8_t *buffer,
@@ -732,6 +763,16 @@ void SX126X_LoRaRadio::write_fifo(uint8_t *buffer, uint8_t size)
 
     _chip_select = 1;
     _spi.unlock();
+
+#ifdef TRACE_SX1262_SPI
+    stringstream reg_info;
+    reg_info << "SX1262: FIFO WRITE ";
+    for(int i = 0; i < size; i++) {
+        reg_info << "0x" << setw(2) << setfill('0') << std::hex << (uint32_t) buffer[i] << " ";
+    }
+    reg_info << "\r\n";
+    debug_printf(DBG_WARN, reg_info.str().c_str());
+#endif /* TRACE_SX1262_SPI */
 }
 
 void SX126X_LoRaRadio::set_modem(uint8_t modem)
