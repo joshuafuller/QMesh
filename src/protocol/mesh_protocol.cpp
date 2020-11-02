@@ -34,6 +34,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
+
+volatile bool retransmit_pending = false;
+InterruptIn retransmit_disable_in_n(MBED_CONF_APP_RETRANSMIT_DIS_IN, PullUp);
+DigitalOut retransmit_disable_out_n(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
+
+
 /**
  * Checks to see if this Frame has been seen before. Returns a bool
  * of whether it has. 
@@ -142,6 +148,7 @@ void mesh_protocol_fsm(void) {
     for(;;) {
         switch(state) {
             case WAIT_FOR_EVENT:
+                retransmit_disable_out_n.write(1);
                 led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
                 radio.set_channel(radio_freq);
@@ -190,7 +197,15 @@ void mesh_protocol_fsm(void) {
                             radio_timing.setTimer(radio_event->tmr_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                             radio.set_channel(freq_dist(rand_gen));
-                            state = RETRANSMIT_PACKET;
+                            retransmit_disable_out_n.write(0);
+                            ThisThread::sleep_for(radio_timing.getWaitNoWarn()/2000);
+                            if(retransmit_disable_in_n.read()) {
+                                state = RETRANSMIT_PACKET;
+                            }
+                            else {
+                                debug_printf(DBG_WARN, "Retransmit blocked by diversity I/O signal\r\n");
+                                state = WAIT_FOR_EVENT;
+                            }
                         }
                     }
                     else {
@@ -218,7 +233,6 @@ void mesh_protocol_fsm(void) {
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
-                //radio.send(tx_frame_buf.data(), tx_frame_size);
                 radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing);
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
@@ -233,7 +247,6 @@ void mesh_protocol_fsm(void) {
                 radio_timing.waitFullSlots(2);              
                 uint8_t pre_off, nsym_off, sym_off;
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                //radio_timing.waitSymOffset(sym_off, -1.0f, timing_off_inc);
                 next_sym_off = timing_off_dist(timing_rand_gen);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
                 radio_timing.waitSymOffset(next_sym_off, 1.0f, timing_off_inc);
