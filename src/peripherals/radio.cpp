@@ -302,6 +302,16 @@ static void rx_done_cb(uint8_t const *payload, shared_ptr<CalTimer> tmr_sptr, ui
 }
 
 
+static void cad_done_cb(const bool cad_detected) {
+    if(!cad_detected) {
+        radio.start_cad();
+    }
+    else {
+
+    }
+}
+
+
 static void rx_preamble_det_cb(void) {
 #if 0
     if(!deep_sleep_lock) {

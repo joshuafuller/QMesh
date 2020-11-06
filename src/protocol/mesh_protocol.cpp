@@ -152,7 +152,7 @@ void mesh_protocol_fsm(void) {
                 led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
                 radio.set_channel(radio_freq);
-                radio.receive();
+                radio.receive_cad();
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {

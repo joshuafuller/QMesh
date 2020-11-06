@@ -44,6 +44,8 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "radio_timing.hpp"
 #include "params.hpp"
 #include "cal_timer.hpp"
+#include <atomic>
+#include <list>
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #define MAX_DATA_BUFFER_SIZE_SX126X                        MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -306,6 +308,8 @@ public:
 
     void set_tx_power(int8_t power);
 
+    void receive_cad(void);
+
     /**
      * Timers for tracking when the Rx interrupt was thrown
      */
@@ -401,6 +405,8 @@ private:
     uint8_t get_modem();
     uint16_t get_irq_status(void);
     uint8_t get_frequency_support(void);
+    void start_read_rssi(void);
+    void stop_read_rssi(void);
 
     // ISR
     void dio1_irq_isr();
@@ -428,6 +434,7 @@ private:
     void configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
                            uint16_t dio2_mask, uint16_t dio3_mask);
     void cold_start_wakeup();
+    void read_rssi_thread_fn(void);
 
 private:
     uint8_t _active_modem;
@@ -448,6 +455,14 @@ private:
     packet_params_t _packet_params;
 
     EventFlags dangling_flags;
+
+    atomic<bool> stop_cad;
+    EventFlags cad_running;
+
+    // Components to poll the RSSI to implement soft decoding
+    atomic<bool> collect_rssi;
+    Thread soft_dec_thread;
+    shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
 };
 
 #endif /* MBED_LORA_RADIO_DRV_SX126X_LORARADIO_H_ */
