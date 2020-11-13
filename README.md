@@ -1,4 +1,4 @@
-# Welcome to the QMesh wiki!
+# QMesh: A Synchronized Flooded Mesh Network for Voice and Data
 
 QMesh is a novel mesh networking protocol designed to provide rapid self-healing and streaming capabilities to mesh networks in order to allow for voice communications. QMesh uses synchronized flooding to provide for self-healing as well as the ability to stream data. QMesh applies two techniques to the LoRa Chirp Spread Spectrum (CSS) waveform in order to make QMesh work: Coded Chirp Spread Spectrum (CCSS) and Chirp Offset Multiple Access (COMA).
 
