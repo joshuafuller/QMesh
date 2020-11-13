@@ -29,6 +29,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "SX126X_LoRaRadio.h"
 #include <iostream>
 #include <iomanip>
+#include <random>
 #include <sstream>
 #include "json_serial.hpp"
 
@@ -105,7 +106,7 @@ static const lora_cad_params_t cad_params[7][6] =
                  { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
                  { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} }, 
                  { {4, 10, 28}, {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {2, 10, 22}, {2, 10, 22} },
-                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
+                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 24}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
                  { {8, 10, 29}, {4, 10, 25}, {4, 10, 23}, {4, 10, 22}, {4, 10, 22}, {4, 10, 21} }};
 
 
@@ -261,6 +262,34 @@ void SX126X_LoRaRadio::start_cad(void)
     write_opmode_command((uint8_t) RADIO_SET_CAD, NULL, 0);
 }
 
+
+void SX126X_LoRaRadio::configure_freq_hop(const uint32_t addr, const vector<uint32_t> &my_hop_freqs) 
+{
+    rand_gen_hop_chan_sptr = make_shared<mt19937>(addr);
+    hop_freqs = my_hop_freqs;
+    cur_hop_freq = hop_freqs.begin();
+    hop_chan_dist_sptr = make_shared<uniform_int_distribution<uint32_t> >(0, hop_freqs.size()-1);
+    debug_printf(DBG_INFO, "Now configuring the frequency hopping with %d channels\r\n", hop_freqs.size());
+}
+
+
+// Sequentially scan through the hop frequencies
+void SX126X_LoRaRadio::rx_hop_frequency(void)
+{
+    set_channel(*cur_hop_freq);
+    if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
+        cur_hop_freq = hop_freqs.begin();
+    }
+}
+
+
+// Randomly select a hop frequency
+void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset)
+{
+    set_channel(*(hop_freqs.begin()+(*hop_chan_dist_sptr)(*rand_gen_hop_chan_sptr)) + freq_offset);
+}
+
+
 /**
  * TODO: The purpose of this API is unclear.
  *       Need to start an internal discussion.
@@ -300,6 +329,7 @@ void SX126X_LoRaRadio::set_tx_continuous_preamble(void)
     write_opmode_command((uint8_t) RADIO_SET_TXCONTINUOUSPREAMBLE, NULL, 0);
 }
 
+
 void SX126X_LoRaRadio::read_rssi_thread_fn(void) {
     collect_rssi.store(true);
     CalTimer tmr;
@@ -310,14 +340,19 @@ void SX126X_LoRaRadio::read_rssi_thread_fn(void) {
     }
 }
 
+
 void SX126X_LoRaRadio::start_read_rssi(void) {
-    
+    rssi_mon.write(0x1);
+    soft_dec_thread.start(callback(this,  &SX126X_LoRaRadio::read_rssi_thread_fn));
 }
+
 
 void SX126X_LoRaRadio::stop_read_rssi(void) {
     collect_rssi.store(false);
     soft_dec_thread.join();
+    rssi_mon.write(0x0);
 }
+
 
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
@@ -329,10 +364,11 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     }
 #if 0
     if ((irq_status & IRQ_PREAMBLE_DETECTED) == IRQ_PREAMBLE_DETECTED) {
-        _radio_events->rx_preamble_det();
+        start_read_rssi();
     }
-#endif    
+#endif 
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
+        //stop_read_rssi();
         if ((irq_status & IRQ_CRC_ERROR) == IRQ_CRC_ERROR) {
             if (_radio_events && _radio_events->rx_error) {
                 _radio_events->rx_error();
@@ -352,12 +388,15 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 rssi = pkt_status.params.lora.rssi_pkt;
                 snr = pkt_status.params.lora.snr_pkt;
             }
-            _radio_events->rx_done_tmr(_data_buffer, cur_tmr_sptr, payload_len, rssi, snr);
+            _radio_events->rx_done_tmr(_data_buffer, rssi_list_sptr, cur_tmr_sptr, 
+                            payload_len, rssi, snr);
+            debug_printf(DBG_INFO, "Frequency received on was %d\r\n", *cur_hop_freq);
         }
     }
 
     if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
+#if 0
             uint8_t offset = 0;
             uint8_t payload_len = 0;
             int16_t rssi = 0;
@@ -372,9 +411,15 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 rssi = pkt_status.params.lora.rssi_pkt;
                 snr = pkt_status.params.lora.snr_pkt;
             }
-            _radio_events->rx_done_tmr(_data_buffer, cur_tmr_sptr, payload_len, rssi, snr);
+            _radio_events->rx_done_tmr(_data_buffer, rssi_list_sptr, cur_tmr_sptr, 
+                                        payload_len, rssi, snr);
+#else
+            radio.receive_cad_rx();
+            radio.start_cad();
+#endif
         }
-        if(!stop_cad.load()) {
+        else {
+            radio.rx_hop_frequency();
             radio.start_cad();
         }
     }
@@ -385,6 +430,10 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
             _radio_events->rx_timeout();
         }
+        debug_printf(DBG_INFO, "Frequency timeout on was %d\r\n", *cur_hop_freq);
+        radio.rx_hop_frequency();
+        radio.receive_cad();
+        radio.start_cad();         
     }
 
     cur_tmr_sptr = make_shared<CalTimer>();
@@ -436,6 +485,7 @@ void SX126X_LoRaRadio::set_channel(uint32_t frequency)
     uint32_t freq = 0;
 
     if ( _force_image_calibration || !_image_calibrated) {
+        debug_printf(DBG_INFO, "Calibrating the radio\r\n");
         calibrate_image(frequency);
         _image_calibrated = true;
     }
@@ -1188,14 +1238,6 @@ void SX126X_LoRaRadio::dangle_timeout_handler(void) {
 
 void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTiming &radio_timing)
 {
-#if 0
-    debug_printf(DBG_INFO, "Stopping CAD\r\n");
-    stop_cad.store(true);
-    cad_running.wait_any(0x1);
-    stop_cad.store(false);
-    debug_printf(DBG_INFO, "Stopped CAD\r\n");
-#endif
-
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {
@@ -1303,16 +1345,17 @@ void SX126X_LoRaRadio::receive_cad(void)
     if(_rxen.is_connected()) {
         _rxen = 1;
     }
+    rx_hop_frequency();
 
-    configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE,
-                        IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE,
+    configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
+                        IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE);
     set_modulation_params(&_mod_params);
     set_packet_params(&_packet_params);
     lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
     lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
-    lora_cad_params_t my_cad_params = cad_params[bw][sf];
+    lora_cad_params_t my_cad_params = cad_params[bw][sf-7];
     lora_cad_symbols_t num_syms;
     switch(my_cad_params.num_sym) {
         case 1:  num_syms = LORA_CAD_01_SYMBOL; break;
@@ -1329,6 +1372,33 @@ void SX126X_LoRaRadio::receive_cad(void)
 #error boosting
     write_to_register(REG_RX_GAIN, 0x96);
 #endif
+    uint8_t val = 0x30;
+    write_opmode_command(RADIO_SET_TXFALLBACKMODE, &val, 1);
+
+    write_opmode_command(RADIO_SET_CAD, NULL, 0);
+    rx_int_mon = 1;
+    tx_int_mon = 0;
+
+    _operation_mode = MODE_CAD;
+}
+
+
+void SX126X_LoRaRadio::receive_cad_rx(void)
+{
+    lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
+    lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
+    lora_cad_params_t my_cad_params = cad_params[bw][sf-7];
+    lora_cad_symbols_t num_syms;
+    switch(my_cad_params.num_sym) {
+        case 1:  num_syms = LORA_CAD_01_SYMBOL; break;
+        case 2:  num_syms = LORA_CAD_02_SYMBOL; break;
+        case 4:  num_syms = LORA_CAD_04_SYMBOL; break;
+        case 8:  num_syms = LORA_CAD_08_SYMBOL; break;
+        case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
+        default: MBED_ASSERT(false); break;
+    }
+    set_cad_params(num_syms, my_cad_params.det_max, my_cad_params.det_min,
+                    LORA_CAD_RX, _rx_timeout);
 
     write_opmode_command(RADIO_SET_CAD, NULL, 0);
     rx_int_mon = 1;
@@ -1528,6 +1598,8 @@ void SX126X_LoRaRadio::set_cad_params(lora_cad_symbols_t nb_symbols,
                                       uint32_t timeout)
 {
     uint8_t buf[7];
+
+    timeout = 25000;
 
     buf[0] = (uint8_t) nb_symbols;
     buf[1] = det_peak;

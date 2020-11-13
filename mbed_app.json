@@ -30,7 +30,8 @@
         "tx_int_mon":          { "value": "PD_1"},
         "int_trig_mon":        { "value": "PG_0"},
         "retransmit_dis_in":   { "value": "PE_7"},
-        "retransmit_dis_out":  { "value": "PE_8"}        
+        "retransmit_dis_out":  { "value": "PE_8"},
+        "rssi_mon":            { "value": "PF_15"}    
     },
     "target_overrides": {
         "*": {

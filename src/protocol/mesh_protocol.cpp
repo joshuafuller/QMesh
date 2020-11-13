@@ -125,14 +125,13 @@ void mesh_protocol_fsm(void) {
     int radio_cr = radio_cb["CR"].get<int>();
     int radio_freq = radio_cb["Frequency"].get<int>();
     int radio_pwr = radio_cb["TX Power"].get<int>();  
-    int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
     int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
     int my_addr = radio_cb["Address"].get<int>();
     int timing_off_inc = radio_cb["Number Offsets"].get<int>();
     int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
     static mt19937 rand_gen(my_addr);
     int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
-    static uniform_int_distribution<int32_t> freq_dist(radio_freq-freq_bound, radio_freq+freq_bound);  
+    static uniform_int_distribution<int32_t> freq_dist(-freq_bound, freq_bound);  
     static mt19937 timing_rand_gen(my_addr);
     uniform_int_distribution<uint8_t> timing_off_dist(0, timing_off_inc-1);  
     uint8_t next_sym_off = timing_off_dist(timing_rand_gen);
@@ -151,8 +150,9 @@ void mesh_protocol_fsm(void) {
                 retransmit_disable_out_n.write(1);
                 led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
-                radio.set_channel(radio_freq);
+                //radio.set_channel(radio_freq);
                 radio.receive_cad();
+                debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
@@ -169,7 +169,8 @@ void mesh_protocol_fsm(void) {
                 else if(radio_event->evt_enum == TX_FRAME_EVT) {
                     tx_frame_sptr = radio_event->frame;
                     tx_frame_sptr->fec = fec;
-                    radio.set_channel(freq_dist(rand_gen));
+                    radio.tx_hop_frequency(freq_dist(rand_gen));
+                    //radio.set_channel(freq_dist(rand_gen));
                     state = TX_PACKET;
                 }
                 else if(radio_event->evt_enum == RX_DONE_EVT) {
@@ -196,7 +197,7 @@ void mesh_protocol_fsm(void) {
                             radio.standby();
                             radio_timing.setTimer(radio_event->tmr_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
-                            radio.set_channel(freq_dist(rand_gen));
+                            radio.tx_hop_frequency(freq_dist(rand_gen));
                             retransmit_disable_out_n.write(0);
                             ThisThread::sleep_for(radio_timing.getWaitNoWarn()/2000);
                             if(retransmit_disable_in_n.read()) {

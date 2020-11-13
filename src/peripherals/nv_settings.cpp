@@ -118,6 +118,7 @@ void load_settings_from_flash(void) {
         radio_cb["Mode"] = "Mesh Normal";
         radio_cb["Address"] = DEFAULT_ADDRESS;
         radio_cb["Frequency"] = RADIO_FREQUENCY;
+        radio_cb["Frequencies"][0] = RADIO_FREQUENCY;
         radio_cb["BW"] = RADIO_BANDWIDTH;
         radio_cb["CR"] = RADIO_CODERATE;
         radio_cb["SF"] = RADIO_SF;
@@ -160,7 +161,13 @@ void load_settings_from_flash(void) {
     fclose(f);
     debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());
     debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb["Address"].get<int>());
+#if 0
     debug_printf(DBG_INFO, "Frequency: %d\r\n", radio_cb["Frequency"].get<int>());
+#else
+    for(int i = 0; i < radio_cb["Frequencies"].size(); i++) {
+        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb["Frequencies"][i].get<int>());        
+    }
+#endif
     debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb["BW"].get<int>());
     debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb["CR"].get<int>());
     debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb["SF"].get<int>());
@@ -251,7 +258,7 @@ void nv_log_fn(void) {
     DIR *log_dir = opendir("/fs/log");
     if(!log_dir && errno == ENOENT) {
         debug_printf(DBG_INFO, "Log directory does not exist. Creating...\r\n");
-        if(!mkdir("/fs/log", 777)) {
+        if(mkdir("/fs/log", 777)) {
             MBED_ASSERT(false);
         }
         log_dir = opendir("/fs/log");

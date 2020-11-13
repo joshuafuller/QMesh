@@ -27,6 +27,7 @@
 #include "PinNames.h"
 #include "mbed.h"
 #include "cal_timer.hpp"
+#include <list>
 
 /**
  * Structure to hold RF controls for LoRa Radio.
@@ -411,7 +412,8 @@ typedef struct radio_events {
      *                     LoRa: SNR value in dB
      */
     mbed::Callback<void(const uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)> rx_done;
-    mbed::Callback<void(const uint8_t *payload, shared_ptr<CalTimer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)> rx_done_tmr;
+    mbed::Callback<void(const uint8_t *payload, shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr,
+                shared_ptr<CalTimer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)> rx_done_tmr;
 
     /**
      * Callback when Reception is timed out.

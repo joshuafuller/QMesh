@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbed.h"
 
 extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; /// GPIO signals to monitor timing accuracy/jitter
+extern DigitalOut rssi_mon;
 
 const float lora_bw[] = {125e3f, 250e3f, 500e3f}; /// Different LoRa bandwidths, in KHz
 

@@ -35,6 +35,7 @@ tx_power = int(sys.argv[3])
 settings = {}
 settings["Address"] = node_id
 settings["Frequency"] = 426000000
+settings["Frequencies"] = [424000000, 425000000, 426000000, 427000000]
 settings["BW"] = 1 # 0=125KHz, 1=250KHz, 2=500KHz
 settings["CR"] = 0
 settings["SF"] = 9
@@ -57,7 +58,7 @@ settings["Test FEC"] = 0 # 1 to enable anf FEC test
 settings["Number Offsets"] = 4
 settings["Has GPS"] = 0
 settings["POCSAG Frequency"] = 439987500
-settings["POCSAG Beacon Interval"] = 1200
+settings["POCSAG Beacon Interval"] = 120
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

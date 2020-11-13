@@ -46,6 +46,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "cal_timer.hpp"
 #include <atomic>
 #include <list>
+#include <random>
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #define MAX_DATA_BUFFER_SIZE_SX126X                        MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -278,6 +279,10 @@ public:
      */
     virtual void start_cad(void);
 
+
+    void configure_freq_hop(const uint32_t addr, const vector<uint32_t> &my_hop_freqs);
+
+
     /**
      *  Check if the given RF is in range
      *
@@ -309,6 +314,11 @@ public:
     void set_tx_power(int8_t power);
 
     void receive_cad(void);
+    void receive_cad_rx(void);
+
+    void tx_hop_frequency(const uint32_t freq_offset);
+
+    void rx_hop_frequency(void);
 
     /**
      * Timers for tracking when the Rx interrupt was thrown
@@ -463,6 +473,12 @@ private:
     atomic<bool> collect_rssi;
     Thread soft_dec_thread;
     shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
+
+    // Components to implement frequency hopping
+    shared_ptr<mt19937> rand_gen_hop_chan_sptr;
+    shared_ptr<uniform_int_distribution<uint32_t>> hop_chan_dist_sptr;
+    vector<uint32_t> hop_freqs;
+    vector<uint32_t>::iterator cur_hop_freq;
 };
 
 #endif /* MBED_LORA_RADIO_DRV_SX126X_LORARADIO_H_ */

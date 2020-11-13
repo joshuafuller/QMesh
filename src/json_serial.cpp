@@ -116,6 +116,9 @@ void rx_serial_thread_fn(void) {
             else if(setting == "Beacon Message") {
                 radio_cb["Beacon Message"] = rx_json["Beacon Message"].get<string>();
             }
+            else if(setting == "Frequencies") {
+                radio_cb["Frequencies"] = rx_json["Frequencies"];
+            }
             else {
                 radio_cb[setting] = rx_json[setting].get<int>();
             }

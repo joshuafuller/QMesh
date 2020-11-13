@@ -384,6 +384,7 @@ public:
     int16_t rssi;
     int8_t snr;
     shared_ptr<vector<uint8_t>> buf;
+    shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
     shared_ptr<Frame> frame;
     string pocsag_msg;
 
@@ -394,6 +395,7 @@ public:
     RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr);
 
     RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr, const uint8_t *my_buf, 
+                shared_ptr<list<pair<uint32_t, uint8_t> > > my_rssi_list_sptr,
                 const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
 
     RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);
