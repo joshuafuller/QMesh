@@ -226,6 +226,7 @@ void mesh_protocol_fsm(void) {
             case TX_PACKET:
                 total_tx_pkt.store(total_tx_pkt.load()+1);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
+                radio.standby();
                 radio.set_tx_power(radio_pwr);
                 { 
                 led2.LEDOff();

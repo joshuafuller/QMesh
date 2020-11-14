@@ -1200,7 +1200,7 @@ void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
     if(_txen.is_connected()) {
         _txen = 1;
     }
-   
+
     configure_dio_irq(IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
                       IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
                       IRQ_RADIO_NONE,
