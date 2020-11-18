@@ -115,7 +115,7 @@ void init_radio(void) {
     debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", radio_preamble_len); 
     radio_preamble_len = radio_cb["Preamble Length"].get<int>();
     radio_cb["Preamble Length"] = radio_preamble_len + 5*radio_cb["Frequencies"].size();
-    radio_preamble_len = radio_cb["Preamble Length"].get<int>();    
+    radio_preamble_len = radio_cb["Preamble Length"].get<int>();   
     debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", radio_preamble_len); 
     int addr = radio_cb["Address"].get<int>();
     vector<uint32_t> freqs;
@@ -169,7 +169,7 @@ void init_radio(void) {
     radio.set_public_network(false);
     radio.set_channel(radio_freq);
     radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, radio_preamble_len, full_pkt_len);
-
+    radio.cad_rx_timeout = radio_timing.pkt_time_us / 15.625f;
     int cw_test_mode = radio_cb["CW Test Mode"].get<int>();
     int pre_test_mode = radio_cb["Preamble Test Mode"].get<int>();
     int fec_test_mode = radio_cb["Test FEC"].get<int>();

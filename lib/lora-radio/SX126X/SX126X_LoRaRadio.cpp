@@ -396,27 +396,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
 
     if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
-#if 0
-            uint8_t offset = 0;
-            uint8_t payload_len = 0;
-            int16_t rssi = 0;
-            int8_t snr = 0;
-            packet_status_t pkt_status;
-            get_rx_buffer_status(&payload_len, &offset);
-            read_fifo(_data_buffer, payload_len, offset);
-            get_packet_status(&pkt_status);
-            if (pkt_status.modem_type == MODEM_FSK) {
-                rssi = pkt_status.params.gfsk.rssi_sync;
-            } else {
-                rssi = pkt_status.params.lora.rssi_pkt;
-                snr = pkt_status.params.lora.snr_pkt;
-            }
-            _radio_events->rx_done_tmr(_data_buffer, rssi_list_sptr, cur_tmr_sptr, 
-                                        payload_len, rssi, snr);
-#else
             radio.receive_cad_rx();
             radio.start_cad();
-#endif
         }
         else {
             radio.rx_hop_frequency();
@@ -1366,7 +1347,7 @@ void SX126X_LoRaRadio::receive_cad(void)
         default: MBED_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max, my_cad_params.det_min,
-                    LORA_CAD_RX, _rx_timeout);
+                    LORA_CAD_RX, cad_rx_timeout);
 
 #if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
 #error boosting
@@ -1398,7 +1379,7 @@ void SX126X_LoRaRadio::receive_cad_rx(void)
         default: MBED_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max, my_cad_params.det_min,
-                    LORA_CAD_RX, _rx_timeout);
+                    LORA_CAD_RX, cad_rx_timeout);
 
     write_opmode_command(RADIO_SET_CAD, NULL, 0);
     rx_int_mon = 1;

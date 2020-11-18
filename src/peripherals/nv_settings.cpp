@@ -161,13 +161,9 @@ void load_settings_from_flash(void) {
     fclose(f);
     debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());
     debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb["Address"].get<int>());
-#if 0
-    debug_printf(DBG_INFO, "Frequency: %d\r\n", radio_cb["Frequency"].get<int>());
-#else
     for(int i = 0; i < radio_cb["Frequencies"].size(); i++) {
         debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb["Frequencies"][i].get<int>());        
     }
-#endif
     debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb["BW"].get<int>());
     debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb["CR"].get<int>());
     debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb["SF"].get<int>());
@@ -185,7 +181,6 @@ void load_settings_from_flash(void) {
     //  anything else from occurring and leading to weird crashes
     MBED_ASSERT(radio_cb["Conv Rate"].get<int>() == 2);
     MBED_ASSERT(radio_cb["Conv Order"].get<int>() == 7);
-
     // Check if low-power mode is set. If so, delete the UART
     rx_serial_thread.start(rx_serial_thread_fn);
     FILE *low_power_fh = fopen("/fs/low_power.mode", "r");

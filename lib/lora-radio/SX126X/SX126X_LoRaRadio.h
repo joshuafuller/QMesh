@@ -326,6 +326,7 @@ public:
     Semaphore *tmr_sem_ptr;
     CalTimer *cur_tmr;
     shared_ptr<CalTimer> cur_tmr_sptr;
+    uint32_t cad_rx_timeout;
 
 private:
 
