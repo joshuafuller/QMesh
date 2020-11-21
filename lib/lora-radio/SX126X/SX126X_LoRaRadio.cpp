@@ -221,11 +221,14 @@ void SX126X_LoRaRadio::clear_irq_status(uint16_t irq)
 //TODO - Better do CAD here. CAD code is already part of the driver
 //       It needs to be hooked up to the stack (this API will need change
 //       and the stack will need changes too)
-bool SX126X_LoRaRadio::perform_carrier_sense(radio_modems_t modem,
-                                             uint32_t freq,
-                                             int16_t rssi_threshold,
-                                             uint32_t max_carrier_sense_time)
+bool SX126X_LoRaRadio::perform_carrier_sense(const radio_modems_t modem,
+                                             const uint32_t freq,
+                                             const int16_t rssi_threshold,
+                                             const uint32_t max_carrier_sense_time,
+                                             const bool locking)
 {
+    if(locking) { lock(); }
+
     bool status = true;
     int16_t rssi = 0;
 
@@ -252,10 +255,12 @@ bool SX126X_LoRaRadio::perform_carrier_sense(radio_modems_t modem,
     }
 
     sleep();
+
+    if(locking) { unlock(); }
     return status;
 }
 
-void SX126X_LoRaRadio::start_cad(void)
+void SX126X_LoRaRadio::start_cad(const bool locking)
 {
     // TODO: CAD is more advanced in SX126X. We will need API change in LoRaRadio
     //       for this to act properly
@@ -284,9 +289,11 @@ void SX126X_LoRaRadio::rx_hop_frequency(void)
 
 
 // Randomly select a hop frequency
-void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset)
+void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset, const bool locking)
 {
+    if(locking) { lock(); }
     set_channel(*(hop_freqs.begin()+(*hop_chan_dist_sptr)(*rand_gen_hop_chan_sptr)) + freq_offset);
+    if(locking) { unlock(); }
 }
 
 
@@ -294,14 +301,16 @@ void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset)
  * TODO: The purpose of this API is unclear.
  *       Need to start an internal discussion.
  */
-bool SX126X_LoRaRadio::check_rf_frequency(uint32_t frequency)
+bool SX126X_LoRaRadio::check_rf_frequency(const uint32_t frequency)
 {
     // Implement check. Currently all frequencies are supported ? What band ?
     return true;
 }
 
-void SX126X_LoRaRadio::set_tx_continuous_wave(uint32_t freq, int8_t power, uint16_t time)
+void SX126X_LoRaRadio::set_tx_continuous_wave(const uint32_t freq, const int8_t power, 
+                                                const uint16_t time, const bool locking)
 {
+    if(locking) { lock(); }
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {
@@ -312,11 +321,11 @@ void SX126X_LoRaRadio::set_tx_continuous_wave(uint32_t freq, int8_t power, uint1
     }
 
     write_opmode_command((uint8_t) RADIO_SET_TXCONTINUOUSWAVE, NULL, 0);
-
+    if(locking) { lock(); }
 }
 
-void SX126X_LoRaRadio::set_tx_continuous_preamble(void)
-{
+void SX126X_LoRaRadio::set_tx_continuous_preamble(const bool locking) {
+    if(locking) { lock(); }
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {
@@ -327,6 +336,7 @@ void SX126X_LoRaRadio::set_tx_continuous_preamble(void)
     }
 
     write_opmode_command((uint8_t) RADIO_SET_TXCONTINUOUSPREAMBLE, NULL, 0);
+    if(locking) { unlock(); }
 }
 
 
@@ -428,8 +438,10 @@ void SX126X_LoRaRadio::set_device_ready(void)
     }
 }
 
-void SX126X_LoRaRadio::calibrate_image(uint32_t freq)
+void SX126X_LoRaRadio::calibrate_image(const uint32_t freq, const bool locking)
 {
+    if(locking) { lock(); }
+
     uint8_t cal_freq[2];
 
     if (freq > 900000000) {
@@ -452,10 +464,14 @@ void SX126X_LoRaRadio::calibrate_image(uint32_t freq)
     write_opmode_command((uint8_t) RADIO_CALIBRATEIMAGE, cal_freq, 2);
 
     _image_calibrated = true;
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_channel(uint32_t frequency)
+void SX126X_LoRaRadio::set_channel(const uint32_t frequency, const bool locking)
 {
+    if(locking) { lock(); }
+
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
     // At this point, we are not sure what is the Modem type, set both
     _mod_params.params.lora.operational_frequency = frequency;
@@ -478,13 +494,17 @@ void SX126X_LoRaRadio::set_channel(uint32_t frequency)
     buf[3] = (uint8_t) (freq & 0xFF);
 
     write_opmode_command((uint8_t) RADIO_SET_RFFREQUENCY, buf, 4);
+
+    if(locking) { unlock(); }
 }
 
 /**
  * Put radio in Standby mode
  */
-void SX126X_LoRaRadio::standby(void)
+void SX126X_LoRaRadio::standby(const bool locking)
 {
+    if(locking) { lock(); }
+
     if (_operation_mode == MODE_STDBY_RC) {
         return;
     }
@@ -499,16 +519,26 @@ void SX126X_LoRaRadio::standby(void)
     } else {
         _operation_mode = MODE_STDBY_XOSC;
     }
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_dio2_as_rfswitch_ctrl(uint8_t enable)
+void SX126X_LoRaRadio::set_dio2_as_rfswitch_ctrl(const uint8_t enable, const bool locking)
 {
-    write_opmode_command(RADIO_SET_RFSWITCHMODE, &enable, 1);
+    if(locking) { lock(); }
+
+    uint8_t en = enable;
+    write_opmode_command(RADIO_SET_RFSWITCHMODE, &en, 1);
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage,
-                                             uint32_t timeout)
+void SX126X_LoRaRadio::set_dio3_as_tcxo_ctrl(const radio_TCXO_ctrl_voltage_t voltage,
+                                             const uint32_t timeout,
+                                             const bool locking)
 {
+    if(locking) { lock(); }
+
     uint8_t buf[4];
 
     buf[0] = voltage & 0x07;
@@ -517,10 +547,14 @@ void SX126X_LoRaRadio::set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage,
     buf[3] = (uint8_t) (timeout & 0xFF);
 
     write_opmode_command(RADIO_SET_TCXOMODE, buf, 4);
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::init_radio(radio_events_t *events)
+void SX126X_LoRaRadio::init_radio(radio_events_t *events, const bool locking)
 {
+    if(locking) { lock(); }
+
     _radio_events = events;
     // attach DIO1 interrupt line to its respective ISR
     _dio1_ctl.rise(callback(this, &SX126X_LoRaRadio::dio1_irq_isr));
@@ -548,10 +582,14 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events)
 #endif
     // this is a POR sequence
     cold_start_wakeup();
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::cold_start_wakeup()
+void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
 {
+    if(locking) { lock(); }
+
     uint8_t regulator_mode = MBED_CONF_SX126X_LORA_DRIVER_REGULATOR_MODE;
     write_opmode_command(RADIO_SET_REGULATORMODE, &regulator_mode, 1);
     set_buffer_base_addr(0x00, 0x00);
@@ -572,10 +610,13 @@ void SX126X_LoRaRadio::cold_start_wakeup()
     if (_active_modem == MODEM_LORA) {
         set_public_network(_network_mode_public);
     }
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_public_network(bool enable)
+void SX126X_LoRaRadio::set_public_network(const bool enable, const bool locking)
 {
+    if(locking) { lock(); }
     if (enable) {
         // Change LoRa modem SyncWord
         write_to_register(REG_LR_SYNCWORD, (LORA_MAC_PUBLIC_SYNCWORD >> 8) & 0xFF);
@@ -585,9 +626,10 @@ void SX126X_LoRaRadio::set_public_network(bool enable)
         write_to_register(REG_LR_SYNCWORD, (LORA_MAC_PRIVATE_SYNCWORD >> 8) & 0xFF);
         write_to_register(REG_LR_SYNCWORD + 1, LORA_MAC_PRIVATE_SYNCWORD & 0xFF);
     }
+    if(locking) { unlock(); }
 }
 
-uint32_t SX126X_LoRaRadio::time_on_air(radio_modems_t modem, uint8_t pkt_len)
+uint32_t SX126X_LoRaRadio::time_on_air(const radio_modems_t modem, const uint8_t pkt_len)
 {
     uint32_t air_time = 0;
 
@@ -626,8 +668,10 @@ uint32_t SX126X_LoRaRadio::time_on_air(radio_modems_t modem, uint8_t pkt_len)
     return air_time;
 }
 
-void SX126X_LoRaRadio::radio_reset()
+void SX126X_LoRaRadio::radio_reset(const bool locking)
 {
+    if(locking) { lock(); }
+
     // Do the reset
     _reset_ctl.output();
     _reset_ctl = 0;
@@ -636,10 +680,13 @@ void SX126X_LoRaRadio::radio_reset()
     _reset_ctl.input();
     // give some time for automatic image calibration
     wait_ms(6);
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::wakeup()
+void SX126X_LoRaRadio::wakeup(const bool locking)
 {
+    if(locking) { lock(); }
     // hold the NSS low, this should wakeup the chip.
     // now we should wait for the _busy line to go low
     if (_operation_mode == MODE_SLEEP) {
@@ -655,10 +702,13 @@ void SX126X_LoRaRadio::wakeup()
         cold_start_wakeup();
 #endif
     }
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::sleep(void)
+void SX126X_LoRaRadio::sleep(const bool locking)
 {
+    if(locking) { lock(); }
     // warm start, power consumption 600 nA
     uint8_t sleep_state = 0x04;
     _operation_mode = MODE_SLEEP;
@@ -670,10 +720,14 @@ void SX126X_LoRaRadio::sleep(void)
 
     write_opmode_command(RADIO_SET_SLEEP, &sleep_state, 1);
     wait_ms(2);
+
+    if(locking) { unlock(); }
 }
 
-uint32_t SX126X_LoRaRadio::random(void)
+uint32_t SX126X_LoRaRadio::random(const bool locking) 
 {
+    if(locking) { lock(); }
+
     set_modem(MODEM_LORA);
     uint8_t buf[] = {0, 0, 0, 0};
 
@@ -685,7 +739,9 @@ uint32_t SX126X_LoRaRadio::random(void)
     read_register(RANDOM_NUMBER_GENERATORBASEADDR, buf, 4);
     standby();
 
-    return (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+    int val = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+    if(locking) { unlock(); }
+    return val;
 }
 
 void SX126X_LoRaRadio::write_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size)
@@ -830,8 +886,10 @@ void SX126X_LoRaRadio::read_register(uint16_t addr, uint8_t *buffer,
     _spi.unlock();
 }
 
-void SX126X_LoRaRadio::write_fifo(uint8_t *buffer, uint8_t size)
+void SX126X_LoRaRadio::write_fifo(const uint8_t *const buffer, const uint8_t size, const bool locking)
 {
+    if(locking) { lock(); }
+
     _spi.lock();
     _chip_select = 0;
 
@@ -854,10 +912,13 @@ void SX126X_LoRaRadio::write_fifo(uint8_t *buffer, uint8_t size)
     reg_info << "\r\n";
     debug_printf(DBG_WARN, reg_info.str().c_str());
 #endif /* TRACE_SX1262_SPI */
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_modem(uint8_t modem)
+void SX126X_LoRaRadio::set_modem(const uint8_t modem, const bool locking)
 {
+    if(locking) { lock(); }
     _active_modem = modem;
 
     // setting modem type must happen in stnadby mode
@@ -866,6 +927,8 @@ void SX126X_LoRaRadio::set_modem(uint8_t modem)
     }
 
     write_opmode_command(RADIO_SET_PACKETTYPE, &_active_modem, 1);
+
+    if(locking) { unlock(); }
 }
 
 uint8_t SX126X_LoRaRadio::get_modem()
@@ -895,13 +958,16 @@ uint8_t SX126X_LoRaRadio::get_device_variant(void)
     return LORA_DEVICE;
 }
 
-uint8_t SX126X_LoRaRadio::get_fsk_bw_reg_val(uint32_t bandwidth)
+uint8_t SX126X_LoRaRadio::get_fsk_bw_reg_val(const uint32_t bandwidth, const bool locking)
 {
+    if(locking) { lock(); }
+
     uint8_t i;
 
     for (i = 0; i < (sizeof(fsk_bandwidths) / sizeof(fsk_bw_t)) - 1; i++) {
         if ((bandwidth >= fsk_bandwidths[i].bandwidth)
                 && (bandwidth < fsk_bandwidths[i + 1].bandwidth)) {
+            if(locking) { unlock(); }
             return fsk_bandwidths[i].register_value;
         }
     }
@@ -910,17 +976,24 @@ uint8_t SX126X_LoRaRadio::get_fsk_bw_reg_val(uint32_t bandwidth)
     while (1);
 }
 
-void SX126X_LoRaRadio::set_max_payload_length(radio_modems_t modem, uint8_t max)
+void SX126X_LoRaRadio::set_max_payload_length(const radio_modems_t modem, const uint8_t max, 
+                                                const bool locking)
 {
+    if(locking) { lock(); }
+
     if (modem == MODEM_LORA) {
         _packet_params.params.lora.payload_length = max;
     } else {
         _packet_params.params.gfsk.payload_length = max;
     }
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_tx_config_pocsag(int8_t power)
+void SX126X_LoRaRadio::set_tx_config_pocsag(const int8_t power, const bool locking)
 {
+    if(locking) { lock(); }
+
     _mod_params.modem_type = MODEM_FSK;
     _mod_params.params.gfsk.bit_rate = 1200;
 
@@ -945,22 +1018,26 @@ void SX126X_LoRaRadio::set_tx_config_pocsag(int8_t power)
 
     _tx_power = power;
     _tx_timeout = 0;
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_tx_config(radio_modems_t modem,
-                                     int8_t power,
-                                     uint32_t fdev,
-                                     uint32_t bandwidth,
-                                     uint32_t datarate,
-                                     uint8_t coderate,
-                                     uint16_t preamble_len,
-                                     bool fix_len,
-                                     bool crc_on,
-                                     bool freq_hop_on,
-                                     uint8_t hop_period,
-                                     bool iq_inverted,
-                                     uint32_t timeout)
+void SX126X_LoRaRadio::set_tx_config(const radio_modems_t modem,
+                                     const int8_t power,
+                                     const uint32_t fdev,
+                                     const uint32_t bandwidth,
+                                     const uint32_t datarate,
+                                     const uint8_t coderate,
+                                     const uint16_t preamble_len,
+                                     const bool fix_len,
+                                     const bool crc_on,
+                                     const bool freq_hop_on,
+                                     const uint8_t hop_period,
+                                     const bool iq_inverted,
+                                     const uint32_t timeout,
+                                     const bool locking)
 {
+    if(locking) { lock(); }
 
     uint8_t modem_type = (uint8_t) modem;
     switch (modem_type) {
@@ -1031,23 +1108,27 @@ void SX126X_LoRaRadio::set_tx_config(radio_modems_t modem,
 
     _tx_power = power;
     _tx_timeout = timeout;
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_rx_config(radio_modems_t modem,
-                                     uint32_t bandwidth,
-                                     uint32_t datarate,
-                                     uint8_t coderate,
-                                     uint32_t bandwidthAfc,
-                                     uint16_t preamble_len,
-                                     uint16_t symb_timeout,
-                                     bool fix_len,
-                                     uint8_t payload_len,
-                                     bool crc_on,
-                                     bool freq_hop_on,
-                                     uint8_t hop_period,
-                                     bool iq_inverted,
-                                     bool rx_continuous)
+void SX126X_LoRaRadio::set_rx_config(const radio_modems_t modem,
+                                     const uint32_t bandwidth,
+                                     const uint32_t datarate,
+                                     const uint8_t coderate,
+                                     const uint32_t bandwidthAfc,
+                                     const uint16_t preamble_len,
+                                     const uint16_t symb_timeout,
+                                     const bool fix_len,
+                                     const uint8_t payload_len,
+                                     const bool crc_on,
+                                     const bool freq_hop_on,
+                                     const uint8_t hop_period,
+                                     const bool iq_inverted,
+                                     const bool rx_continuous,
+                                     const bool locking)
 {
+    if(locking) { unlock(); }
     uint8_t max_payload_len;
     (void) freq_hop_on;
     (void) hop_period;
@@ -1152,11 +1233,15 @@ void SX126X_LoRaRadio::set_rx_config(radio_modems_t modem,
         default:
             break;
     }
+    
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
-                                         uint16_t dio2_mask, uint16_t dio3_mask)
+void SX126X_LoRaRadio::configure_dio_irq(const uint16_t irq_mask, const uint16_t dio1_mask,
+                                         const uint16_t dio2_mask, const uint16_t dio3_mask,
+                                         const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t buf[8];
 
     buf[0] = (uint8_t) ((irq_mask >> 8) & 0x00FF);
@@ -1169,10 +1254,13 @@ void SX126X_LoRaRadio::configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
     buf[7] = (uint8_t) (dio3_mask & 0x00FF);
 
     write_opmode_command((uint8_t) RADIO_CFG_DIOIRQ, buf, 8);
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
+void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size,
+                            const bool locking)
 {
+    if(locking) { lock(); }
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {
@@ -1207,6 +1295,7 @@ void SX126X_LoRaRadio::send(uint8_t *buffer, uint8_t size)
     rx_int_mon = 0;
 
     _operation_mode = MODE_TX;
+    if(locking) { unlock(); }
 }
 
 void SX126X_LoRaRadio::dangle_timeout_handler(void) {
@@ -1217,8 +1306,10 @@ void SX126X_LoRaRadio::dangle_timeout_handler(void) {
     dangling_flags.set(0x1);
 }
 
-void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTiming &radio_timing)
+void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_t size, 
+                                    RadioTiming &radio_timing, const bool locking)
 {
+    if(locking) { lock(); }
     set_tx_power(_tx_power);
 
     if(_rxen.is_connected()) {
@@ -1257,11 +1348,13 @@ void SX126X_LoRaRadio::send_with_delay(uint8_t *buffer, uint8_t size, RadioTimin
     write_opmode_command_finish();
 
     _operation_mode = MODE_TX;
+    if(locking) { unlock(); }
 }
 
 
-void SX126X_LoRaRadio::receive(void)
+void SX126X_LoRaRadio::receive(const bool locking)
 {
+    if(locking) { lock(); }
     MBED_ASSERT(false);
     if (get_modem() == MODEM_LORA && _reception_mode != RECEPTION_MODE_CONTINUOUS) {
         // Data-sheet Table 13-11: StopOnPreambParam
@@ -1315,11 +1408,13 @@ void SX126X_LoRaRadio::receive(void)
     tx_int_mon = 0;
 
     _operation_mode = MODE_RX;
+    if(locking) { unlock(); }
 }
 
 
-void SX126X_LoRaRadio::receive_cad(void)
+void SX126X_LoRaRadio::receive_cad(const bool locking)
 {
+    if(locking) { lock(); }
     if(_txen.is_connected()) {
         _txen = 0;
     }
@@ -1361,11 +1456,13 @@ void SX126X_LoRaRadio::receive_cad(void)
     tx_int_mon = 0;
 
     _operation_mode = MODE_CAD;
+    if(locking) { unlock(); }
 }
 
 
-void SX126X_LoRaRadio::receive_cad_rx(void)
+void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
 {
+    if(locking) { lock(); }
     lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
     lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
     lora_cad_params_t my_cad_params = cad_params[bw][sf-7];
@@ -1386,12 +1483,15 @@ void SX126X_LoRaRadio::receive_cad_rx(void)
     tx_int_mon = 0;
 
     _operation_mode = MODE_CAD;
+    if(locking) { unlock(); }
 }
 
 
 // check data-sheet 13.1.14.1 PA optimal settings
-void SX126X_LoRaRadio::set_tx_power(int8_t power)
+void SX126X_LoRaRadio::set_tx_power(const int8_t my_power, const bool locking)
 {
+    if(locking) { lock(); }
+    int8_t power = my_power;
     uint8_t buf[2];
 
     if (get_device_variant() == SX1261) {
@@ -1434,10 +1534,12 @@ void SX126X_LoRaRadio::set_tx_power(int8_t power)
 #endif
 
     write_opmode_command(RADIO_SET_TXPARAMS, buf, 2);
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_modulation_params(modulation_params_t *params)
+void SX126X_LoRaRadio::set_modulation_params(const modulation_params_t *const params, const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t n;
     uint32_t temp = 0;
     uint8_t buf[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -1477,11 +1579,14 @@ void SX126X_LoRaRadio::set_modulation_params(modulation_params_t *params)
         default:
             return;
     }
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_pa_config(uint8_t pa_DC, uint8_t hp_max,
-                                     uint8_t device_type, uint8_t pa_LUT )
+void SX126X_LoRaRadio::set_pa_config(const uint8_t pa_DC, const uint8_t hp_max,
+                                     const uint8_t device_type, const uint8_t pa_LUT,
+                                     const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t buf[4];
 
     buf[0] = pa_DC;
@@ -1489,40 +1594,49 @@ void SX126X_LoRaRadio::set_pa_config(uint8_t pa_DC, uint8_t hp_max,
     buf[2] = device_type;
     buf[3] = pa_LUT;
     write_opmode_command(RADIO_SET_PACONFIG, buf, 4);
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_crc_seed(uint16_t seed)
+void SX126X_LoRaRadio::set_crc_seed(const uint16_t seed, const bool locking)
 {
+    if(locking) { lock(); }
     if (_active_modem == MODEM_FSK) {
         uint8_t buf[2];
         buf[0] = (uint8_t) ((seed >> 8) & 0xFF);
         buf[1] = (uint8_t) (seed & 0xFF);
         write_to_register(REG_LR_CRCSEEDBASEADDR, buf, 2);
     }
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_crc_polynomial(uint16_t polynomial)
+void SX126X_LoRaRadio::set_crc_polynomial(const uint16_t polynomial, const bool locking)
 {
+    if(locking) { lock(); }
     if (_active_modem == MODEM_FSK) {
         uint8_t buf[2];
         buf[0] = (uint8_t) ((polynomial >> 8) & 0xFF);
         buf[1] = (uint8_t) (polynomial & 0xFF);
         write_to_register(REG_LR_CRCPOLYBASEADDR, buf, 2);
     }
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_whitening_seed(uint16_t seed)
+void SX126X_LoRaRadio::set_whitening_seed(const uint16_t seed, const bool locking)
 {
+    if(locking) { lock(); }
     if (_active_modem == MODEM_FSK) {
         uint8_t reg_value = read_register(REG_LR_WHITSEEDBASEADDR_MSB) & 0xFE;
         reg_value = ((seed >> 8) & 0x01) | reg_value;
         write_to_register(REG_LR_WHITSEEDBASEADDR_MSB, reg_value); // only 1 bit.
         write_to_register(REG_LR_WHITSEEDBASEADDR_LSB, (uint8_t) seed);
     }
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_packet_params(packet_params_t *packet_params)
+void SX126X_LoRaRadio::set_packet_params(const packet_params_t *const packet_params, 
+                                            const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t n;
     uint8_t crc_val = 0;
     uint8_t buf[9] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -1571,16 +1685,17 @@ void SX126X_LoRaRadio::set_packet_params(packet_params_t *packet_params)
             return;
     }
     write_opmode_command(RADIO_SET_PACKETPARAMS, buf, n);
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_cad_params(lora_cad_symbols_t nb_symbols,
-                                      uint8_t det_peak, uint8_t det_min,
-                                      cad_exit_modes_t exit_mode,
-                                      uint32_t timeout)
+void SX126X_LoRaRadio::set_cad_params(const lora_cad_symbols_t nb_symbols,
+                                      const uint8_t det_peak, const uint8_t det_min,
+                                      const cad_exit_modes_t exit_mode,
+                                      const uint32_t timeout,
+                                      const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t buf[7];
-
-    timeout = 25000;
 
     buf[0] = (uint8_t) nb_symbols;
     buf[1] = det_peak;
@@ -1592,39 +1707,50 @@ void SX126X_LoRaRadio::set_cad_params(lora_cad_symbols_t nb_symbols,
     write_opmode_command((uint8_t) RADIO_SET_CADPARAMS, buf, 7);
 
     _operation_mode = MODE_CAD;
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::set_buffer_base_addr(uint8_t tx_base_addr, uint8_t rx_base_addr)
+void SX126X_LoRaRadio::set_buffer_base_addr(const uint8_t tx_base_addr, const uint8_t rx_base_addr,
+                                            const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t buf[2];
 
     buf[0] = tx_base_addr;
     buf[1] = rx_base_addr;
     write_opmode_command((uint8_t) RADIO_SET_BUFFERBASEADDRESS, buf, 2);
+    if(locking) { unlock(); }
 }
 
-uint8_t SX126X_LoRaRadio::get_status(void)
+uint8_t SX126X_LoRaRadio::get_status(const bool locking)
 {
+    if(locking) { lock(); }
     if (_operation_mode != MODE_STDBY_RC || _operation_mode != MODE_SLEEP) {
         return 0;
     }
 
+    if(locking) { unlock(); }
     return 0xFF;
 }
 
-int8_t SX126X_LoRaRadio::get_rssi()
+int8_t SX126X_LoRaRadio::get_rssi(const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t buf[1];
     int8_t rssi = 0;
 
     read_opmode_command((uint8_t) RADIO_GET_RSSIINST, buf, 1);
     rssi = -buf[0] >> 1;
+
+    if(locking) { unlock(); }
     return rssi;
 }
 
 void SX126X_LoRaRadio::get_rx_buffer_status(uint8_t *payload_len,
-                                            uint8_t *start_ptr)
+                                            uint8_t *start_ptr,
+                                            const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t status[2];
 
     read_opmode_command((uint8_t) RADIO_GET_RXBUFFERSTATUS, status, 2);
@@ -1639,10 +1765,13 @@ void SX126X_LoRaRadio::get_rx_buffer_status(uint8_t *payload_len,
     }
 
     *start_ptr = status[1];
+
+    if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::get_packet_status(packet_status_t *pkt_status)
+void SX126X_LoRaRadio::get_packet_status(packet_status_t *pkt_status, const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t status[3];
 
     read_opmode_command((uint8_t) RADIO_GET_PACKETSTATUS, status, 3);
@@ -1669,19 +1798,26 @@ void SX126X_LoRaRadio::get_packet_status(packet_status_t *pkt_status)
             memset(pkt_status, 0, sizeof(packet_status_t));
             break;
     }
+
+    if(locking) { unlock(); }
 }
 
-radio_error_t SX126X_LoRaRadio::get_device_errors(void)
+radio_error_t SX126X_LoRaRadio::get_device_errors(const bool locking)
 {
+    if(locking) { lock(); }
     radio_error_t error;
 
     read_opmode_command((uint8_t) RADIO_GET_ERROR, (uint8_t *)&error, 2);
+
+    if(locking) { unlock(); }
     return error;
 }
 
-void SX126X_LoRaRadio::clear_device_errors(void)
+void SX126X_LoRaRadio::clear_device_errors(const bool locking)
 {
+    if(locking) { lock(); }
     uint8_t buf[2] = {0x00, 0x00};
     write_opmode_command((uint8_t) RADIO_CLR_ERROR, buf, 2);
+    if(locking) { unlock(); }
 }
 

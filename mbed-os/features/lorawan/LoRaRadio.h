@@ -457,22 +457,22 @@ public:
      *
      *  @param events Contains driver callback functions.
      */
-    virtual void init_radio(radio_events_t *events) = 0;
+    virtual void init_radio(radio_events_t *events, const bool locking = false) = 0;
 
     /**
      * Resets the radio module.
      */
-    virtual void radio_reset() = 0;
+    virtual void radio_reset(const bool locking = false) = 0;
 
     /**
      *  Put the RF module in sleep mode.
      */
-    virtual void sleep(void) = 0;
+    virtual void sleep(const bool locking = false) = 0;
 
     /**
      *  Sets the radio to standby mode.
      */
-    virtual void standby(void) = 0;
+    virtual void standby(const bool locking = false) = 0;
 
     /**
      *  Sets reception parameters.
@@ -509,13 +509,14 @@ public:
      *  @param rx_continuous Sets the reception to continuous mode.
      *                          [false: single mode, true: continuous mode]
      */
-    virtual void set_rx_config(radio_modems_t modem, uint32_t bandwidth,
-                               uint32_t datarate, uint8_t coderate,
-                               uint32_t bandwidth_afc, uint16_t preamble_len,
-                               uint16_t symb_timeout, bool fix_len,
-                               uint8_t payload_len,
-                               bool crc_on, bool freq_hop_on, uint8_t hop_period,
-                               bool iq_inverted, bool rx_continuous) = 0;
+    virtual void set_rx_config(const radio_modems_t modem, const uint32_t bandwidth,
+                               const uint32_t datarate, const uint8_t coderate,
+                               const uint32_t bandwidth_afc, const uint16_t preamble_len,
+                               const uint16_t symb_timeout, const bool fix_len,
+                               const uint8_t payload_len,
+                               const bool crc_on, const bool freq_hop_on, const uint8_t hop_period,
+                               const bool iq_inverted, const bool rx_continuous, 
+                               const bool locking = false) = 0;
 
     /**
      *  Sets the transmission parameters.
@@ -546,11 +547,12 @@ public:
      *                          LoRa: [0: not inverted, 1: inverted]
      *  @param timeout       The transmission timeout [ms].
      */
-    virtual void set_tx_config(radio_modems_t modem, int8_t power, uint32_t fdev,
-                               uint32_t bandwidth, uint32_t datarate,
-                               uint8_t coderate, uint16_t preamble_len,
-                               bool fix_len, bool crc_on, bool freq_hop_on,
-                               uint8_t hop_period, bool iq_inverted, uint32_t timeout) = 0;
+    virtual void set_tx_config(const radio_modems_t modem, const int8_t power, const uint32_t fdev,
+                               const uint32_t bandwidth, const uint32_t datarate,
+                               const uint8_t coderate, const uint16_t preamble_len,
+                               const bool fix_len, const bool crc_on, const bool freq_hop_on,
+                               const uint8_t hop_period, const bool iq_inverted, const uint32_t timeout,
+                               const bool locking = false) = 0;
 
     /**
      *  Sends the packet.
@@ -560,21 +562,21 @@ public:
      *  @param buffer        A pointer to the buffer.
      *  @param size          The buffer size.
      */
-    virtual void send(uint8_t *buffer, uint8_t size) = 0;
+    virtual void send(const uint8_t *const buffer, const uint8_t size, const bool locking = false) = 0;
 
     /**
      *  Sets the radio to reception mode.
      *
      *  To configure the receiver, use the `set_rx_config()` API.
      */
-    virtual void receive(void) = 0;
+    virtual void receive(const bool locking = false) = 0;
 
     /**
      *  Sets the carrier frequency.
      *
      *  @param freq          Channel RF frequency.
      */
-    virtual void set_channel(uint32_t freq) = 0;
+    virtual void set_channel(const uint32_t freq, const bool locking = false) = 0;
 
     /**
      *  Generates a 32 bit random value based on RSSI readings.
@@ -585,14 +587,14 @@ public:
      *
      *  @return             A 32 bit random value.
      */
-    virtual uint32_t random(void) = 0;
+    virtual uint32_t random(const bool locking = false) = 0;
 
     /**
      *  Gets the radio status.
      *
      *  @return              The current radio status.
      */
-    virtual uint8_t get_status(void) = 0;
+    virtual uint8_t get_status(const bool locking = false) = 0;
 
     /**
      *  Sets the maximum payload length.
@@ -600,7 +602,8 @@ public:
      *  @param modem         The radio modem [0: FSK, 1: LoRa].
      *  @param max           The maximum payload length in bytes.
      */
-    virtual void set_max_payload_length(radio_modems_t modem, uint8_t max) = 0;
+    virtual void set_max_payload_length(const radio_modems_t modem, const uint8_t max,
+                                        const bool locking = false) = 0;
 
     /**
      *  Sets the network to public or private.
@@ -609,7 +612,7 @@ public:
      *
      *  @param enable        If true, enables a public network.
      */
-    virtual void set_public_network(bool enable) = 0;
+    virtual void set_public_network(const bool enable, const bool locking = false) = 0;
 
     /**
      *  Computes the packet time on air for the given payload.
@@ -637,16 +640,17 @@ public:
      * @return                          True if there is no active transmission
      *                                  in the channel, otherwise false.
      */
-    virtual bool perform_carrier_sense(radio_modems_t modem,
-                                       uint32_t freq,
-                                       int16_t rssi_threshold,
-                                       uint32_t max_carrier_sense_time) = 0;
+    virtual bool perform_carrier_sense(const radio_modems_t modem,
+                                       const uint32_t freq,
+                                       const int16_t rssi_threshold,
+                                       const uint32_t max_carrier_sense_time,
+                                       const bool locking = false) = 0;
 
     /**
      *  Sets the radio to CAD mode.
      *
      */
-    virtual void start_cad(void) = 0;
+    virtual void start_cad(const bool locking = false) = 0;
 
     /**
      *  Checks whether the given RF is in range.
@@ -661,7 +665,8 @@ public:
      *  @param power         The output power [dBm].
      *  @param time          The transmission mode timeout [s].
      */
-    virtual void set_tx_continuous_wave(uint32_t freq, int8_t power, uint16_t time) = 0;
+    virtual void set_tx_continuous_wave(const uint32_t freq, const int8_t power, const uint16_t time,
+                                        const bool locking = false) = 0;
 
     /**
      * Acquires exclusive access to this radio.
