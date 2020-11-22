@@ -167,7 +167,7 @@ void init_radio(void) {
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
-    radio.set_channel(radio_freq);
+    radio.set_channel(*freqs.begin());
     radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, radio_preamble_len, full_pkt_len);
     radio.cad_rx_timeout = radio_timing.pkt_time_us / 15.625f;
     int cw_test_mode = radio_cb["CW Test Mode"].get<int>();

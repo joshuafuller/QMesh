@@ -368,7 +368,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
     clear_irq_status(IRQ_RADIO_ALL);
-
+    debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         _radio_events->tx_done_tmr(cur_tmr_sptr);
     }
@@ -1346,9 +1346,9 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
                                 radio_timing.getWaitNoWarn());
     dangling_flags.wait_any(0x1);
     write_opmode_command_finish();
-
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
+    debug_printf(DBG_INFO, "Finished sending\r\n");
 }
 
 

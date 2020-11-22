@@ -150,17 +150,18 @@ void mesh_protocol_fsm(void) {
                 retransmit_disable_out_n.write(1);
                 led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
-                //radio.set_channel(radio_freq);
-                radio.receive_cad();
+                radio.receive_cad(true);
                 debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
                     debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
+                    radio.lock();
                     radio.standby();
                     led2.LEDFastBlink();
                     radio.set_channel(pocsag_tx_freq);
                     send_pocsag_msg(radio_event->pocsag_msg);
+                    radio.unlock();
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                     reinit_radio();
                     led2.LEDOff();
@@ -169,8 +170,10 @@ void mesh_protocol_fsm(void) {
                 else if(radio_event->evt_enum == TX_FRAME_EVT) {
                     tx_frame_sptr = radio_event->frame;
                     tx_frame_sptr->fec = fec;
+                    radio.lock();
+                    radio.standby();
                     radio.tx_hop_frequency(freq_dist(rand_gen));
-                    //radio.set_channel(freq_dist(rand_gen));
+                    radio.unlock();
                     state = TX_PACKET;
                 }
                 else if(radio_event->evt_enum == RX_DONE_EVT) {
@@ -226,6 +229,7 @@ void mesh_protocol_fsm(void) {
             case TX_PACKET:
                 total_tx_pkt.store(total_tx_pkt.load()+1);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
+                radio.lock();
                 radio.standby();
                 radio.set_tx_power(radio_pwr);
                 { 
@@ -235,10 +239,13 @@ void mesh_protocol_fsm(void) {
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
-                radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing);
+                radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing, true);
+                radio.unlock();
 				tx_frame_sptr->tx_frame = true;
+                debug_printf(DBG_INFO, "sent\r\n");
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                printf("TX done\r\n");
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 led3.LEDOff(); 
@@ -259,6 +266,7 @@ void mesh_protocol_fsm(void) {
             case RETRANSMIT_PACKET:
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 {
+                radio.lock();
                 radio.set_tx_power(radio_pwr-pwr_diff_dist(pwr_diff_rand_gen)); 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
@@ -277,7 +285,8 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", sym_off);
                 radio_timing.waitSymOffset(sym_off, 1.0f, timing_off_inc);
                 radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
-                
+                radio.unlock();
+
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 led2.LEDOff();
