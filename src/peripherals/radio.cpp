@@ -207,11 +207,13 @@ void reinit_radio(void) {
     Frame tmp_frame(frame_fec);
     uint8_t full_pkt_len = radio_cb["Full Packet Size"].get<int>();
     int addr = radio_cb["Address"].get<int>();
+#if 0
     vector<uint32_t> freqs;
     for(int i = 0; i < radio_cb["Frequencies"].size(); i++) {
         freqs.push_back(radio_cb["Frequencies"][i].get<int>());
     }
     radio.configure_freq_hop(addr, freqs);
+#endif
 
     radio_events.tx_done_tmr = tx_done_cb;
     radio_events.rx_done_tmr = rx_done_cb;
@@ -235,7 +237,7 @@ void reinit_radio(void) {
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
-    radio.rx_hop_frequency();
+    //radio.rx_hop_frequency();
     //radio.set_channel(radio_freq);
 }
 
