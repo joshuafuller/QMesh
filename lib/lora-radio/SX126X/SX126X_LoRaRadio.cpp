@@ -106,7 +106,7 @@ static const lora_cad_params_t cad_params[7][6] =
                  { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
                  { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} }, 
                  { {4, 10, 28}, {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {2, 10, 22}, {2, 10, 22} },
-                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 24}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
+                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
                  { {8, 10, 29}, {4, 10, 25}, {4, 10, 23}, {4, 10, 22}, {4, 10, 22}, {4, 10, 21} }};
 
 
@@ -274,7 +274,7 @@ void SX126X_LoRaRadio::configure_freq_hop(const uint32_t addr, const vector<uint
     hop_freqs = my_hop_freqs;
     cur_hop_freq = hop_freqs.begin();
     hop_chan_dist_sptr = make_shared<uniform_int_distribution<uint32_t> >(0, hop_freqs.size()-1);
-    debug_printf(DBG_INFO, "Now configuring the frequency hopping with %d channels\r\n", hop_freqs.size());
+    //debug_printf(DBG_INFO, "Now configuring the frequency hopping with %d channels\r\n", hop_freqs.size());
 }
 
 
@@ -368,7 +368,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
     clear_irq_status(IRQ_RADIO_ALL);
-    debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
+    //debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         _radio_events->tx_done_tmr(cur_tmr_sptr);
     }
@@ -407,11 +407,11 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
             radio.receive_cad_rx();
-            radio.start_cad();
+            //radio.start_cad();
         }
         else {
             radio.rx_hop_frequency();
-            radio.start_cad();
+            radio.receive_cad();
         }
     }
 
@@ -421,10 +421,13 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
             _radio_events->rx_timeout();
         }
-        debug_printf(DBG_INFO, "Frequency timeout on was %d\r\n", *cur_hop_freq);
+        radio.sleep();
+        reinit_radio();
+        radio.standby(); 
         radio.rx_hop_frequency();
         radio.receive_cad();
-        radio.start_cad();         
+        //radio.start_cad();       
+        //debug_printf(DBG_INFO, "Frequency timeout on was %d\r\n", *cur_hop_freq);  
     }
 
     cur_tmr_sptr = make_shared<CalTimer>();
@@ -482,7 +485,7 @@ void SX126X_LoRaRadio::set_channel(const uint32_t frequency, const bool locking)
     uint32_t freq = 0;
 
     if ( _force_image_calibration || !_image_calibrated) {
-        debug_printf(DBG_INFO, "Calibrating the radio\r\n");
+        //debug_printf(DBG_INFO, "Calibrating the radio\r\n");
         calibrate_image(frequency);
         _image_calibrated = true;
     }
@@ -1421,7 +1424,7 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
     if(_rxen.is_connected()) {
         _rxen = 1;
     }
-    rx_hop_frequency();
+    //rx_hop_frequency();
 
     configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
                         IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
@@ -1442,7 +1445,7 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
         default: MBED_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max, my_cad_params.det_min,
-                    LORA_CAD_RX, cad_rx_timeout);
+                    LORA_CAD_ONLY, cad_rx_timeout);
 
 #if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
 #error boosting
