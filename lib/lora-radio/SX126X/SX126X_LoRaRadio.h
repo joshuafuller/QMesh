@@ -487,6 +487,7 @@ private:
 
     atomic<bool> stop_cad;
     EventFlags cad_running;
+    bool cad_rx_running;
 
     // Components to poll the RSSI to implement soft decoding
     atomic<bool> collect_rssi;

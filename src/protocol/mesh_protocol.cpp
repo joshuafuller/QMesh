@@ -150,22 +150,31 @@ void mesh_protocol_fsm(void) {
                 retransmit_disable_out_n.write(1);
                 led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
-                radio.receive_cad(true);
+                radio.lock();
+                radio.rx_hop_frequency(); 
+                radio.receive_cad();
+                radio.unlock();
                 debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
                     debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
-                    //radio.lock();
                     radio.standby(true);
+                    ThisThread::sleep_for(250);
+                    debug_printf(DBG_INFO, "Radio is in standby\r\n");
                     led2.LEDFastBlink();
                     radio.set_channel(pocsag_tx_freq);
+                    ThisThread::sleep_for(250);
+                    debug_printf(DBG_INFO, "Channel is set\r\n");
                     send_pocsag_msg(radio_event->pocsag_msg);
-                    //radio.unlock();
+                    ThisThread::sleep_for(250);
+                    debug_printf(DBG_INFO, "Message is sent\r\n");
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                    //radio.lock();
+                    ThisThread::sleep_for(250);
+                    debug_printf(DBG_INFO, "TX Event Returned\r\n");
                     reinit_radio();
-                    //radio.unlock();
+                    ThisThread::sleep_for(250);
+                    debug_printf(DBG_INFO, "Re-Init of radio complete\r\n");
                     led2.LEDOff();
                     state = WAIT_FOR_EVENT;
                 }
@@ -330,6 +339,7 @@ void beacon_fn(void) {
  * Periodically queues up for transmission a beacon message.
  */
 void beacon_pocsag_fn(void) {
+    return;
     debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
     {
     stringstream msg;

@@ -237,8 +237,6 @@ void reinit_radio(void) {
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
-    //radio.rx_hop_frequency();
-    //radio.set_channel(radio_freq);
 }
 
 void reinit_radio_pocsag(void) {

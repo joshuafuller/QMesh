@@ -110,6 +110,9 @@ static const lora_cad_params_t cad_params[7][6] =
                  { {8, 10, 29}, {4, 10, 25}, {4, 10, 23}, {4, 10, 22}, {4, 10, 22}, {4, 10, 21} }};
 
 
+DigitalOut fhss_mon_sig(MBED_CONF_APP_FHSS_MON);
+
+
 SX126X_LoRaRadio::SX126X_LoRaRadio(PinName mosi,
                                     PinName miso,
                                     PinName sclk,
@@ -284,6 +287,7 @@ void SX126X_LoRaRadio::rx_hop_frequency(void)
     set_channel(*cur_hop_freq);
     if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
         cur_hop_freq = hop_freqs.begin();
+        fhss_mon_sig = !fhss_mon_sig;
     }
 }
 
@@ -367,7 +371,6 @@ void SX126X_LoRaRadio::stop_read_rssi(void) {
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
-    clear_irq_status(IRQ_RADIO_ALL);
     //debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         _radio_events->tx_done_tmr(cur_tmr_sptr);
@@ -406,28 +409,28 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     else if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
             radio.receive_cad_rx();
-            //radio.start_cad();
         }
-        else {
+        else { 
+            fhss_mon_sig = !fhss_mon_sig;      
             radio.rx_hop_frequency();
             radio.receive_cad();
+            fhss_mon_sig = !fhss_mon_sig;
         }
     }
     else if ((irq_status & IRQ_RX_TX_TIMEOUT) == IRQ_RX_TX_TIMEOUT) {
+        debug_printf(DBG_INFO, "CAD Rx Timeout\r\n");
         if ((_radio_events->tx_timeout) && (_operation_mode == MODE_TX)) {
             _radio_events->tx_timeout();
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
             _radio_events->rx_timeout();
         }
         radio.sleep();
-        reinit_radio();
-        radio.standby(); 
+        radio.wakeup();
         radio.rx_hop_frequency();
         radio.receive_cad();
-        //radio.start_cad();       
-        //debug_printf(DBG_INFO, "Frequency timeout on was %d\r\n", *cur_hop_freq);  
     }
-
+    
+    clear_irq_status(IRQ_RADIO_ALL);
     cur_tmr_sptr = make_shared<CalTimer>();
     cur_tmr = cur_tmr_sptr.get();
 }
@@ -483,7 +486,7 @@ void SX126X_LoRaRadio::set_channel(const uint32_t frequency, const bool locking)
     uint32_t freq = 0;
 
     if ( _force_image_calibration || !_image_calibrated) {
-        //debug_printf(DBG_INFO, "Calibrating the radio\r\n");
+        debug_printf(DBG_INFO, "Calibrating the radio\r\n");
         calibrate_image(frequency);
         _image_calibrated = true;
     }
@@ -694,13 +697,15 @@ void SX126X_LoRaRadio::wakeup(const bool locking)
         _chip_select = 0;
         wait_us(100);
         _chip_select = 1;
-        //wait_us(100);
+        wait_us(100);
+#if 0
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
         wait_us(3500);
         // whenever we wakeup from Cold sleep state, we need to perform
         // image calibration
         _force_image_calibration = true;
         cold_start_wakeup();
+#endif
 #endif
     }
 
@@ -714,13 +719,15 @@ void SX126X_LoRaRadio::sleep(const bool locking)
     uint8_t sleep_state = 0x04;
     _operation_mode = MODE_SLEEP;
 
+#if 0
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
     // cold start, power consumption 160 nA
     sleep_state = 0x00;
 #endif
+#endif
 
     write_opmode_command(RADIO_SET_SLEEP, &sleep_state, 1);
-    wait_ms(2);
+    //wait_ms(2);
 
     if(locking) { unlock(); }
 }
@@ -1422,7 +1429,6 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
     if(_rxen.is_connected()) {
         _rxen = 1;
     }
-    //rx_hop_frequency();
 
     configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
                         IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
@@ -1442,7 +1448,7 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
         case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
-    set_cad_params(num_syms, my_cad_params.det_max, my_cad_params.det_min,
+    set_cad_params(num_syms, my_cad_params.det_max+3, my_cad_params.det_min,
                     LORA_CAD_ONLY, cad_rx_timeout);
 
 #if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
@@ -1476,7 +1482,7 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
         case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
-    set_cad_params(num_syms, my_cad_params.det_max, my_cad_params.det_min,
+    set_cad_params(num_syms, my_cad_params.det_max+3, my_cad_params.det_min,
                     LORA_CAD_RX, cad_rx_timeout);
 
     write_opmode_command(RADIO_SET_CAD, NULL, 0);
