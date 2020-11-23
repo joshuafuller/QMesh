@@ -191,6 +191,7 @@ void SX126X_LoRaRadio::rf_irq_task(void)
 
 void SX126X_LoRaRadio::dio1_irq_isr()
 {
+    fhss_mon_sig = !fhss_mon_sig;
     CriticalSectionLock lock;
     // Start timing the duration since the packet was receive
     cur_tmr->start();
@@ -371,6 +372,7 @@ void SX126X_LoRaRadio::stop_read_rssi(void) {
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
+    fhss_mon_sig = !fhss_mon_sig;
     //debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         _radio_events->tx_done_tmr(cur_tmr_sptr);
@@ -410,9 +412,9 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
             radio.receive_cad_rx();
         }
-        else { 
-            fhss_mon_sig = !fhss_mon_sig;      
-            radio.rx_hop_frequency();
+        else {      
+            rx_hop_frequency();
+            fhss_mon_sig = !fhss_mon_sig; 
             radio.receive_cad();
             fhss_mon_sig = !fhss_mon_sig;
         }
@@ -600,7 +602,7 @@ void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
 
 #ifdef USES_TCXO
     caliberation_params_t calib_param;
-    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 320); //5 ms
+    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 128); //5 ms
     calib_param.value = 0x7F;
     write_opmode_command(RADIO_CALIBRATE, &calib_param.value, 1);
 #endif
@@ -1455,9 +1457,10 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
 #error boosting
     write_to_register(REG_RX_GAIN, 0x96);
 #endif
-    uint8_t val = 0x30;
+#if 1
+    uint8_t val = 0x40;
     write_opmode_command(RADIO_SET_TXFALLBACKMODE, &val, 1);
-
+#endif
     write_opmode_command(RADIO_SET_CAD, NULL, 0);
     rx_int_mon = 1;
     tx_int_mon = 0;

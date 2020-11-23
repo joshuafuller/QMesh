@@ -114,7 +114,7 @@ void init_radio(void) {
     int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
     debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", radio_preamble_len); 
     radio_preamble_len = radio_cb["Preamble Length"].get<int>();
-    radio_cb["Preamble Length"] = radio_preamble_len + 5*radio_cb["Frequencies"].size();
+    radio_cb["Preamble Length"] = radio_preamble_len + 7*(radio_cb["Frequencies"].size()+2);
     radio_preamble_len = radio_cb["Preamble Length"].get<int>();   
     debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", radio_preamble_len); 
     int addr = radio_cb["Address"].get<int>();
