@@ -403,8 +403,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             debug_printf(DBG_INFO, "Frequency received on was %d\r\n", *cur_hop_freq);
         }
     }
-
-    if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
+    else if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
             radio.receive_cad_rx();
             //radio.start_cad();
@@ -414,8 +413,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             radio.receive_cad();
         }
     }
-
-    if ((irq_status & IRQ_RX_TX_TIMEOUT) == IRQ_RX_TX_TIMEOUT) {
+    else if ((irq_status & IRQ_RX_TX_TIMEOUT) == IRQ_RX_TX_TIMEOUT) {
         if ((_radio_events->tx_timeout) && (_operation_mode == MODE_TX)) {
             _radio_events->tx_timeout();
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {

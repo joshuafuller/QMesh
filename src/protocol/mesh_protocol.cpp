@@ -156,14 +156,16 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
                     debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
-                    radio.lock();
-                    radio.standby();
+                    //radio.lock();
+                    radio.standby(true);
                     led2.LEDFastBlink();
                     radio.set_channel(pocsag_tx_freq);
                     send_pocsag_msg(radio_event->pocsag_msg);
-                    radio.unlock();
+                    //radio.unlock();
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                    //radio.lock();
                     reinit_radio();
+                    //radio.unlock();
                     led2.LEDOff();
                     state = WAIT_FOR_EVENT;
                 }
