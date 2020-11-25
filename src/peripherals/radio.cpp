@@ -80,9 +80,10 @@ void send_pocsag_msg(string &msg) {
 #if 0
     radio.set_tx_config_pocsag(20);
 #else
-    reinit_radio_pocsag();
+    //reinit_radio_pocsag();
+    radio.set_tx_config_pocsag(20);
 #endif
-    debug_printf(DBG_INFO, "size is %d\r\n", my_pocsag.GetSize());
+    //debug_printf(DBG_INFO, "size is %d\r\n", my_pocsag.GetSize());
     radio.send((uint8_t *) my_pocsag.GetMsgPointer(), my_pocsag.GetSize());
     delete data;
 }
@@ -222,8 +223,10 @@ void reinit_radio(void) {
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.rx_preamble_det = rx_preamble_det_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
+#if 0
     ThisThread::sleep_for(250);
     radio.init_radio(&radio_events);
+#endif
     radio.set_rx_config(MODEM_LORA, radio_bw,
                             radio_sf, radio_cr,
                             0, radio_preamble_len,

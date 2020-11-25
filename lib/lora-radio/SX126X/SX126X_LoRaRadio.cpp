@@ -272,7 +272,7 @@ void SX126X_LoRaRadio::start_cad(const bool locking)
 }
 
 
-void SX126X_LoRaRadio::configure_freq_hop(const uint32_t addr, const vector<uint32_t> &my_hop_freqs) 
+void SX126X_LoRaRadio::configure_freq_hop(const uint32_t addr, const vector<uint32_t> my_hop_freqs) 
 {
     rand_gen_hop_chan_sptr = make_shared<mt19937>(addr);
     hop_freqs = my_hop_freqs;
@@ -329,6 +329,7 @@ void SX126X_LoRaRadio::set_tx_continuous_wave(const uint32_t freq, const int8_t 
     if(locking) { lock(); }
 }
 
+
 void SX126X_LoRaRadio::set_tx_continuous_preamble(const bool locking) {
     if(locking) { lock(); }
     set_tx_power(_tx_power);
@@ -383,7 +384,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     }
 #endif 
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
-        //stop_read_rssi();
+        radio.cad_pending.store(false);
+            //stop_read_rssi();
         if ((irq_status & IRQ_CRC_ERROR) == IRQ_CRC_ERROR) {
             if (_radio_events && _radio_events->rx_error) {
                 _radio_events->rx_error();
@@ -410,13 +412,23 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     }
     else if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
-            radio.receive_cad_rx();
+            if(!stop_cad.load()) {
+                radio.receive_cad_rx();
+            }
+            else {
+                cad_pending.store(false);
+            }
         }
         else {      
-            rx_hop_frequency();
-            fhss_mon_sig = !fhss_mon_sig; 
-            radio.receive_cad();
-            fhss_mon_sig = !fhss_mon_sig;
+            if(!stop_cad.load()) {
+                rx_hop_frequency();
+                fhss_mon_sig = !fhss_mon_sig; 
+                radio.receive_cad();
+                fhss_mon_sig = !fhss_mon_sig;
+            }
+            else {
+                cad_pending.store(false);
+            }
         }
     }
     else if ((irq_status & IRQ_RX_TX_TIMEOUT) == IRQ_RX_TX_TIMEOUT) {
@@ -426,10 +438,15 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
             _radio_events->rx_timeout();
         }
-        radio.sleep();
-        radio.wakeup();
-        radio.rx_hop_frequency();
-        radio.receive_cad();
+        if(!stop_cad.load()) {
+            radio.sleep();
+            radio.wakeup();
+            radio.rx_hop_frequency();
+            radio.receive_cad();
+        }
+        else {
+            radio.cad_pending.store(false);
+        }
     }
     
     clear_irq_status(IRQ_RADIO_ALL);
@@ -1425,6 +1442,7 @@ void SX126X_LoRaRadio::receive(const bool locking)
 void SX126X_LoRaRadio::receive_cad(const bool locking)
 {
     if(locking) { lock(); }
+    cad_pending.store(true);
     if(_txen.is_connected()) {
         _txen = 0;
     }
@@ -1473,6 +1491,7 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
 void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
 {
     if(locking) { lock(); }
+    cad_pending.store(true);
     lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
     lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
     lora_cad_params_t my_cad_params = cad_params[bw][sf-7];

@@ -145,6 +145,7 @@ void mesh_protocol_fsm(void) {
     radio_timing.setTimer(initial_timer);
     radio_timing.waitFullSlots(1); // TODO: change this to be zero once we know zero works
     for(;;) {
+        debug_printf(DBG_INFO, "--------------------\r\n");
         switch(state) {
             case WAIT_FOR_EVENT:
                 retransmit_disable_out_n.write(1);
@@ -156,25 +157,35 @@ void mesh_protocol_fsm(void) {
                 radio.unlock();
                 debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
+                radio.stop_cad.store(true);
+                while(radio.cad_pending.load() == true);
+                radio.stop_cad.store(false);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
                     debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
-                    radio.standby(true);
-                    ThisThread::sleep_for(250);
-                    debug_printf(DBG_INFO, "Radio is in standby\r\n");
+                    radio.lock();
+                    radio.standby();
+                    //ThisThread::sleep_for(250);
+                    //debug_printf(DBG_INFO, "Radio is in standby\r\n");
                     led2.LEDFastBlink();
                     radio.set_channel(pocsag_tx_freq);
-                    ThisThread::sleep_for(250);
-                    debug_printf(DBG_INFO, "Channel is set\r\n");
+                    radio.unlock();
+                    //ThisThread::sleep_for(250);
+                    //debug_printf(DBG_INFO, "Channel is set\r\n");
+                    //ThisThread::sleep_for(250);
                     send_pocsag_msg(radio_event->pocsag_msg);
                     ThisThread::sleep_for(250);
                     debug_printf(DBG_INFO, "Message is sent\r\n");
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
                     ThisThread::sleep_for(250);
                     debug_printf(DBG_INFO, "TX Event Returned\r\n");
+                    radio.lock();
                     reinit_radio();
+                    radio.unlock();
                     ThisThread::sleep_for(250);
-                    debug_printf(DBG_INFO, "Re-Init of radio complete\r\n");
+                    debug_printf(DBG_INFO, "Re-Init Complete\r\n");
+                    //ThisThread::sleep_for(250);
+                    //debug_printf(DBG_INFO, "Re-Init of radio complete\r\n");
                     led2.LEDOff();
                     state = WAIT_FOR_EVENT;
                 }
@@ -253,10 +264,8 @@ void mesh_protocol_fsm(void) {
                 radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing, true);
                 radio.unlock();
 				tx_frame_sptr->tx_frame = true;
-                debug_printf(DBG_INFO, "sent\r\n");
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                printf("TX done\r\n");
                 enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 led3.LEDOff(); 
@@ -320,7 +329,6 @@ string beacon_msg;
  */
 extern time_t boot_timestamp;
 void beacon_fn(void) {
-    debug_printf(DBG_INFO, "beacon set\r\n");
     time_t cur_time;
     time(&cur_time);
     time_t uptime = cur_time - boot_timestamp;
@@ -331,15 +339,13 @@ void beacon_fn(void) {
     beacon_frame_sptr->setStreamID(stream_id++);
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
     //MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-    debug_printf(DBG_INFO, "beacon set again\r\n");   
+    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
 }
 
 /**
  * Periodically queues up for transmission a beacon message.
  */
 void beacon_pocsag_fn(void) {
-    return;
     debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
     {
     stringstream msg;

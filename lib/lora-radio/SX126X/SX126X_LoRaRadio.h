@@ -294,7 +294,7 @@ public:
     virtual void start_cad(const bool locking = false);
 
 
-    void configure_freq_hop(const uint32_t addr, const vector<uint32_t> &my_hop_freqs);
+    void configure_freq_hop(const uint32_t addr, const vector<uint32_t> my_hop_freqs);
 
 
     /**
@@ -342,6 +342,7 @@ public:
     CalTimer *cur_tmr;
     shared_ptr<CalTimer> cur_tmr_sptr;
     uint32_t cad_rx_timeout;
+    atomic<bool> cad_pending, stop_cad;
 
 private:
 
@@ -485,7 +486,7 @@ private:
 
     EventFlags dangling_flags;
 
-    atomic<bool> stop_cad;
+    //atomic<bool> stop_cad;
     EventFlags cad_running;
     bool cad_rx_running;
 
