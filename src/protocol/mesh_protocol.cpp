@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mesh_protocol.hpp"
 #include "radio_timing.hpp"
 #include "radio.hpp"
+#include "mem_trace.hpp"
 
 
 static list<uint32_t> past_crc;
@@ -61,7 +62,7 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
     else { // redundant packet was found. Check the age of the packet.
         map<uint32_t, time_t>::iterator it = past_timestamp.find(crc);
         ret_val = true;
-        if(time(NULL) - it->second > 60) { // Ignore entries more than a minute old
+        if(time(NULL) - it->second > 10) { // Ignore entries more than a minute old
             ret_val = false;
             past_crc.erase(find(past_crc.begin(), past_crc.end(), crc));
             past_timestamp.erase(crc);
@@ -146,6 +147,7 @@ void mesh_protocol_fsm(void) {
     radio_timing.waitFullSlots(1); // TODO: change this to be zero once we know zero works
     for(;;) {
         debug_printf(DBG_INFO, "--------------------\r\n");
+        print_memory_info();
         switch(state) {
             case WAIT_FOR_EVENT:
                 retransmit_disable_out_n.write(1);
@@ -174,19 +176,17 @@ void mesh_protocol_fsm(void) {
                     //debug_printf(DBG_INFO, "Channel is set\r\n");
                     //ThisThread::sleep_for(250);
                     send_pocsag_msg(radio_event->pocsag_msg);
-                    ThisThread::sleep_for(250);
-                    debug_printf(DBG_INFO, "Message is sent\r\n");
+                    //hisThread::sleep_for(250);
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                    ThisThread::sleep_for(250);
-                    debug_printf(DBG_INFO, "TX Event Returned\r\n");
+                    //ThisThread::sleep_for(250);
                     radio.lock();
                     reinit_radio();
                     radio.unlock();
-                    ThisThread::sleep_for(250);
-                    debug_printf(DBG_INFO, "Re-Init Complete\r\n");
+                    //ThisThread::sleep_for(250);
                     //ThisThread::sleep_for(250);
                     //debug_printf(DBG_INFO, "Re-Init of radio complete\r\n");
                     led2.LEDOff();
+                    //ThisThread::sleep_for(3000);
                     state = WAIT_FOR_EVENT;
                 }
                 else if(radio_event->evt_enum == TX_FRAME_EVT) {
@@ -346,36 +346,57 @@ void beacon_fn(void) {
  * Periodically queues up for transmission a beacon message.
  */
 void beacon_pocsag_fn(void) {
-    debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
-    {
-    stringstream msg;
-    msg << "KG5VBY:" << "SF" << radio_cb["SF"].get<int>() << "," << \
-        "BW" << radio_cb["BW"].get<int>() << "," << \
-        "F" << radio_cb["Frequency"].get<int>() << "," << "\r\n";  
-    string pocsag_msg = msg.str();
-    auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+    static bool status = false;
+    status = !status;
+    if(status) {
+        debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
+        {
+#if 0
+        stringstream msg;
+        msg << "KG5VBY:" << "SF" << radio_cb["SF"].get<int>() << "," << \
+            "BW" << radio_cb["BW"].get<int>() << "," << \
+            "F" << radio_cb["Frequency"].get<int>() << "," << "\r\n";  
+        string pocsag_msg = msg.str();
+#else
+        char msg[128];
+        sprintf(msg, "KG5VBY:SF%d,BW%d,F%d\r\n", radio_cb["SF"].get<int>(), 
+                    radio_cb["BW"].get<int>(), radio_cb["Frequency"].get<int>());
+        string pocsag_msg(msg);
+#endif
+        auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
+        enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+        }
+        int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
+        if(pocsag_beacon_interval == -1) {
+            pocsag_beacon_interval = 60000;
+        }
+    } else { 
+        time_t cur_time;
+        time(&cur_time);
+        time_t uptime = cur_time - boot_timestamp;
+        int uptime_rem = uptime;
+        int uptime_d = uptime_rem / 86400;
+        uptime_rem %= 86400;
+        int uptime_h = uptime_rem / 3600;
+        uptime_rem %= 3600;
+        int uptime_m = uptime_rem / 60;
+        uptime_rem %= 60;
+        int uptime_s = uptime_rem;
+        {
+#if 0
+        stringstream msg;
+        msg << "KG5VBY:" << "Uptime:" << uptime_d << "d:" << uptime_h << \
+            "h:" << uptime_m << "m:" << uptime_s << "s" << "\r\n";  
+        string pocsag_msg = msg.str();
+#else
+        char msg[128];
+        sprintf(msg, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", uptime_d, uptime_h, uptime_m, uptime_s);
+#endif
+        string pocsag_msg(msg);
+        auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
+        enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
+        } 
     }
-    time_t cur_time;
-    time(&cur_time);
-    time_t uptime = cur_time - boot_timestamp;
-    stringstream msg;
-    int uptime_rem = uptime;
-    int uptime_d = uptime_rem / 86400;
-    uptime_rem %= 86400;
-    int uptime_h = uptime_rem / 3600;
-    uptime_rem %= 3600;
-    int uptime_m = uptime_rem / 60;
-    uptime_rem %= 60;
-    int uptime_s = uptime_rem;
-    {
-    stringstream msg;
-    msg << "KG5VBY:" << "Uptime:" << uptime_d << "d:" << uptime_h << \
-        "h:" << uptime_m << "m:" << uptime_s << "s" << "\r\n";  
-    string pocsag_msg = msg.str();
-    auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-    } 
 }
 
 

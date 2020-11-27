@@ -274,7 +274,6 @@ void nv_log_fn(void) {
     debug_printf(DBG_INFO, "Now opening the logfile\r\n");
     debug_printf(DBG_INFO, "First set\r\n");
     FILE *f = open_logfile();
-    string comb_str;
     for(;;) {
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
@@ -293,15 +292,16 @@ void nv_log_fn(void) {
         log_json["RX Size"] = (int) rx_size;
         log_json["Computed CRC"] = log_frame->calcCRC();
         log_json["CRC"] = log_frame->getCRC();
+#if 0
         float gps_lat, gps_lon;
         bool gps_valid = gpsd_get_coordinates(gps_lat, gps_lon);
         log_json["GPS Valid"] = gps_valid;
         log_json["GPS Lat"] = to_string(gps_lat);
         log_json["GPS Lon"] = to_string(gps_lon);
+#endif
         time_t cur_time;
         time(&cur_time);
         time_t uptime = cur_time - boot_timestamp;
-        stringstream msg;
         int uptime_rem = uptime;
         int uptime_d = uptime_rem / 86400;
         uptime_rem %= 86400;
@@ -310,14 +310,20 @@ void nv_log_fn(void) {
         int uptime_m = uptime_rem / 60;
         uptime_rem %= 60;
         int uptime_s = uptime_rem;
+#if 0
+        stringstream msg;
         msg << uptime_d << "d:" << uptime_h << \
             "h:" << uptime_m << "m:" << uptime_s << "s";
-        log_json["Uptime"] = msg.str();
+#else
+        char msg[128];
+        sprintf(msg, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", uptime_d, uptime_h, uptime_m, uptime_s);
+        log_json["Uptime"] = string(msg);
+#endif
         string log_json_str = log_json.serialize();
 		log_json_str.push_back('\n');
+        string comb_str;
         comb_str.append(log_json_str);
         fwrite(comb_str.c_str(), 1, comb_str.size(), f);
-        comb_str.clear();
         fclose(f);
         f = open_logfile();
     }

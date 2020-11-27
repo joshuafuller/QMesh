@@ -370,6 +370,7 @@ public:
 typedef enum {
     TX_FRAME_EVT,
     TX_DONE_EVT,
+    TX_POCSAG_DONE_EVT,
     RX_DONE_EVT,
     TX_TIMEOUT_EVT,
     RX_TIMEOUT_EVT,
