@@ -44,7 +44,7 @@ void Frame::loadTestFrame(vector<uint8_t> &buf) {
 }
 
 size_t Frame::codedSize(void) {
-    return fec->enc_size;
+    return fec->encSize();
 }
 
 void Frame::serialize(vector<uint8_t> &ser_frame) {

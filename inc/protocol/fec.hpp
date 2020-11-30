@@ -82,10 +82,9 @@ class FEC {
 protected:
     string name;
     int msg_len;
-
-public:
     int enc_size;
 
+public:
     /// Constructor.
     FEC(const int32_t my_msg_len) {
         name = "Dummy FEC";
@@ -96,6 +95,10 @@ public:
     /// Gets the name of the FEC.
     string getName(void) {
         return name;
+    }
+
+    virtual int encSize(void) {
+        return enc_size;
     }
 
     /**
@@ -263,6 +266,10 @@ public:
     int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
 
     int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
+
+    int encSize(void) {
+        return enc_size+3;
+    }
 };
 
 #endif /* FEC_HPP */

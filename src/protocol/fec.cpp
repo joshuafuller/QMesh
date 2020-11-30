@@ -476,7 +476,7 @@ int32_t FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg
     vector<uint8_t> rsv_msg(msg.size()-2);
     copy(msg.begin()+2, msg.end(), rsv_msg.begin());
     vector<uint8_t> rsv_enc_msg;
-    FECRSV:encode(rsv_msg, rsv_enc_msg);
+    FECRSV::encode(rsv_msg, rsv_enc_msg);
     vector<uint8_t> golay_rsv_enc_msg(3+rsv_enc_msg.size());
     copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), golay_rsv_enc_msg.begin()+3);
     golay_rsv_enc_msg[0] = golay_enc_msg.b[0];

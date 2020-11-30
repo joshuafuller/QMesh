@@ -55,8 +55,6 @@ def dbg_process(ch, method, properties, body):
         frame["HDR Stream ID"] = parsed_line["HDR Stream ID"]
         frame["HDR TTL"] = parsed_line["HDR TTL"]
         frame["HDR Sender"] = parsed_line["HDR Sender"]
-        frame["HDR Pre Offset"] = parsed_line["HDR Pre Offset"]
-        frame["HDR Num Sym Offset"] = parsed_line["HDR Num Sym Offset"]
         frame["HDR Sym Offset"] = parsed_line["HDR Sym Offset"]
         frame["CRC"] = parsed_line["CRC"]
         print("-------------------")

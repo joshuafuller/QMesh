@@ -112,7 +112,7 @@ void mesh_protocol_fsm(void) {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
         int conv_order = radio_cb["Conv Order"].get<int>();
         int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
-        fec = make_shared<FECRSV>(Frame::size(), conv_rate, conv_order, rs_roots);
+        fec = make_shared<FECRSVGolay>(Frame::size(), conv_rate, conv_order, rs_roots);
     }
     else if(fec_algo == "RSVGolay") {
         int conv_rate = radio_cb["Conv Rate"].get<int>();
