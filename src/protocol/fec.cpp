@@ -458,3 +458,56 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
     int_params.col = (size_t) int_params.col_f;
     enc_size = int_params.bytes;
 }
+
+
+int32_t FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    union {
+        uint16_t u;
+        uint8_t b[2];
+    } golay_msg;
+    golay_msg.u = 0x0000;
+    golay_msg.b[0] = msg[0];
+    golay_msg.b[1] = msg[1];
+    union {
+        uint32_t u;
+        uint8_t b[4];
+    } golay_enc_msg;
+    golay_enc_msg.u = golay_encode(golay_msg.u);
+    vector<uint8_t> rsv_msg(msg.size()-2);
+    copy(msg.begin()+2, msg.end(), rsv_msg.begin());
+    vector<uint8_t> rsv_enc_msg;
+    FECRSV:encode(rsv_msg, rsv_enc_msg);
+    vector<uint8_t> golay_rsv_enc_msg(3+rsv_enc_msg.size());
+    copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), golay_rsv_enc_msg.begin()+3);
+    golay_rsv_enc_msg[0] = golay_enc_msg.b[0];
+    golay_rsv_enc_msg[1] = golay_enc_msg.b[1];
+    golay_rsv_enc_msg[2] = golay_enc_msg.b[2];
+    enc_msg = golay_rsv_enc_msg;
+    return enc_msg.size();
+}
+
+
+int32_t FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    union {
+        uint32_t u;
+        uint8_t b[4];
+    } golay_enc_msg;
+    golay_enc_msg.u = 0x00000000;
+    golay_enc_msg.b[0] = enc_msg[0];
+    golay_enc_msg.b[1] = enc_msg[1];
+    golay_enc_msg.b[2] = enc_msg[2];
+    union {
+        uint16_t u;
+        uint8_t b[2];
+    } golay_msg;
+    golay_msg.u = golay_decode(golay_enc_msg.u);
+    vector<uint8_t> rsv_enc_msg(enc_msg.size()-3);
+    copy(enc_msg.begin()+3, enc_msg.end(), rsv_enc_msg.begin());
+    vector<uint8_t> rsv_dec_msg;
+    FECRSV::decode(rsv_enc_msg, rsv_dec_msg);
+    dec_msg.resize(2+rsv_dec_msg.size());
+    copy(rsv_dec_msg.begin(), rsv_dec_msg.end(), dec_msg.begin()+2);
+    dec_msg[0] = golay_msg.b[0];
+    dec_msg[1] = golay_msg.b[1];
+    return dec_msg.size();
+}

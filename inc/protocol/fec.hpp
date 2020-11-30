@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <random>
 #include <list>
 #include <algorithm>
+#include "golay.h"
 
 
 // Convolutional Codes
@@ -233,6 +234,35 @@ public:
     int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg);
 
     int32_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg);
+};
+
+
+class FECRSVGolay: public FECRSV {
+public:
+    /**
+     * Constructor. 
+     * @param inv_rate Convolutional coding rate.
+     * @param order Convolutional coding order.
+     * @param my_rs_corr_bytes Number of Reed-Solomon correction bytes.
+     */
+    FECRSVGolay(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
+            const int32_t my_rs_corr_bytes) : 
+            FECRSV(my_msg_len-2, inv_rate, order, my_rs_corr_bytes) { };
+
+    /**
+     * Default constructor. Initializes with a convolutional coding rate of 2,
+     * n=9, and 32 Reed-Solomon correction bytes.
+     */
+    FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, 2, 9, 8) { };
+
+    /// Destructor.
+    ~FECRSVGolay(void) {
+        correct_reed_solomon_destroy(rs_con);
+    }
+
+    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
+
+    int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
 };
 
 #endif /* FEC_HPP */

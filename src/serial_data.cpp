@@ -34,13 +34,11 @@ size_t Frame::size(void) {
 }
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
-    hdr.type = 0;
-    hdr.stream_id = 1;
-    hdr.ttl = 7;
-    hdr.sender = 0xB;
-    hdr.pre_offset = 0;
-    hdr.nsym_offset = 0;
-    hdr.sym_offset = 0;
+    hdr.cons_subhdr.fields.type = 0;
+    hdr.cons_subhdr.fields.stream_id = 1;
+    hdr.var_subhdr.fields.ttl = 7;
+    hdr.var_subhdr.fields.sender = 0xB;
+    hdr.var_subhdr.fields.sym_offset = 0;
     data.assign(buf.begin(), buf.end());
     setCRC();
 }
@@ -79,8 +77,8 @@ uint16_t Frame::calcCRC(void) {
     MbedCRC<POLY_16BIT_CCITT, 16> ct;
     uint32_t crc = 0;
     vector<uint8_t> crc_buf;
-    for(int i = 0; i < sizeof(hdr); i++) {
-        crc_buf.push_back(((uint8_t *) &hdr)[i]);
+    for(int i = 0; i < sizeof(hdr.cons_subhdr); i++) {
+        crc_buf.push_back(((uint8_t *) &hdr.cons_subhdr)[i]);
     }
     copy(data.begin(), data.end(), back_inserter(crc_buf));
     ct.compute((void *) crc_buf.data(), crc_buf.size(), &crc);
@@ -90,7 +88,7 @@ uint16_t Frame::calcCRC(void) {
 uint32_t Frame::calcUniqueCRC(void) {
     vector<uint8_t> buf;
     //buf.push_back((uint8_t) hdr.type);
-    buf.push_back((uint8_t) hdr.stream_id);
+    buf.push_back((uint8_t) hdr.cons_subhdr.fields.stream_id);
     copy(data.begin(), data.end(), back_inserter(buf));
     MbedCRC<POLY_32BIT_ANSI, 32> ct;
     uint32_t crc = 0;
@@ -133,13 +131,11 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
 }
 
 void Frame::loadFromJSON(MbedJSONValue &json) {
-    hdr.type = json["HDR Pkt Type"].get<int>();
-    hdr.stream_id = json["HDR Stream ID"].get<int>();
-    hdr.ttl = json["HDR TTL"].get<int>();
-    hdr.sender = json["HDR Sender"].get<int>();
-    hdr.pre_offset = json["HDR Pre Offset"].get<int>();
-    hdr.nsym_offset = json["HDR Num Sym Offset"].get<int>();
-    hdr.sym_offset = json["HDR Sym Offset"].get<int>();
+    hdr.cons_subhdr.fields.type = json["HDR Pkt Type"].get<int>();
+    hdr.cons_subhdr.fields.stream_id = json["HDR Stream ID"].get<int>();
+    hdr.var_subhdr.fields.ttl = json["HDR TTL"].get<int>();
+    hdr.var_subhdr.fields.sender = json["HDR Sender"].get<int>();
+    hdr.var_subhdr.fields.sym_offset = json["HDR Sym Offset"].get<int>();
     crc.s = json["CRC"].get<int>();
     string b64_str = json["Data Payload"].get<string>();
     size_t b64_len;
@@ -153,13 +149,11 @@ void Frame::loadFromJSON(MbedJSONValue &json) {
 
 void Frame::saveToJSON(MbedJSONValue &json) {
     json["Type"] = "Frame";
-    json["HDR Pkt Type"] = int(hdr.type);
-    json["HDR Stream ID"] = int(hdr.stream_id);
-    json["HDR TTL"] = int(hdr.ttl);
-    json["HDR Sender"] = int(hdr.sender);
-    json["HDR Pre Offset"] = int(hdr.pre_offset);
-    json["HDR Num Sym Offset"] = int(hdr.nsym_offset);
-    json["HDR Sym Offset"] = int(hdr.sym_offset);
+    json["HDR Pkt Type"] = int(hdr.cons_subhdr.fields.type);
+    json["HDR Stream ID"] = int(hdr.cons_subhdr.fields.stream_id);
+    json["HDR TTL"] = int(hdr.var_subhdr.fields.ttl);
+    json["HDR Sender"] = int(hdr.var_subhdr.fields.sender);
+    json["HDR Sym Offset"] = int(hdr.var_subhdr.fields.sym_offset);
     json["CRC"] = int(crc.s);
     size_t b64_len;
     mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size());
@@ -175,10 +169,12 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "Frame Info\r\n");
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "HEADER\r\n");
-    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", hdr.type, hdr.stream_id);
-    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", hdr.ttl, hdr.sender);
+    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", hdr.cons_subhdr.fields.type, 
+                    hdr.cons_subhdr.fields.stream_id);
+    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", hdr.var_subhdr.fields.ttl, 
+                    hdr.var_subhdr.fields.sender);
     debug_printf(dbg_type, "Offsets -- %2d (pre), %2d (nsym), %2d (sym)\r\n", 
-        hdr.pre_offset, hdr.nsym_offset, hdr.sym_offset);
+                    hdr.var_subhdr.fields.sym_offset);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
     for(size_t i = 0; i < data.size(); i++) {

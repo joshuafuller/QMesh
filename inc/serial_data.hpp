@@ -84,14 +84,22 @@ public:
         uint16_t s;
         uint8_t b[2];
     } crc16_t;
-    typedef struct __attribute__((__packed__)) {
-        uint32_t type : 2;
-        uint32_t stream_id : 8;
-        uint32_t ttl : 3;
-        uint32_t sender : 4;
-        uint32_t pre_offset : 3;
-        uint32_t nsym_offset : 3;
-        uint32_t sym_offset : 3;
+    typedef struct {
+        union {
+            struct __attribute__((__packed__)) {
+                uint32_t ttl : 3;
+                uint32_t sender : 6;    
+                uint32_t sym_offset : 3;
+            } fields;
+            uint8_t b[2]; 
+        } var_subhdr;
+        union {
+            struct __attribute__((__packed__)) {
+                uint32_t type : 2;
+                uint32_t stream_id : 14;
+            } fields;
+            uint8_t b[2];
+        } cons_subhdr;
     } frame_hdr;
     shared_ptr<FEC> fec;
 	bool tx_frame;
@@ -169,13 +177,11 @@ public:
         data.resize(radio_cb["Payload Length"].get<int>());
         size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
         memcpy(data.data(), beacon_str.c_str(), len);        
-        hdr.type = BEACON_FRAME;
-        hdr.stream_id = 0;
-        hdr.ttl = 0;
-        hdr.sender = 0;
-        hdr.pre_offset = 0;
-        hdr.nsym_offset = 0;
-        hdr.sym_offset = 0;
+        hdr.cons_subhdr.fields.type = BEACON_FRAME;
+        hdr.cons_subhdr.fields.stream_id = 0;
+        hdr.var_subhdr.fields.ttl = 0;
+        hdr.var_subhdr.fields.sender = 0;
+        hdr.var_subhdr.fields.sym_offset = 0;
         this->setCRC();
         return data.size();
     }
@@ -223,7 +229,7 @@ public:
      * Sets the sender's address based on the value passed in.
      */
     void setSender(uint8_t sender_addr) {
-        hdr.sender = sender_addr;
+        hdr.var_subhdr.fields.sender = sender_addr;
         setCRC();
     }
 
@@ -231,14 +237,14 @@ public:
      * Gets the sender's address.
      */
     uint32_t getSender(void) {
-        return hdr.sender;
+        return hdr.var_subhdr.fields.sender;
     }
 
     /**
      * Sets the Stream ID
      */
     void setStreamID(uint8_t id) {
-        hdr.stream_id = id;
+        hdr.cons_subhdr.fields.stream_id = id;
         setCRC();
     }
 
@@ -246,7 +252,7 @@ public:
      * Returns the Stream ID
      */
     uint32_t getStreamID(void) {
-        return hdr.stream_id;
+        return hdr.cons_subhdr.fields.stream_id;
     }
 
 
@@ -268,7 +274,7 @@ public:
      * Increment the TTL, updating the header CRC in the process.
      */
     void incrementTTL(void) {
-        hdr.ttl += 1;
+        hdr.var_subhdr.fields.ttl += 1;
         setCRC();
     }
 
@@ -276,7 +282,7 @@ public:
      * Return the frame's current TTL value
      */
     uint8_t getTTL(void) {
-        return hdr.ttl;
+        return hdr.var_subhdr.fields.ttl;
     }
 
     /**
@@ -298,9 +304,9 @@ public:
      * @param sym_offset Intra-symbol offset.
      */
     void getOffsets(uint8_t &pre_offset, uint8_t &nsym_offset, uint8_t &sym_offset) {
-        pre_offset = hdr.pre_offset;
-        nsym_offset = hdr.nsym_offset;
-        sym_offset = hdr.sym_offset;
+        pre_offset = 0;
+        nsym_offset = 0;
+        sym_offset = hdr.var_subhdr.fields.sym_offset;
     }
 
     /** 
@@ -310,9 +316,7 @@ public:
      * @param sym_offset Intra-symbol offset.
      */
     void setOffsets(const uint8_t pre_offset, const uint8_t nsym_offset, const uint8_t sym_offset) {
-        hdr.pre_offset = pre_offset;
-        hdr.nsym_offset = nsym_offset;
-        hdr.sym_offset = sym_offset;
+        hdr.var_subhdr.fields.sym_offset = sym_offset;
         setCRC();
     }
 
