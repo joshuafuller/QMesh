@@ -21,44 +21,50 @@ import time
 import json
 import base64
 import pika
+import yaml
 
-if len(sys.argv) < 4:
-    print("USAGE: set_config.py <node id> <beacon interval> <power level (dBm)>")
+if len(sys.argv) < 5:
+    print("USAGE: set_config.py <configfile> <node id> <beacon interval> <power level (dBm)>")
     sys.exit(0)
 
-node_id = int(sys.argv[1])
-beacon_interval = int(sys.argv[2])
-tx_power = int(sys.argv[3])
+config_file = sys.argv[1]
+node_id = int(sys.argv[2])
+beacon_interval = int(sys.argv[3])
+tx_power = int(sys.argv[4])
+
+cfg_dict = None
+with open(config_file) as file:
+    # The FullLoader parameter handles the conversion from YAML
+    # scalar values to Python the dictionary format
+    cfg_dict = yaml.load(file, Loader=yaml.FullLoader)
+    print(cfg_dict)
 
 # For now, let's just put the configuration in the same
 # file as the one setting it.
 settings = {}
 settings["Address"] = node_id
-settings["Frequency"] = 426000000
-settings["Frequencies"] = [424000000, 425000000, 426000000, 427000000]
-settings["BW"] = 1 # 0=125KHz, 1=250KHz, 2=500KHz
-settings["CR"] = 0
-settings["SF"] = 9
-settings["Preamble Length"] = 16
-settings["Preamble Slots"] = 1
-beacon_str = "KG5VBY Beacon Test"
-settings["Beacon Message"] = beacon_str
+settings["Frequency"] = cfg_dict['frequency']
+settings["Frequencies"] = cfg_dict['frequencies']
+settings["BW"] = cfg_dict['bw'] # 0=125KHz, 1=250KHz, 2=500KHz
+settings["CR"] = cfg_dict['cr']
+settings["SF"] = cfg_dict['sf']
+settings["Preamble Length"] = cfg_dict['preamble_length']
+settings["Preamble Slots"] = cfg_dict['preamble_slots']
+settings["Beacon Message"] = cfg_dict['beacon_msg']
 settings["Beacon Interval"] = beacon_interval
-settings["Payload Length"] = len(beacon_str)
-#settings["FEC Algorithm"] = "Convolutional"
-#settings["FEC Algorithm"] = "None"
-settings["FEC Algorithm"] = "RSV"
-settings["Conv Rate"] = 2
-settings["Conv Order"] = 7
-settings["Reed-Solomon Number Roots"] = 8
+settings["Payload Length"] = len(cfg_dict['beacon_msg'])
+settings["FEC Algorithm"] = cfg_dict['fec_algo']
+settings["Conv Rate"] = cfg_dict['conv_rate']
+settings["Conv Order"] = cfg_dict['conv_order']
+settings["Reed-Solomon Number Roots"] = cfg_dict['rs_num_roots']
 settings["TX Power"] = tx_power
-settings["CW Test Mode"] = 0 # 1 to enable CW test mode
-settings["Preamble Test Mode"] = 0 # 1 to enable continuous-preamble test mode
-settings["Test FEC"] = 0 # 1 to enable anf FEC test
-settings["Number Offsets"] = 4
-settings["Has GPS"] = 0
-settings["POCSAG Frequency"] = 439987500
-settings["POCSAG Beacon Interval"] = 120
+settings["CW Test Mode"] = cfg_dict['cw_test_mode'] # 1 to enable CW test mode
+settings["Preamble Test Mode"] = cfg_dict['preamble_test_mode'] # 1 to enable continuous-preamble test mode
+settings["Test FEC"] = cfg_dict['preamble_test_mode'] # 1 to enable anf FEC test
+settings["Number Offsets"] = cfg_dict['num_offsets']
+settings["Has GPS"] = cfg_dict['has_gps']
+settings["POCSAG Frequency"] = cfg_dict['pocsag_freq']
+settings["POCSAG Beacon Interval"] = cfg_dict['pocsag_beacon_interval']
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')
