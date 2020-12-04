@@ -261,8 +261,9 @@ while(1);
     int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
     if(pocsag_beacon_interval == -1) {
         pocsag_beacon_interval = 60000;
+    } else {
+        background_queue.call_every(pocsag_beacon_interval*1000, beacon_pocsag_fn);
     }
-    background_queue.call_every(pocsag_beacon_interval*1000, beacon_pocsag_fn);
 
     ThisThread::sleep_for(250);
  
