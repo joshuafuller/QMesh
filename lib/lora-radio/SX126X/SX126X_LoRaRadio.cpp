@@ -1487,7 +1487,7 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
         case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
-    set_cad_params(num_syms, my_cad_params.det_max+3, my_cad_params.det_min,
+    set_cad_params(num_syms, my_cad_params.det_max+3, my_cad_params.det_min-5,
                     LORA_CAD_ONLY, cad_rx_timeout);
 
 #if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
@@ -1523,7 +1523,7 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
         case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
-    set_cad_params(num_syms, my_cad_params.det_max+3, my_cad_params.det_min,
+    set_cad_params(num_syms, my_cad_params.det_max+3, my_cad_params.det_min-5,
                     LORA_CAD_RX, cad_rx_timeout);
 
     write_opmode_command(RADIO_SET_CAD, NULL, 0);
