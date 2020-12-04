@@ -153,7 +153,7 @@ void mesh_protocol_fsm(void) {
     radio_timing.waitFullSlots(1); // TODO: change this to be zero once we know zero works
     for(;;) {
         debug_printf(DBG_INFO, "--------------------\r\n");
-        print_memory_info();
+        //print_memory_info();
         switch(state) {
             case WAIT_FOR_EVENT:
                 retransmit_disable_out_n.write(1);
@@ -163,7 +163,7 @@ void mesh_protocol_fsm(void) {
                 radio.rx_hop_frequency(); 
                 radio.receive_cad();
                 radio.unlock();
-                debug_printf(DBG_INFO, "Started CAD\r\n");
+                //debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 radio.stop_cad.store(true);
                 while(radio.cad_pending.load() == true);
@@ -205,7 +205,7 @@ void mesh_protocol_fsm(void) {
                     state = TX_PACKET;
                 }
                 else if(radio_event->evt_enum == RX_DONE_EVT) {
-                    debug_printf(DBG_INFO, "Received a packet\r\n");
+                    //debug_printf(DBG_INFO, "Received a packet\r\n");
                     total_rx_pkt.store(total_rx_pkt.load()+1);
                     last_rx_rssi.store(radio_event->rssi);
                     last_rx_snr.store(radio_event->snr);
@@ -344,7 +344,6 @@ void beacon_fn(void) {
     static uint8_t stream_id = 0;
     beacon_frame_sptr->setStreamID(stream_id++);
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
-    //MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
 }
 
@@ -356,22 +355,12 @@ void beacon_pocsag_fn(void) {
     status = !status;
     if(status) {
         debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
-        {
-#if 0
-        stringstream msg;
-        msg << "KG5VBY:" << "SF" << radio_cb["SF"].get<int>() << "," << \
-            "BW" << radio_cb["BW"].get<int>() << "," << \
-            "F" << radio_cb["Frequency"].get<int>() << "," << "\r\n";  
-        string pocsag_msg = msg.str();
-#else
         char msg[128];
         sprintf(msg, "KG5VBY:SF%d,BW%d,F%d\r\n", radio_cb["SF"].get<int>(), 
                     radio_cb["BW"].get<int>(), radio_cb["Frequency"].get<int>());
         string pocsag_msg(msg);
-#endif
         auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
         enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
-        }
         int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
         if(pocsag_beacon_interval == -1) {
             pocsag_beacon_interval = 60000;
@@ -388,20 +377,11 @@ void beacon_pocsag_fn(void) {
         int uptime_m = uptime_rem / 60;
         uptime_rem %= 60;
         int uptime_s = uptime_rem;
-        {
-#if 0
-        stringstream msg;
-        msg << "KG5VBY:" << "Uptime:" << uptime_d << "d:" << uptime_h << \
-            "h:" << uptime_m << "m:" << uptime_s << "s" << "\r\n";  
-        string pocsag_msg = msg.str();
-#else
         char msg[128];
         sprintf(msg, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", uptime_d, uptime_h, uptime_m, uptime_s);
-#endif
         string pocsag_msg(msg);
         auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
         enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-        } 
     }
 }
 
@@ -414,7 +394,7 @@ extern Adafruit_SSD1306_I2c *oled;
 void oled_mon_fn(void) {
     oled->clearDisplay();
     oled->printf("PACKET STATISTICS\r\n");
-    oled->printf("Pkt Tx/Rx: %4d/%4d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
+    oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
     oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
                     (float) total_rx_pkt.load())*100));
     oled->printf("RSSI/SNR: %4d/%4d\r\n", last_rx_rssi.load(), last_rx_snr.load());

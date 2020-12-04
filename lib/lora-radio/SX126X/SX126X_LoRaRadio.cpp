@@ -101,13 +101,13 @@ typedef struct {
     uint8_t det_max;
 } lora_cad_params_t;
 static const lora_cad_params_t cad_params[7][6] =
-                {{ {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
-                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
-                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
-                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} }, 
-                 { {4, 10, 28}, {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {2, 10, 22}, {2, 10, 22} },
-                 { {4, 10, 25}, {4, 10, 24}, {4, 10, 23}, {4, 10, 22}, {4, 10, 21}, {4, 10, 20} },
-                 { {8, 10, 29}, {4, 10, 25}, {4, 10, 23}, {4, 10, 22}, {4, 10, 22}, {4, 10, 21} }};
+                {{ {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
+                 { {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
+                 { {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
+                 { {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
+                 { {2, 10, 22}, {2, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25}, {4, 10, 28} },  // 125KHz -- from appnote
+                 { {4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {4, 10, 28} },  // 250KHz -- interpolated
+                 { {4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {8, 10, 29} }}; // 500KHz -- from appnote
 
 
 DigitalOut fhss_mon_sig(MBED_CONF_APP_FHSS_MON);
@@ -374,6 +374,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
     fhss_mon_sig = !fhss_mon_sig;
+
     //debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         _radio_events->tx_done_tmr(cur_tmr_sptr);
@@ -438,9 +439,9 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
             _radio_events->rx_timeout();
         }
+        radio.sleep();
+        radio.wakeup();
         if(!stop_cad.load()) {
-            radio.sleep();
-            radio.wakeup();
             radio.rx_hop_frequency();
             radio.receive_cad();
         }
@@ -448,7 +449,14 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             radio.cad_pending.store(false);
         }
     }
-    
+#if 0
+    // Implicit header timeout workaround
+    write_to_register(0x9250, 0x00);
+    uint8_t val = read_register(0x0944);
+    val |= 0x02;
+    write_to_register(0x0944, 0x02);
+#endif
+
     clear_irq_status(IRQ_RADIO_ALL);
     cur_tmr_sptr = make_shared<CalTimer>();
     cur_tmr = cur_tmr_sptr.get();
@@ -504,11 +512,13 @@ void SX126X_LoRaRadio::set_channel(const uint32_t frequency, const bool locking)
     uint8_t buf[4];
     uint32_t freq = 0;
 
+#if 0
     if ( _force_image_calibration || !_image_calibrated) {
         debug_printf(DBG_INFO, "Calibrating the radio\r\n");
         calibrate_image(frequency);
         _image_calibrated = true;
     }
+#endif
 
     freq = (uint32_t) ceil(((float) frequency / (float) FREQ_STEP));
     buf[0] = (uint8_t) ((freq >> 24) & 0xFF);
@@ -717,14 +727,12 @@ void SX126X_LoRaRadio::wakeup(const bool locking)
         wait_us(100);
         _chip_select = 1;
         wait_us(100);
-#if 0
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
         wait_us(3500);
         // whenever we wakeup from Cold sleep state, we need to perform
         // image calibration
         _force_image_calibration = true;
         cold_start_wakeup();
-#endif
 #endif
     }
 
@@ -738,15 +746,18 @@ void SX126X_LoRaRadio::sleep(const bool locking)
     uint8_t sleep_state = 0x04;
     _operation_mode = MODE_SLEEP;
 
-#if 0
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
     // cold start, power consumption 160 nA
     sleep_state = 0x00;
 #endif
-#endif
 
     write_opmode_command(RADIO_SET_SLEEP, &sleep_state, 1);
-    //wait_ms(2);
+    wait_ms(2);
+
+    // Set up the TX clamping workaround
+    uint8_t val = read_register(0x08D8);
+    val |= 0x1E;
+    write_to_register(0x08D8, val);
 
     if(locking) { unlock(); }
 }
@@ -1306,6 +1317,17 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size,
     _packet_params.params.gfsk.payload_length = size;
     set_packet_params(&_packet_params);
 
+    // 500KHz transmit workaround
+    if(_mod_params.params.lora.bandwidth == 9) {
+        uint8_t val = read_register(0x0889);
+        val &= 0xFE;
+        write_to_register(0x0889, val);
+    } else {
+        uint8_t val = read_register(0x0889);
+        val |= 0x04;
+        write_to_register(0x0889, val);
+    }
+
     write_fifo(buffer, size);
     uint8_t buf[3];
 
@@ -1375,7 +1397,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
     write_opmode_command_finish();
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
-    debug_printf(DBG_INFO, "Finished sending\r\n");
+    //debug_printf(DBG_INFO, "Finished sending\r\n");
 }
 
 
@@ -1421,10 +1443,7 @@ void SX126X_LoRaRadio::receive(const bool locking)
 
     uint8_t buf[3];
 
-#if MBED_CONF_SX126X_LORA_DRIVER_BOOST_RX
-#error boosting
     write_to_register(REG_RX_GAIN, 0x96);
-#endif
 
     buf[0] = (uint8_t) ((_rx_timeout >> 16) & 0xFF);
     buf[1] = (uint8_t) ((_rx_timeout >> 8) & 0xFF);
@@ -1674,6 +1693,17 @@ void SX126X_LoRaRadio::set_packet_params(const packet_params_t *const packet_par
     // If not, silently update radio packet type
     if (_active_modem != packet_params->modem_type) {
         set_modem(packet_params->modem_type);
+    }
+
+    // Inverted IQ workaround
+    if(_active_modem == MODEM_LORA && packet_params->params.lora.invert_IQ) {
+        uint8_t val = read_register(0x0736);
+        val &= 0xFB;
+        write_to_register(0x0736, val);
+    } else {
+        uint8_t val = read_register(0x0736);
+        val |= 0x04;
+        write_to_register(0x0736, val);
     }
 
     switch (packet_params->modem_type) {

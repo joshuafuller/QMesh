@@ -68,7 +68,6 @@ shared_ptr<FEC> frame_fec;
 static DeepSleepLock *deep_sleep_lock;
 
 void send_pocsag_msg(string &msg) {
-    print_memory_info();
     char *data = (char *) malloc(msg.length()+1);
     memcpy(data, msg.c_str(), msg.length());
     data[msg.length()] = '\0';
@@ -79,12 +78,9 @@ void send_pocsag_msg(string &msg) {
         while(1);
         MBED_ASSERT(false);
     }
-    print_memory_info();
-    //reinit_radio_pocsag();
     radio.set_tx_config_pocsag(20);
     debug_printf(DBG_INFO, "POCSAG size is %d\r\n", my_pocsag.GetSize());
     radio.send((uint8_t *) my_pocsag.GetMsgPointer(), my_pocsag.GetSize());
-    print_memory_info();
     free(data);
 }
 
