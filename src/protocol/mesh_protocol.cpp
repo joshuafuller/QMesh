@@ -161,7 +161,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
                 radio.lock();
                 radio.rx_hop_frequency(); 
-                radio.receive_cad();
+                radio.receive_cad_rx();
                 radio.unlock();
                 //debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);

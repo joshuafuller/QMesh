@@ -46,6 +46,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "cal_timer.hpp"
 #include <atomic>
 #include <list>
+#include <map>
 #include <random>
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -489,6 +490,12 @@ private:
     //atomic<bool> stop_cad;
     EventFlags cad_running;
     bool cad_rx_running;
+    map<uint32_t, int8_t> cad_det_peak_adj;
+    map<uint32_t, int8_t> cad_det_min_adj;
+    map<uint32_t, list<int>> cad_det_succ;
+    map<uint32_t, list<int>> cad_rx_succ;
+
+    void cad_process_detect(const bool is_false_det, const uint32_t freq); 
 
     // Components to poll the RSSI to implement soft decoding
     atomic<bool> collect_rssi;
