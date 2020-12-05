@@ -372,8 +372,6 @@ void SX126X_LoRaRadio::stop_read_rssi(void) {
 
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
-    static bool retry = true;
-    static uint16_t last_irq_status = 0x0000;
     uint16_t irq_status = get_irq_status();
     fhss_mon_sig = !fhss_mon_sig;
 
@@ -381,13 +379,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
         _radio_events->tx_done_tmr(cur_tmr_sptr);
     }
-#if 0
-    if ((irq_status & IRQ_PREAMBLE_DETECTED) == IRQ_PREAMBLE_DETECTED) {
-        start_read_rssi();
-    }
-#endif 
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
-        cad_process_detect(false, *cur_hop_freq);
         // Implicit header timeout workaround
         write_to_register(0x0920, 0x00);
         uint8_t val = read_register(0x0944);
@@ -424,12 +416,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
             if(!stop_cad.load() && !cad_rx_running) {
                 radio.receive_cad_rx();
-            } 
-            else {
+            } else {
                 cad_pending.store(false);
-            }
-            if(cad_rx_running) {
-                cad_process_detect(false, *cur_hop_freq);  
             }
         }
         else {  
@@ -438,14 +426,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
                 fhss_mon_sig = !fhss_mon_sig; 
                 radio.receive_cad_rx();
                 fhss_mon_sig = !fhss_mon_sig;
-            }
-            else {
-                cad_pending.store(false);
-            }
-            if(cad_rx_running) {
-                cad_process_detect(false, *cur_hop_freq);
             } else {
-                cad_process_detect(false, *cur_hop_freq);                
+                cad_pending.store(false);
             }
         }
     }
@@ -458,8 +440,8 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             _radio_events->rx_timeout();
         }
         uint32_t hop_freq = *cur_hop_freq;
-        radio.sleep();
-        radio.wakeup();
+        //radio.sleep();
+        //radio.wakeup();
         if(!stop_cad.load()) {
             radio.rx_hop_frequency();
             radio.receive_cad_rx();
@@ -467,10 +449,9 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         else {
             radio.cad_pending.store(false);
         }
-        cad_process_detect(true, hop_freq);
+        //cad_process_detect(true, hop_freq);
     }
 
-    last_irq_status = irq_status;
     clear_irq_status(IRQ_RADIO_ALL);
     cur_tmr_sptr = make_shared<CalTimer>();
     cur_tmr = cur_tmr_sptr.get();
