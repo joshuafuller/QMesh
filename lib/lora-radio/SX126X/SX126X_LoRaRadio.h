@@ -331,7 +331,6 @@ public:
 
     void receive_cad(const bool locking = false);
     void receive_cad_rx(const bool locking = false);
-    oid receive_pseudocad(const bool locking)
 
     void tx_hop_frequency(const uint32_t freq_offset, const bool locking = false);
 

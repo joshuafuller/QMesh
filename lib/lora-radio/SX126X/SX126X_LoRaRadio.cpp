@@ -1479,62 +1479,6 @@ void SX126X_LoRaRadio::receive(const bool locking)
 }
 
 
-void SX126X_LoRaRadio::receive_pseudocad(const bool locking)
-{
-    if(locking) { lock(); }
-    
-    // Data-sheet Table 13-11: StopOnPreambParam
-    // We will use radio's internal timer to mark no reception. This behaviour
-    // is different from SX1272/SX1276 where we are relying on radio to stop
-    // at preamble detection.
-    // 0x00 means Timer will be stopped on SyncWord(FSK) or Header (LoRa) detection
-    // 0x01 means Timer is stopped on preamble detection
-    uint8_t stop_at_preamble = 0x01;
-    write_opmode_command(RADIO_SET_STOPRXTIMERONPREAMBLE, &stop_at_preamble, 1);
-    // Data-sheet 13.4.9 SetLoRaSymbNumTimeout
-    uint8_t val = 0x08;
-    write_opmode_command(RADIO_SET_LORASYMBTIMEOUT, &val, 1);
-
-    if(_txen.is_connected()) {
-        _txen = 0;
-    }
-    if(_rxen.is_connected()) {
-        _rxen = 1;
-    }
-
-    if (_reception_mode != RECEPTION_MODE_OTHER) {
-#if 0
-        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_PREAMBLE_DETECTED ,
-                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_PREAMBLE_DETECTED ,
-                          IRQ_RADIO_NONE,
-                          IRQ_RADIO_NONE);
-#else
-        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR,
-                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR,
-                          IRQ_RADIO_NONE,
-                          IRQ_RADIO_NONE);
-#endif
-        set_modulation_params(&_mod_params);
-        set_packet_params(&_packet_params);
-    }
-
-    uint8_t buf[3];
-
-    write_to_register(REG_RX_GAIN, 0x96);
-
-    buf[0] = (uint8_t) ((_rx_timeout >> 16) & 0xFF);
-    buf[1] = (uint8_t) ((_rx_timeout >> 8) & 0xFF);
-    buf[2] = (uint8_t) (_rx_timeout & 0xFF);
-
-    write_opmode_command(RADIO_SET_RX, buf, 3);
-    rx_int_mon = 1;
-    tx_int_mon = 0;
-
-    _operation_mode = MODE_RX;
-    if(locking) { unlock(); }
-}
-
-
 void SX126X_LoRaRadio::receive_cad(const bool locking)
 {
     if(locking) { lock(); }
