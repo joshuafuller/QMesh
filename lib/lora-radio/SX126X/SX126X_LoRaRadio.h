@@ -507,6 +507,10 @@ private:
     shared_ptr<uniform_int_distribution<uint32_t>> hop_chan_dist_sptr;
     vector<uint32_t> hop_freqs;
     vector<uint32_t>::iterator cur_hop_freq;
+
+    // Timeout function to reset modem if it hangs on a transmit
+    Timeout tx_timeout;
+    void tx_timeout_handler(void);
 };
 
 #endif /* MBED_LORA_RADIO_DRV_SX126X_LORARADIO_H_ */

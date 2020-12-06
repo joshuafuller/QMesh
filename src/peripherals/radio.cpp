@@ -301,7 +301,6 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Fram
 
 static void tx_done_cb(shared_ptr<CalTimer> tmr_sptr)
 {
-    //debug_printf(DBG_INFO, "TX done\r\n");
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT, tmr_sptr);
     MBED_ASSERT(!tx_radio_evt_mail.full());
@@ -343,6 +342,7 @@ static void rx_preamble_det_cb(void) {
 static void tx_timeout_cb(void)
 {
     radio.standby();
+    init_radio();
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(tx_radio_evt_mail, radio_event);

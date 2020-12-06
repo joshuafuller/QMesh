@@ -370,6 +370,11 @@ void SX126X_LoRaRadio::stop_read_rssi(void) {
 }
 
 
+void SX126X_LoRaRadio::tx_timeout_handler(void) {
+    _radio_events->tx_timeout();
+}
+
+
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
@@ -377,6 +382,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
 
     //debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
+        tx_timeout.detach();
         _radio_events->tx_done_tmr(cur_tmr_sptr);
     }
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
@@ -432,11 +438,12 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         }
     }
     else if ((irq_status & IRQ_RX_TX_TIMEOUT) == IRQ_RX_TX_TIMEOUT) {
-        //debug_printf(DBG_INFO, "CAD Rx Timeout\r\n");
-
         if ((_radio_events->tx_timeout) && (_operation_mode == MODE_TX)) {
+            tx_timeout.detach();
+            debug_printf(DBG_WARN, "Tx Timeout\r\n");
             _radio_events->tx_timeout();
         } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
+            debug_printf(DBG_WARN, "Rx Timeout\r\n");
             _radio_events->rx_timeout();
         }
         uint32_t hop_freq = *cur_hop_freq;
@@ -1397,9 +1404,9 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
                                 radio_timing.getWaitNoWarn());
     dangling_flags.wait_any(0x1);
     write_opmode_command_finish();
+    radio.tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), 3000);
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
-    //debug_printf(DBG_INFO, "Finished sending\r\n");
 }
 
 
@@ -1538,8 +1545,8 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
         case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
-    set_cad_params(num_syms, my_cad_params.det_max, 
-                    my_cad_params.det_min,
+    set_cad_params(num_syms, my_cad_params.det_max+15, 
+                    my_cad_params.det_min+15,
                     LORA_CAD_RX, cad_rx_timeout);
     rx_int_mon = 1;
     tx_int_mon = 0;
