@@ -23,5 +23,6 @@ num_offsets: 4
 has_gps: 0
 pocsag_freq: 439987500
 pocsag_beacon_interval: 120
+log_packets: 1
 
 ...

@@ -65,6 +65,7 @@ settings["Number Offsets"] = cfg_dict['num_offsets']
 settings["Has GPS"] = cfg_dict['has_gps']
 settings["POCSAG Frequency"] = cfg_dict['pocsag_freq']
 settings["POCSAG Beacon Interval"] = cfg_dict['pocsag_beacon_interval']
+settings["Log Packets"] = cfg_dict['log_packets']
 
 def dbg_process(ch, method, properties, body):
     line = body.decode('utf-8')

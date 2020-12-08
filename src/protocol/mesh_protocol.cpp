@@ -272,7 +272,9 @@ void mesh_protocol_fsm(void) {
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
+                if(radio_cb["Log Packets"].get<int>()) {
+                    enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
+                }
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 led3.LEDOff(); 
                 // Set the amount of time to wait until the next transmit
@@ -314,7 +316,9 @@ void mesh_protocol_fsm(void) {
                 radio.unlock();
 
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
+                if(radio_cb["Log Packets"].get<int>()) {
+                    enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
+                }
                 led2.LEDOff();
                 led3.LEDOff();
                 state = WAIT_FOR_EVENT;
