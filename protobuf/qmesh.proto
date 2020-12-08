@@ -1,0 +1,72 @@
+syntax = "proto3";
+import "nanopb.proto";
+
+
+message LoraCfg {
+  int32 bw = 1;
+  int32 cr = 2;
+  int32 sf = 3;
+  int32 preamble_length = 4;  
+}
+
+message Testing {
+  bool cw_test_mode = 1;
+  bool preamble_test_mode = 2;
+}
+
+message FECCfg {
+  enum Type {
+    NONE = 0;
+    INTERLEAVE = 1;
+    CONV = 2;
+    RSV = 3;
+    RSVGOLAY = 4;
+  };
+  int32 conv_rate = 1;
+  int32 conv_order = 2;
+  int32 rs_num_roots = 3;
+}
+
+message SysCfgMsg {
+  int32 frequency = 1;
+  repeated int32 frequencies = 2 [(nanopb).max_count = 16];
+  LoraCfg lora_cfg = 3;
+  Testing testing = 4;
+  FECCfg fec_cfg = 5;
+}
+
+message ClockSetMsg {
+  uint32 time = 1;
+}
+
+message StatusMsg {
+  enum Status {
+    BOOTING = 0;
+    MANAGEMENT = 1;
+    RUNNING = 2;
+  }
+  bool tx_full = 1;
+  uint32 time = 2;
+}
+
+message SerialMsg {
+  enum Type {
+    CONFIG = 0;
+    DATA = 1;
+    CLOCK_SET = 2;
+    STATUS = 3;
+  }
+  SysCfgMsg sys_cfg = 1;
+  ClockSetMsg clock_set = 2; 
+  StatusMsg status = 3;  
+}
+
+message DataMsg {
+  uint32 type = 1;
+  uint32 stream_id = 2;
+  uint32 ttl = 3;
+  uint32 sender = 4;
+  uint32 sym_offset = 5;
+  bytes payload = 6 [(nanopb).max_size = 256];
+  
+}
