@@ -28,6 +28,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <sstream>
 #include "MbedJSONValue.hpp"
+#include "qmesh.pb.h"
+#include "pb_common.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
+
 
 
 QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
@@ -113,74 +118,105 @@ void load_settings_from_flash(void) {
     FILE *f;    
     f = fopen("/fs/settings.json", "r");
     if(!f) {
-        debug_printf(DBG_WARN, "Unable to open settings.json. Creating new file with default settings\r\n");
-        f = fopen("/fs/settings.json", "w");
-        radio_cb["Mode"] = "Mesh Normal";
-        radio_cb["Address"] = DEFAULT_ADDRESS;
-        radio_cb["Frequency"] = RADIO_FREQUENCY;
-        radio_cb["Frequencies"][0] = RADIO_FREQUENCY;
-        radio_cb["BW"] = RADIO_BANDWIDTH;
-        radio_cb["CR"] = RADIO_CODERATE;
-        radio_cb["SF"] = RADIO_SF;
-        radio_cb["Preamble Length"] = RADIO_PREAMBLE_LEN;
-        radio_cb["Preamble Slots"] = RADIO_PREAMBLE_SLOTS;
-        radio_cb["Beacon Message"] = RADIO_BEACON_MSG;
-        radio_cb["Beacon Interval"] = RADIO_BEACON_INTERVAL;
-        radio_cb["Payload Length"] = FRAME_PAYLOAD_LEN;
-        radio_cb["FEC Algorithm"] = FEC_ALGORITHM;
-        radio_cb["Conv Rate"] = FEC_CONV_RATE;
-        radio_cb["Conv Order"] = FEC_CONV_ORDER;
-        radio_cb["Reed-Solomon Number Roots"] = FEC_RS_NUM_ROOTS;
-	    radio_cb["TX Power"] = RADIO_POWER;
-        radio_cb["CW Test Mode"] = 0;
-        radio_cb["Preamble Test Mode"] = 0;
-        radio_cb["Test FEC"] = 0;
-        radio_cb["Number Offsets"] = 0;
-        radio_cb["Has GPS"] = 0;
-        radio_cb["POCSAG Frequency"] = 439987500;
-        radio_cb["POCSAG Beacon Interval"] = 600;
-        string settings_str = radio_cb.serialize();
-        debug_printf(DBG_INFO, "%s %d\r\n", settings_str.c_str(), settings_str.size());
-        fwrite(settings_str.c_str(), 1, settings_str.size(), f);   
+        debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
+        f = fopen("/fs/settings.bin", "w");
+        radio_cb = SysCfgMsg_init_zero;
+        radio_cb.mode = SysCfgMsg_Mode_NORMAL;
+        radio_cb.address = DEFAULT_ADDRESS;
+        
+        radio_cb.has_radio_cfg = true;
+        radio_cb.radio_cfg = RadioCfg_init_zero;
+        radio_cb.radio_cfg.type = RadioCfg_Type_LORA;
+        radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+        radio_cb.radio_cfg.frequencies_count = 1;
+        radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+        radio_cb.radio_cfg.tx_power = RADIO_POWER;
+
+        radio_cb.radio_cfg.has_lora_cfg = true;
+        radio_cb.radio_cfg.lora_cfg = LoraCfg_init_zero;
+        radio_cb.radio_cfg.lora_cfg.bw = RADIO_BANDWIDTH;
+        radio_cb.radio_cfg.lora_cfg.cr = RADIO_CODERATE;
+        radio_cb.radio_cfg.lora_cfg.sf = RADIO_SF;
+        radio_cb.radio_cfg.lora_cfg.preamble_length = RADIO_PREAMBLE_LEN;
+
+        radio_cb.has_net_cfg = true;
+        radio_cb.net_cfg = NetCfg_init_zero;
+        string def_msg = "KG5VBY Default Message";
+        memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
+        radio_cb.net_cfg.beacon_interval = 600;
+        radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
+
+        radio_cb.has_fec_cfg = true;
+        radio_cb.fec_cfg = FECCfg_init_zero;
+        radio_cb.fec_cfg.type = FECCfg_Type_RSVGOLAY;
+        radio_cb.fec_cfg.conv_order = FEC_CONV_ORDER;
+        radio_cb.fec_cfg.conv_rate = FEC_CONV_RATE;
+        radio_cb.fec_cfg.rs_num_roots = FEC_RS_NUM_ROOTS;
+
+        radio_cb.has_pocsag_cfg = true;
+        radio_cb.pocsag_cfg = POCSAGCfg_init_zero;
+        radio_cb.pocsag_cfg.enabled = true;
+        radio_cb.pocsag_cfg.frequency = 439987500;
+        radio_cb.pocsag_cfg.beacon_interval = 600;
+
+        radio_cb.has_test_cfg = true;
+        radio_cb.test_cfg = TestCfg_init_zero;
+        radio_cb.test_cfg.cw_test_mode = false;
+        radio_cb.test_cfg.preamble_test_mode = false;
+        radio_cb.test_cfg.test_fec = false;
+
+        radio_cb.gps_en = false;
+
+        pb_byte_t buffer[SysCfgMsg_size];
+        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+        bool status = pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
+        debug_printf(DBG_INFO, "Settings file is %d bytes\r\n", stream.bytes_written);
+        fwrite(stream.state, 1, stream.bytes_written, f);   
         fflush(f);
         fclose(f); 
-        f = fopen("/fs/settings.json", "r");
+        f = fopen("/fs/settings.bin", "r");
         MBED_ASSERT(f);
     }
     struct stat file_stat;
-    stat("/fs/settings.json", &file_stat);
+    stat("/fs/settings.bin", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
-	vector<char> linebuf(file_stat.st_size);
-	fread(linebuf.data(), 1, file_stat.st_size, f);
-	debug_printf(DBG_INFO, "Read from file: %s\r\n", linebuf.data());
-    ThisThread::sleep_for(1000);
-    MbedJSONValue tmp_json;
-    parse(tmp_json, linebuf.data());
-    radio_cb = tmp_json;
+    MBED_ASSERT(file_stat.st_size < 1024);
+    MBED_ASSERT(file_stat.st_size == SysCfgMsg_size);
+    uint8_t cfg_buf[SysCfgMsg_size];
+	fread(cfg_buf, 1, file_stat.st_size, f);
     fflush(f);
     fclose(f);
-    debug_printf(DBG_INFO, "Mode: %s\r\n", radio_cb["Mode"].get<string>().c_str());
-    debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb["Address"].get<int>());
-    for(int i = 0; i < radio_cb["Frequencies"].size(); i++) {
-        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb["Frequencies"][i].get<int>());        
+    pb_istream_t stream = pb_istream_from_buffer(cfg_buf, SysCfgMsg_size);
+    radio_cb = SysCfgMsg_init_zero;
+    bool status = pb_decode(&stream, SysCfgMsg_fields, &radio_cb);
+    MBED_ASSERT(status);
+
+    debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
+    debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
+    MBED_ASSERT(radio_cb.has_radio_cfg);
+    for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
+        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]);        
     }
-    debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb["BW"].get<int>());
-    debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb["CR"].get<int>());
-    debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb["SF"].get<int>());
-    debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb["Preamble Length"].get<int>());
-    debug_printf(DBG_INFO, "Preamble Slots: %d\r\n", radio_cb["Preamble Slots"].get<int>());
-    debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb["Beacon Message"].get<string>().c_str());
-    debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb["Beacon Interval"].get<int>());
-    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb["Payload Length"].get<int>());
+    MBED_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
+    debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
+    debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
+    debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
+    debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb.radio_cfg.lora_cfg.preamble_length);
+    MBED_ASSERT(radio_cb.has_net_cfg);
+    debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb.net_cfg.beacon_msg);
+    debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb.net_cfg.beacon_interval);
+    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
     debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
-                radio_cb["Number Offsets"].get<int>());
-    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", radio_cb["Has GPS"].get<int>());
-    debug_printf(DBG_INFO, "POCSAG frequency %d\r\n", radio_cb["POCSAG Frequency"].get<int>());
-    debug_printf(DBG_INFO, "POCSAG Beacon Interval %d\r\n", radio_cb["POCSAG Beacon Interval"].get<int>());
+                radio_cb.net_cfg.num_offsets);
+    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", radio_cb.gps_en);
+    MBED_ASSERT(radio_cb.has_pocsag_cfg);
+    debug_printf(DBG_INFO, "POCSAG frequency %d\r\n", radio_cb.pocsag_cfg.frequency);
+    debug_printf(DBG_INFO, "POCSAG Beacon Interval %d\r\n", radio_cb.pocsag_cfg.beacon_interval);
     // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
     //  anything else from occurring and leading to weird crashes
-    MBED_ASSERT(radio_cb["Conv Rate"].get<int>() == 2);
-    MBED_ASSERT(radio_cb["Conv Order"].get<int>() == 7);
+    MBED_ASSERT(radio_cb.has_fec_cfg);
+    MBED_ASSERT(radio_cb.fec_cfg.conv_rate == 2);
+    MBED_ASSERT(radio_cb.fec_cfg.conv_order == 7);
     // Check if low-power mode is set. If so, delete the UART
     rx_serial_thread.start(rx_serial_thread_fn);
     FILE *low_power_fh = fopen("/fs/low_power.mode", "r");
@@ -194,11 +230,15 @@ void load_settings_from_flash(void) {
 }
 
 void save_settings_to_flash(void) {
-    debug_printf(DBG_INFO, "Opening settings.json...\r\n");
-    FILE *f = fopen("/fs/settings.json", "w"); 
+    debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
+    FILE *f = fopen("/fs/settings.bin", "w"); 
+    pb_byte_t buffer[SysCfgMsg_size];
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    bool status = pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
+    debug_printf(DBG_INFO, "Settings file is %d bytes\r\n", stream.bytes_written);
+    MBED_ASSERT(stream.bytes_written == SysCfgMsg_size);
+    fwrite(stream.state, 1, stream.bytes_written, f);   
     MBED_ASSERT(f != 0);
-    string settings_str = radio_cb.serialize();
-    fwrite(settings_str.c_str(), 1, settings_str.size(), f);
     fclose(f);  
 }
 
@@ -277,53 +317,41 @@ void nv_log_fn(void) {
     for(;;) {
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
-        MbedJSONValue log_json;
         int16_t rssi;
         uint16_t rx_size;
         int8_t snr;
         log_frame->getRxStats(rssi, snr, rx_size);
+        LogMsg log_msg;
 		time_t my_time = time(NULL);
-		log_json["Timestamp"] = ctime(&my_time);
-        log_json["Sender"] = (int) log_frame->getSender();
-        log_json["TTL"] = (int) log_frame->getTTL();
-        log_json["Stream ID"] = (int) log_frame->getStreamID();
-        log_json["RSSI"] = (int) rssi;
-        log_json["SNR"] = (int) snr;
-        log_json["RX Size"] = (int) rx_size;
-        log_json["Computed CRC"] = log_frame->calcCRC();
-        log_json["CRC"] = log_frame->getCRC();
-#if 0
-        float gps_lat, gps_lon;
-        bool gps_valid = gpsd_get_coordinates(gps_lat, gps_lon);
-        log_json["GPS Valid"] = gps_valid;
-        log_json["GPS Lat"] = to_string(gps_lat);
-        log_json["GPS Lon"] = to_string(gps_lon);
-#endif
+		log_msg.timestamp = my_time;
+        log_msg.sender = log_frame->getSender();
+        log_msg.ttl = log_frame->getTTL();
+        log_msg.stream_id = log_frame->getStreamID();
+        log_msg.rssi = (int) rssi;
+        log_msg.snr = (int) snr;
+        log_msg.rx_size = rx_size;
+        log_msg.comp_crc = log_frame->calcCRC();
+        log_msg.crc = log_frame->getCRC();
+        if(radio_cb.gps_en) {
+            log_msg.has_gps_msg = true;
+            float gps_lat, gps_lon;
+            bool gps_valid = gpsd_get_coordinates(gps_lat, gps_lon);
+            log_msg.gps_msg.valid = true;
+            log_msg.gps_msg.lat = gps_lat;
+            log_msg.gps_msg.lon = gps_lon;
+        } 
         time_t cur_time;
         time(&cur_time);
         time_t uptime = cur_time - boot_timestamp;
-        int uptime_rem = uptime;
-        int uptime_d = uptime_rem / 86400;
-        uptime_rem %= 86400;
-        int uptime_h = uptime_rem / 3600;
-        uptime_rem %= 3600;
-        int uptime_m = uptime_rem / 60;
-        uptime_rem %= 60;
-        int uptime_s = uptime_rem;
-#if 0
-        stringstream msg;
-        msg << uptime_d << "d:" << uptime_h << \
-            "h:" << uptime_m << "m:" << uptime_s << "s";
-#else
-        char msg[128];
-        sprintf(msg, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", uptime_d, uptime_h, uptime_m, uptime_s);
-        log_json["Uptime"] = string(msg);
-#endif
-        string log_json_str = log_json.serialize();
-		log_json_str.push_back('\n');
-        string comb_str;
-        comb_str.append(log_json_str);
-        fwrite(comb_str.c_str(), 1, comb_str.size(), f);
+        log_msg.uptime = uptime;
+
+        pb_byte_t buffer[LogMsg_size];
+        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+        bool status = pb_encode(&stream, LogMsg_fields, &log_msg);
+        MBED_ASSERT(status);
+        size_t xfer_size = stream.bytes_written;
+        fwrite(&xfer_size, 1, sizeof(xfer_size), f);
+        fwrite(stream.state, 1, stream.bytes_written, f);
         fclose(f);
         f = open_logfile();
     }

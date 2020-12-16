@@ -27,9 +27,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SX126X_LoRaRadio.h"
 #include "MbedJSONValue.hpp"
 #include "serial_data.hpp"
+#include "qmesh.pb.h"
+#include "pb_common.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 extern SX126X_LoRaRadio radio;
-extern MbedJSONValue radio_cb;
+extern SysCfgMsg radio_cb;
 
 /// Two modes: normal mesh mode, and beacon mode.
 typedef enum {
@@ -45,8 +49,6 @@ typedef struct {
     uint32_t sf;
     uint32_t pre_len;
 } nv_settings_t;
-
-extern MbedJSONValue radio_cb;
 
 // Main thread for working with the LoRa radio
 extern Thread radio_thread;

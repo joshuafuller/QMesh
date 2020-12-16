@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0bqmesh.proto\x1a\x0cnanopb.proto\"F\n\x07LoraCfg\x12\n\n\x02\x62w\x18\x01 \x01(\x05\x12\n\n\x02\x63r\x18\x02 \x01(\x05\x12\n\n\x02sf\x18\x03 \x01(\x05\x12\x17\n\x0fpreamble_length\x18\x04 \x01(\x05\";\n\x07Testing\x12\x14\n\x0c\x63w_test_mode\x18\x01 \x01(\x08\x12\x1a\n\x12preamble_test_mode\x18\x02 \x01(\x08\"\x88\x01\n\x06\x46\x45\x43\x43\x66g\x12\x11\n\tconv_rate\x18\x01 \x01(\x05\x12\x12\n\nconv_order\x18\x02 \x01(\x05\x12\x14\n\x0crs_num_roots\x18\x03 \x01(\x05\"A\n\x04Type\x12\x08\n\x04NONE\x10\x00\x12\x0e\n\nINTERLEAVE\x10\x01\x12\x08\n\x04\x43ONV\x10\x02\x12\x07\n\x03RSV\x10\x03\x12\x0c\n\x08RSVGOLAY\x10\x04\"\x8b\x01\n\tSysCfgMsg\x12\x11\n\tfrequency\x18\x01 \x01(\x05\x12\x1a\n\x0b\x66requencies\x18\x02 \x03(\x05\x42\x05\x92?\x02\x10\x10\x12\x1a\n\x08lora_cfg\x18\x03 \x01(\x0b\x32\x08.LoraCfg\x12\x19\n\x07testing\x18\x04 \x01(\x0b\x32\x08.Testing\x12\x18\n\x07\x66\x65\x63_cfg\x18\x05 \x01(\x0b\x32\x07.FECCfg\"\x1b\n\x0b\x43lockSetMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"^\n\tStatusMsg\x12\x0f\n\x07tx_full\x18\x01 \x01(\x08\x12\x0c\n\x04time\x18\x02 \x01(\r\"2\n\x06Status\x12\x0b\n\x07\x42OOTING\x10\x00\x12\x0e\n\nMANAGEMENT\x10\x01\x12\x0b\n\x07RUNNING\x10\x02\"\x9e\x01\n\tSerialMsg\x12\x1b\n\x07sys_cfg\x18\x01 \x01(\x0b\x32\n.SysCfgMsg\x12\x1f\n\tclock_set\x18\x02 \x01(\x0b\x32\x0c.ClockSetMsg\x12\x1a\n\x06status\x18\x03 \x01(\x0b\x32\n.StatusMsg\"7\n\x04Type\x12\n\n\x06\x43ONFIG\x10\x00\x12\x08\n\x04\x44\x41TA\x10\x01\x12\r\n\tCLOCK_SET\x10\x02\x12\n\n\x06STATUS\x10\x03\"t\n\x07\x44\x61taMsg\x12\x0c\n\x04type\x18\x01 \x01(\r\x12\x11\n\tstream_id\x18\x02 \x01(\r\x12\x0b\n\x03ttl\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x12\n\nsym_offset\x18\x05 \x01(\r\x12\x17\n\x07payload\x18\x06 \x01(\x0c\x42\x06\x92?\x03\x08\x80\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x0bqmesh.proto\x1a\x0cnanopb.proto\"F\n\x07LoraCfg\x12\n\n\x02\x62w\x18\x01 \x01(\x05\x12\n\n\x02\x63r\x18\x02 \x01(\x05\x12\n\n\x02sf\x18\x03 \x01(\x05\x12\x17\n\x0fpreamble_length\x18\x04 \x01(\x05\"M\n\x07TestCfg\x12\x14\n\x0c\x63w_test_mode\x18\x01 \x01(\x08\x12\x1a\n\x12preamble_test_mode\x18\x02 \x01(\x08\x12\x10\n\x08test_fec\x18\x03 \x01(\x08\"\xa4\x01\n\x06\x46\x45\x43\x43\x66g\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.FECCfg.Type\x12\x11\n\tconv_rate\x18\x02 \x01(\x05\x12\x12\n\nconv_order\x18\x03 \x01(\x05\x12\x14\n\x0crs_num_roots\x18\x04 \x01(\x05\"A\n\x04Type\x12\x08\n\x04NONE\x10\x00\x12\x0e\n\nINTERLEAVE\x10\x01\x12\x08\n\x04\x43ONV\x10\x02\x12\x07\n\x03RSV\x10\x03\x12\x0c\n\x08RSVGOLAY\x10\x04\"\xa0\x01\n\x08RadioCfg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.RadioCfg.Type\x12\x11\n\tfrequency\x18\x02 \x01(\x05\x12\x1a\n\x0b\x66requencies\x18\x03 \x03(\x05\x42\x05\x92?\x02\x10\x10\x12\x10\n\x08tx_power\x18\x04 \x01(\x05\x12\x1a\n\x08lora_cfg\x18\x05 \x01(\x0b\x32\x08.LoraCfg\"\x19\n\x04Type\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\"c\n\x06NetCfg\x12\x1a\n\nbeacon_msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x02 \x01(\r\x12\x13\n\x0bnum_offsets\x18\x03 \x01(\r\x12\x0f\n\x07pld_len\x18\x04 \x01(\r\"H\n\tPOCSAGCfg\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x11\n\tfrequency\x18\x02 \x01(\r\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x03 \x01(\r\"\x9b\x02\n\tSysCfgMsg\x12\x1d\n\x04mode\x18\x01 \x01(\x0e\x32\x0f.SysCfgMsg.Mode\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\r\x12\x1c\n\tradio_cfg\x18\x03 \x01(\x0b\x32\t.RadioCfg\x12\x1a\n\x08test_cfg\x18\x04 \x01(\x0b\x32\x08.TestCfg\x12\x18\n\x07\x66\x65\x63_cfg\x18\x05 \x01(\x0b\x32\x07.FECCfg\x12\x18\n\x07net_cfg\x18\x06 \x01(\x0b\x32\x07.NetCfg\x12\x1e\n\npocsag_cfg\x18\x07 \x01(\x0b\x32\n.POCSAGCfg\x12\x0e\n\x06gps_en\x18\x08 \x01(\x08\"@\n\x04Mode\x12\n\n\x06NORMAL\x10\x00\x12\x0e\n\nMODE_RESET\x10\x01\x12\x0f\n\x0bMODE_SILENT\x10\x02\x12\x0b\n\x07TESTING\x10\x03\"\x1b\n\x0b\x43lockSetMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\x81\x01\n\tStatusMsg\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.StatusMsg.Status\x12\x0f\n\x07tx_full\x18\x02 \x01(\x08\x12\x0c\n\x04time\x18\x03 \x01(\r\"2\n\x06Status\x12\x0b\n\x07\x42OOTING\x10\x00\x12\x0e\n\nMANAGEMENT\x10\x01\x12\x0b\n\x07RUNNING\x10\x02\"\x1d\n\x06\x44\x62gMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\x1d\n\x0cSerialCRCMsg\x12\r\n\x05\x63rc32\x18\x01 \x01(\r\"=\n\nBootLogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x11\n\tboot_time\x18\x02 \x01(\r\x12\r\n\x05\x63ount\x18\x03 \x01(\r\"1\n\x06GPSMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0b\n\x03lat\x18\x02 \x01(\x02\x12\x0b\n\x03lon\x18\x03 \x01(\x02\"\xde\x01\n\x06LogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x11\n\ttimestamp\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x0b\n\x03ttl\x18\x05 \x01(\r\x12\x11\n\tstream_id\x18\x06 \x01(\r\x12\x0c\n\x04rssi\x18\x07 \x01(\x11\x12\x0b\n\x03snr\x18\x08 \x01(\x11\x12\x0f\n\x07rx_size\x18\t \x01(\x05\x12\x10\n\x08\x63omp_crc\x18\n \x01(\r\x12\x0b\n\x03\x63rc\x18\x0b \x01(\r\x12\x0e\n\x06uptime\x18\x0c \x01(\r\x12\x18\n\x07gps_msg\x18\r \x01(\x0b\x32\x07.GPSMsg\"\xfe\x04\n\tSerialMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.SerialMsg.Type\x12\r\n\x05retry\x18\x02 \x01(\x08\x12\x1b\n\x07sys_cfg\x18\x03 \x01(\x0b\x32\n.SysCfgMsg\x12\x1f\n\tclock_set\x18\x04 \x01(\x0b\x32\x0c.ClockSetMsg\x12\x1a\n\x06status\x18\x05 \x01(\x0b\x32\n.StatusMsg\x12\x18\n\x07\x64\x62g_msg\x18\x06 \x01(\x0b\x32\x07.DbgMsg\x12\x18\n\x07log_msg\x18\x07 \x01(\x0b\x32\x07.LogMsg\x12!\n\x0c\x62oot_log_msg\x18\x08 \x01(\x0b\x32\x0b.BootLogMsg\x12\x1a\n\x08\x64\x61ta_msg\x18\t \x01(\x0b\x32\x08.DataMsg\x12\x1c\n\terror_msg\x18\n \x01(\x0b\x32\t.ErrorMsg\"\xd7\x02\n\x04Type\x12\x0e\n\nGET_CONFIG\x10\x00\x12\x0e\n\nSET_CONFIG\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\r\n\tCLOCK_SET\x10\x04\x12\n\n\x06STATUS\x10\x05\x12\x0e\n\nGET_STATUS\x10\x06\x12\x0f\n\x0bSTAY_IN_MGT\x10\x07\x12\r\n\tDEBUG_MSG\x10\x08\x12\n\n\x06REBOOT\x10\t\x12\x0e\n\nERASE_LOGS\x10\n\x12\x13\n\x0f\x45RASE_BOOT_LOGS\x10\x0b\x12\r\n\tERASE_CFG\x10\x0c\x12\x0c\n\x08READ_LOG\x10\r\x12\x12\n\x0eREAD_LOG_RETRY\x10\x0e\x12\r\n\tREPLY_LOG\x10\x0f\x12\x11\n\rREAD_BOOT_LOG\x10\x10\x12\x17\n\x13READ_BOOT_LOG_RETRY\x10\x11\x12\x12\n\x0eREPLY_BOOT_LOG\x10\x12\x12\x0b\n\x07\x43RC_ERR\x10\x13\x12\x07\n\x03\x41\x43K\x10\x14\x12\x07\n\x03\x45RR\x10\x15\"\x1f\n\x08\x45rrorMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\"t\n\x07\x44\x61taMsg\x12\x0c\n\x04type\x18\x01 \x01(\r\x12\x11\n\tstream_id\x18\x02 \x01(\r\x12\x0b\n\x03ttl\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x12\n\nsym_offset\x18\x05 \x01(\r\x12\x17\n\x07payload\x18\x06 \x01(\x0c\x42\x06\x92?\x03\x08\x80\x02\x62\x06proto3')
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,])
 
@@ -55,10 +55,62 @@ _FECCFG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=234,
-  serialized_end=299,
+  serialized_start=280,
+  serialized_end=345,
 )
 _sym_db.RegisterEnumDescriptor(_FECCFG_TYPE)
+
+_RADIOCFG_TYPE = _descriptor.EnumDescriptor(
+  name='Type',
+  full_name='RadioCfg.Type',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='LORA', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FSK', index=1, number=1,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=483,
+  serialized_end=508,
+)
+_sym_db.RegisterEnumDescriptor(_RADIOCFG_TYPE)
+
+_SYSCFGMSG_MODE = _descriptor.EnumDescriptor(
+  name='Mode',
+  full_name='SysCfgMsg.Mode',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='NORMAL', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='MODE_RESET', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='MODE_SILENT', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='TESTING', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=905,
+  serialized_end=969,
+)
+_sym_db.RegisterEnumDescriptor(_SYSCFGMSG_MODE)
 
 _STATUSMSG_STATUS = _descriptor.EnumDescriptor(
   name='Status',
@@ -81,8 +133,8 @@ _STATUSMSG_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=516,
-  serialized_end=566,
+  serialized_start=1080,
+  serialized_end=1130,
 )
 _sym_db.RegisterEnumDescriptor(_STATUSMSG_STATUS)
 
@@ -93,26 +145,98 @@ _SERIALMSG_TYPE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='CONFIG', index=0, number=0,
+      name='GET_CONFIG', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='DATA', index=1, number=1,
+      name='SET_CONFIG', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='CLOCK_SET', index=2, number=2,
+      name='CONFIG', index=2, number=2,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='STATUS', index=3, number=3,
+      name='DATA', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CLOCK_SET', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='STATUS', index=5, number=5,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='GET_STATUS', index=6, number=6,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='STAY_IN_MGT', index=7, number=7,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DEBUG_MSG', index=8, number=8,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='REBOOT', index=9, number=9,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERASE_LOGS', index=10, number=10,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERASE_BOOT_LOGS', index=11, number=11,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERASE_CFG', index=12, number=12,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ_LOG', index=13, number=13,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ_LOG_RETRY', index=14, number=14,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='REPLY_LOG', index=15, number=15,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ_BOOT_LOG', index=16, number=16,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ_BOOT_LOG_RETRY', index=17, number=17,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='REPLY_BOOT_LOG', index=18, number=18,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CRC_ERR', index=19, number=19,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ACK', index=20, number=20,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERR', index=21, number=21,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=672,
-  serialized_end=727,
+  serialized_start=1829,
+  serialized_end=2172,
 )
 _sym_db.RegisterEnumDescriptor(_SERIALMSG_TYPE)
 
@@ -169,23 +293,30 @@ _LORACFG = _descriptor.Descriptor(
 )
 
 
-_TESTING = _descriptor.Descriptor(
-  name='Testing',
-  full_name='Testing',
+_TESTCFG = _descriptor.Descriptor(
+  name='TestCfg',
+  full_name='TestCfg',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cw_test_mode', full_name='Testing.cw_test_mode', index=0,
+      name='cw_test_mode', full_name='TestCfg.cw_test_mode', index=0,
       number=1, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='preamble_test_mode', full_name='Testing.preamble_test_mode', index=1,
+      name='preamble_test_mode', full_name='TestCfg.preamble_test_mode', index=1,
       number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='test_fec', full_name='TestCfg.test_fec', index=2,
+      number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -203,7 +334,7 @@ _TESTING = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=101,
-  serialized_end=160,
+  serialized_end=178,
 )
 
 
@@ -215,22 +346,29 @@ _FECCFG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='conv_rate', full_name='FECCfg.conv_rate', index=0,
-      number=1, type=5, cpp_type=1, label=1,
+      name='type', full_name='FECCfg.type', index=0,
+      number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='conv_order', full_name='FECCfg.conv_order', index=1,
+      name='conv_rate', full_name='FECCfg.conv_rate', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='rs_num_roots', full_name='FECCfg.rs_num_roots', index=2,
+      name='conv_order', full_name='FECCfg.conv_order', index=2,
       number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='rs_num_roots', full_name='FECCfg.rs_num_roots', index=3,
+      number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -248,50 +386,103 @@ _FECCFG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=163,
-  serialized_end=299,
+  serialized_start=181,
+  serialized_end=345,
 )
 
 
-_SYSCFGMSG = _descriptor.Descriptor(
-  name='SysCfgMsg',
-  full_name='SysCfgMsg',
+_RADIOCFG = _descriptor.Descriptor(
+  name='RadioCfg',
+  full_name='RadioCfg',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='frequency', full_name='SysCfgMsg.frequency', index=0,
-      number=1, type=5, cpp_type=1, label=1,
+      name='type', full_name='RadioCfg.type', index=0,
+      number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='frequencies', full_name='SysCfgMsg.frequencies', index=1,
-      number=2, type=5, cpp_type=1, label=3,
+      name='frequency', full_name='RadioCfg.frequency', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='frequencies', full_name='RadioCfg.frequencies', index=2,
+      number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=_b('\222?\002\020\020'), file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='lora_cfg', full_name='SysCfgMsg.lora_cfg', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='tx_power', full_name='RadioCfg.tx_power', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='testing', full_name='SysCfgMsg.testing', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='fec_cfg', full_name='SysCfgMsg.fec_cfg', index=4,
+      name='lora_cfg', full_name='RadioCfg.lora_cfg', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _RADIOCFG_TYPE,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=348,
+  serialized_end=508,
+)
+
+
+_NETCFG = _descriptor.Descriptor(
+  name='NetCfg',
+  full_name='NetCfg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='beacon_msg', full_name='NetCfg.beacon_msg', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\003\010\200\002'), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='beacon_interval', full_name='NetCfg.beacon_interval', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='num_offsets', full_name='NetCfg.num_offsets', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pld_len', full_name='NetCfg.pld_len', index=3,
+      number=4, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -307,8 +498,134 @@ _SYSCFGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=302,
-  serialized_end=441,
+  serialized_start=510,
+  serialized_end=609,
+)
+
+
+_POCSAGCFG = _descriptor.Descriptor(
+  name='POCSAGCfg',
+  full_name='POCSAGCfg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='enabled', full_name='POCSAGCfg.enabled', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='frequency', full_name='POCSAGCfg.frequency', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='beacon_interval', full_name='POCSAGCfg.beacon_interval', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=611,
+  serialized_end=683,
+)
+
+
+_SYSCFGMSG = _descriptor.Descriptor(
+  name='SysCfgMsg',
+  full_name='SysCfgMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='mode', full_name='SysCfgMsg.mode', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='address', full_name='SysCfgMsg.address', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='radio_cfg', full_name='SysCfgMsg.radio_cfg', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='test_cfg', full_name='SysCfgMsg.test_cfg', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fec_cfg', full_name='SysCfgMsg.fec_cfg', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='net_cfg', full_name='SysCfgMsg.net_cfg', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pocsag_cfg', full_name='SysCfgMsg.pocsag_cfg', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='gps_en', full_name='SysCfgMsg.gps_en', index=7,
+      number=8, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _SYSCFGMSG_MODE,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=686,
+  serialized_end=969,
 )
 
 
@@ -338,8 +655,8 @@ _CLOCKSETMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=443,
-  serialized_end=470,
+  serialized_start=971,
+  serialized_end=998,
 )
 
 
@@ -351,15 +668,22 @@ _STATUSMSG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='tx_full', full_name='StatusMsg.tx_full', index=0,
-      number=1, type=8, cpp_type=7, label=1,
+      name='status', full_name='StatusMsg.status', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='tx_full', full_name='StatusMsg.tx_full', index=1,
+      number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='time', full_name='StatusMsg.time', index=1,
-      number=2, type=13, cpp_type=3, label=1,
+      name='time', full_name='StatusMsg.time', index=2,
+      number=3, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -377,8 +701,275 @@ _STATUSMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=472,
-  serialized_end=566,
+  serialized_start=1001,
+  serialized_end=1130,
+)
+
+
+_DBGMSG = _descriptor.Descriptor(
+  name='DbgMsg',
+  full_name='DbgMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='msg', full_name='DbgMsg.msg', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\003\010\200\002'), file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1132,
+  serialized_end=1161,
+)
+
+
+_SERIALCRCMSG = _descriptor.Descriptor(
+  name='SerialCRCMsg',
+  full_name='SerialCRCMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='crc32', full_name='SerialCRCMsg.crc32', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1163,
+  serialized_end=1192,
+)
+
+
+_BOOTLOGMSG = _descriptor.Descriptor(
+  name='BootLogMsg',
+  full_name='BootLogMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='valid', full_name='BootLogMsg.valid', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='boot_time', full_name='BootLogMsg.boot_time', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='count', full_name='BootLogMsg.count', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1194,
+  serialized_end=1255,
+)
+
+
+_GPSMSG = _descriptor.Descriptor(
+  name='GPSMsg',
+  full_name='GPSMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='valid', full_name='GPSMsg.valid', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='lat', full_name='GPSMsg.lat', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='lon', full_name='GPSMsg.lon', index=2,
+      number=3, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1257,
+  serialized_end=1306,
+)
+
+
+_LOGMSG = _descriptor.Descriptor(
+  name='LogMsg',
+  full_name='LogMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='valid', full_name='LogMsg.valid', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='count', full_name='LogMsg.count', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='LogMsg.timestamp', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='sender', full_name='LogMsg.sender', index=3,
+      number=4, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ttl', full_name='LogMsg.ttl', index=4,
+      number=5, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='stream_id', full_name='LogMsg.stream_id', index=5,
+      number=6, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='rssi', full_name='LogMsg.rssi', index=6,
+      number=7, type=17, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='snr', full_name='LogMsg.snr', index=7,
+      number=8, type=17, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='rx_size', full_name='LogMsg.rx_size', index=8,
+      number=9, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='comp_crc', full_name='LogMsg.comp_crc', index=9,
+      number=10, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='crc', full_name='LogMsg.crc', index=10,
+      number=11, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='uptime', full_name='LogMsg.uptime', index=11,
+      number=12, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='gps_msg', full_name='LogMsg.gps_msg', index=12,
+      number=13, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1309,
+  serialized_end=1531,
 )
 
 
@@ -390,22 +981,71 @@ _SERIALMSG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='sys_cfg', full_name='SerialMsg.sys_cfg', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='type', full_name='SerialMsg.type', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='clock_set', full_name='SerialMsg.clock_set', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='retry', full_name='SerialMsg.retry', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='status', full_name='SerialMsg.status', index=2,
+      name='sys_cfg', full_name='SerialMsg.sys_cfg', index=2,
       number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='clock_set', full_name='SerialMsg.clock_set', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='status', full_name='SerialMsg.status', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dbg_msg', full_name='SerialMsg.dbg_msg', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='log_msg', full_name='SerialMsg.log_msg', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='boot_log_msg', full_name='SerialMsg.boot_log_msg', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='data_msg', full_name='SerialMsg.data_msg', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error_msg', full_name='SerialMsg.error_msg', index=9,
+      number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -423,8 +1063,39 @@ _SERIALMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=569,
-  serialized_end=727,
+  serialized_start=1534,
+  serialized_end=2172,
+)
+
+
+_ERRORMSG = _descriptor.Descriptor(
+  name='ErrorMsg',
+  full_name='ErrorMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='msg', full_name='ErrorMsg.msg', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\003\010\200\002'), file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2174,
+  serialized_end=2205,
 )
 
 
@@ -489,26 +1160,51 @@ _DATAMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=729,
-  serialized_end=845,
+  serialized_start=2207,
+  serialized_end=2323,
 )
 
+_FECCFG.fields_by_name['type'].enum_type = _FECCFG_TYPE
 _FECCFG_TYPE.containing_type = _FECCFG
-_SYSCFGMSG.fields_by_name['lora_cfg'].message_type = _LORACFG
-_SYSCFGMSG.fields_by_name['testing'].message_type = _TESTING
+_RADIOCFG.fields_by_name['type'].enum_type = _RADIOCFG_TYPE
+_RADIOCFG.fields_by_name['lora_cfg'].message_type = _LORACFG
+_RADIOCFG_TYPE.containing_type = _RADIOCFG
+_SYSCFGMSG.fields_by_name['mode'].enum_type = _SYSCFGMSG_MODE
+_SYSCFGMSG.fields_by_name['radio_cfg'].message_type = _RADIOCFG
+_SYSCFGMSG.fields_by_name['test_cfg'].message_type = _TESTCFG
 _SYSCFGMSG.fields_by_name['fec_cfg'].message_type = _FECCFG
+_SYSCFGMSG.fields_by_name['net_cfg'].message_type = _NETCFG
+_SYSCFGMSG.fields_by_name['pocsag_cfg'].message_type = _POCSAGCFG
+_SYSCFGMSG_MODE.containing_type = _SYSCFGMSG
+_STATUSMSG.fields_by_name['status'].enum_type = _STATUSMSG_STATUS
 _STATUSMSG_STATUS.containing_type = _STATUSMSG
+_LOGMSG.fields_by_name['gps_msg'].message_type = _GPSMSG
+_SERIALMSG.fields_by_name['type'].enum_type = _SERIALMSG_TYPE
 _SERIALMSG.fields_by_name['sys_cfg'].message_type = _SYSCFGMSG
 _SERIALMSG.fields_by_name['clock_set'].message_type = _CLOCKSETMSG
 _SERIALMSG.fields_by_name['status'].message_type = _STATUSMSG
+_SERIALMSG.fields_by_name['dbg_msg'].message_type = _DBGMSG
+_SERIALMSG.fields_by_name['log_msg'].message_type = _LOGMSG
+_SERIALMSG.fields_by_name['boot_log_msg'].message_type = _BOOTLOGMSG
+_SERIALMSG.fields_by_name['data_msg'].message_type = _DATAMSG
+_SERIALMSG.fields_by_name['error_msg'].message_type = _ERRORMSG
 _SERIALMSG_TYPE.containing_type = _SERIALMSG
 DESCRIPTOR.message_types_by_name['LoraCfg'] = _LORACFG
-DESCRIPTOR.message_types_by_name['Testing'] = _TESTING
+DESCRIPTOR.message_types_by_name['TestCfg'] = _TESTCFG
 DESCRIPTOR.message_types_by_name['FECCfg'] = _FECCFG
+DESCRIPTOR.message_types_by_name['RadioCfg'] = _RADIOCFG
+DESCRIPTOR.message_types_by_name['NetCfg'] = _NETCFG
+DESCRIPTOR.message_types_by_name['POCSAGCfg'] = _POCSAGCFG
 DESCRIPTOR.message_types_by_name['SysCfgMsg'] = _SYSCFGMSG
 DESCRIPTOR.message_types_by_name['ClockSetMsg'] = _CLOCKSETMSG
 DESCRIPTOR.message_types_by_name['StatusMsg'] = _STATUSMSG
+DESCRIPTOR.message_types_by_name['DbgMsg'] = _DBGMSG
+DESCRIPTOR.message_types_by_name['SerialCRCMsg'] = _SERIALCRCMSG
+DESCRIPTOR.message_types_by_name['BootLogMsg'] = _BOOTLOGMSG
+DESCRIPTOR.message_types_by_name['GPSMsg'] = _GPSMSG
+DESCRIPTOR.message_types_by_name['LogMsg'] = _LOGMSG
 DESCRIPTOR.message_types_by_name['SerialMsg'] = _SERIALMSG
+DESCRIPTOR.message_types_by_name['ErrorMsg'] = _ERRORMSG
 DESCRIPTOR.message_types_by_name['DataMsg'] = _DATAMSG
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -519,12 +1215,12 @@ LoraCfg = _reflection.GeneratedProtocolMessageType('LoraCfg', (_message.Message,
   ))
 _sym_db.RegisterMessage(LoraCfg)
 
-Testing = _reflection.GeneratedProtocolMessageType('Testing', (_message.Message,), dict(
-  DESCRIPTOR = _TESTING,
+TestCfg = _reflection.GeneratedProtocolMessageType('TestCfg', (_message.Message,), dict(
+  DESCRIPTOR = _TESTCFG,
   __module__ = 'qmesh_pb2'
-  # @@protoc_insertion_point(class_scope:Testing)
+  # @@protoc_insertion_point(class_scope:TestCfg)
   ))
-_sym_db.RegisterMessage(Testing)
+_sym_db.RegisterMessage(TestCfg)
 
 FECCfg = _reflection.GeneratedProtocolMessageType('FECCfg', (_message.Message,), dict(
   DESCRIPTOR = _FECCFG,
@@ -532,6 +1228,27 @@ FECCfg = _reflection.GeneratedProtocolMessageType('FECCfg', (_message.Message,),
   # @@protoc_insertion_point(class_scope:FECCfg)
   ))
 _sym_db.RegisterMessage(FECCfg)
+
+RadioCfg = _reflection.GeneratedProtocolMessageType('RadioCfg', (_message.Message,), dict(
+  DESCRIPTOR = _RADIOCFG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:RadioCfg)
+  ))
+_sym_db.RegisterMessage(RadioCfg)
+
+NetCfg = _reflection.GeneratedProtocolMessageType('NetCfg', (_message.Message,), dict(
+  DESCRIPTOR = _NETCFG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:NetCfg)
+  ))
+_sym_db.RegisterMessage(NetCfg)
+
+POCSAGCfg = _reflection.GeneratedProtocolMessageType('POCSAGCfg', (_message.Message,), dict(
+  DESCRIPTOR = _POCSAGCFG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:POCSAGCfg)
+  ))
+_sym_db.RegisterMessage(POCSAGCfg)
 
 SysCfgMsg = _reflection.GeneratedProtocolMessageType('SysCfgMsg', (_message.Message,), dict(
   DESCRIPTOR = _SYSCFGMSG,
@@ -554,12 +1271,54 @@ StatusMsg = _reflection.GeneratedProtocolMessageType('StatusMsg', (_message.Mess
   ))
 _sym_db.RegisterMessage(StatusMsg)
 
+DbgMsg = _reflection.GeneratedProtocolMessageType('DbgMsg', (_message.Message,), dict(
+  DESCRIPTOR = _DBGMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:DbgMsg)
+  ))
+_sym_db.RegisterMessage(DbgMsg)
+
+SerialCRCMsg = _reflection.GeneratedProtocolMessageType('SerialCRCMsg', (_message.Message,), dict(
+  DESCRIPTOR = _SERIALCRCMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:SerialCRCMsg)
+  ))
+_sym_db.RegisterMessage(SerialCRCMsg)
+
+BootLogMsg = _reflection.GeneratedProtocolMessageType('BootLogMsg', (_message.Message,), dict(
+  DESCRIPTOR = _BOOTLOGMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:BootLogMsg)
+  ))
+_sym_db.RegisterMessage(BootLogMsg)
+
+GPSMsg = _reflection.GeneratedProtocolMessageType('GPSMsg', (_message.Message,), dict(
+  DESCRIPTOR = _GPSMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:GPSMsg)
+  ))
+_sym_db.RegisterMessage(GPSMsg)
+
+LogMsg = _reflection.GeneratedProtocolMessageType('LogMsg', (_message.Message,), dict(
+  DESCRIPTOR = _LOGMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:LogMsg)
+  ))
+_sym_db.RegisterMessage(LogMsg)
+
 SerialMsg = _reflection.GeneratedProtocolMessageType('SerialMsg', (_message.Message,), dict(
   DESCRIPTOR = _SERIALMSG,
   __module__ = 'qmesh_pb2'
   # @@protoc_insertion_point(class_scope:SerialMsg)
   ))
 _sym_db.RegisterMessage(SerialMsg)
+
+ErrorMsg = _reflection.GeneratedProtocolMessageType('ErrorMsg', (_message.Message,), dict(
+  DESCRIPTOR = _ERRORMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:ErrorMsg)
+  ))
+_sym_db.RegisterMessage(ErrorMsg)
 
 DataMsg = _reflection.GeneratedProtocolMessageType('DataMsg', (_message.Message,), dict(
   DESCRIPTOR = _DATAMSG,
@@ -569,6 +1328,9 @@ DataMsg = _reflection.GeneratedProtocolMessageType('DataMsg', (_message.Message,
 _sym_db.RegisterMessage(DataMsg)
 
 
-_SYSCFGMSG.fields_by_name['frequencies']._options = None
+_RADIOCFG.fields_by_name['frequencies']._options = None
+_NETCFG.fields_by_name['beacon_msg']._options = None
+_DBGMSG.fields_by_name['msg']._options = None
+_ERRORMSG.fields_by_name['msg']._options = None
 _DATAMSG.fields_by_name['payload']._options = None
 # @@protoc_insertion_point(module_scope)

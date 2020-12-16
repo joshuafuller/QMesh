@@ -37,8 +37,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include "Adafruit_SSD1306.h"
 #include "mesh_protocol.hpp"
+#include "qmesh.pb.h"
+#include "pb_common.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
-extern Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
+
+extern Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 /// Produces an MbedJSONValue with the current status and queues it for transmission.
 void tx_serial_thread_fn(void);
 /// Serial thread function that receives serial data, and processes it accordingly.

@@ -27,14 +27,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
 #include "mesh_protocol.hpp"
+#include "qmesh.pb.h"
+#include "pb_common.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
+#include <string.h>
 
-Mail<std::shared_ptr<string>, QUEUE_DEPTH> tx_ser_queue;
+Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 
 void print_memory_info();
 void tx_serial_thread_fn(void) {
     for(;;) {
-        auto str_sptr = dequeue_mail<std::shared_ptr<string>>(tx_ser_queue);
-        puts(str_sptr->c_str());
+        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
+        SerialMsg ser_msg = *ser_msg_sptr;
+        pb_byte_t buffer[SerialMsg_size];
+        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+        bool status = pb_encode(&stream, SerialMsg_fields, &ser_msg);
+
+        uint16_t delim = 0xBEEF;
+        size_t buf_size = stream.bytes_written;
+        MbedCRC<POLY_32BIT_ANSI, 32> ct;
+        uint32_t crc = 0;
+        uint8_t line_buffer[SerialMsg_size+sizeof(delim)+sizeof(buf_size)+sizeof(crc)];
+
+        memcpy((char *) line_buffer, (char *) &delim, sizeof(delim));
+        memcpy((char *) line_buffer+sizeof(delim), (char *) &buf_size, sizeof(buf_size));
+        memcpy((char *) line_buffer+sizeof(delim)+sizeof(buf_size), buffer, SerialMsg_size);
+        ct.compute(line_buffer+sizeof(delim)+sizeof(buf_size), stream.bytes_written, &crc);
+        memcpy((char *) line_buffer+sizeof(delim)+sizeof(buf_size)+stream.bytes_written, 
+                (char *) crc, sizeof(crc));  
+
+        for(int i = 0; i < sizeof(line_buffer); i++) {
+            fputc(line_buffer[i], stdout);
+        }
     }
 }
 
@@ -43,29 +68,52 @@ void tx_serial_thread_fn(void) {
  */
 void send_status(void);
 void send_status(void) {
-    MbedJSONValue status_json;
-    status_json["Type"] = "Status";
+    SerialMsg ser_msg = SerialMsg_init_zero;
+    ser_msg.type = SerialMsg_Type_STATUS;
+    ser_msg.has_status = true;
     if(current_mode == BOOTING) {
-        status_json["Status"] = "BOOTING";        
-    }
-    else if(current_mode == MANAGEMENT) {
-        status_json["Status"] = "MANAGEMENT";        
-    }
-    else if(current_mode == RUNNING) {
-        status_json["Status"] = "RUNNING";  
-    }
-    else {
+        ser_msg.status.status = StatusMsg_Status_BOOTING;      
+    } else if(current_mode == MANAGEMENT) {
+        ser_msg.status.status = StatusMsg_Status_MANAGEMENT;     
+    } else if(current_mode == RUNNING) {
+        ser_msg.status.status = StatusMsg_Status_RUNNING;
+    } else {
         MBED_ASSERT(false);
     }
     if(tx_frame_mail.full()) {
-        status_json["Tx Frame Queue Full"] = "True";
+        ser_msg.status.tx_full = true;
+    } else {
+        ser_msg.status.tx_full = false;
     }
-    else {
-        status_json["Tx Frame Queue Full"] = "False";
-    }
-    status_json["Time"] = to_string(time(NULL));
-    auto json_str = make_shared<string>(status_json.serialize());
-    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);       
+    ser_msg.status.time = time(NULL);
+
+    shared_ptr<SerialMsg> ser_msg_sptr;
+    *ser_msg_sptr = ser_msg;
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);       
+}  
+
+
+void send_ack(void);
+void send_ack(void) {
+    SerialMsg ser_msg = SerialMsg_init_zero;
+    ser_msg.type = SerialMsg_Type_ACK;
+    shared_ptr<SerialMsg> ser_msg_sptr;
+    *ser_msg_sptr = ser_msg;
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);       
+}  
+
+
+void send_error(const string &err_str);
+void send_error(const string &err_str) {
+    SerialMsg ser_msg = SerialMsg_init_zero;
+    ser_msg.type = SerialMsg_Type_ERR;
+    ser_msg.has_error_msg = true;
+    size_t str_len = err_str.size() < 256 ? err_str.size() : 256;
+    memcpy((char *) ser_msg.error_msg.msg, err_str.c_str(), str_len);
+    shared_ptr<SerialMsg> ser_msg_sptr;
+    *ser_msg_sptr = ser_msg;
+    debug_printf(DBG_ERR, "%s", err_str.c_str());
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);       
 }  
 
 
@@ -84,74 +132,116 @@ void get_next_line(FILE *f, string &str) {
 	}
 }
 
+int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry = false);
+int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
+    size_t entry_size = 0;
+    static SerialMsg last_ser_msg = SerialMsg_init_zero;
+    static size_t last_entry_size = 0;
+    if(retry) {
+        ser_msg = last_ser_msg;
+        return (int) last_entry_size;
+    }
+    if(fread((char *) &entry_size, 1, sizeof(entry_size), f) != sizeof(entry_size)) {
+        return -1;
+    }
+    pb_byte_t entry_bytes[entry_size];
+    if(fread((char *) &entry_bytes, 1, entry_size, f) != sizeof(entry_size)) {
+        return -2;
+    }
+    ser_msg = SerialMsg_init_zero;
+    pb_istream_t stream = pb_istream_from_buffer(entry_bytes, entry_size);
+    if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
+        return -3;
+    }
+    last_ser_msg = ser_msg;
+    last_entry_size = entry_size;
+    return (int) entry_size;
+}
 
 void rx_serial_thread_fn(void) {
 	FILE *f;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
-    vector<char> rx_buf(1024);
+    vector<uint8_t> rx_buf(SerialMsg_size);
     for(;;) {
-        debug_printf(DBG_WARN, "starting the receive\r\n");
-        gets(rx_buf.data());
-        string rx_str(rx_buf.data());    
-        debug_printf(DBG_INFO, "Received a string: %s\r\n", rx_str.c_str());
-        MbedJSONValue rx_json;
-        parse(rx_json, rx_str.c_str());
-        string type_str(rx_json["Type"].get<string>()); 
-        if(type_str == "Get Settings") {
-            MbedJSONValue settings_json = radio_cb;
-            settings_json["Type"] = "Settings";
-            auto json_str = make_shared<string>(settings_json.serialize());
-            enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);
+        // Receive the delimiter. This delimiter helps to ensure that we don't lose sync.
+        uint16_t acc = 0x0000;
+        for(;;) {
+            acc <<= 8;
+            acc |= fgetc(stdin);
+            if(acc == 0xBEEF) {
+                break;
+            }
         }
-        else if(type_str == "Put Setting") {
-            string setting = rx_json["Setting"].get<string>();
-            if(setting == "Mode") {
-                radio_cb["Mode"] = rx_json["Mode"].get<string>();
-            }
-            else if(setting == "FEC Algorithm") {
-                radio_cb["FEC Algorithm"] = rx_json["FEC Algorithm"].get<string>();               
-            }
-            else if(setting == "Beacon Message") {
-                radio_cb["Beacon Message"] = rx_json["Beacon Message"].get<string>();
-            }
-            else if(setting == "Frequencies") {
-                radio_cb["Frequencies"] = rx_json["Frequencies"];
-            }
-            else {
-                radio_cb[setting] = rx_json[setting].get<int>();
-            }
-            save_settings_to_flash();
-			send_status();
+        // Get the packet size
+        size_t pkt_size = 0;
+        fread((char *) &pkt_size, sizeof(pkt_size), 1, stdin);
+        MBED_ASSERT(pkt_size <= SerialMsg_size);
+        // Get the packet itself
+        fread((char *) rx_buf.data(), 1, pkt_size, stdin);
+        // Get the packet checksum
+        MbedCRC<POLY_32BIT_ANSI, 32> ct;
+        uint32_t crc = 0;
+        ct.compute(rx_buf.data(), rx_buf.size(), &crc);
+        uint32_t crc_orig = 0;
+        fread((char *) &crc_orig, sizeof(crc_orig), 1, stdin); 
+        if(crc != crc_orig) {
+            debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
+            SerialMsg out_msg = SerialMsg_init_zero;
+            out_msg.type = SerialMsg_Type_CRC_ERR;
+            shared_ptr<SerialMsg> out_msg_sptr;
+            *out_msg_sptr = out_msg;
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg);
+            continue;
         }
-        else if(type_str == "Get Status") {
+        SerialMsg ser_msg = SerialMsg_init_zero;
+        pb_istream_t stream = pb_istream_from_buffer(rx_buf.data(), rx_buf.size());
+        bool status = pb_decode(&stream, SerialMsg_fields, &ser_msg);
+        if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
+            SerialMsg out_msg = SerialMsg_init_zero;
+            out_msg.type = SerialMsg_Type_CONFIG;
+            out_msg.has_sys_cfg = true;
+            out_msg.sys_cfg = radio_cb;
+            shared_ptr<SerialMsg> out_msg_sptr;
+            *out_msg_sptr = out_msg;
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg);
+        } else if(ser_msg.type == SerialMsg_Type_SET_CONFIG) {
+            if(!ser_msg.has_sys_cfg) {
+                send_error(string("No Configuration Sent!\r\n"));
+            } else {
+                radio_cb = ser_msg.sys_cfg;
+                save_settings_to_flash();
+			    send_ack();
+            }
+        }
+        else if(ser_msg.type == SerialMsg_Type_GET_STATUS) {
             send_status();      
         }
-        else if(type_str == "Set Time") {
-            string new_time = rx_json["Time"].get<string>();
-            set_time((unsigned int) stoul(new_time));
-            send_status();
+        else if(ser_msg.type == SerialMsg_Type_CLOCK_SET) {
+            MBED_ASSERT(ser_msg.has_clock_set);
+            set_time(ser_msg.clock_set.time);
+            send_ack();
         }
-        else if(type_str == "Stay in Management") {
+        else if(ser_msg.type == SerialMsg_Type_STAY_IN_MGT) {
             stay_in_management = true;           
-            send_status();
+            send_ack();
         }
-        else if(type_str == "Debug Msg") {
-            //MBED_ASSERT(false);
+        else if(ser_msg.type == SerialMsg_Type_DEBUG_MSG) {
+            send_ack();
         }
-        else if(type_str == "Send Frame") {
+        else if(ser_msg.type == SerialMsg_Type_DATA) {
             auto frame = make_shared<Frame>();
             frame->loadFromJSON(rx_json);
             enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
-            send_status();           
+            send_ack();           
         }
-        else if(type_str == "Reboot") {
+        else if(ser_msg.type == SerialMsg_Type_REBOOT) {
             debug_printf(DBG_INFO, "Received reboot command\r\n");
-            send_status();
+            send_ack();
             reboot_system();
         }
-        else if(type_str == "Erase Log File") {
+        else if(ser_msg.type == SerialMsg_Type_ERASE_LOGS) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
@@ -173,7 +263,7 @@ void rx_serial_thread_fn(void) {
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(type_str == "Erase Boot Log File") {
+        else if(ser_msg.type == SerialMsg_Type_ERASE_BOOT_LOGS) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
@@ -183,17 +273,17 @@ void rx_serial_thread_fn(void) {
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(type_str == "Erase Cfg File") {
+        else if(ser_msg.type == SerialMsg_Type_ERASE_CFG) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
                 fs.remove("settings.json");
             }
-            send_status();
+            send_ack();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(type_str == "Read Log") {
+        else if(ser_msg.type == SerialMsg_Type_READ_LOG) {
             static int logfile_count, cur_logfile;
             static vector<string> logfile_names;
             stay_in_management = true;
@@ -214,47 +304,66 @@ void rx_serial_thread_fn(void) {
                         logfile_names.push_back(file_path.str());
                     }
                     reading_log = true;
-                    f = fopen(logfile_names[0].c_str(), "r");
-					MBED_ASSERT(f);
-                    logfile_names.erase(logfile_names.begin());
-				}
-				string cur_line;
-				get_next_line(f, cur_line);
-				if(cur_line.size() == 0) { // Go to the next file if it exists
-                    if(logfile_names.size() == 0) {
-                        MbedJSONValue log_json;
-                        log_json["Type"] = "Log Entry";
-                        log_json["Count"] = -1;					
-                        auto json_str = make_shared<string>(log_json.serialize());
-                        enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
-                        debug_printf(DBG_WARN, "Now rebooting...\r\n");
-                        reboot_system();	
+                    if(!fopen(logfile_names[0].c_str(), "r")) {
+                        string err_msg = "Unable to open logfile ";
+                        err_msg.append(logfile_names[0]);
+                        err_msg.append("\r\n");
+                        send_error(err_msg);
+                    } else {
+                        logfile_names.erase(logfile_names.begin());
                     }
-                    else {
+				}
+				SerialMsg cur_log_msg = SerialMsg_init_zero;
+                if(!get_next_entry(f, cur_log_msg, ser_msg.retry)) { // Go to the next file if it exists
+                    if(logfile_names.size() == 0) {
+                        SerialMsg reply_msg = SerialMsg_init_zero;
+                        reply_msg.type = SerialMsg_Type_REPLY_LOG;
+                        reply_msg.has_log_msg = true;
+                        reply_msg.log_msg.valid = false;	
+                        shared_ptr<SerialMsg> reply_msg_sptr;
+                        *reply_msg_sptr = reply_msg;
+                        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
+                        debug_printf(DBG_WARN, "Finished reading logs. Now rebooting...\r\n");
+					    reboot_system();	 	
+                    } else {
                         f = fopen(logfile_names[0].c_str(), "r");
                         MBED_ASSERT(f);
                         logfile_names.erase(logfile_names.begin());   
                         string cur_line;
-				        get_next_line(f, cur_line);
-                        MbedJSONValue log_json;
-                        parse(log_json, cur_line.c_str());
-                        log_json["Type"] = "Log Entry";
-                        log_json["Count"] = line_count++;					
-                        auto json_str = make_shared<string>(log_json.serialize());
-                        enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);		
+                        if(!get_next_entry(f, cur_log_msg, ser_msg.retry)) {
+                            SerialMsg reply_msg = SerialMsg_init_zero;
+                            reply_msg.type = SerialMsg_Type_REPLY_LOG;
+                            reply_msg.has_log_msg = true;
+                            reply_msg.log_msg.valid = true;
+                            reply_msg.log_msg.count = line_count++;	
+                            if(!cur_log_msg.has_log_msg) {
+                                send_error("Logfile entry has no log message\r\n");
+                            }
+                            reply_msg.log_msg = cur_log_msg.log_msg;
+                            shared_ptr<SerialMsg> reply_msg_sptr;
+                            *reply_msg_sptr = reply_msg;
+                            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 		
+                        } else {
+                            send_error("Logfile read error\r\n");
+                        }		
                     }
-				}
-				else {
-                    MbedJSONValue log_json;
-                    parse(log_json, cur_line.c_str());
-                    log_json["Type"] = "Log Entry";
-					log_json["Count"] = line_count++;					
-                    auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
+				} else {
+                    SerialMsg reply_msg = SerialMsg_init_zero;
+                    reply_msg.type = SerialMsg_Type_REPLY_LOG;
+                    reply_msg.has_log_msg = true;
+                    reply_msg.log_msg.valid = true;
+                    reply_msg.log_msg.count = line_count++;	
+                    if(!cur_log_msg.has_log_msg) {
+                        send_error("Logfile entry has no log message\r\n");
+                    }
+                    reply_msg.log_msg = cur_log_msg.log_msg;
+                    shared_ptr<SerialMsg> reply_msg_sptr;
+                    *reply_msg_sptr = reply_msg;
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 							
 				}
             }
         }
-        else if(type_str == "Read Boot Log") {
+        else if(ser_msg.type == SerialMsg_Type_READ_BOOT_LOG) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
@@ -263,25 +372,24 @@ void rx_serial_thread_fn(void) {
 					f = fopen("/fs/boot_log.json", "r");
 					MBED_ASSERT(f);
 				}
-				string cur_line;
-				get_next_line(f, cur_line);
-				if(cur_line.size() == 0) {
-					MbedJSONValue log_json;
-                    log_json["Type"] = "Boot Log Entry";
-					log_json["Count"] = -1;					
-                    auto json_str = make_shared<string>(log_json.serialize());
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);						
+                SerialMsg cur_log_msg = SerialMsg_init_zero;
+                if(!get_next_entry(f, cur_log_msg, ser_msg.retry)) {
+                    SerialMsg reply_msg = SerialMsg_init_zero;
+                    reply_msg.type = SerialMsg_Type_REPLY_BOOT_LOG;
+                    reply_msg.has_boot_log_msg = true;
+                    reply_msg.boot_log_msg.valid = false;	
+                    shared_ptr<SerialMsg> reply_msg_sptr;
+                    *reply_msg_sptr = reply_msg;
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);  
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
-					reboot_system();	
-				}
-				else {
-                    MbedJSONValue log_json;
-                    parse(log_json, cur_line.c_str());
-                    log_json["Type"] = "Boot Log Entry";
-					log_json["Count"] = line_count++;	
-					log_json.serialize();						
-                    auto json_str = make_shared<string>(log_json.serialize());					
-                    enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);					
+					reboot_system();	    
+				} else {
+                    cur_log_msg.type = SerialMsg_Type_READ_BOOT_LOG;
+                    cur_log_msg.boot_log_msg.count = line_count++;
+                    shared_ptr<SerialMsg> reply_msg_sptr;
+                    *reply_msg_sptr = cur_log_msg;
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);  
+					debug_printf(DBG_WARN, "Now rebooting...\r\n");                    						
 				}
             }
         }		
@@ -291,51 +399,12 @@ void rx_serial_thread_fn(void) {
     }
 }
 
-void JSONSerial::settingsToJSON(MbedJSONValue &my_nv_settings, string &json_str) {
-    json["Type"] = "Settings";
-    json["Frequency"] = my_nv_settings["Frequency"].get<int>();
-    json["SF"] = my_nv_settings["SF"].get<int>();
-    json["BW"] = my_nv_settings["BW"].get<int>();
-    json["CR"] = my_nv_settings["CR"].get<int>();
-    json["Mode"] = my_nv_settings["Mode"].get<string>();
-    json_str = json.serialize();
+void JSONSerial::dbgPrintfToPB(string &dbg_msg, vector<uint8_t> &json_str) {
+    DbgMsg msg = DbgMsg_init_zero;
+    strncpy(msg.msg, dbg_msg.c_str(), 256);    
+    pb_byte_t buffer[DbgMsg_size];
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    bool status = pb_encode(&stream, DbgMsg_fields, &msg);
+    json_str.resize(stream.bytes_written);
+    memcpy(json_str.data(), stream.state, stream.bytes_written);
 }
-
-void JSONSerial::statusToJSON(string &status, string &value, string &json_str) {
-    json["Type"] = "Status";
-    json["Status"] = status;
-    json["Value"] = value;
-    json_str = json.serialize();
-}
-
-void JSONSerial::dbgPrintfToJSON(string &dbg_msg, string &json_str) {
-    size_t b64_len;
-    mbedtls_base64_encode(NULL, 0, &b64_len, (unsigned char *) dbg_msg.c_str(), dbg_msg.size());
-    vector<unsigned char> b64_buf(b64_len);
-    MBED_ASSERT(mbedtls_base64_encode(b64_buf.data(), b64_len, &b64_len, 
-            (unsigned char *) dbg_msg.c_str(), dbg_msg.size()) == 0);  
-    json["Message"] = (char *) b64_buf.data();
-	json["Type"] = "Debug Msg";
-	time_t my_time = time(NULL);
-    json["Timestamp"] = ctime(&my_time);
-    json_str = json.serialize();
-}
-
-void JSONSerial::loadJSONStr(string &json_str) {
-    parse(json, json_str.c_str());
-}
-
-void JSONSerial::getType(string &type_str) {
-    type_str = json["Type"].get<string>();
-}
-
-#warning Needs more work, need to add more settings
-void JSONSerial::getSettings(MbedJSONValue &nv_setting) {
-    nv_setting["Freq"] = json["Freq"].get<int>();
-    nv_setting["SF"] = json["SF"].get<int>();
-    nv_setting["BW"] = json["BW"].get<int>();
-    nv_setting["CR"] = json["CR"].get<int>();
-    nv_setting["Mode"] = json["Mode"].get<string>();
-}
-
-

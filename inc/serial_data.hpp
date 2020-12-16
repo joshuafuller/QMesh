@@ -26,9 +26,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "nv_settings.hpp"
 #include "json_serial.hpp"
 #include "fec.hpp"
+#include "qmesh.pb.h"
+#include "pb_common.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 
-extern MbedJSONValue radio_cb;
+extern SysCfgMsg radio_cb;
 
 static uint8_t enc_buf[512], dec_buf[256];
 
@@ -134,6 +138,10 @@ public:
     }
 
     void serialize(vector<uint8_t> &ser_frame);
+
+    void serialize_pb(vector<uint8_t> &data_msg);
+
+    void deserialize_pb(const vector<uint8_t> &buf);
 
     /// Equality operator for Frames
     bool operator == (const Frame &L) {

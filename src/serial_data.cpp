@@ -26,6 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "fec.hpp"
 #include "json_serial.hpp"
 #include <random>
+#include "qmesh.pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
@@ -55,6 +58,37 @@ void Frame::serialize(vector<uint8_t> &ser_frame) {
     for(int i = 0; i < sizeof(crc); i++) {
         ser_frame.push_back(crc.b[i]);
     }
+}
+
+void Frame::serialize_pb(vector<uint8_t> &buf) {
+    DataMsg data_msg = DataMsg_init_zero;
+    data_msg.type = hdr.cons_subhdr.fields.type;
+    data_msg.stream_id = hdr.cons_subhdr.fields.stream_id;
+    data_msg.sender = hdr.var_subhdr.fields.sender;
+    data_msg.ttl = hdr.var_subhdr.fields.ttl;
+    data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset;
+    data_msg.payload.size = data.size();
+    memcpy(data_msg.payload.bytes, data.data(), data.size());
+    pb_byte_t buffer[DataMsg_size];
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    bool status = pb_encode(&stream, DataMsg_fields, &data_msg);
+    MBED_ASSERT(status);
+    buf.resize(stream.bytes_written);
+    memcpy(buf.data(), stream.state, stream.bytes_written);
+}
+
+void Frame::deserialize_pb(const vector<uint8_t> &buf) {
+    DataMsg data_msg = DataMsg_init_default;
+    pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size());
+    bool status = pb_decode(&stream, DataMsg_fields, &data_msg);
+    MBED_ASSERT(status);
+    hdr.cons_subhdr.fields.type = data_msg.type;
+    hdr.cons_subhdr.fields.stream_id = data_msg.stream_id;
+    hdr.var_subhdr.fields.sender = data_msg.sender;
+    hdr.var_subhdr.fields.ttl = data_msg.ttl;
+    hdr.var_subhdr.fields.sym_offset = data_msg.sym_offset;
+    data.resize(data_msg.payload.size);
+    memcpy(data.data(), data_msg.payload.bytes, data_msg.payload.size);
 }
 
 void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed) {

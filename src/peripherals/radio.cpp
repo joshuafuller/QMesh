@@ -26,6 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "correct.h"
 #include "pocsag.h"
 #include "mem_trace.hpp"
+#include "qmesh.pb.h"
+#include "pb_common.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 #define SX126X   0xDD
 
@@ -45,7 +49,7 @@ SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_RESET,  // PinName nrst
                        MBED_CONF_APP_LORA_BUSY,   // PinName busy,
                        NC);  
-MbedJSONValue radio_cb;
+SysCfgMsg radio_cb;
 
 // The callbacks used by the LoRa radio driver
 static radio_events_t radio_events;

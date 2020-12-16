@@ -9,13 +9,22 @@
 PB_BIND(LoraCfg, LoraCfg, AUTO)
 
 
-PB_BIND(Testing, Testing, AUTO)
+PB_BIND(TestCfg, TestCfg, AUTO)
 
 
 PB_BIND(FECCfg, FECCfg, AUTO)
 
 
-PB_BIND(SysCfgMsg, SysCfgMsg, AUTO)
+PB_BIND(RadioCfg, RadioCfg, AUTO)
+
+
+PB_BIND(NetCfg, NetCfg, 2)
+
+
+PB_BIND(POCSAGCfg, POCSAGCfg, AUTO)
+
+
+PB_BIND(SysCfgMsg, SysCfgMsg, 2)
 
 
 PB_BIND(ClockSetMsg, ClockSetMsg, AUTO)
@@ -24,10 +33,30 @@ PB_BIND(ClockSetMsg, ClockSetMsg, AUTO)
 PB_BIND(StatusMsg, StatusMsg, AUTO)
 
 
-PB_BIND(SerialMsg, SerialMsg, AUTO)
+PB_BIND(DbgMsg, DbgMsg, 2)
+
+
+PB_BIND(SerialCRCMsg, SerialCRCMsg, AUTO)
+
+
+PB_BIND(BootLogMsg, BootLogMsg, AUTO)
+
+
+PB_BIND(GPSMsg, GPSMsg, AUTO)
+
+
+PB_BIND(LogMsg, LogMsg, AUTO)
+
+
+PB_BIND(SerialMsg, SerialMsg, 2)
+
+
+PB_BIND(ErrorMsg, ErrorMsg, 2)
 
 
 PB_BIND(DataMsg, DataMsg, 2)
+
+
 
 
 
