@@ -184,6 +184,8 @@ typedef struct _SysCfgMsg {
     bool has_pocsag_cfg;
     POCSAGCfg pocsag_cfg;
     bool gps_en;
+    bool log_en;
+    bool boot_log_en;
 } SysCfgMsg;
 
 typedef struct _SerialMsg {
@@ -237,7 +239,7 @@ typedef struct _SerialMsg {
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default}
 #define NetCfg_init_default                      {"", 0, 0, 0}
 #define POCSAGCfg_init_default                   {0, 0, 0}
-#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, POCSAGCfg_init_default, 0}
+#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, POCSAGCfg_init_default, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
 #define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0}
 #define DbgMsg_init_default                      {""}
@@ -254,7 +256,7 @@ typedef struct _SerialMsg {
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero}
 #define NetCfg_init_zero                         {"", 0, 0, 0}
 #define POCSAGCfg_init_zero                      {0, 0, 0}
-#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, POCSAGCfg_init_zero, 0}
+#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, POCSAGCfg_init_zero, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
 #define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0}
 #define DbgMsg_init_zero                         {""}
@@ -330,6 +332,8 @@ typedef struct _SerialMsg {
 #define SysCfgMsg_net_cfg_tag                    6
 #define SysCfgMsg_pocsag_cfg_tag                 7
 #define SysCfgMsg_gps_en_tag                     8
+#define SysCfgMsg_log_en_tag                     9
+#define SysCfgMsg_boot_log_en_tag                10
 #define SerialMsg_type_tag                       1
 #define SerialMsg_retry_tag                      2
 #define SerialMsg_sys_cfg_tag                    3
@@ -398,7 +402,9 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  test_cfg,          4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  fec_cfg,           5) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  net_cfg,           6) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  pocsag_cfg,        7) \
-X(a, STATIC,   SINGULAR, BOOL,     gps_en,            8)
+X(a, STATIC,   SINGULAR, BOOL,     gps_en,            8) \
+X(a, STATIC,   SINGULAR, BOOL,     log_en,            9) \
+X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,      10)
 #define SysCfgMsg_CALLBACK NULL
 #define SysCfgMsg_DEFAULT NULL
 #define SysCfgMsg_radio_cfg_MSGTYPE RadioCfg
@@ -542,7 +548,7 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define RadioCfg_size                            246
 #define NetCfg_size                              276
 #define POCSAGCfg_size                           14
-#define SysCfgMsg_size                           599
+#define SysCfgMsg_size                           603
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           10
 #define DbgMsg_size                              258
@@ -550,7 +556,7 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define BootLogMsg_size                          14
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
-#define SerialMsg_size                           1545
+#define SerialMsg_size                           1549
 #define ErrorMsg_size                            258
 #define DataMsg_size                             289
 

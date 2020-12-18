@@ -31,6 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "radio_timing.hpp"
 #include "radio.hpp"
 #include "mem_trace.hpp"
+#include "qmesh.pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 
 static list<uint32_t> past_crc;
@@ -95,54 +98,35 @@ static atomic<int> last_rx_snr(0.0);
  */
 void mesh_protocol_fsm(void) {
     shared_ptr<FEC> fec;
-    string fec_algo = radio_cb["FEC Algorithm"].get<string>();
-    debug_printf(DBG_INFO, "%s FEC was chosen\r\n", fec_algo.c_str());
-    if(fec_algo == "None") {
+    FECCfg_Type fec_type = radio_cb.fec_cfg.type;
+    debug_printf(DBG_INFO, "%d FEC was chosen\r\n", fec_type);
+    if(fec_type == FECCfg_Type_NONE) {
         fec = make_shared<FEC>(Frame::size());
-    }
-    else if(fec_algo == "Interleave") {
+    } else if(fec_type == FECCfg_Type_INTERLEAVE) {
         fec = make_shared<FECInterleave>(Frame::size());
-    }
-    else if(fec_algo == "Convolutional") {
-        int conv_rate = radio_cb["Conv Rate"].get<int>();
-        int conv_order = radio_cb["Conv Order"].get<int>();
-        fec = make_shared<FECConv>(Frame::size(), conv_rate, conv_order);
-    }
-    else if(fec_algo == "RSV") {
-        int conv_rate = radio_cb["Conv Rate"].get<int>();
-        int conv_order = radio_cb["Conv Order"].get<int>();
-        int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
-        fec = make_shared<FECRSVGolay>(Frame::size(), conv_rate, conv_order, rs_roots);
-    }
-    else if(fec_algo == "RSVGolay") {
-        int conv_rate = radio_cb["Conv Rate"].get<int>();
-        int conv_order = radio_cb["Conv Order"].get<int>();
-        int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
-        fec = make_shared<FECRSVGolay>(Frame::size(), conv_rate, conv_order, rs_roots);
-    }
-    else {
+    } else if(fec_type == FECCfg_Type_CONV) {
+        fec = make_shared<FECConv>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+                                    radio_cb.fec_cfg.conv_order);
+    } else if(fec_type == FECCfg_Type_RSV) {
+        fec = make_shared<FECRSVGolay>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+                radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
+    } else if(fec_type == FECCfg_Type_RSVGOLAY) {
+        fec = make_shared<FECRSVGolay>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+                radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
+    } else {
         MBED_ASSERT(false);
     }
     std::shared_ptr<RadioEvent> radio_event, tx_radio_event;
     std::shared_ptr<Frame> tx_frame_sptr;
     std::shared_ptr<Frame> rx_frame_sptr;
     static vector<uint8_t> tx_frame_buf(256), rx_frame_buf(256);
-    int radio_bw = radio_cb["BW"].get<int>();
-    int radio_sf = radio_cb["SF"].get<int>();
-    int radio_cr = radio_cb["CR"].get<int>();
-    int radio_freq = radio_cb["Frequency"].get<int>();
-    int radio_pwr = radio_cb["TX Power"].get<int>();  
-    int full_pkt_len = radio_cb["Full Packet Size"].get<int>();
-    int my_addr = radio_cb["Address"].get<int>();
-    int timing_off_inc = radio_cb["Number Offsets"].get<int>();
-    int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
-    static mt19937 rand_gen(my_addr);
-    int32_t freq_bound = (lora_bw[radio_bw]*FREQ_WOBBLE_PROPORTION);
+    static mt19937 rand_gen(radio_cb.address);
+    int32_t freq_bound = (lora_bw[radio_cb.radio_cfg.lora_cfg.bw]*FREQ_WOBBLE_PROPORTION);
     static uniform_int_distribution<int32_t> freq_dist(-freq_bound, freq_bound);  
-    static mt19937 timing_rand_gen(my_addr);
-    uniform_int_distribution<uint8_t> timing_off_dist(0, timing_off_inc-1);  
+    static mt19937 timing_rand_gen(radio_cb.address);
+    uniform_int_distribution<uint8_t> timing_off_dist(0, radio_cb.net_cfg.num_offsets-1);  
     uint8_t next_sym_off = timing_off_dist(timing_rand_gen);
-    static mt19937 pwr_diff_rand_gen(my_addr);
+    static mt19937 pwr_diff_rand_gen(radio_cb.address);
     static uniform_int_distribution<int8_t> pwr_diff_dist(0, 6);
 
     // Set up an initial timer
@@ -176,7 +160,7 @@ void mesh_protocol_fsm(void) {
                     //ThisThread::sleep_for(250);
                     //debug_printf(DBG_INFO, "Radio is in standby\r\n");
                     led2.LEDFastBlink();
-                    radio.set_channel(pocsag_tx_freq);
+                    radio.set_channel(radio_cb.pocsag_cfg.frequency);
                     radio.unlock();
                     //ThisThread::sleep_for(250);
                     //debug_printf(DBG_INFO, "Channel is set\r\n");
@@ -259,7 +243,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 radio.lock();
                 radio.standby();
-                radio.set_tx_power(radio_pwr);
+                radio.set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
                 led2.LEDOff();
                 led3.LEDSolid();
@@ -272,7 +256,7 @@ void mesh_protocol_fsm(void) {
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                if(radio_cb["Log Packets"].get<int>()) {
+                if(radio_cb.log_en) {
                     enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 }
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
@@ -286,7 +270,7 @@ void mesh_protocol_fsm(void) {
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 next_sym_off = timing_off_dist(timing_rand_gen);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
-                radio_timing.waitSymOffset(next_sym_off, 1.0f, timing_off_inc);
+                radio_timing.waitSymOffset(next_sym_off, 1.0f, radio_cb.net_cfg.num_offsets);
                 state = WAIT_FOR_EVENT;
                 }
             break;
@@ -295,7 +279,7 @@ void mesh_protocol_fsm(void) {
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 {
                 radio.lock();
-                radio.set_tx_power(radio_pwr-pwr_diff_dist(pwr_diff_rand_gen)); 
+                radio.set_tx_power(radio_cb.radio_cfg.tx_power-pwr_diff_dist(pwr_diff_rand_gen)); 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 MBED_ASSERT(rx_frame_size < 256);
@@ -307,16 +291,16 @@ void mesh_protocol_fsm(void) {
 				radio_timing.waitFullSlots(1);
                 uint8_t pre_off, nsym_off, sym_off;
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                radio_timing.waitSymOffset(sym_off, -1.0f, timing_off_inc);
+                radio_timing.waitSymOffset(sym_off, -1.0f, radio_cb.net_cfg.num_offsets);
                 rx_frame_sptr->setOffsets(0, 0, timing_off_dist(timing_rand_gen));
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", sym_off);
-                radio_timing.waitSymOffset(sym_off, 1.0f, timing_off_inc);
+                radio_timing.waitSymOffset(sym_off, 1.0f, radio_cb.net_cfg.num_offsets);
                 radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
                 radio.unlock();
 
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                if(radio_cb["Log Packets"].get<int>()) {
+                if(radio_cb.log_en) {
                     enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 }
                 led2.LEDOff();
@@ -343,8 +327,9 @@ void beacon_fn(void) {
     time(&cur_time);
     time_t uptime = cur_time - boot_timestamp;
     auto beacon_frame_sptr = make_shared<Frame>();
-    beacon_frame_sptr->setBeaconPayload(radio_cb["Beacon Message"].get<string>());
-    beacon_frame_sptr->setSender(radio_cb["Address"].get<int>());
+    string beacon_msg(radio_cb.net_cfg.beacon_msg);
+    beacon_frame_sptr->setBeaconPayload(beacon_msg);
+    beacon_frame_sptr->setSender(radio_cb.address);
     static uint8_t stream_id = 0;
     beacon_frame_sptr->setStreamID(stream_id++);
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
@@ -360,12 +345,12 @@ void beacon_pocsag_fn(void) {
     if(status) {
         debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
         char msg[128];
-        sprintf(msg, "KG5VBY:SF%d,BW%d,F%d\r\n", radio_cb["SF"].get<int>(), 
-                    radio_cb["BW"].get<int>(), radio_cb["Frequency"].get<int>());
+        sprintf(msg, "KG5VBY:SF%d,BW%d,F%d\r\n", radio_cb.radio_cfg.lora_cfg.bw, 
+                    radio_cb.radio_cfg.lora_cfg.bw, radio_cb.radio_cfg.frequency);
         string pocsag_msg(msg);
         auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
         enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
-        int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
+        int pocsag_beacon_interval = radio_cb.pocsag_cfg.beacon_interval;
         if(pocsag_beacon_interval == -1) {
             pocsag_beacon_interval = 60000;
         }

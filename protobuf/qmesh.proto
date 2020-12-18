@@ -69,6 +69,8 @@ message SysCfgMsg {
   NetCfg net_cfg = 6;
   POCSAGCfg pocsag_cfg = 7;
   bool gps_en = 8;
+  bool log_en = 9;
+  bool boot_log_en = 10;
 }
 
 message ClockSetMsg {
