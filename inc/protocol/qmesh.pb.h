@@ -108,10 +108,11 @@ typedef struct _GPSMsg {
 } GPSMsg;
 
 typedef struct _LoraCfg {
-    int32_t bw;
-    int32_t cr;
-    int32_t sf;
-    int32_t preamble_length;
+    uint32_t bw;
+    uint32_t cr;
+    uint32_t sf;
+    uint32_t preamble_length;
+    uint32_t fhss_pre_len;
 } LoraCfg;
 
 typedef struct _NetCfg {
@@ -119,6 +120,7 @@ typedef struct _NetCfg {
     uint32_t beacon_interval;
     uint32_t num_offsets;
     uint32_t pld_len;
+    uint32_t full_pkt_len;
 } NetCfg;
 
 typedef struct _POCSAGCfg {
@@ -233,11 +235,11 @@ typedef struct _SerialMsg {
 
 
 /* Initializer values for message structs */
-#define LoraCfg_init_default                     {0, 0, 0, 0}
+#define LoraCfg_init_default                     {0, 0, 0, 0, 0}
 #define TestCfg_init_default                     {0, 0, 0}
 #define FECCfg_init_default                      {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default}
-#define NetCfg_init_default                      {"", 0, 0, 0}
+#define NetCfg_init_default                      {"", 0, 0, 0, 0}
 #define POCSAGCfg_init_default                   {0, 0, 0}
 #define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, POCSAGCfg_init_default, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
@@ -250,11 +252,11 @@ typedef struct _SerialMsg {
 #define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_default, false, ClockSetMsg_init_default, false, StatusMsg_init_default, false, DbgMsg_init_default, false, LogMsg_init_default, false, BootLogMsg_init_default, false, DataMsg_init_default, false, ErrorMsg_init_default}
 #define ErrorMsg_init_default                    {""}
 #define DataMsg_init_default                     {0, 0, 0, 0, 0, {0, {0}}}
-#define LoraCfg_init_zero                        {0, 0, 0, 0}
+#define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero}
-#define NetCfg_init_zero                         {"", 0, 0, 0}
+#define NetCfg_init_zero                         {"", 0, 0, 0, 0}
 #define POCSAGCfg_init_zero                      {0, 0, 0}
 #define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, POCSAGCfg_init_zero, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
@@ -292,10 +294,12 @@ typedef struct _SerialMsg {
 #define LoraCfg_cr_tag                           2
 #define LoraCfg_sf_tag                           3
 #define LoraCfg_preamble_length_tag              4
+#define LoraCfg_fhss_pre_len_tag                 5
 #define NetCfg_beacon_msg_tag                    1
 #define NetCfg_beacon_interval_tag               2
 #define NetCfg_num_offsets_tag                   3
 #define NetCfg_pld_len_tag                       4
+#define NetCfg_full_pkt_len_tag                  5
 #define POCSAGCfg_enabled_tag                    1
 #define POCSAGCfg_frequency_tag                  2
 #define POCSAGCfg_beacon_interval_tag            3
@@ -347,10 +351,11 @@ typedef struct _SerialMsg {
 
 /* Struct field encoding specification for nanopb */
 #define LoraCfg_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, INT32,    bw,                1) \
-X(a, STATIC,   SINGULAR, INT32,    cr,                2) \
-X(a, STATIC,   SINGULAR, INT32,    sf,                3) \
-X(a, STATIC,   SINGULAR, INT32,    preamble_length,   4)
+X(a, STATIC,   SINGULAR, UINT32,   bw,                1) \
+X(a, STATIC,   SINGULAR, UINT32,   cr,                2) \
+X(a, STATIC,   SINGULAR, UINT32,   sf,                3) \
+X(a, STATIC,   SINGULAR, UINT32,   preamble_length,   4) \
+X(a, STATIC,   SINGULAR, UINT32,   fhss_pre_len,      5)
 #define LoraCfg_CALLBACK NULL
 #define LoraCfg_DEFAULT NULL
 
@@ -383,7 +388,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  lora_cfg,          5)
 X(a, STATIC,   SINGULAR, STRING,   beacon_msg,        1) \
 X(a, STATIC,   SINGULAR, UINT32,   beacon_interval,   2) \
 X(a, STATIC,   SINGULAR, UINT32,   num_offsets,       3) \
-X(a, STATIC,   SINGULAR, UINT32,   pld_len,           4)
+X(a, STATIC,   SINGULAR, UINT32,   pld_len,           4) \
+X(a, STATIC,   SINGULAR, UINT32,   full_pkt_len,      5)
 #define NetCfg_CALLBACK NULL
 #define NetCfg_DEFAULT NULL
 
@@ -542,13 +548,13 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define DataMsg_fields &DataMsg_msg
 
 /* Maximum encoded size of messages (where known) */
-#define LoraCfg_size                             44
+#define LoraCfg_size                             30
 #define TestCfg_size                             6
 #define FECCfg_size                              35
-#define RadioCfg_size                            246
-#define NetCfg_size                              276
+#define RadioCfg_size                            232
+#define NetCfg_size                              282
 #define POCSAGCfg_size                           14
-#define SysCfgMsg_size                           603
+#define SysCfgMsg_size                           595
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           10
 #define DbgMsg_size                              258
@@ -556,7 +562,7 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define BootLogMsg_size                          14
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
-#define SerialMsg_size                           1549
+#define SerialMsg_size                           1541
 #define ErrorMsg_size                            258
 #define DataMsg_size                             289
 

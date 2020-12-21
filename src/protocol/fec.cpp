@@ -50,9 +50,8 @@ void testFEC(void) {
         int fec_fail = 0;
         int fec_total = 0;
         for(int i = 0; i < 100; i++) {
-            int pld_len = radio_cb["Payload Length"].get<int>();
-            vector<uint8_t> rand_data(pld_len);
-            std::generate_n(rand_data.begin(), pld_len, rand);
+            vector<uint8_t> rand_data(radio_cb.net_cfg.pld_len);
+            std::generate_n(rand_data.begin(), radio_cb.net_cfg.pld_len, rand);
             auto test_frame = make_shared<Frame>(*iter);
             test_frame->loadTestFrame(rand_data);
             auto serialized_data = make_shared<vector<uint8_t>>();
@@ -79,9 +78,8 @@ void testFEC(void) {
         fec_total = 0;
         for(size_t i = 0; i < size_frame.size(); i++) {
             for(int j = 0; j < 10; j++) {
-                int pld_len = radio_cb["Payload Length"].get<int>();
-                vector<uint8_t> rand_data(pld_len);
-                std::generate_n(rand_data.begin(), pld_len, rand);
+                vector<uint8_t> rand_data(radio_cb.net_cfg.pld_len);
+                std::generate_n(rand_data.begin(), radio_cb.net_cfg.pld_len, rand);
                 auto test_frame = make_shared<Frame>(*iter);
                 test_frame->loadTestFrame(rand_data);
                 vector<uint8_t> serialized_data;

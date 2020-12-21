@@ -33,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 size_t Frame::size(void) {
-    return radio_cb["Payload Length"].get<int>() + sizeof(hdr) + sizeof(crc);
+    return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
 }
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {

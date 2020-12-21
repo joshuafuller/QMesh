@@ -182,7 +182,7 @@ public:
     * @param beacon_str The beacon string.
     */
     size_t setBeaconPayload(string &beacon_str) {
-        data.resize(radio_cb["Payload Length"].get<int>());
+        data.resize(radio_cb.net_cfg.pld_len);
         size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
         memcpy(data.data(), beacon_str.c_str(), len);        
         hdr.cons_subhdr.fields.type = BEACON_FRAME;

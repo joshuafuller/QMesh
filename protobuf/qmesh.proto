@@ -3,10 +3,11 @@ import "nanopb.proto";
 
 
 message LoraCfg {
-  int32 bw = 1;
-  int32 cr = 2;
-  int32 sf = 3;
-  int32 preamble_length = 4;  
+  uint32 bw = 1;
+  uint32 cr = 2;
+  uint32 sf = 3;
+  uint32 preamble_length = 4;  
+  uint32 fhss_pre_len = 5;
 }
 
 message TestCfg {
@@ -46,6 +47,7 @@ message NetCfg {
   uint32 beacon_interval = 2;
   uint32 num_offsets = 3;
   uint32 pld_len = 4;
+  uint32 full_pkt_len = 5;
 }
 
 message POCSAGCfg {

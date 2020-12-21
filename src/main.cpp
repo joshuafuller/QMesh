@@ -171,7 +171,7 @@ int main()
     log_boot();
 
     // Start up the GPS code
-    if(radio_cb["Has GPS"].get<int>() == 1) {
+    if(radio_cb.gps_en) {
         gps_thread.start(gpsd_thread_fn);
     }
 
@@ -251,20 +251,12 @@ while(1);
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
-    int beacon_interval = radio_cb["Beacon Interval"].get<int>();
-    if(beacon_interval == -1) {
-        beacon_interval = 60000;
-    }
-    background_queue.call_every(beacon_interval*1000, beacon_fn);
+    background_queue.call_every(radio_cb.net_cfg.beacon_interval*1000, beacon_fn);
 
     debug_printf(DBG_INFO, "Starting the POCSAG beacon\r\n");
-    int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
-    if(pocsag_beacon_interval == -1) {
-        pocsag_beacon_interval = 60000;
-    } else {
-        background_queue.call_every(pocsag_beacon_interval*1000, beacon_pocsag_fn);
+    if(radio_cb.pocsag_cfg.enabled) {
+        background_queue.call_every(radio_cb.pocsag_cfg.beacon_interval*1000, beacon_pocsag_fn);
     }
-
     ThisThread::sleep_for(250);
  
     // Start the OLED monitoring

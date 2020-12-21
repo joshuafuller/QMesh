@@ -102,170 +102,123 @@ void init_radio(void) {
     radio_events.fhss_change_channel = fhss_change_channel_cb;
     ThisThread::sleep_for(250);
     radio.init_radio(&radio_events);
-    int radio_bw = radio_cb["BW"].get<int>();
-    debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_bw);
-    int radio_sf = radio_cb["SF"].get<int>();
-    debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_sf);
-    int radio_cr = radio_cb["CR"].get<int>();
-    debug_printf(DBG_INFO, "Radio CR is %d\r\n", radio_cr);
-    int radio_freq = radio_cb["Frequency"].get<int>();
-    debug_printf(DBG_INFO, "Radio Frequency is %d\r\n", radio_freq);
-    int radio_pwr = radio_cb["TX Power"].get<int>();
-    debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_pwr);    
-    int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
-    debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", radio_preamble_len); 
-    radio_preamble_len = radio_cb["Preamble Length"].get<int>();
-    radio_cb["Preamble Length"] = radio_preamble_len + 7*(radio_cb["Frequencies"].size()+2);
-    radio_preamble_len = radio_cb["Preamble Length"].get<int>();   
-    debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", radio_preamble_len); 
-    int addr = radio_cb["Address"].get<int>();
+    debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
+    debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
+    debug_printf(DBG_INFO, "Radio CR is %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
+    debug_printf(DBG_INFO, "Radio Frequency is %d\r\n", radio_cb.radio_cfg.frequency);
+    debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_cb.radio_cfg.tx_power);    
+    debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", 
+                radio_cb.radio_cfg.lora_cfg.preamble_length); 
+    radio_cb.radio_cfg.lora_cfg.fhss_pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length + 
+            7*(radio_cb.radio_cfg.frequencies_count+2); 
+    debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", 
+            radio_cb.radio_cfg.lora_cfg.fhss_pre_len); 
     vector<uint32_t> freqs;
-    for(int i = 0; i < radio_cb["Frequencies"].size(); i++) {
-        freqs.push_back(radio_cb["Frequencies"][i].get<int>());
-        debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb["Frequencies"][i].get<int>());
+    for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
+        freqs.push_back(radio_cb.radio_cfg.frequencies[i]);
+        debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb.radio_cfg.frequencies[i]);
     }
-    radio.configure_freq_hop(addr, freqs);
-    int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
-    debug_printf(DBG_INFO, "POCSAG Frequency is %d\r\n", pocsag_tx_freq); 
-    int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
-    debug_printf(DBG_INFO, "POCSAG Beacon Interval is %d\r\n", pocsag_beacon_interval);
-    string fec_algo = radio_cb["FEC Algorithm"].get<string>();
-    debug_printf(DBG_INFO, "FEC algorithm is %s\r\n", fec_algo.c_str()); 
-    if(fec_algo == "None") {
+    radio.configure_freq_hop(radio_cb.address, freqs);
+    debug_printf(DBG_INFO, "POCSAG Frequency is %d\r\n", radio_cb.pocsag_cfg.frequency); 
+    debug_printf(DBG_INFO, "POCSAG Beacon Interval is %d\r\n", radio_cb.pocsag_cfg.beacon_interval);
+    debug_printf(DBG_INFO, "FEC algorithm is %s\r\n", radio_cb.fec_cfg.type); 
+    if(radio_cb.fec_cfg.type == FECCfg_Type_NONE) {
         frame_fec = make_shared<FEC>(Frame::size());
     }
-    else if(fec_algo == "Interleave") {
+    else if(radio_cb.fec_cfg.type == FECCfg_Type_INTERLEAVE) {
         frame_fec = make_shared<FECInterleave>(Frame::size());
     }
-    else if(fec_algo == "Convolutional") {
-        int conv_rate = radio_cb["Conv Rate"].get<int>();
-        int conv_order = radio_cb["Conv Order"].get<int>();
-        frame_fec = make_shared<FECConv>(Frame::size(), conv_rate, conv_order);
+    else if(radio_cb.fec_cfg.type == FECCfg_Type_CONV) {
+        frame_fec = make_shared<FECConv>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+            radio_cb.fec_cfg.conv_order);
     }
-    else if(fec_algo == "RSV") {
-        int conv_rate = radio_cb["Conv Rate"].get<int>();
-        int conv_order = radio_cb["Conv Order"].get<int>();
-        int rs_roots = radio_cb["Reed-Solomon Number Roots"].get<int>();
-        frame_fec = make_shared<FECRSVGolay>(Frame::size(), conv_rate, conv_order, rs_roots);
+    else if(radio_cb.fec_cfg.type == FECCfg_Type_RSV) {
+        frame_fec = make_shared<FECRSV>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+            radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
+    }
+    else if(radio_cb.fec_cfg.type == FECCfg_Type_RSVGOLAY) {
+        frame_fec = make_shared<FECRSVGolay>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+            radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
     }
     else {
         MBED_ASSERT(false);
     }
     Frame tmp_frame(frame_fec);
-    uint8_t full_pkt_len = tmp_frame.codedSize();
-    radio_cb["Full Packet Size"] = full_pkt_len;
-    debug_printf(DBG_INFO, "Setting RX size to %d\r\n", full_pkt_len);
-    radio.set_rx_config(MODEM_LORA, radio_bw,
-                            radio_sf, radio_cr,
-                            0, radio_preamble_len,
-                            radio_preamble_len, RADIO_FIXED_LEN,
-                            full_pkt_len,
+    radio_cb.net_cfg.full_pkt_len = tmp_frame.codedSize();
+    debug_printf(DBG_INFO, "Setting RX size to %d\r\n", radio_cb.net_cfg.full_pkt_len);
+    radio.set_rx_config(MODEM_LORA, 
+                            radio_cb.radio_cfg.lora_cfg.bw,
+                            radio_cb.radio_cfg.lora_cfg.sf, 
+                            radio_cb.radio_cfg.lora_cfg.cr,
+                            0, 
+                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
+                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len, 
+                            RADIO_FIXED_LEN,
+                            radio_cb.net_cfg.full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
-    radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
-                            radio_bw, radio_sf,
-                            radio_cr, radio_preamble_len,
+    radio.set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
+                            radio_cb.radio_cfg.lora_cfg.bw, 
+                            radio_cb.radio_cfg.lora_cfg.sf,
+                            radio_cb.radio_cfg.lora_cfg.bw, 
+                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
     radio.set_channel(*freqs.begin());
-    radio_timing.computeTimes(radio_bw, radio_sf, radio_cr, radio_preamble_len, full_pkt_len);
+    radio_timing.computeTimes(radio_cb.radio_cfg.lora_cfg.bw, 
+                        radio_cb.radio_cfg.lora_cfg.sf, 
+                        radio_cb.radio_cfg.lora_cfg.cr, 
+                        radio_cb.radio_cfg.lora_cfg.fhss_pre_len, 
+                        radio_cb.net_cfg.full_pkt_len);
     radio.cad_rx_timeout = radio_timing.pkt_time_us / 15.625f;
-    int cw_test_mode = radio_cb["CW Test Mode"].get<int>();
-    int pre_test_mode = radio_cb["Preamble Test Mode"].get<int>();
-    int fec_test_mode = radio_cb["Test FEC"].get<int>();
-    if(cw_test_mode == 1) { 
+    if(radio_cb.test_cfg.cw_test_mode) { 
         debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
         radio.set_tx_continuous_wave(0, 0, 0);
         while(true) {
             ThisThread::sleep_for(1000);
         }
     }
-    else if(pre_test_mode == 1) {
+    else if(radio_cb.test_cfg.preamble_test_mode) {
         debug_printf(DBG_WARN, "Starting continuous preamble output...\r\n");
         radio.set_tx_continuous_preamble();
         while(true) {
             ThisThread::sleep_for(1000);
         }
     }
-    else if(fec_test_mode == 1) {
+    else if(radio_cb.test_cfg.test_fec) {
         debug_printf(DBG_WARN, "Starting the FEC testing...\r\n");
         testFEC();
     }
 }
 
+
 void reinit_radio(void) {
     // Initialize Radio driver
-    int radio_bw = radio_cb["BW"].get<int>();
-    int radio_sf = radio_cb["SF"].get<int>();
-    int radio_cr = radio_cb["CR"].get<int>();
-    int radio_freq = radio_cb["Frequency"].get<int>();
-    int radio_pwr = radio_cb["TX Power"].get<int>();  
-    int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
-    int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
-    int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
-    string fec_algo = radio_cb["FEC Algorithm"].get<string>();
-    Frame tmp_frame(frame_fec);
-    uint8_t full_pkt_len = radio_cb["Full Packet Size"].get<int>();
-    int addr = radio_cb["Address"].get<int>();
-#if 0
-    vector<uint32_t> freqs;
-    for(int i = 0; i < radio_cb["Frequencies"].size(); i++) {
-        freqs.push_back(radio_cb["Frequencies"][i].get<int>());
-    }
-    radio.configure_freq_hop(addr, freqs);
-#endif
-
-    radio_events.tx_done_tmr = tx_done_cb;
-    radio_events.rx_done_tmr = rx_done_cb;
-    radio_events.rx_error = rx_error_cb;
-    radio_events.tx_timeout = tx_timeout_cb;
-    radio_events.rx_timeout = rx_timeout_cb;
-    radio_events.rx_preamble_det = rx_preamble_det_cb;
-    radio_events.fhss_change_channel = fhss_change_channel_cb;
-#if 0
-    ThisThread::sleep_for(250);
-    radio.init_radio(&radio_events);
-#endif
-    radio.set_rx_config(MODEM_LORA, radio_bw,
-                            radio_sf, radio_cr,
-                            0, radio_preamble_len,
-                            radio_preamble_len, RADIO_FIXED_LEN,
-                            full_pkt_len,
+    radio.set_rx_config(MODEM_LORA, 
+                            radio_cb.radio_cfg.lora_cfg.bw,
+                            radio_cb.radio_cfg.lora_cfg.sf, 
+                            radio_cb.radio_cfg.lora_cfg.cr,
+                            0, 
+                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
+                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len, 
+                            RADIO_FIXED_LEN,
+                            radio_cb.net_cfg.full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
-    radio.set_tx_config(MODEM_LORA, radio_pwr, 0,
-                            radio_bw, radio_sf,
-                            radio_cr, radio_preamble_len,
+    radio.set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
+                            radio_cb.radio_cfg.lora_cfg.bw, 
+                            radio_cb.radio_cfg.lora_cfg.sf,
+                            radio_cb.radio_cfg.lora_cfg.bw, 
+                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
 }
 
-void reinit_radio_pocsag(void) {
-    // Initialize Radio driver
-    int radio_bw = radio_cb["BW"].get<int>();
-    int radio_sf = radio_cb["SF"].get<int>();
-    int radio_cr = radio_cb["CR"].get<int>();
-    //int radio_freq = radio_cb["Frequency"].get<int>();
-    int radio_pwr = radio_cb["TX Power"].get<int>();  
-    int radio_preamble_len = radio_cb["Preamble Length"].get<int>();
-    int pocsag_tx_freq = radio_cb["POCSAG Frequency"].get<int>();
-    int pocsag_beacon_interval = radio_cb["POCSAG Beacon Interval"].get<int>();
-    string fec_algo = radio_cb["FEC Algorithm"].get<string>();
-    Frame tmp_frame(frame_fec);
-    uint8_t full_pkt_len = radio_cb["Full Packet Size"].get<int>();
 
-    radio_events.tx_done_tmr = tx_done_cb;
-    radio_events.rx_done_tmr = rx_done_cb;
-    radio_events.rx_error = rx_error_cb;
-    radio_events.tx_timeout = tx_timeout_cb;
-    radio_events.rx_timeout = rx_timeout_cb;
-    radio_events.rx_preamble_det = rx_preamble_det_cb;
-    radio_events.fhss_change_channel = fhss_change_channel_cb;
-    radio.init_radio(&radio_events);
-    radio.set_tx_config_pocsag(radio_pwr);
-    //radio.set_channel(pocsag_tx_freq);
+void reinit_radio_pocsag(void) {
+    radio.set_tx_config_pocsag(radio_cb.radio_cfg.tx_power);
     radio.rx_hop_frequency();
 }
 
