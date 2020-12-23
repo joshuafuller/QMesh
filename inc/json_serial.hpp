@@ -43,7 +43,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_decode.h"
 
 
-extern Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
+extern Mutex tx_ser_queue_lock;
+extern list<shared_ptr<SerialMsg>> tx_ser_queue;
+
 /// Produces an MbedJSONValue with the current status and queues it for transmission.
 void tx_serial_thread_fn(void);
 /// Serial thread function that receives serial data, and processes it accordingly.
@@ -78,7 +80,7 @@ void statusToJSON(string &status, string &value, string &json_str);
  * @param dbg_msg Plaintext debug message (input), as a string
  * @param json_str JSON-formatted debug message (output), as a string
  */
-void dbgPrintfToJSON(string &dbg_msg, string &json_str);
+void dbgPrintfToPB(string &dbg_msg, vector<uint8_t> &json_str);
 
 /**
  * Loads a JSON-formatted string into the internal data structures

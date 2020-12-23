@@ -124,6 +124,24 @@ public:
     */
     static size_t size(void);
 
+    DataMsg_Type getDataMsgType(void) {
+        switch(hdr.cons_subhdr.fields.type) {
+            case 0: return DataMsg_Type_TX; 
+            case 1: return DataMsg_Type_RX;
+            default: MBED_ASSERT(false);
+        }
+    }
+
+    void setDataMsgType(const DataMsg_Type datamsg_type) {
+        if(datamsg_type == DataMsg_Type_TX) {
+            hdr.cons_subhdr.fields.type = 0;
+        } else if(datamsg_type == DataMsg_Type_RX) {
+            hdr.cons_subhdr.fields.type = 1;
+        } else {
+            MBED_ASSERT(false);
+        }
+    }
+
     /**
     * Default constructor. Constructs with a default FEC (one that does nothing).
     */
@@ -369,13 +387,13 @@ public:
     * Load the frame's fields from a parsed JSON object
     * @param json MbedJSONValue holding Frame's parameters.
     */
-    void loadFromJSON(MbedJSONValue &json);
+    void loadFromPB(const DataMsg &data_msg);
 
     /**
     * Load the JSON object with the Frame's fields.
     * @param json MbedJSONValue holding Frame's parameters.
     */
-    void saveToJSON(MbedJSONValue &json);
+    void saveToPB(DataMsg &data_msg);
 };
 
 

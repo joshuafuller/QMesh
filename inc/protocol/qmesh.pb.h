@@ -65,6 +65,11 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_ERR = 21
 } SerialMsg_Type;
 
+typedef enum _DataMsg_Type {
+    DataMsg_Type_TX = 0,
+    DataMsg_Type_RX = 1
+} DataMsg_Type;
+
 /* Struct definitions */
 typedef struct _BootLogMsg {
     bool valid;
@@ -78,12 +83,13 @@ typedef struct _ClockSetMsg {
 
 typedef PB_BYTES_ARRAY_T(256) DataMsg_payload_t;
 typedef struct _DataMsg {
-    uint32_t type;
+    DataMsg_Type type;
     uint32_t stream_id;
     uint32_t ttl;
     uint32_t sender;
     uint32_t sym_offset;
     DataMsg_payload_t payload;
+    uint32_t crc;
 } DataMsg;
 
 typedef struct _DbgMsg {
@@ -233,6 +239,10 @@ typedef struct _SerialMsg {
 #define _SerialMsg_Type_MAX SerialMsg_Type_ERR
 #define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_ERR+1))
 
+#define _DataMsg_Type_MIN DataMsg_Type_TX
+#define _DataMsg_Type_MAX DataMsg_Type_RX
+#define _DataMsg_Type_ARRAYSIZE ((DataMsg_Type)(DataMsg_Type_RX+1))
+
 
 /* Initializer values for message structs */
 #define LoraCfg_init_default                     {0, 0, 0, 0, 0}
@@ -251,7 +261,7 @@ typedef struct _SerialMsg {
 #define LogMsg_init_default                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_default}
 #define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_default, false, ClockSetMsg_init_default, false, StatusMsg_init_default, false, DbgMsg_init_default, false, LogMsg_init_default, false, BootLogMsg_init_default, false, DataMsg_init_default, false, ErrorMsg_init_default}
 #define ErrorMsg_init_default                    {""}
-#define DataMsg_init_default                     {0, 0, 0, 0, 0, {0, {0}}}
+#define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0}
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
@@ -268,7 +278,7 @@ typedef struct _SerialMsg {
 #define LogMsg_init_zero                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_zero}
 #define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_zero, false, ClockSetMsg_init_zero, false, StatusMsg_init_zero, false, DbgMsg_init_zero, false, LogMsg_init_zero, false, BootLogMsg_init_zero, false, DataMsg_init_zero, false, ErrorMsg_init_zero}
 #define ErrorMsg_init_zero                       {""}
-#define DataMsg_init_zero                        {0, 0, 0, 0, 0, {0, {0}}}
+#define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define BootLogMsg_valid_tag                     1
@@ -281,6 +291,7 @@ typedef struct _SerialMsg {
 #define DataMsg_sender_tag                       4
 #define DataMsg_sym_offset_tag                   5
 #define DataMsg_payload_tag                      6
+#define DataMsg_crc_tag                          7
 #define DbgMsg_msg_tag                           1
 #define ErrorMsg_msg_tag                         1
 #define FECCfg_type_tag                          1
@@ -501,12 +512,13 @@ X(a, STATIC,   SINGULAR, STRING,   msg,               1)
 #define ErrorMsg_DEFAULT NULL
 
 #define DataMsg_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   type,              1) \
+X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
 X(a, STATIC,   SINGULAR, UINT32,   stream_id,         2) \
 X(a, STATIC,   SINGULAR, UINT32,   ttl,               3) \
 X(a, STATIC,   SINGULAR, UINT32,   sender,            4) \
 X(a, STATIC,   SINGULAR, UINT32,   sym_offset,        5) \
-X(a, STATIC,   SINGULAR, BYTES,    payload,           6)
+X(a, STATIC,   SINGULAR, BYTES,    payload,           6) \
+X(a, STATIC,   SINGULAR, UINT32,   crc,               7)
 #define DataMsg_CALLBACK NULL
 #define DataMsg_DEFAULT NULL
 
@@ -562,9 +574,9 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define BootLogMsg_size                          14
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
-#define SerialMsg_size                           1541
+#define SerialMsg_size                           1543
 #define ErrorMsg_size                            258
-#define DataMsg_size                             289
+#define DataMsg_size                             291
 
 #ifdef __cplusplus
 } /* extern "C" */

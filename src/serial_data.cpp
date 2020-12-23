@@ -62,7 +62,7 @@ void Frame::serialize(vector<uint8_t> &ser_frame) {
 
 void Frame::serialize_pb(vector<uint8_t> &buf) {
     DataMsg data_msg = DataMsg_init_zero;
-    data_msg.type = hdr.cons_subhdr.fields.type;
+    data_msg.type = getDataMsgType();
     data_msg.stream_id = hdr.cons_subhdr.fields.stream_id;
     data_msg.sender = hdr.var_subhdr.fields.sender;
     data_msg.ttl = hdr.var_subhdr.fields.ttl;
@@ -164,39 +164,30 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     return pkt_status;
 }
 
-void Frame::loadFromJSON(MbedJSONValue &json) {
-    hdr.cons_subhdr.fields.type = json["HDR Pkt Type"].get<int>();
-    hdr.cons_subhdr.fields.stream_id = json["HDR Stream ID"].get<int>();
-    hdr.var_subhdr.fields.ttl = json["HDR TTL"].get<int>();
-    hdr.var_subhdr.fields.sender = json["HDR Sender"].get<int>();
-    hdr.var_subhdr.fields.sym_offset = json["HDR Sym Offset"].get<int>();
-    crc.s = json["CRC"].get<int>();
-    string b64_str = json["Data Payload"].get<string>();
-    size_t b64_len;
-    MBED_ASSERT(mbedtls_base64_decode(NULL, 0, &b64_len, 
-        (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
-    MBED_ASSERT(b64_len == radio_cb["Payload Length"].get<int>());
-    data.resize(b64_len);
-    MBED_ASSERT(mbedtls_base64_decode(data.data(), b64_len, &b64_len, 
-        (uint8_t *) b64_str.c_str(), b64_str.size()) == 0);
+
+void Frame::loadFromPB(const DataMsg &data_msg) {
+    hdr.cons_subhdr.fields.type = data_msg.type;
+    hdr.cons_subhdr.fields.stream_id = data_msg.stream_id;
+    hdr.var_subhdr.fields.ttl = data_msg.ttl;
+    hdr.var_subhdr.fields.sender = data_msg.sender;
+    hdr.var_subhdr.fields.sym_offset = data_msg.sym_offset;
+    crc.s = data_msg.crc;
+    data.resize(data_msg.payload.size);
+    memcpy((char *) data.data(), data_msg.payload.bytes, data_msg.payload.size); 
 }
 
-void Frame::saveToJSON(MbedJSONValue &json) {
-    json["Type"] = "Frame";
-    json["HDR Pkt Type"] = int(hdr.cons_subhdr.fields.type);
-    json["HDR Stream ID"] = int(hdr.cons_subhdr.fields.stream_id);
-    json["HDR TTL"] = int(hdr.var_subhdr.fields.ttl);
-    json["HDR Sender"] = int(hdr.var_subhdr.fields.sender);
-    json["HDR Sym Offset"] = int(hdr.var_subhdr.fields.sym_offset);
-    json["CRC"] = int(crc.s);
-    size_t b64_len;
-    mbedtls_base64_encode(NULL, 0, &b64_len, data.data(), data.size());
-    unsigned char *b64_buf = new unsigned char[b64_len];
-    MBED_ASSERT(mbedtls_base64_encode(b64_buf, b64_len, &b64_len, data.data(), data.size()) == 0);
-    json["Data Payload"] = b64_buf;
 
-    delete [] b64_buf;
+void Frame::saveToPB(DataMsg &data_msg) {
+    data_msg.type = getDataMsgType();
+    data_msg.stream_id = hdr.cons_subhdr.fields.stream_id;
+    data_msg.ttl = hdr.var_subhdr.fields.ttl;
+    data_msg.sender = hdr.var_subhdr.fields.sender;
+    data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset;
+    data_msg.crc = crc.s;
+    data_msg.payload.size = data.size();
+    memcpy(data_msg.payload.bytes, data.data(), data.size());
 }
+
 
 void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "==========\r\n");
@@ -253,18 +244,14 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    string dbg_str;
-    static char dbg_str_data[sizeof(tmp_str)+32];
-    sprintf(dbg_str_data, "[+] %s -- %s", msg_type.c_str(), tmp_str);
-    dbg_str = dbg_str_data;
-    auto tx_str = make_shared<string>();
-    JSONSerial json_ser;
-    json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
-    //MBED_ASSERT(tx_ser_queue.full() == false);
-    while(tx_ser_queue.full() == true);
-    auto tx_str_sptr = tx_ser_queue.alloc();
-    *tx_str_sptr = tx_str;
-    tx_ser_queue.put(tx_str_sptr);
+    auto ser_msg_sptr = shared_ptr<SerialMsg>();
+    *ser_msg_sptr = SerialMsg_init_zero;
+    ser_msg_sptr->has_dbg_msg = true;
+    sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
+    while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
+    tx_ser_queue_lock.lock();
+    tx_ser_queue.push_back(ser_msg_sptr);
+    tx_ser_queue_lock.unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
         ThisThread::sleep_for(2000);
         MBED_ASSERT(false);
@@ -302,15 +289,14 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    string dbg_str;
-    auto tx_str = make_shared<string>();
-    JSONSerial json_ser;
-    json_ser.dbgPrintfToJSON(dbg_str, *tx_str);
-
-    while(tx_ser_queue.full() == true);
-    auto tx_str_sptr = tx_ser_queue.alloc();
-    *tx_str_sptr = tx_str;
-    tx_ser_queue.put(tx_str_sptr);
+    auto ser_msg_sptr = shared_ptr<SerialMsg>();
+    *ser_msg_sptr = SerialMsg_init_zero;
+    ser_msg_sptr->has_dbg_msg = true;
+    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str, 256);      
+    while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
+    tx_ser_queue_lock.lock();
+    tx_ser_queue.push_back(ser_msg_sptr);
+    tx_ser_queue_lock.unlock();
 
     va_end(args);
     return 0;
@@ -320,11 +306,14 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
 void rx_frame_ser_thread_fn(void) {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
-        MbedJSONValue json;
-        rx_frame_sptr->saveToJSON(json);
-        json["Frame Type"] = "RX";
-        auto json_str = make_shared<string>(json.serialize());
-        json_str->push_back('\n');
-        enqueue_mail<std::shared_ptr<string>>(tx_ser_queue, json_str);	
+        auto ser_msg_sptr = shared_ptr<SerialMsg>();
+        *ser_msg_sptr = SerialMsg_init_zero;
+        ser_msg_sptr->has_data_msg = true;
+        rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
+        ser_msg_sptr->data_msg.type = DataMsg_Type_RX;
+        while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
+        tx_ser_queue_lock.lock();
+        tx_ser_queue.push_back(ser_msg_sptr);
+        tx_ser_queue_lock.unlock();
     }
 }

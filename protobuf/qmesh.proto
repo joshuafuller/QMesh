@@ -168,11 +168,15 @@ message ErrorMsg {
 }
 
 message DataMsg {
-  uint32 type = 1;
+  enum Type {
+    TX = 0;
+    RX = 1;
+  }
+  Type type = 1;
   uint32 stream_id = 2;
   uint32 ttl = 3;
   uint32 sender = 4;
   uint32 sym_offset = 5;
   bytes payload = 6 [(nanopb).max_size = 256];
-  
+  uint32 crc = 7; 
 }

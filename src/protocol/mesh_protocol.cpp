@@ -200,7 +200,7 @@ void mesh_protocol_fsm(void) {
                     if(pkt_status == PKT_OK) {
                         total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
                         auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
-                        rx_frame_sptr->setSender(my_addr);
+                        rx_frame_sptr->setSender(radio_cb.address);
                         rx_frame_sptr->incrementTTL();
 						rx_frame_sptr->tx_frame = false;
                         if(checkRedundantPkt(rx_frame_sptr)) {
