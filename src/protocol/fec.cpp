@@ -27,18 +27,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 
 static correct_convolutional_polynomial_t libfec_r12_7_polynomial[] = {V27POLYA, V27POLYB};
-static correct_convolutional_polynomial_t libfec_r12_9_polynomial[] = {V29POLYA, V29POLYB};
+//static correct_convolutional_polynomial_t libfec_r12_9_polynomial[] = {V29POLYA, V29POLYB};
 static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA, V39POLYB, V39POLYC};
 static correct_convolutional_polynomial_t libfec_r16_15_polynomial[] = {V615POLYA, V615POLYB, V615POLYC,
                         V615POLYD, V615POLYE, V615POLYF};
 static correct_convolutional_polynomial_t conv_r12_6_polynomial[] = {073, 061};
-static correct_convolutional_polynomial_t conv_r12_7_polynomial[] = {0161, 0127};
+//static correct_convolutional_polynomial_t conv_r12_7_polynomial[] = {0161, 0127};
 static correct_convolutional_polynomial_t conv_r12_8_polynomial[] = {0225, 0373};
 static correct_convolutional_polynomial_t conv_r12_9_polynomial[] = {0767, 0545};
 static correct_convolutional_polynomial_t conv_r13_6_polynomial[] = {053, 075, 047};
 static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153, 0121};
 static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257, 0351};
-static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};   
+//static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};   
 
 
 void testFEC(void) {
@@ -146,9 +146,9 @@ void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t>
     vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
     copy(bytes.begin(), bytes.end(), new_bytes_preint.begin());
     //while(1);
-    int32_t bit_idx = 0;
-    for(int32_t row = 0; row < int_params.row; row++) {
-        for(int32_t col = 0; col < int_params.col; col++) {
+    uint32_t bit_idx = 0;
+    for(uint32_t row = 0; row < int_params.row; row++) {
+        for(uint32_t col = 0; col < int_params.col; col++) {
             bool bit = getBit(new_bytes_preint, row + col*int_params.row);
             setBit(bit, bit_idx++, new_bytes_int);
         }
@@ -162,9 +162,9 @@ void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t>
 void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) {
     MBED_ASSERT(bytes_int.size() == int_params.bytes);
     vector<uint8_t> new_bytes_deint(bytes_int.size(), 0x00);
-    int32_t bit_idx = 0;
-    for(int32_t row = 0; row < int_params.row; row++) {
-        for(int32_t col = 0; col < int_params.col; col++) {
+    uint32_t bit_idx = 0;
+    for(uint32_t row = 0; row < int_params.row; row++) {
+        for(uint32_t col = 0; col < int_params.col; col++) {
             bool bit = getBit(bytes_int, bit_idx++);
             setBit(bit, row + col*int_params.row, new_bytes_deint);
         }
@@ -250,8 +250,8 @@ void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "Testing the correctness...\r\n");
     int correct_test = 0;
     int incorrect_test = 0;
-    for(int j = 0; j < 10; j++) {
-        for(int i = 0; i < Frame::size(); i++) {
+    for(uint32_t j = 0; j < 10; j++) {
+        for(uint32_t i = 0; i < Frame::size(); i++) {
             msg_data[i] = rand();    
         }
         encode(msg_data, enc_data);
@@ -377,7 +377,7 @@ int32_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     int32_t conv_len = (int32_t) ceilf((float) correct_convolutional_encode(corr_con, msg.data(), 
             msg.size(), conv_msg.data())/8.0f);
     MBED_ASSERT(conv_len == conv_params.bytes);
-    MBED_ASSERT(conv_msg.size() == conv_params.bytes);
+    MBED_ASSERT((int32_t) conv_msg.size() == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_msg(int_params.bytes, 0);
     copy(conv_msg.begin(), conv_msg.end(), int_msg.begin());
@@ -395,8 +395,7 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     // Reed-Solomon encode
     MBED_ASSERT(msg.size() == msg_len);
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
-    int32_t rs_size = correct_reed_solomon_encode(rs_con, msg.data(), msg_len, 
-                                                    rs_enc_msg.data());
+    correct_reed_solomon_encode(rs_con, msg.data(), msg_len, rs_enc_msg.data());
     //debug_printf(DBG_INFO, "rs_size is %d %d %d %d\r\n", msg_len, rs_size, rs_enc_msg_size,
     //            conv_params.bytes);
     // Convolutional encode
@@ -404,7 +403,7 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
                             rs_enc_msg_size, conv_enc_msg.data());
     MBED_ASSERT(conv_enc_len = conv_params.bits);
-    MBED_ASSERT(conv_enc_msg.size() == conv_params.bytes);
+    MBED_ASSERT((int32_t) conv_enc_msg.size() == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);
     //debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", int_enc_msg.size());
@@ -422,12 +421,12 @@ int32_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg
 	MBED_ASSERT(enc_msg.size() == enc_size);
 	vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
+    MBED_ASSERT((int32_t) deint_msg.size() == conv_params.bytes);
     // Convolutional decode
     dec_msg.resize(msg_len);
     int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, dec_msg.data());
-    MBED_ASSERT(dec_size == msg_len);
+    MBED_ASSERT(dec_size == (int32_t) msg_len);
     return dec_size;
 }
 
@@ -437,18 +436,16 @@ int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg)
     MBED_ASSERT(enc_msg.size() == enc_size);
     vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(deint_msg.size() == conv_params.bytes);
+    MBED_ASSERT((int32_t) deint_msg.size() == conv_params.bytes);
     // Convolutional decode
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     size_t deconv_bytes = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, rs_enc_msg.data());
-    MBED_ASSERT(deconv_bytes == rs_enc_msg_size);
-    MBED_ASSERT(rs_enc_msg.size() == rs_enc_msg_size);
+    MBED_ASSERT((int32_t) deconv_bytes == rs_enc_msg_size);
+    MBED_ASSERT((int32_t) rs_enc_msg.size() == rs_enc_msg_size);
     // Reed-Solomon decode
     dec_msg.resize(msg_len);  
-    int32_t rs_len = correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), 
-                        rs_enc_msg_size, dec_msg.data());
-    //MBED_ASSERT(rs_len == msg_len);
+    correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg_size, dec_msg.data());
 
     MBED_ASSERT(dec_msg.size() == msg_len);
     return dec_msg.size();

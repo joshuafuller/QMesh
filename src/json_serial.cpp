@@ -46,7 +46,7 @@ void tx_serial_thread_fn(void) {
         SerialMsg ser_msg = *ser_msg_sptr;
         pb_byte_t buffer[SerialMsg_size];
         pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-        bool status = pb_encode(&stream, SerialMsg_fields, &ser_msg);
+        pb_encode(&stream, SerialMsg_fields, &ser_msg);
 
         uint16_t delim = 0xBEEF;
         size_t buf_size = stream.bytes_written;
@@ -154,7 +154,7 @@ int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
     if(fread((char *) &entry_size, 1, sizeof(entry_size), f) != sizeof(entry_size)) {
         return -1;
     }
-    pb_byte_t entry_bytes[entry_size];
+    pb_byte_t entry_bytes[SerialMsg_size];
     if(fread((char *) &entry_bytes, 1, entry_size, f) != sizeof(entry_size)) {
         return -2;
     }
@@ -170,7 +170,7 @@ int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
 }
 
 void rx_serial_thread_fn(void) {
-	FILE *f;
+	FILE *f = NULL;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
@@ -210,7 +210,7 @@ void rx_serial_thread_fn(void) {
         }
         SerialMsg ser_msg = SerialMsg_init_zero;
         pb_istream_t stream = pb_istream_from_buffer(rx_buf.data(), rx_buf.size());
-        bool status = pb_decode(&stream, SerialMsg_fields, &ser_msg);
+        pb_decode(&stream, SerialMsg_fields, &ser_msg);
         if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
             SerialMsg out_msg = SerialMsg_init_zero;
             out_msg.type = SerialMsg_Type_CONFIG;
@@ -299,7 +299,6 @@ void rx_serial_thread_fn(void) {
             reboot_system();
         }
         else if(ser_msg.type == SerialMsg_Type_READ_LOG) {
-            static int logfile_count, cur_logfile;
             static vector<string> logfile_names;
             stay_in_management = true;
             while(current_mode == BOOTING);

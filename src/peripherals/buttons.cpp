@@ -48,7 +48,7 @@ void button_fn(void) {
     FILE *f = fopen("/fs/low_power.mode", "r");
     if(f) {
         fclose(f);
-        int remove_results = fs.remove("low_power.mode");
+        fs.remove("low_power.mode");
         mbed_file_handle(STDIN_FILENO)->enable_input(true);
         //gps_serial.enable_input(true);
         oled->displayOn();

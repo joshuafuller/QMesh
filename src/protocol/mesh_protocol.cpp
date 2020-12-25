@@ -323,9 +323,6 @@ string beacon_msg;
  */
 extern time_t boot_timestamp;
 void beacon_fn(void) {
-    time_t cur_time;
-    time(&cur_time);
-    time_t uptime = cur_time - boot_timestamp;
     auto beacon_frame_sptr = make_shared<Frame>();
     string beacon_msg(radio_cb.net_cfg.beacon_msg);
     beacon_frame_sptr->setBeaconPayload(beacon_msg);

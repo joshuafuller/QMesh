@@ -69,7 +69,6 @@ static void rx_preamble_det_cb(void);
 static void fhss_change_channel_cb(uint8_t current_channel);
 
 shared_ptr<FEC> frame_fec;  
-static DeepSleepLock *deep_sleep_lock;
 
 void send_pocsag_msg(string &msg) {
     char *data = (char *) malloc(msg.length()+1);
@@ -274,16 +273,6 @@ static void rx_done_cb(uint8_t const *payload, shared_ptr<list<pair<uint32_t, ui
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
     //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
-}
-
-
-static void cad_done_cb(const bool cad_detected) {
-    if(!cad_detected) {
-        radio.start_cad();
-    }
-    else {
-
-    }
 }
 
 
