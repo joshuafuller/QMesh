@@ -61,7 +61,7 @@ void tx_serial_thread_fn(void) {
         memcpy((char *) line_buffer+sizeof(delim)+sizeof(buf_size)+stream.bytes_written, 
                 (char *) crc, sizeof(crc));  
 
-        for(int i = 0; i < sizeof(line_buffer); i++) {
+        for(unsigned int i = 0; i < sizeof(line_buffer); i++) {
             fputc(line_buffer[i], stdout);
         }
     }
@@ -158,7 +158,8 @@ int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
     if(fread((char *) &entry_bytes, 1, entry_size, f) != sizeof(entry_size)) {
         return -2;
     }
-    ser_msg = SerialMsg_init_zero;
+    SerialMsg zero_ser_msg = SerialMsg_init_zero;
+    ser_msg = zero_ser_msg;
     pb_istream_t stream = pb_istream_from_buffer(entry_bytes, entry_size);
     if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
         return -3;

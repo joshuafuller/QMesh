@@ -34,7 +34,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern SysCfgMsg radio_cb;
 
-static uint8_t enc_buf[512], dec_buf[256];
 
 // Special debug printf. Prepends "[-] " to facilitate using the same
 //  UART for both AT commands as well as debug commands.

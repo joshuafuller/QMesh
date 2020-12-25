@@ -15,7 +15,7 @@ extern "C" {
  *  @param size Size in bytes of the desired allocation.
  */
  static const int pool_size = 0x1C000;
- static char mpool[pool_size] __attribute__((section (".DtcmRamSection")));
+ static char mpool[0x1C000] __attribute__((section (".DtcmRamSection")));
  static int mpool_pos = 0;
  void *malloc_ot(size_t size) {
     // Make the allocation aligned on a 32-bit boundary

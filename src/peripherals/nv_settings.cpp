@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include "MbedJSONValue.hpp"
@@ -45,8 +46,8 @@ extern Adafruit_SSD1306_I2c *oled;
 
 
 void rescue_filesystem(void) {
-    int err = bd.init();
-	err = fs.reformat(&bd);
+    bd.init();
+	fs.reformat(&bd);
     ThisThread::sleep_for(2000);
     reboot_system();
 }
@@ -120,12 +121,14 @@ void load_settings_from_flash(void) {
     if(!f) {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
         f = fopen("/fs/settings.bin", "w");
-        radio_cb = SysCfgMsg_init_zero;
+        SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
+        radio_cb = sys_cfg_msg_zero;
         radio_cb.mode = SysCfgMsg_Mode_NORMAL;
         radio_cb.address = DEFAULT_ADDRESS;
         
         radio_cb.has_radio_cfg = true;
-        radio_cb.radio_cfg = RadioCfg_init_zero;
+        RadioCfg radio_cfg_zero = RadioCfg_init_zero;
+        radio_cb.radio_cfg = radio_cfg_zero;
         radio_cb.radio_cfg.type = RadioCfg_Type_LORA;
         radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
         radio_cb.radio_cfg.frequencies_count = 1;
@@ -133,34 +136,39 @@ void load_settings_from_flash(void) {
         radio_cb.radio_cfg.tx_power = RADIO_POWER;
 
         radio_cb.radio_cfg.has_lora_cfg = true;
-        radio_cb.radio_cfg.lora_cfg = LoraCfg_init_zero;
+        LoraCfg lora_cfg_zero = LoraCfg_init_zero;
+        radio_cb.radio_cfg.lora_cfg = lora_cfg_zero;
         radio_cb.radio_cfg.lora_cfg.bw = RADIO_BANDWIDTH;
         radio_cb.radio_cfg.lora_cfg.cr = RADIO_CODERATE;
         radio_cb.radio_cfg.lora_cfg.sf = RADIO_SF;
         radio_cb.radio_cfg.lora_cfg.preamble_length = RADIO_PREAMBLE_LEN;
 
         radio_cb.has_net_cfg = true;
-        radio_cb.net_cfg = NetCfg_init_zero;
+        NetCfg net_cfg_zero = NetCfg_init_zero;
+        radio_cb.net_cfg = net_cfg_zero;
         string def_msg = "KG5VBY Default Message";
         memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
         radio_cb.net_cfg.beacon_interval = 600;
         radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
 
         radio_cb.has_fec_cfg = true;
-        radio_cb.fec_cfg = FECCfg_init_zero;
+        FECCfg FECCfg_zero = FECCfg_init_zero;
+        radio_cb.fec_cfg = FECCfg_zero;
         radio_cb.fec_cfg.type = FECCfg_Type_RSVGOLAY;
         radio_cb.fec_cfg.conv_order = FEC_CONV_ORDER;
         radio_cb.fec_cfg.conv_rate = FEC_CONV_RATE;
         radio_cb.fec_cfg.rs_num_roots = FEC_RS_NUM_ROOTS;
 
         radio_cb.has_pocsag_cfg = true;
-        radio_cb.pocsag_cfg = POCSAGCfg_init_zero;
+        POCSAGCfg pocsag_cfg_zero = POCSAGCfg_init_zero;
+        radio_cb.pocsag_cfg = pocsag_cfg_zero;
         radio_cb.pocsag_cfg.enabled = true;
         radio_cb.pocsag_cfg.frequency = 439987500;
         radio_cb.pocsag_cfg.beacon_interval = 600;
 
         radio_cb.has_test_cfg = true;
-        radio_cb.test_cfg = TestCfg_init_zero;
+        TestCfg test_cfg_zero = TestCfg_init_zero;
+        radio_cb.test_cfg = test_cfg_zero;
         radio_cb.test_cfg.cw_test_mode = false;
         radio_cb.test_cfg.preamble_test_mode = false;
         radio_cb.test_cfg.test_fec = false;
@@ -169,7 +177,7 @@ void load_settings_from_flash(void) {
 
         pb_byte_t buffer[SysCfgMsg_size];
         pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-        bool status = pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
+        pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
         debug_printf(DBG_INFO, "Settings file is %d bytes\r\n", stream.bytes_written);
         fwrite(stream.state, 1, stream.bytes_written, f);   
         fflush(f);
@@ -187,7 +195,8 @@ void load_settings_from_flash(void) {
     fflush(f);
     fclose(f);
     pb_istream_t stream = pb_istream_from_buffer(cfg_buf, SysCfgMsg_size);
-    radio_cb = SysCfgMsg_init_zero;
+    SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
+    radio_cb = sys_cfg_msg_zero;
     bool status = pb_decode(&stream, SysCfgMsg_fields, &radio_cb);
     MBED_ASSERT(status);
 
@@ -234,7 +243,7 @@ void save_settings_to_flash(void) {
     FILE *f = fopen("/fs/settings.bin", "w"); 
     pb_byte_t buffer[SysCfgMsg_size];
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    bool status = pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
+    pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
     debug_printf(DBG_INFO, "Settings file is %d bytes\r\n", stream.bytes_written);
     MBED_ASSERT(stream.bytes_written == SysCfgMsg_size);
     fwrite(stream.state, 1, stream.bytes_written, f);   
@@ -335,7 +344,7 @@ void nv_log_fn(void) {
         if(radio_cb.gps_en) {
             log_msg.has_gps_msg = true;
             float gps_lat, gps_lon;
-            bool gps_valid = gpsd_get_coordinates(gps_lat, gps_lon);
+            gpsd_get_coordinates(gps_lat, gps_lon);
             log_msg.gps_msg.valid = true;
             log_msg.gps_msg.lat = gps_lat;
             log_msg.gps_msg.lon = gps_lon;

@@ -26,6 +26,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include "mem_trace.hpp"
 
+static correct_convolutional_polynomial_t libfec_r12_7_polynomial[] = {V27POLYA, V27POLYB};
+static correct_convolutional_polynomial_t libfec_r12_9_polynomial[] = {V29POLYA, V29POLYB};
+static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA, V39POLYB, V39POLYC};
+static correct_convolutional_polynomial_t libfec_r16_15_polynomial[] = {V615POLYA, V615POLYB, V615POLYC,
+                        V615POLYD, V615POLYE, V615POLYF};
+static correct_convolutional_polynomial_t conv_r12_6_polynomial[] = {073, 061};
+static correct_convolutional_polynomial_t conv_r12_7_polynomial[] = {0161, 0127};
+static correct_convolutional_polynomial_t conv_r12_8_polynomial[] = {0225, 0373};
+static correct_convolutional_polynomial_t conv_r12_9_polynomial[] = {0767, 0545};
+static correct_convolutional_polynomial_t conv_r13_6_polynomial[] = {053, 075, 047};
+static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153, 0121};
+static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257, 0351};
+static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};   
+
 
 void testFEC(void) {
     vector<shared_ptr<FEC>> test_fecs;
@@ -106,7 +120,7 @@ void testFEC(void) {
 }
 
 
-int FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+int32_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     MBED_ASSERT(msg.size() == msg_len);
     enc_msg.resize(int_params.bytes);
     copy(msg.begin(), msg.end(), enc_msg.begin());
@@ -116,7 +130,7 @@ int FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) 
 }
 
 
-int FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+int32_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
     MBED_ASSERT(enc_msg.size() == enc_size);
     vector<uint8_t> int_msg(enc_size, 0);
     deinterleaveBits(enc_msg, dec_msg);

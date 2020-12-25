@@ -28,6 +28,7 @@
 #include "mbed.h"
 #include "cal_timer.hpp"
 #include <list>
+#include <memory>
 
 /**
  * Structure to hold RF controls for LoRa Radio.

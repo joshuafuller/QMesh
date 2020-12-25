@@ -19,8 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <mbed.h>
 #include <ATCmdParser.h>
 #include "serial_data.hpp"
-#include "mbedtls/platform.h"
-#include "mbedtls/base64.h"
 #include <string>
 #include <vector>
 #include "fec.hpp"
@@ -51,11 +49,11 @@ size_t Frame::codedSize(void) {
 }
 
 void Frame::serialize(vector<uint8_t> &ser_frame) {
-    for(int i = 0; i < sizeof(hdr); i++) {
+    for(size_t i = 0; i < sizeof(hdr); i++) {
         ser_frame.push_back(((uint8_t *) &hdr)[i]);
     }
     copy(data.begin(), data.end(), back_inserter(ser_frame));
-    for(int i = 0; i < sizeof(crc); i++) {
+    for(size_t i = 0; i < sizeof(crc); i++) {
         ser_frame.push_back(crc.b[i]);
     }
 }
@@ -111,7 +109,7 @@ uint16_t Frame::calcCRC(void) {
     MbedCRC<POLY_16BIT_CCITT, 16> ct;
     uint32_t crc = 0;
     vector<uint8_t> crc_buf;
-    for(int i = 0; i < sizeof(hdr.cons_subhdr); i++) {
+    for(size_t i = 0; i < sizeof(hdr.cons_subhdr); i++) {
         crc_buf.push_back(((uint8_t *) &hdr.cons_subhdr)[i]);
     }
     copy(data.begin(), data.end(), back_inserter(crc_buf));
@@ -142,7 +140,7 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
         return pkt_status;
     }
     // Step one: check the size of the packet
-    if(Frame::size() != bytes_dec) {
+    if((ssize_t) Frame::size() != bytes_dec) {
         //debug_printf(DBG_INFO, "Bad packet size\r\n");
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
@@ -151,7 +149,7 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     memcpy(&hdr, dec_buf.data(), sizeof(hdr));
     data.clear();
     copy(dec_buf.begin()+sizeof(hdr), dec_buf.end()-sizeof(crc), back_inserter(data));
-    for(int i = 0; i < sizeof(crc); i++) {
+    for(size_t i = 0; i < sizeof(crc); i++) {
         crc.b[i] = *(dec_buf.begin()+sizeof(hdr)+data.size()+i);
     }
     // Step three: check the payload CRC
@@ -245,7 +243,8 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     auto ser_msg_sptr = shared_ptr<SerialMsg>();
-    *ser_msg_sptr = SerialMsg_init_zero;
+    SerialMsg ser_msg_zero = SerialMsg_init_zero;
+    *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
     sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
     while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
@@ -290,7 +289,8 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     auto ser_msg_sptr = shared_ptr<SerialMsg>();
-    *ser_msg_sptr = SerialMsg_init_zero;
+    SerialMsg ser_msg_zero = SerialMsg_init_zero;
+    *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
     strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str, 256);      
     while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
@@ -307,7 +307,8 @@ void rx_frame_ser_thread_fn(void) {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
         auto ser_msg_sptr = shared_ptr<SerialMsg>();
-        *ser_msg_sptr = SerialMsg_init_zero;
+        SerialMsg ser_msg_zero = SerialMsg_init_zero;
+        *ser_msg_sptr = ser_msg_zero;
         ser_msg_sptr->has_data_msg = true;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
         ser_msg_sptr->data_msg.type = DataMsg_Type_RX;

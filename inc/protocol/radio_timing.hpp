@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RADIO_TIMING_HPP
 
 #include "mbed.h"
+#include <memory>
 
 extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; /// GPIO signals to monitor timing accuracy/jitter
 extern DigitalOut rssi_mon;

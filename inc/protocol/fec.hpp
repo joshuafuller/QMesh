@@ -40,16 +40,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //   and vice-versa
 #define V27POLYA 0155
 #define V27POLYB 0117
+#if 0
 static correct_convolutional_polynomial_t libfec_r12_7_polynomial[] = {V27POLYA, V27POLYB};
+#endif
 
 #define V29POLYA 0657
 #define V29POLYB 0435
+#if 0
 static correct_convolutional_polynomial_t libfec_r12_9_polynomial[] = {V29POLYA, V29POLYB};
+#endif
 
 #define V39POLYA 0755
 #define V39POLYB 0633
 #define V39POLYC 0447
+#if 0
 static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA, V39POLYB, V39POLYC};
+#endif
 
 #define V615POLYA 042631
 #define V615POLYB 047245
@@ -57,9 +63,10 @@ static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA,
 #define V615POLYD 073363
 #define V615POLYE 077267
 #define V615POLYF 064537
+
+#if 0
 static correct_convolutional_polynomial_t libfec_r16_15_polynomial[] = {V615POLYA, V615POLYB, V615POLYC,
                         V615POLYD, V615POLYE, V615POLYF};
-
 static correct_convolutional_polynomial_t conv_r12_6_polynomial[] = {073, 061};
 static correct_convolutional_polynomial_t conv_r12_7_polynomial[] = {0161, 0127};
 static correct_convolutional_polynomial_t conv_r12_8_polynomial[] = {0225, 0373};
@@ -68,6 +75,7 @@ static correct_convolutional_polynomial_t conv_r13_6_polynomial[] = {053, 075, 0
 static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153, 0121};
 static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257, 0351};
 static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};                        
+#endif
 
 /**
  * Performs some testing of the different Forward Error Correction algorithms.
@@ -81,8 +89,8 @@ void testFEC(void);
 class FEC {
 protected:
     string name;
-    int msg_len;
-    int enc_size;
+    size_t msg_len;
+    size_t enc_size;
 
 public:
     /// Constructor.
@@ -134,8 +142,8 @@ class FECInterleave : public FEC {
 protected:
     struct {
         float bits_f, row_f, col_f;
-        int32_t bits, bytes, row, col;   
-        int32_t pre_bytes;
+        uint32_t bits, bytes, row, col;   
+        uint32_t pre_bytes;
     } int_params;
     void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int);
     void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint);
