@@ -1,0 +1,236 @@
+[1;31;40mWATCHDOG set with prescaler:256 reload value: 0x2FDA - timeout:69.688889[1;37;40m
+[1;31;40mHello[1;37;40m
+[1;32;40m[+] INFO -- Starting serial threads...[1;37;40m
+[1;32;40m[+] INFO -- Serial threads started[1;37;40m
+Status Msg: BOOTING
+[1;32;40m[+] INFO -- Starting LibAPRS...[1;37;40m
+[1;32;40m[+] INFO -- LibAPRS Settings:[1;37;40m
+[1;32;40m[+] INFO -- Callsign: NOCALL-1[1;37;40m
+[1;32;40m[+] INFO -- Destination: APZMDM-0[1;37;40m
+[1;32;40m[+] INFO -- Path1: WIDE1-1[1;37;40m
+[1;32;40m[+] INFO -- Path2: WIDE2-2[1;37;40m
+[1;32;40m[+] INFO -- Message dst: N/A--1[1;37;40m
+[1;32;40m[+] INFO -- TX Preamble: 0x     15e[1;37;40m
+[1;32;40m[+] INFO -- TX Tail:     0x      32[1;37;40m
+[1;32;40m[+] INFO -- Symbol table: Normal[1;37;40m
+[1;32;40m[+] INFO -- Symbol:       n[1;37;40m
+[1;32;40m[+] INFO -- Power:        2[1;37;40m
+[1;32;40m[+] INFO -- Height:       [1;37;40m
+[1;32;40m[+] INFO -- Gain:         [1;37;40m
+[1;32;40m[+] INFO -- Directivity:  [1;37;40m
+[1;32;40m[+] INFO -- Latitude:     5530.80N[1;37;40m
+[1;32;40m[+] INFO -- Longitude:   01143.89E[1;37;40m
+[1;32;40m[+] INFO -- Now mounting the block device[1;37;40m
+[1;32;40m[+] INFO -- bd.init -> 0  [1;37;40m
+[1;32;40m[+] INFO -- bd size: 1677721[1;37;40m
+[1;32;40m[+] INFO -- bd read size: [1;37;40m
+[1;32;40m[+] INFO -- bd program size: [1;37;40m
+[1;32;40m[+] INFO -- bd erase size: 409[1;37;40m
+[1;32;40m[+] INFO -- Now mounting the filesystem...[1;37;40m
+[1;32;40m[+] WARN -- OK[1;37;40m
+[1;32;40m[+] INFO -- Opening the root directory... [1;37;40m
+[1;32;40m[+] INFO -- OK[1;37;40m
+[1;32;40m[+] INFO -- /fs/settings.json, Size: 433[1;37;40m
+[1;32;40m[+] INFO -- /fs/boot_log.json, Size: 3150[1;37;40m
+[1;32;40m[+] INFO -- /fs/log, Size: 0[1;37;40m
+[1;32;40m[+] INFO -- /fs/log/logfile001.json, Size: 1048643[1;37;40m
+[1;32;40m[+] INFO -- /fs/log/logfile000.json, Size: 1048626[1;37;40m
+[1;32;40m[+] INFO -- /fs/log/logfile.json, Size: 190560[1;37;40m
+[1;32;40m[+] INFO -- Stats on settings.json[1;37;40m
+[1;32;40m[+] INFO -- Size is 433[1;37;40m
+[1;32;40m[+] INFO -- Read from file: {"Mode":"Mesh Normal","Address":1,"Frequency":433000000,"BW":1,"CR":0,"SF":9,"Preamble Length":16,"Preamble Slots":1,"Beacon Message":"KG5VBY Beacon Test","Beacon Interval":2,"Payload Length":18,"FEC Algorithm":"RSV","Conv Rate":2,"Conv Order":7,"Reed-Solomon Number Roots":8,"TX Power":20,"CW Test Mode":0,"Preamble Test Mode":0,"Test FEC":0,"Number Offsets":4,"Has GPS":0,"POCSAG Frequency":439987500,"POCSAG Beacon Interval":1200}O[1;37;40m
+[1;32;40m[+] INFO -- Mode: Mesh Normal[1;37;40m
+[1;32;40m[+] INFO -- Address: 1[1;37;40m
+[1;32;40m[+] INFO -- Frequency: 433000000[1;37;40m
+[1;32;40m[+] INFO -- BW: 1[1;37;40m
+[1;32;40m[+] INFO -- CR: 0[1;37;40m
+[1;32;40m[+] INFO -- SF: 9[1;37;40m
+[1;32;40m[+] INFO -- Preamble Length: 16[1;37;40m
+[1;32;40m[+] INFO -- Preamble Slots: 1[1;37;40m
+[1;32;40m[+] INFO -- Beacon Message: KG5VBY Beacon Test[1;37;40m
+[1;32;40m[+] INFO -- Beacon Interval: 2[1;37;40m
+[1;32;40m[+] INFO -- Payload Length: 18[1;37;40m
+[1;32;40m[+] INFO -- Number of timing offset increments: 4[1;37;40m
+[1;32;40m[+] INFO -- Has a GPS: 0[1;37;40m
+[1;32;40m[+] INFO -- POCSAG frequency 439987500[1;37;40m
+[1;32;40m[+] INFO -- POCSAG Beacon Interval 1200[1;37;40m
+[1;32;40m[+] INFO -- Wrote {"Time String":"Thu Jan  1 00:19:57 1970\n"}
+[1;37;40m
+[1;32;40m[+] WARN -- starting the receive[1;37;40m
+Status Msg: MANAGEMENT
+Status Msg: RUNNING
+[1;32;40m[+] INFO -- Starting the NV logger[1;37;40m
+[1;32;40m[+] INFO -- Now opening the logfile[1;37;40m
+[1;32;40m[+] INFO -- First set[1;37;40m
+[1;32;40m[+] INFO -- opening the logfile[1;37;40m
+[1;32;40m[+] INFO -- logfile size is 190560[1;37;40m
+[1;32;40m[+] INFO -- Initializing the Radio[1;37;40m
+[1;32;40m[+] INFO -- Now initializing the radio[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x96; 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8f; 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x97; 0x02 0x00 0x01 0x40 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x89; 0x7f [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x9d; 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8a; 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x0740; 0x34 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x0741; 0x44 [1;37;40m
+[1;32;40m[+] INFO -- Radio BW is 1[1;37;40m
+[1;32;40m[+] INFO -- Radio SF is 9[1;37;40m
+[1;32;40m[+] INFO -- Radio CR is 0[1;37;40m
+[1;32;40m[+] INFO -- Radio Frequency is 433000000[1;37;40m
+[1;32;40m[+] INFO -- Radio Power is 20[1;37;40m
+[1;32;40m[+] INFO -- Radio Preamble Length is 16[1;37;40m
+[1;32;40m[+] INFO -- POCSAG Frequency is 439987500[1;37;40m
+[1;32;40m[+] INFO -- POCSAG Beacon Interval is 1200[1;37;40m
+[1;32;40m[+] INFO -- FEC algorithm is RSV[1;37;40m
+[1;32;40m[+] INFO -- Size of row is 13.000000 col is 15.000000[1;37;40m
+[1;32;40m[+] INFO -- Size of row is 20.000000 col is 20.000000[1;37;40m
+[1;32;40m[+] INFO -- Size of row is 22.000000 col is 24.000000[1;37;40m
+[1;32;40m[+] INFO -- Setting RX size to 66[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8a; 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8a; 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x0740; 0x14 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x0741; 0x24 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x98; 0x6b 0x6f [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x00 [1;37;40m
+[1;32;40m[+] INFO -- Starting the mesh protocol thread[1;37;40m
+[1;32;40m[+] INFO -- RSV FEC was chosen[1;37;40m
+[1;32;40m[+] INFO -- Size of row is 13.000000 col is 15.000000[1;37;40m
+[1;32;40m[+] INFO -- Size of row is 20.000000 col is 20.000000[1;37;40m
+[1;32;40m[+] INFO -- Size of row is 22.000000 col is 24.000000[1;37;40m
+[1;32;40m[+] INFO -- Current state is WAIT_FOR_EVENT[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x42 0x02 0x42 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x82; 0xff 0xff 0xff [1;37;40m
+[1;32;40m[+] INFO -- Time to chill...[1;37;40m
+[1;32;40m[+] INFO -- Starting the beacon[1;37;40m
+[1;32;40m[+] INFO -- Starting the POCSAG beacon[1;37;40m
+[1;32;40m[+] INFO -- Started everything[1;37;40m
+[1;32;40m[+] INFO -- beacon set[1;37;40m
+[1;32;40m[+] INFO -- Event received is 0[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0xc6 0xe0 [1;37;40m
+[1;32;40m[+] INFO -- Current state is TX_PACKET[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- Frame size is now 24[1;37;40m
+[1;32;40m[+] WARN -- Serialized frame size is now 24[1;37;40m
+[1;32;40m[+] INFO -- Sending 66 bytes[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x01 0x02 0x01 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: FIFO WRITE 0x60 0x0b 0xd9 0xfc 0x83 0xe0 0x28 0xdb 0xce 0xe2 0x9c 0xc4 0x04 0xeb 0xbe 0xc4 0x97 0xf4 0xe6 0xed 0x22 0x3a 0xf9 0xab 0xb6 0xaa 0x70 0xbe 0x2b 0x73 0x2a 0x03 0xbf 0x92 0x1c 0xa2 0xa2 0x96 0x7e 0xe2 0xce 0x3f 0x7e 0x5d 0x6f 0xa0 0xd9 0x45 0x0d 0x02 0x20 0x10 0x30 0x0e 0x49 0x68 0x46 0x71 0x07 0x5c 0xe6 0x50 0xef 0x6e 0x5a 0xdf [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x83; 0x02 0xee 0x00 [1;37;40m
+[1;32;40m[+] INFO -- beacon set again[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x02; 0xff 0xff [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x80; 0x01 [1;37;40m
+[1;32;40m[+] INFO -- Current timing offset is 3[1;37;40m
+[1;32;40m[+] INFO -- Current state is WAIT_FOR_EVENT[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x42 0x02 0x42 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x82; 0xff 0xff 0xff [1;37;40m
+[1;32;40m[+] INFO -- opening the logfile[1;37;40m
+[1;32;40m[+] INFO -- logfile size is 190781[1;37;40m
+[1;32;40m[+] INFO -- beacon set[1;37;40m
+[1;32;40m[+] INFO -- Event received is 0[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x71 0x80 [1;37;40m
+[1;32;40m[+] INFO -- Current state is TX_PACKET[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- Frame size is now 24[1;37;40m
+[1;32;40m[+] WARN -- Serialized frame size is now 24[1;37;40m
+[1;32;40m[+] INFO -- Sending 66 bytes[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x01 0x02 0x01 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: FIFO WRITE 0x6a 0x0b 0xed 0xf6 0x83 0x62 0x20 0xdb 0xd1 0xea 0x9c 0x04 0x0c 0xeb 0x7f 0xc4 0x97 0xcf 0xe6 0xed 0xc0 0x3a 0xf9 0x4b 0xb7 0xaa 0x9e 0xbf 0x2b 0x36 0x23 0x03 0x7f 0x9a 0x1c 0x78 0xa7 0x96 0x03 0xef 0xce 0xa1 0x7e 0x5d 0x00 0xa0 0xd9 0x15 0x0c 0x02 0x78 0x11 0x30 0x72 0x49 0x68 0x83 0x70 0x07 0xc7 0xe6 0x50 0xe8 0x6e 0x5a 0x73 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x83; 0x02 0xee 0x00 [1;37;40m
+[1;32;40m[+] INFO -- beacon set again[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x02; 0xff 0xff [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x80; 0x01 [1;37;40m
+[1;32;40m[+] INFO -- Current timing offset is 0[1;37;40m
+[1;32;40m[+] INFO -- Current state is WAIT_FOR_EVENT[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x42 0x02 0x42 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x82; 0xff 0xff 0xff [1;37;40m
+[1;32;40m[+] INFO -- opening the logfile[1;37;40m
+[1;32;40m[+] INFO -- logfile size is 191003[1;37;40m
+[1;32;40m[+] INFO -- beacon set[1;37;40m
+[1;32;40m[+] INFO -- Event received is 0[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x0f 0x48 0x80 [1;37;40m
+[1;32;40m[+] INFO -- Current state is TX_PACKET[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- Frame size is now 24[1;37;40m
+[1;32;40m[+] WARN -- Serialized frame size is now 24[1;37;40m
+[1;32;40m[+] INFO -- Sending 66 bytes[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x01 0x02 0x01 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: FIFO WRITE 0x68 0x0b 0x42 0xf0 0x83 0x8d 0x28 0xdb 0x8c 0xea 0x9c 0xc0 0x00 0xeb 0x4c 0xc0 0x97 0x5e 0xe2 0xed 0x26 0x3a 0xf9 0x13 0xb3 0xaa 0xaf 0xbb 0x2b 0xa9 0x29 0x03 0x6f 0x91 0x1c 0xde 0xa1 0x96 0x43 0xe0 0xce 0x50 0x79 0x5d 0x62 0xa1 0xd9 0x53 0x0b 0x02 0x6c 0x12 0x30 0x4c 0x48 0x68 0x08 0x70 0x07 0x41 0xe4 0x50 0x20 0x6d 0x5a 0x3a [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x83; 0x02 0xee 0x00 [1;37;40m
+[1;32;40m[+] INFO -- beacon set again[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x02; 0xff 0xff [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x80; 0x01 [1;37;40m
+[1;32;40m[+] INFO -- Current timing offset is 0[1;37;40m
+[1;32;40m[+] INFO -- Current state is WAIT_FOR_EVENT[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x42 0x02 0x42 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x82; 0xff 0xff 0xff [1;37;40m
+[1;32;40m[+] INFO -- opening the logfile[1;37;40m
+[1;32;40m[+] INFO -- logfile size is 191232[1;37;40m
+[1;32;40m[+] INFO -- beacon set[1;37;40m
+[1;32;40m[+] INFO -- Event received is 0[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0xc4 0xc0 [1;37;40m
+[1;32;40m[+] INFO -- Current state is TX_PACKET[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- Frame size is now 24[1;37;40m
+[1;32;40m[+] WARN -- Serialized frame size is now 24[1;37;40m
+[1;32;40m[+] INFO -- Sending 66 bytes[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8e; 0x14 0x04 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x01 0x02 0x01 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: FIFO WRITE 0x62 0x0b 0xd8 0xfa 0x83 0x75 0x28 0xdb 0xb2 0xe2 0x9c 0x62 0x04 0xeb 0x7c 0xc4 0x97 0x0e 0xe6 0xed 0xae 0x3a 0xf9 0xa5 0xb6 0xaa 0xb6 0xbe 0x2b 0x1d 0x28 0x03 0xf9 0x91 0x1c 0x0c 0xa0 0x96 0x08 0xe1 0xce 0xb6 0x7d 0x5d 0x43 0xa1 0xd9 0x5c 0x0e 0x02 0x70 0x13 0x30 0x16 0x48 0x68 0x15 0x71 0x07 0x3d 0xe4 0x50 0x0a 0x6d 0x5a 0x4c [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x83; 0x02 0xee 0x00 [1;37;40m
+[1;32;40m[+] INFO -- beacon set again[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x02; 0xff 0xff [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x80; 0x01 [1;37;40m
+[1;32;40m[+] INFO -- Current timing offset is 3[1;37;40m
+[1;32;40m[+] INFO -- Current state is WAIT_FOR_EVENT[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x08; 0x02 0x42 0x02 0x42 0x00 0x00 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8b; 0x09 0x05 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x8c; 0x00 0x10 0x01 0x42 0x00 0x00 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x82; 0xff 0xff 0xff [1;37;40m
+[1;32;40m[+] INFO -- opening the logfile[1;37;40m
+[1;32;40m[+] INFO -- logfile size is 191460[1;37;40m
+[1;32;40m[+] INFO -- beacon set[1;37;40m
+[1;32;40m[+] INFO -- Event received is 0[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x86; 0x1b 0x10 0x00 0x40 [1;37;40m
+[1;32;40m[+] INFO -- Current state is TX_PACKET[1;37;40m
+[1;32;40m[+] WARN -- SX1262: CMD WRITE 0x95; 0x04 0x07 0x00 0x01 [1;37;40m
+[1;32;40m[+] WARN -- SX1262: REG WRITE 0x08e7; 0x38 [1;37;40m

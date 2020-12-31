@@ -71,7 +71,7 @@ message SysCfgMsg {
   NetCfg net_cfg = 6;
   POCSAGCfg pocsag_cfg = 7;
   bool gps_en = 8;
-  bool log_en = 9;
+  bool log_packets_en = 9;
   bool boot_log_en = 10;
 }
 
@@ -126,6 +126,10 @@ message LogMsg {
   GPSMsg gps_msg = 13; 
 }
 
+message TimeMsg {
+  uint32 time = 1;
+}
+
 message SerialMsg {
   enum Type {
     GET_CONFIG = 0;
@@ -148,8 +152,9 @@ message SerialMsg {
     READ_BOOT_LOG_RETRY = 17;
     REPLY_BOOT_LOG = 18;
     CRC_ERR = 19;
-    ACK = 20;
-    ERR = 21;
+    SET_TIME = 20;
+    ACK = 21;
+    ERR = 22;
   }
   Type type = 1;
   bool retry = 2;
@@ -161,6 +166,7 @@ message SerialMsg {
   BootLogMsg boot_log_msg = 8;
   DataMsg data_msg = 9;
   ErrorMsg error_msg = 10;
+  TimeMsg time_msg = 11;
 }
 
 message ErrorMsg {

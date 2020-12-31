@@ -11,6 +11,7 @@ cr: 0
 sf: 9
 preamble_length: 16
 preamble_slots: 1
+payload_length: 32
 beacon_msg: 'KG5VBY Beacon Test'
 fec_algo: 'RSV'
 conv_rate: 2
@@ -20,9 +21,11 @@ cw_test_mode: 0
 preamble_test_mode: 0
 test_fec: 0
 num_offsets: 4
-has_gps: 0
+gps_en: 0
+pocsag_enabled: 0
 pocsag_freq: 439987500
 pocsag_beacon_interval: 120
-log_packets: 1
+log_packets_en: 1
+log_boot: 1
 
 ...

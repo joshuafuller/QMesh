@@ -61,8 +61,9 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_READ_BOOT_LOG_RETRY = 17,
     SerialMsg_Type_REPLY_BOOT_LOG = 18,
     SerialMsg_Type_CRC_ERR = 19,
-    SerialMsg_Type_ACK = 20,
-    SerialMsg_Type_ERR = 21
+    SerialMsg_Type_SET_TIME = 20,
+    SerialMsg_Type_ACK = 21,
+    SerialMsg_Type_ERR = 22
 } SerialMsg_Type;
 
 typedef enum _DataMsg_Type {

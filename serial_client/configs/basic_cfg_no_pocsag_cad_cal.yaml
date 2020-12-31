@@ -2,10 +2,10 @@
 
 frequency: 426000000
 frequencies: 
-        - 424000000
-        - 425000000
-        - 426000000
-        - 427000000
+        - 428000000
+        - 429000000
+        - 430000000
+        - 431000000
 bw: 1
 cr: 0
 sf: 9
@@ -26,6 +26,6 @@ pocsag_enabled: 0
 pocsag_freq: 439987500
 pocsag_beacon_interval: -1
 log_packets_en: 1
-log_boot: 1 
+log_boot: 1
 
 ...

@@ -22,16 +22,33 @@ import pika
 import sys
 import time
 import threading
+import qmesh_pb2
+import binascii
 
 ser = None
 params = pika.ConnectionParameters('127.0.0.1', heartbeat=600, 
         blocked_connection_timeout=300)
+        
+
+def make_slip_frame(frame):
+    out_frame = bytearray()
+    for cur_byte in frame:
+        if(cur_byte == FRAME_END or cur_byte == FRAME_ESC):
+            out_frame.append(FRAME_ESC)
+        out_frame.append(cur_byte)
+    out_frame.append(FRAME_END)
+    return bytearray(out_frame)
+
 
 # Callback whenever new received messages come in from the broker
 def input_cb(ch, method, properties, body):
     global ser
-    print(body)
-    ser.write(body)
+    frame = bytearray()
+    frame += body
+    crc = binascii.crc_hqx(frame)
+    crc_bytes = crc.to_bytes(2, byteorder="little")
+    frame += crc_bytes
+    ser.write(bytearray(frame))
 
 
 def output_thread_fn():
@@ -44,24 +61,60 @@ def output_thread_fn():
     channel.start_consuming()
 
 
-def input_thread_fn():
+class CRCError(Exception):
+    pass
+
+
+class ParseError(Exception):
+    pass
+
+
+FRAME_END = 0xC0
+FRAME_ESC = 0xDB
+FRAME_MAX_SIZE = 8192
+def get_slip_frame(ser):
+    # Initial pass: get to the next frame's delimiter
+    while(True):
+        cur_byte = ser.read(1)
+        next_byte = ser.read(1)
+        if(cur_byte == FRAME_ESC and next_byte == FRAME_END): continue
+        elif(next_byte == FRAME_END): break
+    # Extract bytes until we get to the next frame delimiter
+    frame = bytearray()
+    while(True):
+        if(len(frame) > FRAME_MAX_SIZE): # If we get too big, we need to retry
+            frame = bytearray()
+        cur_byte = ser.read(1)
+        if(cur_byte == FRAME_END): 
+            yield bytearray(frame)
+            frame = bytearray()
+        elif(cur_byte == FRAME_ESC):
+            frame.append(ser.read(1)) 
+        else:
+            frame.append(cur_byte)
+        
+
+def input_thread_fn(ser):
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.exchange_declare(exchange='board_output', exchange_type='fanout')
     global ser
-    while True:
-        try:
-            line = ser.readline();
-        except serial.serialutil.SerialException:
+    while(True):
+        frame_gen = get_slip_frame(ser)
+        for frame in frame_gen:
             try:
-                ser = serial.Serial(serial_port, baudrate=230400)
-            except serial.serialutil.SerialException:
-                print("Failed to open port. Trying again in 1s...")
-                time.sleep(1)
-            continue
-
-        print(line)
-        channel.basic_publish(exchange='board_output', routing_key='', body=line)
+                # First, get the SLIP frame
+                crc = int.from_bytes(frame[-2:-1], "little", signed=False)
+                calc_crc = binascii.crc_hqx(frame[:-2])
+                pld = frame[:-2]
+                if(calc_crc != crc): 
+                    raise CRCError
+                ser_msg = qmesh_pb2.SerialMsg()
+                ser_msg.ParseFromString(pld)
+                channel.basic_publish(exchange='board_output', routing_key='', 
+                                        body=ser_msg.SerializeToString())
+            except CRCError:
+                print("CRC Error detected")
 
 
 if __name__ == "__main__":

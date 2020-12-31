@@ -21,70 +21,34 @@ import time
 import json
 import base64
 import pika
+import qmesh_common
+import qmesh_pb2
 
 
 def dbg_process(ch, method, properties, body):
-    line = body.decode('utf-8')
-    parsed_line = {}
-    parsed_line["Type"] = ""
-    try: parsed_line = json.loads(line)
-    except Exception as e: pass
-    #print(parsed_line)
-    if parsed_line["Type"] == "Status":
-        cur_status = parsed_line["Status"]
-        print("Current status is " + parsed_line["Status"])
-        print("Current time is " + str(parsed_line["Time"]))
-        if parsed_line["Status"] == "MANAGEMENT":
-            print("Consuming done!\r\n")
-            ch.stop_consuming()
+    ser_msg = qmesh_pb2.SerialMsg()
+    ser_msg.ParseFromString(body)
+    if(ser_msg.type == ser_msg.STATUS):
+        qmesh_common.print_status_msg(ser_msg.status)
+        if(ser_msg.status.status == ser_msg.status.MANAGEMENT):
+            qmesh_common.channel.stop_consuming()
 
-# Set up the RabbitMQ connection
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
-channel.exchange_declare(exchange='board_output', exchange_type='fanout')
-result = channel.queue_declare(queue='', exclusive=True)
-queue_name = result.method.queue
-channel.queue_bind(exchange='board_output', queue=queue_name)
-channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=dbg_process)
+qmesh_common.setup_outgoing_rabbitmq(dbg_process)
 
-# Reboot the board
-msg_req = {}
-msg_req["Type"] = "Reboot"
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
-channel.start_consuming()
-
-msg_req = {}
-msg_req["Type"] = "Stay in Management"
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
-channel.start_consuming()
+qmesh_common.reboot_board()
+qmesh_common.channel.start_consuming()
+qmesh_common.stay_in_management()
 
 # Set the time
-msg_req = {}
-msg_req["Type"] = "Set Time"
-msg_req["Time"] = str(int(time.time()))
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-		body=bytes(msg_req_str.encode('ascii')))
-print(msg_req_str)
-channel.basic_consume(queue=queue_name, auto_ack=True, \
-       on_message_callback=dbg_process)
-channel.start_consuming()
+ser_msg = qmesh_pb2.SerialMsg()
+ser_msg.type = ser_msg.SET_TIME
+ser_msg.time_msg.time = int(time.time())
+qmesh_common.publish_msg(ser_msg)
+qmesh_common.channel.start_consuming()
 	
 # Reboot the board
-msg_req = {}
-msg_req["Type"] = "Reboot"
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
+qmesh_common.reboot_board()
+
 
 
 

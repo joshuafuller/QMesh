@@ -17,92 +17,48 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
-import time
-import json
-import base64
 import pika
+import qmesh_pb2
+import qmesh_common
 
 
 # Write out to file
 out_file = open("boot_log.json", 'w')
 
-
 def dbg_process(ch, method, properties, body):
-    line = body.decode('utf-8')
-    parsed_line = {}
-    parsed_line["Type"] = ""
-    try: parsed_line = json.loads(line)
-    except Exception as e: pass
-    print(parsed_line)
-    if parsed_line["Type"] == "Status":
-        cur_status = parsed_line["Status"]
-        print("Current status is " + parsed_line["Status"])
-        print("Current time is " + str(parsed_line["Time"]))
-        if parsed_line["Status"] == "MANAGEMENT":
-            print("Consuming done!\r\n")
-            ch.stop_consuming()
+    ser_msg = qmesh_pb2.SerialMsg()
+    ser_msg.ParseFromString(body)
+    if(ser_msg.type == ser_msg.STATUS):
+        qmesh_common.print_status_msg(ser_msg.status)
+        if(ser_msg.status.status == ser_msg.status.MANAGEMENT):
+            qmesh_common.channel.stop_consuming()
 			
-
 def log_process(ch, method, properties, body):
-    line = body.decode('utf-8')
-    parsed_line = {}
-    parsed_line["Type"] = ""
-    try: parsed_line = json.loads(line)
-    except Exception as e: pass
-    if parsed_line["Type"] == "Boot Log Entry":
-        print(parsed_line)
-        if parsed_line["Count"] == -1:
-            print("Finished reading in log entries")
+    ser_msg = qmesh_pb2.SerialMsg()
+    ser_msg.ParseFromString(body)
+    if(ser_msg.type == ser_msg.STATUS):
+        qmesh_common.print_status_msg(ser_msg.status)
+        if(ser_msg.status.status == ser_msg.status.MANAGEMENT):
+            qmesh_common.channel.stop_consuming()
+    elif(ser_msg.type == ser_msg.REPLY_BOOT_LOG):
+        if(ser_msg.log_msg.valid == False):
+            print("Finished reading in boot log entries")
             sys.exit(0)
         else:
-            out_file.write(str(parsed_line) + "\r\n")
+            log_msg_str = qmesh_common.print_bootlog_msg(ser_msg.log_msg)
+            out_file.write(log_msg_str)
             out_file.flush()
             ch.stop_consuming()
 
+qmesh_common.setup_outgoing_rabbitmq()
+qmesh_common.reboot_board()	
+qmesh_common.channel.start_consuming()
+qmesh_common.stay_in_management()
 
-# Set up the RabbitMQ connection
-print("Setting up RabbitMQ connection...\r\n")
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
-channel.exchange_declare(exchange='board_output', exchange_type='fanout')
-result = channel.queue_declare(queue='', exclusive=True)
-queue_name = result.method.queue
-channel.queue_bind(exchange='board_output', queue=queue_name)
-channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=dbg_process)
-
-# Reboot the board
-print("Rebooting board...\r\n")
-msg_req = {}
-msg_req["Type"] = "Reboot"
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
-channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=dbg_process)		
-channel.start_consuming()
-
-msg_req = {}
-msg_req["Type"] = "Stay in Management"
-msg_req_str = json.dumps(msg_req)
-msg_req_str += str("\n")
-channel.basic_publish(exchange='', routing_key='board_input', \
-        body=bytes(msg_req_str.encode('ascii')))
-channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=dbg_process)			
-channel.start_consuming()
-
-
-channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=log_process)	
 while True:
-    msg_req = {}
-    msg_req["Type"] = "Read Boot Log"
-    msg_req_str = json.dumps(msg_req)
-    msg_req_str += str("\n")
-    channel.basic_publish(exchange='', routing_key='board_input', body=msg_req_str)
-    channel.basic_consume(queue=queue_name, auto_ack=True, \
-        on_message_callback=log_process)	
-    channel.start_consuming()
-#    time.sleep(1)
+    ser_msg = qmesh_pb2.SerialMsg()
+    ser_msg.type = qmesh_pb2.SerialMsg.READ_BOOT_LOG
+    qmesh_common.publish_msg()
+    qmesh_common.channel.basic_consume(queue=qmesh_common.queue_name, auto_ack=True, \
+        on_message_callback=qmesh_common.log_process)	
+    qmesh_common.channel.start_consuming()
