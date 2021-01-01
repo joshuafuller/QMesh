@@ -37,6 +37,9 @@ Mutex tx_ser_queue_lock;
 list<shared_ptr<SerialMsg>> tx_ser_queue;
 
 void print_memory_info();
+
+static const uint8_t FRAME_END = 0xC0;
+static const uint8_t FRAME_ESC = 0xDB;
 void tx_serial_thread_fn(void) {
     for(;;) {
         tx_ser_queue_lock.lock();
@@ -48,22 +51,25 @@ void tx_serial_thread_fn(void) {
         pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
         pb_encode(&stream, SerialMsg_fields, &ser_msg);
 
-        uint16_t delim = 0xBEEF;
         size_t buf_size = stream.bytes_written;
         MbedCRC<POLY_32BIT_ANSI, 32> ct;
         uint32_t crc = 0;
-        uint8_t line_buffer[SerialMsg_size+sizeof(delim)+sizeof(buf_size)+sizeof(crc)];
+        uint8_t line_buffer[SerialMsg_size+sizeof(buf_size)+sizeof(crc)];
 
-        memcpy((char *) line_buffer, (char *) &delim, sizeof(delim));
-        memcpy((char *) line_buffer+sizeof(delim), (char *) &buf_size, sizeof(buf_size));
-        memcpy((char *) line_buffer+sizeof(delim)+sizeof(buf_size), buffer, SerialMsg_size);
-        ct.compute(line_buffer+sizeof(delim)+sizeof(buf_size), stream.bytes_written, &crc);
-        memcpy((char *) line_buffer+sizeof(delim)+sizeof(buf_size)+stream.bytes_written, 
-                (char *) crc, sizeof(crc));  
+        memcpy((char *) line_buffer, (char *) &buf_size, sizeof(buf_size));
+        memcpy((char *) line_buffer+sizeof(buf_size), buffer, SerialMsg_size);
+        ct.compute(line_buffer+sizeof(buf_size), stream.bytes_written, &crc);
+        memcpy((char *) line_buffer+sizeof(buf_size)+stream.bytes_written, (char *) crc, sizeof(crc));  
 
+        // SLIP-ify it
         for(unsigned int i = 0; i < sizeof(line_buffer); i++) {
-            fputc(line_buffer[i], stdout);
+            uint8_t cur_byte = line_buffer[i];
+            if(cur_byte == FRAME_END || cur_byte == FRAME_ESC) {
+                fputc(FRAME_ESC, stdout);
+            }
+            fputc(cur_byte, stdout);
         }
+        fputc(FRAME_END, stdout);
     }
 }
 
@@ -142,10 +148,84 @@ void get_next_line(FILE *f, string &str) {
 	}
 }
 
+int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry = false);
+int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
+    static SerialMsg last_ser_msg;
+    static size_t last_entry_size = 0;
+    vector<uint8_t> ser_data;
+    if(retry) {
+        ser_msg = last_ser_msg;
+        return (int) last_entry_size;
+    }
+    static bool first_time = true;
+    // Get the first frame
+    uint8_t last_byte, cur_byte = 0;
+    if(first_time) {
+        for(;;) {
+            last_byte = cur_byte;
+            if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
+                return -1;
+            }
+            if(cur_byte == FRAME_END && last_byte != FRAME_ESC) {
+                break;
+            }
+        }
+    }
+    for(;;) {
+        if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
+            return -1;
+        }
+        if(cur_byte == FRAME_ESC) {
+            if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
+                return -1;
+            }
+            ser_data.push_back(cur_byte);
+            MBED_ASSERT(ser_data.size() <= 1024);
+        } else if(cur_byte == FRAME_END) {
+            // Right now, we should have the payload as well as a two-byte CRC.
+            //  Let's first compute the CRC.
+            MbedCRC<POLY_16BIT_CCITT, 16> ct;
+            uint32_t crc = 0;
+            ct.compute(ser_data.data(), ser_data.size()-2, &crc);
+            union { 
+                uint32_t u;
+                uint8_t b[4];
+            } crc_orig;
+            crc_orig.u = 0;
+            crc_orig.b[0] = *(ser_data.end()-2);
+            crc_orig.b[1] = *(ser_data.end()-1);
+            if(crc != crc_orig.u) {
+                debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
+                SerialMsg out_msg = SerialMsg_init_zero;
+                out_msg.type = SerialMsg_Type_CRC_ERR;
+                shared_ptr<SerialMsg> out_msg_sptr;
+                *out_msg_sptr = out_msg;
+                tx_ser_queue_lock.lock();
+                tx_ser_queue.push_back(out_msg_sptr);
+                tx_ser_queue_lock.unlock(); 
+                continue;
+            }
+            SerialMsg zero_ser_msg = SerialMsg_init_zero;
+            ser_msg = zero_ser_msg;
+            pb_istream_t stream = pb_istream_from_buffer(ser_data.data(), ser_data.size());
+            if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
+                return -3;
+            }
+            last_entry_size = ser_data.size();
+            last_ser_msg = ser_msg;
+            ser_data.clear();
+            return last_entry_size;
+        } else {
+            ser_data.push_back(cur_byte);
+            MBED_ASSERT(ser_data.size() <= 1024);
+        }
+    }
+}
+
 int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry = false);
 int get_next_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
     size_t entry_size = 0;
-    static SerialMsg last_ser_msg = SerialMsg_init_zero;
+    static SerialMsg last_ser_msg;
     static size_t last_entry_size = 0;
     if(retry) {
         ser_msg = last_ser_msg;
@@ -174,43 +254,11 @@ void rx_serial_thread_fn(void) {
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
-    vector<uint8_t> rx_buf(SerialMsg_size);
     for(;;) {
-        // Receive the delimiter. This delimiter helps to ensure that we don't lose sync.
-        uint16_t acc = 0x0000;
-        for(;;) {
-            acc <<= 8;
-            acc |= fgetc(stdin);
-            if(acc == 0xBEEF) {
-                break;
-            }
-        }
-        // Get the packet size
-        size_t pkt_size = 0;
-        fread((char *) &pkt_size, sizeof(pkt_size), 1, stdin);
-        MBED_ASSERT(pkt_size <= SerialMsg_size);
-        // Get the packet itself
-        fread((char *) rx_buf.data(), 1, pkt_size, stdin);
-        // Get the packet checksum
-        MbedCRC<POLY_32BIT_ANSI, 32> ct;
-        uint32_t crc = 0;
-        ct.compute(rx_buf.data(), rx_buf.size(), &crc);
-        uint32_t crc_orig = 0;
-        fread((char *) &crc_orig, sizeof(crc_orig), 1, stdin); 
-        if(crc != crc_orig) {
-            debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
-            SerialMsg out_msg = SerialMsg_init_zero;
-            out_msg.type = SerialMsg_Type_CRC_ERR;
-            shared_ptr<SerialMsg> out_msg_sptr;
-            *out_msg_sptr = out_msg;
-            tx_ser_queue_lock.lock();
-            tx_ser_queue.push_back(out_msg_sptr);
-            tx_ser_queue_lock.unlock(); 
-            continue;
-        }
         SerialMsg ser_msg = SerialMsg_init_zero;
-        pb_istream_t stream = pb_istream_from_buffer(rx_buf.data(), rx_buf.size());
-        pb_decode(&stream, SerialMsg_fields, &ser_msg);
+        if(get_next_slip_entry(stdin, ser_msg)) {
+            debug_printf(DBG_WARN, "Error in reading serial port entry\r\n");
+        }
         if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
             SerialMsg out_msg = SerialMsg_init_zero;
             out_msg.type = SerialMsg_Type_CONFIG;
