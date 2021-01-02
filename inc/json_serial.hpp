@@ -42,9 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 
-
-extern Mutex tx_ser_queue_lock;
-extern list<shared_ptr<SerialMsg>> tx_ser_queue;
+extern Mail<shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 
 /// Produces an MbedJSONValue with the current status and queues it for transmission.
 void tx_serial_thread_fn(void);

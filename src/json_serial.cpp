@@ -33,8 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_decode.h"
 #include <string.h>
 
-Mutex tx_ser_queue_lock;
-list<shared_ptr<SerialMsg>> tx_ser_queue;
+Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 
 void print_memory_info();
 
@@ -42,10 +41,7 @@ static const uint8_t FRAME_END = 0xC0;
 static const uint8_t FRAME_ESC = 0xDB;
 void tx_serial_thread_fn(void) {
     for(;;) {
-        tx_ser_queue_lock.lock();
-        auto ser_msg_sptr = *tx_ser_queue.begin();
-        tx_ser_queue.pop_front();
-        tx_ser_queue_lock.unlock();
+        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
         SerialMsg ser_msg = *ser_msg_sptr;
         pb_byte_t buffer[SerialMsg_size];
         pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -96,12 +92,8 @@ void send_status(void) {
         ser_msg.status.tx_full = false;
     }
     ser_msg.status.time = time(NULL);
-
-    shared_ptr<SerialMsg> ser_msg_sptr;
-    *ser_msg_sptr = ser_msg;
-    tx_ser_queue_lock.lock();
-    tx_ser_queue.push_back(ser_msg_sptr);
-    tx_ser_queue_lock.unlock(); 
+    auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
 }  
 
 
@@ -109,11 +101,8 @@ void send_ack(void);
 void send_ack(void) {
     SerialMsg ser_msg = SerialMsg_init_zero;
     ser_msg.type = SerialMsg_Type_ACK;
-    shared_ptr<SerialMsg> ser_msg_sptr;
-    *ser_msg_sptr = ser_msg;
-    tx_ser_queue_lock.lock();
-    tx_ser_queue.push_back(ser_msg_sptr);
-    tx_ser_queue_lock.unlock();      
+    auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);    
 }  
 
 
@@ -124,12 +113,9 @@ void send_error(const string &err_str) {
     ser_msg.has_error_msg = true;
     size_t str_len = err_str.size() < 256 ? err_str.size() : 256;
     memcpy((char *) ser_msg.error_msg.msg, err_str.c_str(), str_len);
-    shared_ptr<SerialMsg> ser_msg_sptr;
-    *ser_msg_sptr = ser_msg;
+    auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
     debug_printf(DBG_ERR, "%s", err_str.c_str());
-    tx_ser_queue_lock.lock();
-    tx_ser_queue.push_back(ser_msg_sptr);
-    tx_ser_queue_lock.unlock();     
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);   
 }  
 
 
@@ -198,11 +184,8 @@ int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
                 debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
                 SerialMsg out_msg = SerialMsg_init_zero;
                 out_msg.type = SerialMsg_Type_CRC_ERR;
-                shared_ptr<SerialMsg> out_msg_sptr;
-                *out_msg_sptr = out_msg;
-                tx_ser_queue_lock.lock();
-                tx_ser_queue.push_back(out_msg_sptr);
-                tx_ser_queue_lock.unlock(); 
+                auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
+                enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);   
                 continue;
             }
             SerialMsg zero_ser_msg = SerialMsg_init_zero;
@@ -264,11 +247,8 @@ void rx_serial_thread_fn(void) {
             out_msg.type = SerialMsg_Type_CONFIG;
             out_msg.has_sys_cfg = true;
             out_msg.sys_cfg = radio_cb;
-            shared_ptr<SerialMsg> out_msg_sptr;
-            *out_msg_sptr = out_msg;
-            tx_ser_queue_lock.lock();
-            tx_ser_queue.push_back(out_msg_sptr);
-            tx_ser_queue_lock.unlock(); 
+            auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);   
         } else if(ser_msg.type == SerialMsg_Type_SET_CONFIG) {
             if(!ser_msg.has_sys_cfg) {
                 send_error(string("No Configuration Sent!\r\n"));
@@ -382,11 +362,8 @@ void rx_serial_thread_fn(void) {
                         reply_msg.type = SerialMsg_Type_REPLY_LOG;
                         reply_msg.has_log_msg = true;
                         reply_msg.log_msg.valid = false;	
-                        shared_ptr<SerialMsg> reply_msg_sptr;
-                        *reply_msg_sptr = reply_msg;
-                        tx_ser_queue_lock.lock();
-                        tx_ser_queue.push_back(reply_msg_sptr);
-                        tx_ser_queue_lock.unlock();  
+                        auto reply_msg_sptr = make_shared<SerialMsg>(reply_msg); 
+                        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);   
                         debug_printf(DBG_WARN, "Finished reading logs. Now rebooting...\r\n");
 					    reboot_system();	 	
                     } else {
@@ -404,11 +381,8 @@ void rx_serial_thread_fn(void) {
                                 send_error("Logfile entry has no log message\r\n");
                             }
                             reply_msg.log_msg = cur_log_msg.log_msg;
-                            shared_ptr<SerialMsg> reply_msg_sptr;
-                            *reply_msg_sptr = reply_msg;
-                            tx_ser_queue_lock.lock();
-                            tx_ser_queue.push_back(reply_msg_sptr);
-                            tx_ser_queue_lock.unlock(); 	
+                            auto reply_msg_sptr = make_shared<SerialMsg>(reply_msg);	
+                            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);   
                         } else {
                             send_error("Logfile read error\r\n");
                         }		
@@ -423,11 +397,8 @@ void rx_serial_thread_fn(void) {
                         send_error("Logfile entry has no log message\r\n");
                     }
                     reply_msg.log_msg = cur_log_msg.log_msg;
-                    shared_ptr<SerialMsg> reply_msg_sptr;
-                    *reply_msg_sptr = reply_msg;
-                    tx_ser_queue_lock.lock();
-                    tx_ser_queue.push_back(reply_msg_sptr);
-                    tx_ser_queue_lock.unlock(); 					
+                    auto reply_msg_sptr = make_shared<SerialMsg>(reply_msg);
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
 				}
             }
         }
@@ -445,22 +416,16 @@ void rx_serial_thread_fn(void) {
                     SerialMsg reply_msg = SerialMsg_init_zero;
                     reply_msg.type = SerialMsg_Type_REPLY_BOOT_LOG;
                     reply_msg.has_boot_log_msg = true;
-                    reply_msg.boot_log_msg.valid = false;	
-                    shared_ptr<SerialMsg> reply_msg_sptr;
-                    *reply_msg_sptr = reply_msg;
-                    tx_ser_queue_lock.lock();
-                    tx_ser_queue.push_back(reply_msg_sptr);
-                    tx_ser_queue_lock.unlock();  
+                    reply_msg.boot_log_msg.valid = false;
+                    auto reply_msg_sptr = make_shared<SerialMsg>(reply_msg);
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
 					reboot_system();	    
 				} else {
                     cur_log_msg.type = SerialMsg_Type_READ_BOOT_LOG;
                     cur_log_msg.boot_log_msg.count = line_count++;
-                    shared_ptr<SerialMsg> reply_msg_sptr;
-                    *reply_msg_sptr = cur_log_msg;
-                    tx_ser_queue_lock.lock();
-                    tx_ser_queue.push_back(reply_msg_sptr);
-                    tx_ser_queue_lock.unlock(); 
+                    auto reply_msg_sptr = make_shared<SerialMsg>(cur_log_msg);
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);                     
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");                    						
 				}
             }

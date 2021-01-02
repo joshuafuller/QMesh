@@ -247,10 +247,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
     sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
-    while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
-    tx_ser_queue_lock.lock();
-    tx_ser_queue.push_back(ser_msg_sptr);
-    tx_ser_queue_lock.unlock();
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
         ThisThread::sleep_for(2000);
         MBED_ASSERT(false);
@@ -292,11 +289,8 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     SerialMsg ser_msg_zero = SerialMsg_init_zero;
     *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
-    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str, 256);      
-    while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
-    tx_ser_queue_lock.lock();
-    tx_ser_queue.push_back(ser_msg_sptr);
-    tx_ser_queue_lock.unlock();
+    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str, 256);
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);      
 
     va_end(args);
     return 0;
@@ -312,9 +306,6 @@ void rx_frame_ser_thread_fn(void) {
         ser_msg_sptr->has_data_msg = true;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
         ser_msg_sptr->data_msg.type = DataMsg_Type_RX;
-        while(tx_ser_queue.size() > 128) { ThisThread::sleep_for(100); }
-        tx_ser_queue_lock.lock();
-        tx_ser_queue.push_back(ser_msg_sptr);
-        tx_ser_queue_lock.unlock();
+        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
     }
 }
