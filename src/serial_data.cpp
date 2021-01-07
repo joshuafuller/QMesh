@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -187,6 +187,21 @@ void Frame::saveToPB(DataMsg &data_msg) {
 }
 
 
+static atomic<uint8_t> kiss_stream_id(0);
+void Frame::createFromKISS(DataMsg &data_msg) {
+    hdr.var_subhdr.fields.ttl = 0;
+    hdr.var_subhdr.fields.sender = radio_cb.address;
+    hdr.var_subhdr.fields.sym_offset = 0;
+    hdr.cons_subhdr.fields.stream_id = kiss_stream_id.load();
+    kiss_stream_id.store(kiss_stream_id.load()+1);
+    hdr.cons_subhdr.fields.type = KISS_FRAME;
+
+    data.resize(data_msg.payload.size);
+    memcpy((char *) data.data(), (char *) data_msg.payload.bytes, data_msg.payload.size);
+    setCRC();
+}
+
+
 void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "==========\r\n");
     debug_printf(dbg_type, "Frame Info\r\n");
@@ -256,6 +271,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     dbg_printf_mutex.unlock();
     return 0;
 }
+
 
 int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;

@@ -155,6 +155,7 @@ message SerialMsg {
     SET_TIME = 20;
     ACK = 21;
     ERR = 22;
+    ENTER_KISS_MODE = 23;
   }
   Type type = 1;
   bool retry = 2;
@@ -177,6 +178,8 @@ message DataMsg {
   enum Type {
     TX = 0;
     RX = 1;
+    KISSTX = 2;
+    KISSRX = 3;
   }
   Type type = 1;
   uint32 stream_id = 2;

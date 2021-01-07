@@ -72,6 +72,7 @@ typedef enum {
 
 #define BEACON_FRAME 0
 #define PAYLOAD_FRAME 1
+#define KISS_FRAME 2
 /**
  * This class implements the QMesh Frame. It provides both the storage
  * of Frame data fields as well as various methods for performing
@@ -159,6 +160,8 @@ public:
     void serialize_pb(vector<uint8_t> &data_msg);
 
     void deserialize_pb(const vector<uint8_t> &buf);
+
+    void createFromKISS(DataMsg &data_msg);
 
     /// Equality operator for Frames
     bool operator == (const Frame &L) {

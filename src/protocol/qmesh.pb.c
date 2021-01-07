@@ -48,6 +48,9 @@ PB_BIND(GPSMsg, GPSMsg, AUTO)
 PB_BIND(LogMsg, LogMsg, AUTO)
 
 
+PB_BIND(TimeMsg, TimeMsg, AUTO)
+
+
 PB_BIND(SerialMsg, SerialMsg, 2)
 
 

@@ -30,13 +30,25 @@ params = pika.ConnectionParameters('127.0.0.1', heartbeat=600,
         blocked_connection_timeout=300)
         
 
-def make_slip_frame(frame):
+FEND = 0xC0
+FESC = 0xDB
+TFEND = 0xDC
+TFESC = 0xDD
+SETHW = 0x06
+DATAPKT = 0x00
+FRAME_MAX_SIZE = 8192
+def make_kiss_frame(frame):
     out_frame = bytearray()
     for cur_byte in frame:
-        if(cur_byte == FRAME_END or cur_byte == FRAME_ESC):
-            out_frame.append(FRAME_ESC)
-        out_frame.append(cur_byte)
-    out_frame.append(FRAME_END)
+        if(cur_byte == FEND):
+            out_frame.append(FESC)
+            out_frame.append(TFEND)
+        elif(cur_byte == FESC):
+            out_frame.append(FESC)
+            out_frame.append(TFESC)
+        else:
+            out_frame.append(cur_byte)
+    out_frame.append(FEND)
     return bytearray(out_frame)
 
 
@@ -69,27 +81,31 @@ class ParseError(Exception):
     pass
 
 
-FRAME_END = 0xC0
-FRAME_ESC = 0xDB
-FRAME_MAX_SIZE = 8192
-def get_slip_frame(ser):
+def get_kiss_frame(ser):
     # Initial pass: get to the next frame's delimiter
     while(True):
-        cur_byte = ser.read(1)
-        next_byte = ser.read(1)
-        if(cur_byte == FRAME_ESC and next_byte == FRAME_END): continue
-        elif(next_byte == FRAME_END): break
+        if(ser.read(1) == FEND): break
     # Extract bytes until we get to the next frame delimiter
     frame = bytearray()
     while(True):
         if(len(frame) > FRAME_MAX_SIZE): # If we get too big, we need to retry
             frame = bytearray()
         cur_byte = ser.read(1)
-        if(cur_byte == FRAME_END): 
-            yield bytearray(frame)
+        if(cur_byte == FEND): 
+            # Try to deal with FEND bytes used for synchronization
+            if(len(frame) > 0):
+                yield bytearray(frame)
             frame = bytearray()
-        elif(cur_byte == FRAME_ESC):
-            frame.append(ser.read(1)) 
+            # Need to receive the command code
+            cmd_byte = ser.read(1)
+            if(cmd_byte != 0x00): 
+                print("WARNING: invalid command code")
+        elif(cur_byte == FESC):
+            next_byte = ser.read(1)
+            if(next_byte == TFEND): 
+                frame.append(FEND)
+            if(next_byte == TFESC):
+                frame.append(FESC)
         else:
             frame.append(cur_byte)
         
@@ -100,10 +116,10 @@ def input_thread_fn(ser):
     channel.exchange_declare(exchange='board_output', exchange_type='fanout')
     global ser
     while(True):
-        frame_gen = get_slip_frame(ser)
+        frame_gen = get_kiss_frame(ser)
         for frame in frame_gen:
             try:
-                # First, get the SLIP frame
+                # First, get the KISS frame
                 crc = int.from_bytes(frame[-2:-1], "little", signed=False)
                 calc_crc = binascii.crc_hqx(frame[:-2])
                 pld = frame[:-2]
@@ -131,7 +147,10 @@ if __name__ == "__main__":
             if len(serial_ports) > 1:
                 serial_ports = serial_ports[1:] + [serial_ports[0]]
             time.sleep(1)
-
+    # Put the TNC in KISS+ mode
+    kiss_frame = make_kiss_frame(bytearray(0xFF))
+    ser.write(kiss_frame)
+    # Set up the callbacks
     input_thread = threading.Thread(target=input_thread_fn)
     input_thread.start()
     output_thread = threading.Thread(target=output_thread_fn)
@@ -142,6 +161,16 @@ if __name__ == "__main__":
         except (KeyboardInterrupt, SystemExit):
             input_thread.join()
             output_thread.join()
+            # Put the node back in KISS mode
+            ser_msg = qmesh_pb2.SerialMsg()
+            ser_msg.type = ser_msg.ENTER_KISS_MODE
+            global ser
+            frame = bytearray()
+            frame += bytes(ser_msg.SerializeToString())
+            crc = binascii.crc_hqx(frame)
+            crc_bytes = crc.to_bytes(2, byteorder="little")
+            frame += crc_bytes
+            ser.write(bytearray(frame))
             sys.exit(0)
 
 

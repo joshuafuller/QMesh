@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 #include <fstream>
 #include <sstream>
+#include <atomic>
 #include <stdio.h>
 #include "mbedtls/platform.h"
 #include "mbedtls/base64.h"
@@ -37,35 +38,58 @@ Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 
 void print_memory_info();
 
-static const uint8_t FRAME_END = 0xC0;
-static const uint8_t FRAME_ESC = 0xDB;
+static const uint8_t FEND = 0xC0;
+static const uint8_t FESC = 0xDB;
+static const uint8_t TFEND = 0xDC;
+static const uint8_t TFESC = 0xDD;
+static const uint8_t SETHW = 0x06;
+static const uint8_t DATAPKT = 0x00;
+atomic<bool> kiss_mode(true);
 void tx_serial_thread_fn(void) {
+    uint8_t line_buffer[SerialMsg_size+sizeof(uint16_t)];
     for(;;) {
-        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
-        SerialMsg ser_msg = *ser_msg_sptr;
-        pb_byte_t buffer[SerialMsg_size];
-        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-        pb_encode(&stream, SerialMsg_fields, &ser_msg);
-
-        size_t buf_size = stream.bytes_written;
-        MbedCRC<POLY_32BIT_ANSI, 32> ct;
-        uint32_t crc = 0;
-        uint8_t line_buffer[SerialMsg_size+sizeof(buf_size)+sizeof(crc)];
-
-        memcpy((char *) line_buffer, (char *) &buf_size, sizeof(buf_size));
-        memcpy((char *) line_buffer+sizeof(buf_size), buffer, SerialMsg_size);
-        ct.compute(line_buffer+sizeof(buf_size), stream.bytes_written, &crc);
-        memcpy((char *) line_buffer+sizeof(buf_size)+stream.bytes_written, (char *) crc, sizeof(crc));  
-
-        // SLIP-ify it
+        // In KISS mode, we only send out data packets in KISS format.
+        if(kiss_mode.load()) {
+            auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
+            SerialMsg ser_msg = *ser_msg_sptr;
+            if(ser_msg.type == SerialMsg_Type_DATA && ser_msg.has_data_msg && 
+                ser_msg.data_msg.type == DataMsg_Type_KISSRX) {
+                memcpy((char *) line_buffer, (char *) ser_msg.data_msg.payload.bytes, 
+                        ser_msg.data_msg.payload.size);
+            }            
+        } else {
+            auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
+            SerialMsg ser_msg = *ser_msg_sptr;
+            pb_byte_t buffer[SerialMsg_size];
+            pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+            pb_encode(&stream, SerialMsg_fields, &ser_msg);
+            MbedCRC<POLY_32BIT_ANSI, 32> ct;
+            uint32_t crc = 0;
+            memcpy((char *) line_buffer, buffer, SerialMsg_size);
+            ct.compute(line_buffer, stream.bytes_written, &crc);
+            memcpy((char *) line_buffer+stream.bytes_written, (char *) crc, sizeof(crc));  
+        }
+        // KISS-ify it
+        // Put the first delimiter character in
+        fputc(FESC, stdout);
+        if(kiss_mode.load()) {
+            fputc(SETHW, stdout);
+        } else {
+            fputc(DATAPKT, stdout);
+        }
         for(unsigned int i = 0; i < sizeof(line_buffer); i++) {
             uint8_t cur_byte = line_buffer[i];
-            if(cur_byte == FRAME_END || cur_byte == FRAME_ESC) {
-                fputc(FRAME_ESC, stdout);
+            if(cur_byte == FEND) {
+                fputc(FESC, stdout);
+                fputc(TFEND, stdout);
+            } else if(cur_byte == FESC) {
+                fputc(FESC, stdout);
+                fputc(TFESC, stdout);
+            } else {
+                fputc(cur_byte, stdout);
             }
-            fputc(cur_byte, stdout);
         }
-        fputc(FRAME_END, stdout);
+        fputc(FESC, stdout);
     }
 }
 
@@ -134,8 +158,8 @@ void get_next_line(FILE *f, string &str) {
 	}
 }
 
-int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry = false);
-int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
+int get_next_kiss_entry(FILE *f, SerialMsg &ser_msg, bool retry = false);
+int get_next_kiss_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
     static SerialMsg last_ser_msg;
     static size_t last_entry_size = 0;
     vector<uint8_t> ser_data;
@@ -145,14 +169,13 @@ int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
     }
     static bool first_time = true;
     // Get the first frame
-    uint8_t last_byte, cur_byte = 0;
+    uint8_t cur_byte = 0;
     if(first_time) {
         for(;;) {
-            last_byte = cur_byte;
             if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
                 return -1;
             }
-            if(cur_byte == FRAME_END && last_byte != FRAME_ESC) {
+            if(cur_byte == FEND) {
                 break;
             }
         }
@@ -161,43 +184,94 @@ int get_next_slip_entry(FILE *f, SerialMsg &ser_msg, bool retry) {
         if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
             return -1;
         }
-        if(cur_byte == FRAME_ESC) {
+        if(cur_byte == FESC) {
             if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
                 return -1;
             }
-            ser_data.push_back(cur_byte);
+            if(cur_byte == TFEND) {
+                ser_data.push_back(FEND);
+            } else if(cur_byte == TFESC) {
+                ser_data.push_back(FESC);
+            } else {
+                ser_data.push_back(cur_byte);
+            }
             MBED_ASSERT(ser_data.size() <= 1024);
-        } else if(cur_byte == FRAME_END) {
-            // Right now, we should have the payload as well as a two-byte CRC.
-            //  Let's first compute the CRC.
-            MbedCRC<POLY_16BIT_CCITT, 16> ct;
-            uint32_t crc = 0;
-            ct.compute(ser_data.data(), ser_data.size()-2, &crc);
-            union { 
-                uint32_t u;
-                uint8_t b[4];
-            } crc_orig;
-            crc_orig.u = 0;
-            crc_orig.b[0] = *(ser_data.end()-2);
-            crc_orig.b[1] = *(ser_data.end()-1);
-            if(crc != crc_orig.u) {
-                debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
-                SerialMsg out_msg = SerialMsg_init_zero;
-                out_msg.type = SerialMsg_Type_CRC_ERR;
-                auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
-                enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);   
+        } else if(cur_byte == FEND) {
+            // In the KISS protocol, you can have unlimited adjacent FEND bytes.
+            //  As a result, if we accumulate a zero-length packet, then we need 
+            //  to just continue and try to receive the next frame.
+            if(ser_data.size() == 0) {
                 continue;
             }
-            SerialMsg zero_ser_msg = SerialMsg_init_zero;
-            ser_msg = zero_ser_msg;
-            pb_istream_t stream = pb_istream_from_buffer(ser_data.data(), ser_data.size());
-            if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
-                return -3;
+            if(kiss_mode.load()) {
+                if(ser_data.size() < 1) {
+                    ser_data.clear();
+                    continue;
+                }
+                // We've received a message to exit KISS mode
+                if(ser_data.size() == 1 && ser_data[0] == 0xFF) {
+                    ser_data.clear();
+                    kiss_mode.store(false);
+                    continue;
+                }
+                // We've received a packet on TNC port 0.
+                if(ser_data.size() > 1 && ser_data[0] == 0x00) {
+                    SerialMsg zero_ser_msg = SerialMsg_init_zero;
+                    ser_msg = zero_ser_msg;
+                    ser_msg.type = SerialMsg_Type_DATA;
+                    ser_msg.has_data_msg = true;
+                    ser_msg.data_msg.type = DataMsg_Type_KISSTX;
+                    ser_msg.data_msg.payload.size = ser_data.size()-1;
+                    memcpy(ser_msg.data_msg.payload.bytes, ser_data.data()+1, ser_data.size()-1);
+                    return ser_msg.data_msg.payload.size;
+                } else {
+                    MBED_ASSERT(false);
+                }
+            } else {
+                // Another issue is that we currently expect our packets to be at 
+                //  least three bytes long. We need to handle the (hopefully very rare)
+                //  case where we get fewer than three bytes.
+                if(ser_data.size() < 3) {
+                    ser_data.clear();
+                    continue;
+                }
+                // Right now, we should have the payload as well as a two-byte CRC.
+                //  Let's first compute the CRC.
+                MbedCRC<POLY_16BIT_CCITT, 16> ct;
+                uint32_t crc = 0;
+                ct.compute(ser_data.data()+1, ser_data.size()-3, &crc);
+                union { 
+                    uint32_t u;
+                    uint8_t b[4];
+                } crc_orig;
+                crc_orig.u = 0;
+                crc_orig.b[0] = *(ser_data.end()-2);
+                crc_orig.b[1] = *(ser_data.end()-1);
+                if(crc != crc_orig.u) {
+                    debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
+                    SerialMsg out_msg = SerialMsg_init_zero;
+                    out_msg.type = SerialMsg_Type_CRC_ERR;
+                    auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);   
+                    continue;
+                }
+                SerialMsg zero_ser_msg = SerialMsg_init_zero;
+                ser_msg = zero_ser_msg;
+                pb_istream_t stream = pb_istream_from_buffer(ser_data.data()+1, ser_data.size()-3);
+                if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
+                    return -3;
+                }
+                // Handle switching to KISS mode at this layer
+                if(ser_msg.type == SerialMsg_Type_ENTER_KISS_MODE) {
+                    kiss_mode.store(true);
+                    ser_data.clear();
+                    continue;
+                }
+                last_entry_size = ser_data.size();
+                last_ser_msg = ser_msg;
+                ser_data.clear();
+                return last_entry_size;
             }
-            last_entry_size = ser_data.size();
-            last_ser_msg = ser_msg;
-            ser_data.clear();
-            return last_entry_size;
         } else {
             ser_data.push_back(cur_byte);
             MBED_ASSERT(ser_data.size() <= 1024);
@@ -239,7 +313,7 @@ void rx_serial_thread_fn(void) {
 	bool reading_bootlog = false;
     for(;;) {
         SerialMsg ser_msg = SerialMsg_init_zero;
-        if(get_next_slip_entry(stdin, ser_msg)) {
+        if(get_next_kiss_entry(stdin, ser_msg)) {
             debug_printf(DBG_WARN, "Error in reading serial port entry\r\n");
         }
         if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
@@ -274,10 +348,24 @@ void rx_serial_thread_fn(void) {
             send_ack();
         }
         else if(ser_msg.type == SerialMsg_Type_DATA) {
-            auto frame = make_shared<Frame>();
-            frame->loadFromPB(ser_msg.data_msg);
-            enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
-            send_ack();           
+            if(ser_msg.data_msg.type == DataMsg_Type_TX) {
+                auto frame = make_shared<Frame>();
+                frame->loadFromPB(ser_msg.data_msg);
+                enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
+                send_ack();
+            } else if(ser_msg.data_msg.type == DataMsg_Type_KISSTX) {
+                auto frame = make_shared<Frame>();
+                // Right now, we're just doing a single frame for a KISS frame. 
+                //  Given that AX.25/APRS frames can be considerably bigger than
+                //  a single QMesh frame, we need to implement some sort of 
+                //  fragmentation scheme. This scheme should be able to support 
+                //  some sort of erasure support that uses e.g. Reed-Solomon to 
+                //  recover from a missing fragment.
+                frame->createFromKISS(ser_msg.data_msg);
+                enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
+            } else {
+                MBED_ASSERT(false);
+            }        
         }
         else if(ser_msg.type == SerialMsg_Type_REBOOT) {
             debug_printf(DBG_INFO, "Received reboot command\r\n");

@@ -256,7 +256,7 @@ void mesh_protocol_fsm(void) {
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                if(radio_cb.log_en) {
+                if(radio_cb.log_packets_en) {
                     enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
                 }
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
@@ -300,7 +300,7 @@ void mesh_protocol_fsm(void) {
                 radio.unlock();
 
                 tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                if(radio_cb.log_en) {
+                if(radio_cb.log_packets_en) {
                     enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
                 }
                 led2.LEDOff();
@@ -373,13 +373,18 @@ void beacon_pocsag_fn(void) {
 
 
 extern Adafruit_SSD1306_I2c *oled;
+extern atomic<bool> kiss_mode;
 /**
  * Function called by the OLED display monitor thread. Every second, it 
  *  updates the OLED display with new packet status information.
  */
 void oled_mon_fn(void) {
     oled->clearDisplay();
-    oled->printf("PACKET STATISTICS\r\n");
+    if(kiss_mode.load()) {
+        oled->printf("PACKET STATISTICS  K\r\n");
+    } else {
+        oled->printf("PACKET STATISTICS  K+\r\n");        
+    }
     oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
     oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
                     (float) total_rx_pkt.load())*100));
