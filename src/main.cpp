@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoftI2C.h"
 #include "LibAPRS.h"
 #include "AFSK.h"
+#include "USBSerial.h"
 
 
 JSONSerial rx_json_ser, tx_json_ser;
@@ -130,15 +131,14 @@ int main()
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
     ThisThread::sleep_for(1000);
-
     debug_printf(DBG_INFO, "Starting serial threads...\r\n"); // Removing this causes a hard fault???
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
+    while(1);
     rx_frame_thread.start(rx_frame_ser_thread_fn);
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
     printf("Hello\r\n");
-
 #if 0
     // Set up the RDA1846 module control
     DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);

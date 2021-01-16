@@ -78,7 +78,7 @@ void statusToJSON(string &status, string &value, string &json_str);
  * @param dbg_msg Plaintext debug message (input), as a string
  * @param json_str JSON-formatted debug message (output), as a string
  */
-void dbgPrintfToPB(string &dbg_msg, vector<uint8_t> &json_str);
+void dbgPrintfToPB(string &dbg_msg, vector<uint8_t> &pb_str);
 
 /**
  * Loads a JSON-formatted string into the internal data structures

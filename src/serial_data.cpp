@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 
+
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 size_t Frame::size(void) {
@@ -257,7 +258,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     else {
         MBED_ASSERT(false);
     }
-    auto ser_msg_sptr = shared_ptr<SerialMsg>();
+    auto ser_msg_sptr = make_shared<SerialMsg>();
     SerialMsg ser_msg_zero = SerialMsg_init_zero;
     *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;

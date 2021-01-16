@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # QMesh
-# Copyright (C) 2019 Daniel R. Fay
+# Copyright (C) 2021 Daniel R. Fay
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ def input_cb(ch, method, properties, body):
     global ser
     frame = bytearray()
     frame += body
-    crc = binascii.crc_hqx(frame)
+    crc = binascii.crc_hqx(frame) # This uses the CRC-CCITT polynomial
     crc_bytes = crc.to_bytes(2, byteorder="little")
     frame += crc_bytes
     ser.write(bytearray(frame))
