@@ -30,25 +30,27 @@ params = pika.ConnectionParameters('127.0.0.1', heartbeat=600,
         blocked_connection_timeout=300)
         
 
-FEND = 0xC0
-FESC = 0xDB
-TFEND = 0xDC
-TFESC = 0xDD
-SETHW = 0x06
-DATAPKT = 0x00
+FEND = 0xC0.to_bytes(1, 'little')
+FESC = 0xDB.to_bytes(1, 'little')
+TFEND = 0xDC.to_bytes(1, 'little')
+TFESC = 0xDD.to_bytes(1, 'little')
+SETHW = 0x06.to_bytes(1, 'little')
+DATAPKT = 0x00.to_bytes(1, 'little')
 FRAME_MAX_SIZE = 8192
 def make_kiss_frame(frame):
     out_frame = bytearray()
     for cur_byte in frame:
-        if(cur_byte == FEND):
-            out_frame.append(FESC)
-            out_frame.append(TFEND)
-        elif(cur_byte == FESC):
-            out_frame.append(FESC)
-            out_frame.append(TFESC)
+        cur_byte_arr = bytearray()
+        cur_byte_arr.append(cur_byte)
+        if(cur_byte_arr == FEND):
+            out_frame += FESC
+            out_frame += TFEND
+        elif(cur_byte_arr == FESC):
+            out_frame += FESC
+            out_frame += TFESC
         else:
-            out_frame.append(cur_byte)
-    out_frame.append(FEND)
+            out_frame += cur_byte_arr
+    out_frame += FEND
     return bytearray(out_frame)
 
 
@@ -83,14 +85,20 @@ class ParseError(Exception):
 
 def get_kiss_frame(ser):
     # Initial pass: get to the next frame's delimiter
+    print("in kiss frame")
     while(True):
-        if(ser.read(1) == FEND): break
+        #print("Reading byte")
+        my_byte = ser.read(1)
+        if(my_byte == FEND): 
+            print("End delimiter found")
+            break
     # Extract bytes until we get to the next frame delimiter
     frame = bytearray()
     while(True):
         if(len(frame) > FRAME_MAX_SIZE): # If we get too big, we need to retry
             frame = bytearray()
         cur_byte = ser.read(1)
+        #print("Read byte %s" % cur_byte)
         if(cur_byte == FEND): 
             # Try to deal with FEND bytes used for synchronization
             if(len(frame) > 0):
@@ -98,19 +106,20 @@ def get_kiss_frame(ser):
             frame = bytearray()
             # Need to receive the command code
             cmd_byte = ser.read(1)
-            if(cmd_byte != 0x00): 
-                print("WARNING: invalid command code")
+            if(cmd_byte == FEND): continue
+            if(cmd_byte != DATAPKT): 
+                print("WARNING: invalid command code %s" % cmd_byte)
         elif(cur_byte == FESC):
             next_byte = ser.read(1)
-            if(next_byte == TFEND): 
-                frame.append(FEND)
+            if(next_byte == TFEND):
+                frame += FEND 
             if(next_byte == TFESC):
-                frame.append(FESC)
+                frame += FESC
         else:
-            frame.append(cur_byte)
+            frame += cur_byte
         
 
-def input_thread_fn(ser):
+def input_thread_fn():
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.exchange_declare(exchange='board_output', exchange_type='fanout')
@@ -120,8 +129,9 @@ def input_thread_fn(ser):
         for frame in frame_gen:
             try:
                 # First, get the KISS frame
+                print("Full frame content is %s" % frame)
                 crc = int.from_bytes(frame[-2:-1], "little", signed=False)
-                calc_crc = binascii.crc_hqx(frame[:-2])
+                calc_crc = binascii.crc_hqx(frame[:-2], 0)
                 pld = frame[:-2]
                 if(calc_crc != crc): 
                     raise CRCError
@@ -148,7 +158,7 @@ if __name__ == "__main__":
                 serial_ports = serial_ports[1:] + [serial_ports[0]]
             time.sleep(1)
     # Put the TNC in KISS+ mode
-    kiss_frame = make_kiss_frame(bytearray(0xFF))
+    kiss_frame = make_kiss_frame(0xFF.to_bytes(1, 'little'))
     ser.write(kiss_frame)
     # Set up the callbacks
     input_thread = threading.Thread(target=input_thread_fn)
@@ -164,12 +174,13 @@ if __name__ == "__main__":
             # Put the node back in KISS mode
             ser_msg = qmesh_pb2.SerialMsg()
             ser_msg.type = ser_msg.ENTER_KISS_MODE
-            global ser
             frame = bytearray()
+            frame += FEND
             frame += bytes(ser_msg.SerializeToString())
             crc = binascii.crc_hqx(frame)
             crc_bytes = crc.to_bytes(2, byteorder="little")
             frame += crc_bytes
+            frame += FEND
             ser.write(bytearray(frame))
             sys.exit(0)
 

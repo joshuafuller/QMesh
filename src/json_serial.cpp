@@ -46,20 +46,24 @@ static const uint8_t TFEND = 0xDC;
 static const uint8_t TFESC = 0xDD;
 static const uint8_t SETHW = 0x06;
 static const uint8_t DATAPKT = 0x00;
-atomic<bool> kiss_mode(true);
+atomic<bool> kiss_mode(false);
 void tx_serial_thread_fn(void) {
     FILE *kiss_ser = fdopen(&kiss_ser_fh, "w");
     printf("Entering the tx loop\r\n");
+#if 0
     while(1) {
         string test_string("Hello world\r\n");
         //kiss_ser_fh->write(test_string.c_str(), test_string.size());
         fprintf(kiss_ser, "Testing out the KISS port \r\n");
         printf("Did another iteration\r\n");
     }
+#endif
     uint8_t line_buffer[SerialMsg_size+sizeof(uint16_t)];
     for(;;) {
+        size_t line_buffer_size = 0;
         // In KISS mode, we only send out data packets in KISS format.
         if(kiss_mode.load()) {
+            printf("In KISS mode\r\n");
             auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
             SerialMsg ser_msg = *ser_msg_sptr;
             // Silently drop anything that isn't a KISSRX frame when we're in KISS mode
@@ -67,8 +71,12 @@ void tx_serial_thread_fn(void) {
                 ser_msg.data_msg.type == DataMsg_Type_KISSRX) {
                 memcpy((char *) line_buffer, (char *) ser_msg.data_msg.payload.bytes, 
                         ser_msg.data_msg.payload.size);
-            }            
+                line_buffer_size = ser_msg.data_msg.payload.size;
+            } else {
+                continue;
+            }           
         } else {
+            printf("Not in KISS mode\r\n");
             auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
             SerialMsg ser_msg = *ser_msg_sptr;
             pb_byte_t buffer[SerialMsg_size];
@@ -78,7 +86,8 @@ void tx_serial_thread_fn(void) {
             uint32_t crc = 0;
             memcpy((char *) line_buffer, buffer, SerialMsg_size);
             ct.compute(line_buffer, stream.bytes_written, &crc);
-            memcpy((char *) line_buffer+stream.bytes_written, (char *) crc, sizeof(crc));  
+            memcpy((char *) line_buffer+stream.bytes_written, (char *) crc, sizeof(crc));
+            line_buffer_size = stream.bytes_written+sizeof(crc);  
         }
         // KISS-ify it
         // Put the first delimiter character in
@@ -88,7 +97,7 @@ void tx_serial_thread_fn(void) {
         } else {
             fputc(DATAPKT, kiss_ser);
         }
-        for(unsigned int i = 0; i < sizeof(line_buffer); i++) {
+        for(unsigned int i = 0; i < line_buffer_size; i++) {
             uint8_t cur_byte = line_buffer[i];
             if(cur_byte == FEND) {
                 fputc(FESC, kiss_ser);
@@ -184,10 +193,15 @@ int get_next_kiss_entry(FILE *f, SerialMsg &ser_msg, const bool retry) {
     uint8_t cur_byte = 0;
     if(first_time) {
         for(;;) {
-            if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
+            printf("Reading current byte\r\n");
+            cur_byte = fread((char *) &cur_byte, 1, sizeof(cur_byte), f);
+            printf("Current byte is %x\r\n", cur_byte);
+            if(cur_byte != sizeof(cur_byte)) {
+                printf("Returning\r\n");
                 return -1;
             }
             if(cur_byte == FEND) {
+                printf("Found delimiter\r\n");
                 break;
             }
         }
@@ -320,6 +334,7 @@ int get_next_entry(FILE *f, SerialMsg &ser_msg, const bool retry) {
 }
 
 void rx_serial_thread_fn(void) {
+    printf("Entering the RX serial function\r\n");
 	FILE *f = NULL;
 	int line_count = 0;
 	bool reading_log = false;
@@ -327,6 +342,7 @@ void rx_serial_thread_fn(void) {
     for(;;) {
         SerialMsg ser_msg = SerialMsg_init_zero;
         FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
+        printf("Entering the RX serial\r\n");
         if(get_next_kiss_entry(kiss_ser, ser_msg)) {
             debug_printf(DBG_WARN, "Error in reading serial port entry\r\n");
         }

@@ -134,11 +134,17 @@ int main()
     debug_printf(DBG_INFO, "Starting serial threads...\r\n"); // Removing this causes a hard fault???
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
-    while(1);
     rx_frame_thread.start(rx_frame_ser_thread_fn);
     debug_printf(DBG_INFO, "Serial threads started\r\n");
     send_status();
     printf("Hello\r\n");
+
+    // Just do an infinite loop of debug_printfs
+    for(;;) {
+        debug_printf(DBG_INFO, "Test Line\r\n");
+        ThisThread::sleep_for(500);
+    }
+    while(1);
 #if 0
     // Set up the RDA1846 module control
     DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);
