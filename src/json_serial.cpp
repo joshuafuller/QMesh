@@ -83,16 +83,24 @@ void tx_serial_thread_fn(void) {
             pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
             pb_encode(&stream, SerialMsg_fields, &ser_msg);
             MbedCRC<POLY_16BIT_CCITT, 16> ct;
-            uint32_t crc = 0;
-            memcpy((char *) line_buffer, buffer, SerialMsg_size);
-            ct.compute(line_buffer, stream.bytes_written, &crc);
-            memcpy((char *) line_buffer+stream.bytes_written, (char *) crc, sizeof(crc));
-            line_buffer_size = stream.bytes_written+sizeof(crc);  
+            union {
+                uint32_t gen_crc;
+                uint16_t crc_chunk[2];
+            } crc;
+            crc.gen_crc = 0;
+            memcpy((char *) line_buffer, buffer, stream.bytes_written);
+            ct.compute(line_buffer, stream.bytes_written, &crc.gen_crc);
+            printf("CRC value is %x, %d\r\n", crc.crc_chunk[0], crc.crc_chunk[0]);
+            printf("Bytes written is %d\r\n", stream.bytes_written);
+            printf("%x %x %x %x\r\n", line_buffer[0], line_buffer[1], line_buffer[2], line_buffer[3]);
+            memcpy((char *) line_buffer+stream.bytes_written, (char *) &(crc.crc_chunk[0]), 
+                    sizeof(crc.crc_chunk[0]));
+            line_buffer_size = stream.bytes_written+sizeof(crc.crc_chunk[0]);  
         }
         // KISS-ify it
         // Put the first delimiter character in
         fputc(FEND, kiss_ser);
-        if(kiss_mode.load()) {
+        if(!kiss_mode.load()) {
             fputc(SETHW, kiss_ser);
         } else {
             fputc(DATAPKT, kiss_ser);

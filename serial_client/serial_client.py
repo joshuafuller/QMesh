@@ -24,6 +24,7 @@ import time
 import threading
 import qmesh_pb2
 import binascii
+import crcmod
 
 ser = None
 params = pika.ConnectionParameters('127.0.0.1', heartbeat=600, 
@@ -102,13 +103,12 @@ def get_kiss_frame(ser):
         if(cur_byte == FEND): 
             # Try to deal with FEND bytes used for synchronization
             if(len(frame) > 0):
+                frame = frame[1:]
                 yield bytearray(frame)
             frame = bytearray()
             # Need to receive the command code
             cmd_byte = ser.read(1)
             if(cmd_byte == FEND): continue
-            if(cmd_byte != DATAPKT): 
-                print("WARNING: invalid command code %s" % cmd_byte)
         elif(cur_byte == FESC):
             next_byte = ser.read(1)
             if(next_byte == TFEND):
@@ -130,9 +130,11 @@ def input_thread_fn():
             try:
                 # First, get the KISS frame
                 print("Full frame content is %s" % frame)
-                crc = int.from_bytes(frame[-2:-1], "little", signed=False)
-                calc_crc = binascii.crc_hqx(frame[:-2], 0)
-                pld = frame[:-2]
+                crc = int.from_bytes(frame[-2:], "little", signed=False)
+                frame = frame[:-2]
+                _CRC_FUNC = crcmod.mkCrcFun(0x11021, initCrc=0xffff, rev=False)
+                calc_crc = _CRC_FUNC(frame)
+                pld = frame
                 if(calc_crc != crc): 
                     raise CRCError
                 ser_msg = qmesh_pb2.SerialMsg()
