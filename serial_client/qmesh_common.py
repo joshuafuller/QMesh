@@ -29,8 +29,19 @@ def print_dbg_msg(dbg_msg):
 
 
 def print_status_msg(status_msg):
-    print("Status is %s" % (status_msg.status))
-    print("Time is %s" % (time.asctime(status_msg.time)))
+    if(status_msg.status == qmesh_pb2.StatusMsg.BOOTING):
+        status_str = 'BOOTING'
+    elif(status_msg.status == qmesh_pb2.StatusMsg.MANAGEMENT):
+        status_str = 'MANAGEMENT'
+    elif(status_msg.status == qmesh_pb2.StatusMsg.RUNNING):
+        status_str = 'RUNNING'
+    else:
+        raise Exception
+    print("----------")
+    print("Status is %s" % (status_str))
+    print("Time is %s" % (status_msg.time))
+    print("Queue state is %s" % (status_msg.tx_full))
+    print("----------")
 
 
 def setup_outgoing_rabbitmq(my_callback):

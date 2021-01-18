@@ -261,6 +261,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     auto ser_msg_sptr = make_shared<SerialMsg>();
     SerialMsg ser_msg_zero = SerialMsg_init_zero;
     *ser_msg_sptr = ser_msg_zero;
+    ser_msg_sptr->type = SerialMsg_Type_DEBUG_MSG;
     ser_msg_sptr->has_dbg_msg = true;
     sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);

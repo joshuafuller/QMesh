@@ -131,17 +131,17 @@ int main()
     // Start the WDT thread
     wdt_thread.start(wdt_fn);
     ThisThread::sleep_for(1000);
-    debug_printf(DBG_INFO, "Starting serial threads...\r\n"); // Removing this causes a hard fault???
+    debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
     // Start the serial handler threads
     tx_serial_thread.start(tx_serial_thread_fn);
     rx_frame_thread.start(rx_frame_ser_thread_fn);
-    debug_printf(DBG_INFO, "Serial threads started\r\n");
+    debug_printf(DBG_INFO, "Serial threads started");
     send_status();
     printf("Hello\r\n");
 
     // Just do an infinite loop of debug_printfs
     for(;;) {
-        debug_printf(DBG_INFO, "Test Line\r\n");
+        debug_printf(DBG_INFO, "Test Line");
         ThisThread::sleep_for(500);
     }
     while(1);
