@@ -76,7 +76,7 @@ void tx_serial_thread_fn(void) {
                 continue;
             }           
         } else {
-            printf("Not in KISS mode\r\n");
+            //printf("Not in KISS mode\r\n");
             auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
             SerialMsg ser_msg = *ser_msg_sptr;
             pb_byte_t buffer[SerialMsg_size];
@@ -90,9 +90,9 @@ void tx_serial_thread_fn(void) {
             crc.gen_crc = 0;
             memcpy((char *) line_buffer, buffer, stream.bytes_written);
             ct.compute(line_buffer, stream.bytes_written, &crc.gen_crc);
-            printf("CRC value is %x, %d\r\n", crc.crc_chunk[0], crc.crc_chunk[0]);
-            printf("Bytes written is %d\r\n", stream.bytes_written);
-            printf("%x %x %x %x\r\n", line_buffer[0], line_buffer[1], line_buffer[2], line_buffer[3]);
+            //printf("CRC value is %x, %d\r\n", crc.crc_chunk[0], crc.crc_chunk[0]);
+            //printf("Bytes written is %d\r\n", stream.bytes_written);
+            //printf("%x %x %x %x\r\n", line_buffer[0], line_buffer[1], line_buffer[2], line_buffer[3]);
             memcpy((char *) line_buffer+stream.bytes_written, (char *) &(crc.crc_chunk[0]), 
                     sizeof(crc.crc_chunk[0]));
             line_buffer_size = stream.bytes_written+sizeof(crc.crc_chunk[0]);  

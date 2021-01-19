@@ -115,9 +115,9 @@ void init_filesystem(void) {
 
 extern Thread rx_serial_thread;
 void load_settings_from_flash(void) {
-    debug_printf(DBG_INFO, "Stats on settings.json\r\n");
+    debug_printf(DBG_INFO, "Stats on settings.bin\r\n");
     FILE *f;    
-    f = fopen("/fs/settings.json", "r");
+    f = fopen("/fs/settings.bin", "r");
     if(!f) {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
         f = fopen("/fs/settings.bin", "w");
@@ -178,8 +178,9 @@ void load_settings_from_flash(void) {
         pb_byte_t buffer[SysCfgMsg_size];
         pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
         pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
-        debug_printf(DBG_INFO, "Settings file is %d bytes\r\n", stream.bytes_written);
-        fwrite(stream.state, 1, stream.bytes_written, f);   
+        debug_printf(DBG_INFO, "Settings file is %d bytes, SysCfgMsg_Size is %d\r\n", 
+            stream.bytes_written, SysCfgMsg_size);
+        fwrite(buffer, 1, stream.bytes_written, f);   
         fflush(f);
         fclose(f); 
         f = fopen("/fs/settings.bin", "r");
@@ -189,12 +190,12 @@ void load_settings_from_flash(void) {
     stat("/fs/settings.bin", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
-    MBED_ASSERT(file_stat.st_size == SysCfgMsg_size);
+    //MBED_ASSERT(file_stat.st_size == SysCfgMsg_size);
     uint8_t cfg_buf[SysCfgMsg_size];
 	fread(cfg_buf, 1, file_stat.st_size, f);
     fflush(f);
     fclose(f);
-    pb_istream_t stream = pb_istream_from_buffer(cfg_buf, SysCfgMsg_size);
+    pb_istream_t stream = pb_istream_from_buffer(cfg_buf, file_stat.st_size);
     SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
     radio_cb = sys_cfg_msg_zero;
     bool status = pb_decode(&stream, SysCfgMsg_fields, &radio_cb);

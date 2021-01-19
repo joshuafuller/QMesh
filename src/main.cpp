@@ -139,12 +139,13 @@ int main()
     send_status();
     printf("Hello\r\n");
 
+#if 0
     // Just do an infinite loop of debug_printfs
     for(;;) {
         debug_printf(DBG_INFO, "Test Line");
         ThisThread::sleep_for(500);
     }
-    while(1);
+#endif
 #if 0
     // Set up the RDA1846 module control
     DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);
@@ -174,6 +175,7 @@ int main()
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
     load_settings_from_flash();
+    while(1);
     log_boot();
 
     // Start up the GPS code
