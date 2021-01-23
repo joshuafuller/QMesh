@@ -46,7 +46,131 @@ static const uint8_t TFEND = 0xDC;
 static const uint8_t TFESC = 0xDD;
 static const uint8_t SETHW = 0x06;
 static const uint8_t DATAPKT = 0x00;
+static const uint8_t EXITKISS = 0xFF;
+static const size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
+static const SerialMsg ser_msg_zero = SerialMsg_init_zero;
 atomic<bool> kiss_mode(false);
+
+static crc_t compute_frame_crc(const uint8_t *buf, const size_t buf_size); 
+static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size);
+
+
+static crc_t compute_frame_crc(const uint8_t *buf, const size_t buf_size) {
+    MbedCRC<POLY_16BIT_CCITT, 16> ct;
+    union {
+        uint32_t gen_crc;
+        crc_t crc_chunk[2];
+    } crc;
+    crc.gen_crc = 0;
+    ct.compute(buf, buf_size, &crc.gen_crc);
+    return crc.crc_chunk[0];
+}
+
+
+static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size) {
+    crc_t crc = compute_frame_crc(buf, buf_size-2);
+    union {
+        crc_t c;
+        uint8_t b[2];
+    } crc_actual;
+    memcpy(crc_actual.b, buf+buf_size-sizeof(crc), sizeof(crc));
+    return crc == crc_actual.c;
+}
+
+
+write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) {
+    // Serialize the protobuf
+    uint8_t buf[SerialMsg_size+sizeof(crc_t)];
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, sizeof(buf)-sizeof(crc_t)); 
+    if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
+        return ENCODE_SER_MSG_ERR;
+    }
+    crc_t crc = compute_frame_crc(buf, stream.bytes_written);
+    memcpy(buf+stream.bytes_written, &crc, sizeof(crc_t));
+
+    // Make it into a KISS frame and write it out
+    if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
+    if(!kiss_data_msg) {
+        if(fputc(SETHW, f) == EOF) { return WRITE_SER_MSG_ERR; }
+    } else {
+        if(fputc(DATAPKT, f) == EOF) { return WRITE_SER_MSG_ERR; }  
+    }
+    for(uint32_t i = 0; i < stream.bytes_written+sizeof(crc_t); i++) {
+        if(buf[i] == FEND) {
+            if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(fputc(TFEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
+        } else if(buf[i] == FESC) {
+            if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(fputc(TFESC, f) == EOF) { return WRITE_SER_MSG_ERR; }            
+        } else {
+            if(fputc(buf[i], f) == EOF) { return WRITE_SER_MSG_ERR; } 
+        }
+    }
+    if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; } 
+    return WRITE_SUCCESS;
+}
+
+
+read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
+    size_t byte_read_count = 0;
+    bool kiss_extended = false;
+    // Get past the first delimiter(s)
+    for(;;) {
+        int cur_byte = fgetc(f);
+        if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        if(cur_byte == EOF) { 
+            return READ_SER_EOF; 
+        } else if(cur_byte != FEND) {
+            if(cur_byte == SETHW) {
+                kiss_extended = true;
+            } else if(cur_byte == DATAPKT) {
+                kiss_extended = false;
+            } else if(cur_byte == EXITKISS) {
+                ser_msg = ser_msg_zero;
+                ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
+                return READ_SUCCESS;
+            } else {
+                return READ_INVALID_KISS_ID;
+            }
+        }
+    }
+    // Pull in the main frame
+    vector<uint8_t> buf;
+    for(;;) {
+        int cur_byte = fgetc(f);
+        if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        if(cur_byte == EOF) {
+            return READ_SER_EOF;
+        } else if(cur_byte == FEND) {
+            break;
+        } else {
+            buf.push_back((uint8_t) cur_byte);
+        }
+    }
+    if(kiss_extended) {
+        // Check the CRC
+        if(!compare_frame_crc(buf.data(), buf.size())) {
+            return CRC_ERR;
+        }
+        // Deserialize it
+        ser_msg = ser_msg_zero;
+        crc_t crc = 0;
+        pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc));
+        if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
+            return DECODE_SER_MSG_ERR;
+        }
+    } else {
+        ser_msg = ser_msg_zero;
+        ser_msg.type = SerialMsg_Type_DATA;
+        ser_msg.has_data_msg = true;
+        ser_msg.data_msg.type = DataMsg_Type_KISSRX;
+        ser_msg.data_msg.payload.size = buf.size();
+        memcpy(ser_msg.data_msg.payload.bytes, buf.data(), buf.size());
+    }
+    return READ_SUCCESS;
+}
+
+
 void tx_serial_thread_fn(void) {
     FILE *kiss_ser = fdopen(&kiss_ser_fh, "w");
     printf("Entering the tx loop\r\n");
@@ -58,66 +182,22 @@ void tx_serial_thread_fn(void) {
         printf("Did another iteration\r\n");
     }
 #endif
-    uint8_t line_buffer[SerialMsg_size+sizeof(uint16_t)];
     for(;;) {
-        size_t line_buffer_size = 0;
+        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
+        SerialMsg ser_msg = *ser_msg_sptr;
         // In KISS mode, we only send out data packets in KISS format.
         if(kiss_mode.load()) {
             printf("In KISS mode\r\n");
-            auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
-            SerialMsg ser_msg = *ser_msg_sptr;
             // Silently drop anything that isn't a KISSRX frame when we're in KISS mode
             if(ser_msg.type == SerialMsg_Type_DATA && ser_msg.has_data_msg && 
                 ser_msg.data_msg.type == DataMsg_Type_KISSRX) {
-                memcpy((char *) line_buffer, (char *) ser_msg.data_msg.payload.bytes, 
-                        ser_msg.data_msg.payload.size);
-                line_buffer_size = ser_msg.data_msg.payload.size;
+                save_SerialMsg(ser_msg, kiss_ser, true);
             } else {
                 continue;
             }           
         } else {
-            //printf("Not in KISS mode\r\n");
-            auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
-            SerialMsg ser_msg = *ser_msg_sptr;
-            pb_byte_t buffer[SerialMsg_size];
-            pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-            pb_encode(&stream, SerialMsg_fields, &ser_msg);
-            MbedCRC<POLY_16BIT_CCITT, 16> ct;
-            union {
-                uint32_t gen_crc;
-                uint16_t crc_chunk[2];
-            } crc;
-            crc.gen_crc = 0;
-            memcpy((char *) line_buffer, buffer, stream.bytes_written);
-            ct.compute(line_buffer, stream.bytes_written, &crc.gen_crc);
-            //printf("CRC value is %x, %d\r\n", crc.crc_chunk[0], crc.crc_chunk[0]);
-            //printf("Bytes written is %d\r\n", stream.bytes_written);
-            //printf("%x %x %x %x\r\n", line_buffer[0], line_buffer[1], line_buffer[2], line_buffer[3]);
-            memcpy((char *) line_buffer+stream.bytes_written, (char *) &(crc.crc_chunk[0]), 
-                    sizeof(crc.crc_chunk[0]));
-            line_buffer_size = stream.bytes_written+sizeof(crc.crc_chunk[0]);  
+            save_SerialMsg(ser_msg, kiss_ser, false);  
         }
-        // KISS-ify it
-        // Put the first delimiter character in
-        fputc(FEND, kiss_ser);
-        if(!kiss_mode.load()) {
-            fputc(SETHW, kiss_ser);
-        } else {
-            fputc(DATAPKT, kiss_ser);
-        }
-        for(unsigned int i = 0; i < line_buffer_size; i++) {
-            uint8_t cur_byte = line_buffer[i];
-            if(cur_byte == FEND) {
-                fputc(FESC, kiss_ser);
-                fputc(TFEND, kiss_ser);
-            } else if(cur_byte == FESC) {
-                fputc(FESC, kiss_ser);
-                fputc(TFESC, kiss_ser);
-            } else {
-                fputc(cur_byte, kiss_ser);
-            }
-        }
-        fputc(FEND, kiss_ser);
     }
 }
 
@@ -171,190 +251,25 @@ void send_error(const string &err_str) {
 }  
 
 
-void get_next_line(FILE *f, string &str);
-void get_next_line(FILE *f, string &str) {
-	for(;;) {
-		int c = fgetc(f);
-		if(c == EOF) {
-			str.clear();
-			return;
-		}
-		str.push_back(c);
-		if(c == '\n') {
-			return;
-		}
-	}
-}
-
-
-int get_next_kiss_entry(FILE *f, SerialMsg &ser_msg, const bool retry = false);
-int get_next_kiss_entry(FILE *f, SerialMsg &ser_msg, const bool retry) {
-    static SerialMsg last_ser_msg;
-    static size_t last_entry_size = 0;
-    vector<uint8_t> ser_data;
-    if(retry) {
-        ser_msg = last_ser_msg;
-        return (int) last_entry_size;
-    }
-    static bool first_time = true;
-    // Get the first frame
-    uint8_t cur_byte = 0;
-    if(first_time) {
-        for(;;) {
-            printf("Reading current byte\r\n");
-            cur_byte = fread((char *) &cur_byte, 1, sizeof(cur_byte), f);
-            printf("Current byte is %x\r\n", cur_byte);
-            if(cur_byte != sizeof(cur_byte)) {
-                printf("Returning\r\n");
-                return -1;
-            }
-            if(cur_byte == FEND) {
-                printf("Found delimiter\r\n");
-                break;
-            }
-        }
-    }
-    for(;;) {
-        if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
-            return -1;
-        }
-        if(cur_byte == FESC) {
-            if(fread((char *) &cur_byte, 1, sizeof(cur_byte), f) != sizeof(cur_byte)) {
-                return -1;
-            }
-            if(cur_byte == TFEND) {
-                ser_data.push_back(FEND);
-            } else if(cur_byte == TFESC) {
-                ser_data.push_back(FESC);
-            } else {
-                ser_data.push_back(cur_byte);
-            }
-            MBED_ASSERT(ser_data.size() <= 1024);
-        } else if(cur_byte == FEND) {
-            // In the KISS protocol, you can have unlimited adjacent FEND bytes.
-            //  As a result, if we accumulate a zero-length packet, then we need 
-            //  to just continue and try to receive the next frame.
-            if(ser_data.size() == 0) {
-                continue;
-            }
-            if(kiss_mode.load()) {
-                if(ser_data.size() < 1) {
-                    ser_data.clear();
-                    continue;
-                }
-                // We've received a message to exit KISS mode
-                if(ser_data.size() == 1 && ser_data[0] == 0xFF) {
-                    ser_data.clear();
-                    kiss_mode.store(false);
-                    continue;
-                }
-                // We've received a packet on TNC port 0.
-                if(ser_data.size() > 1 && ser_data[0] == 0x00) {
-                    SerialMsg zero_ser_msg = SerialMsg_init_zero;
-                    ser_msg = zero_ser_msg;
-                    ser_msg.type = SerialMsg_Type_DATA;
-                    ser_msg.has_data_msg = true;
-                    ser_msg.data_msg.type = DataMsg_Type_KISSTX;
-                    ser_msg.data_msg.payload.size = ser_data.size()-1;
-                    memcpy(ser_msg.data_msg.payload.bytes, ser_data.data()+1, ser_data.size()-1);
-                    return ser_msg.data_msg.payload.size;
-                } else {
-                    MBED_ASSERT(false);
-                }
-            } else {
-                // Another issue is that we currently expect our packets to be at 
-                //  least three bytes long. We need to handle the (hopefully very rare)
-                //  case where we get fewer than three bytes.
-                if(ser_data.size() < 3) {
-                    ser_data.clear();
-                    continue;
-                }
-                // Right now, we should have the payload as well as a two-byte CRC.
-                //  Let's first compute the CRC.
-                MbedCRC<POLY_16BIT_CCITT, 16> ct;
-                uint32_t crc = 0;
-                ct.compute(ser_data.data()+1, ser_data.size()-3, &crc);
-                union { 
-                    uint32_t u;
-                    uint8_t b[4];
-                } crc_orig;
-                crc_orig.u = 0;
-                crc_orig.b[0] = *(ser_data.end()-2);
-                crc_orig.b[1] = *(ser_data.end()-1);
-                if(crc != crc_orig.u) {
-                    debug_printf(DBG_ERR, "Serial packet checksum error\r\n");
-                    SerialMsg out_msg = SerialMsg_init_zero;
-                    out_msg.type = SerialMsg_Type_CRC_ERR;
-                    auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
-                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);   
-                    continue;
-                }
-                SerialMsg zero_ser_msg = SerialMsg_init_zero;
-                ser_msg = zero_ser_msg;
-                pb_istream_t stream = pb_istream_from_buffer(ser_data.data()+1, ser_data.size()-3);
-                if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
-                    return -3;
-                }
-                // Handle switching to KISS mode at this layer
-                if(ser_msg.type == SerialMsg_Type_ENTER_KISS_MODE) {
-                    kiss_mode.store(true);
-                    ser_data.clear();
-                    continue;
-                }
-                last_entry_size = ser_data.size();
-                last_ser_msg = ser_msg;
-                ser_data.clear();
-                return last_entry_size;
-            }
-        } else {
-            ser_data.push_back(cur_byte);
-            MBED_ASSERT(ser_data.size() <= 1024);
-        }
-    }
-}
-
-
-int get_next_entry(FILE *f, SerialMsg &ser_msg, const bool retry = false);
-int get_next_entry(FILE *f, SerialMsg &ser_msg, const bool retry) {
-    size_t entry_size = 0;
-    static SerialMsg last_ser_msg;
-    static size_t last_entry_size = 0;
-    if(retry) {
-        ser_msg = last_ser_msg;
-        return (int) last_entry_size;
-    }
-    if(fread((char *) &entry_size, 1, sizeof(entry_size), f) != sizeof(entry_size)) {
-        return -1;
-    }
-    pb_byte_t entry_bytes[SerialMsg_size];
-    if(fread((char *) &entry_bytes, 1, entry_size, f) != sizeof(entry_size)) {
-        return -2;
-    }
-    SerialMsg zero_ser_msg = SerialMsg_init_zero;
-    ser_msg = zero_ser_msg;
-    pb_istream_t stream = pb_istream_from_buffer(entry_bytes, entry_size);
-    if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
-        return -3;
-    }
-    last_ser_msg = ser_msg;
-    last_entry_size = entry_size;
-    return (int) entry_size;
-}
-
 void rx_serial_thread_fn(void) {
     printf("Entering the RX serial function\r\n");
 	FILE *f = NULL;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
+    static SerialMsg past_log_msg = SerialMsg_init_zero;
     for(;;) {
         SerialMsg ser_msg = SerialMsg_init_zero;
         FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
         printf("Entering the RX serial\r\n");
-        if(get_next_kiss_entry(kiss_ser, ser_msg)) {
+        if(load_SerialMsg(ser_msg, kiss_ser)) {
             debug_printf(DBG_WARN, "Error in reading serial port entry\r\n");
         }
-        if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
+        if(ser_msg.type == SerialMsg_Type_EXIT_KISS_MODE) {
+            kiss_mode.store(false);
+        } else if(ser_msg.type == SerialMsg_Type_ENTER_KISS_MODE) {
+            kiss_mode.store(true);
+        } else if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
             SerialMsg out_msg = SerialMsg_init_zero;
             out_msg.type = SerialMsg_Type_CONFIG;
             out_msg.has_sys_cfg = true;
@@ -436,7 +351,7 @@ void rx_serial_thread_fn(void) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                fs.remove("boot_log.json");
+                fs.remove("boot_log.bin");
             }
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
@@ -446,7 +361,7 @@ void rx_serial_thread_fn(void) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
-                fs.remove("settings.json");
+                fs.remove("settings.bin");
             }
             send_ack();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
@@ -482,7 +397,7 @@ void rx_serial_thread_fn(void) {
                     }
 				}
 				SerialMsg cur_log_msg = SerialMsg_init_zero;
-                if(!get_next_entry(f, cur_log_msg, ser_msg.retry)) { // Go to the next file if it exists
+                if(!load_SerialMsg(cur_log_msg, f)) { // Go to the next file if it exists
                     if(logfile_names.size() == 0) {
                         SerialMsg reply_msg = SerialMsg_init_zero;
                         reply_msg.type = SerialMsg_Type_REPLY_LOG;
@@ -497,7 +412,7 @@ void rx_serial_thread_fn(void) {
                         MBED_ASSERT(f);
                         logfile_names.erase(logfile_names.begin());   
                         string cur_line;
-                        if(!get_next_entry(f, cur_log_msg, ser_msg.retry)) {
+                        if(!load_SerialMsg(cur_log_msg, f)) {
                             SerialMsg reply_msg = SerialMsg_init_zero;
                             reply_msg.type = SerialMsg_Type_REPLY_LOG;
                             reply_msg.has_log_msg = true;
@@ -534,11 +449,11 @@ void rx_serial_thread_fn(void) {
             if(current_mode == MANAGEMENT) {
 				if(!reading_bootlog) {
 					reading_bootlog = true;
-					f = fopen("/fs/boot_log.json", "r");
+					f = fopen("/fs/boot_log.bin", "r");
 					MBED_ASSERT(f);
 				}
                 SerialMsg cur_log_msg = SerialMsg_init_zero;
-                if(!get_next_entry(f, cur_log_msg, ser_msg.retry)) {
+                if(!load_SerialMsg(cur_log_msg, f)) {
                     SerialMsg reply_msg = SerialMsg_init_zero;
                     reply_msg.type = SerialMsg_Type_REPLY_BOOT_LOG;
                     reply_msg.has_boot_log_msg = true;

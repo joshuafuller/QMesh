@@ -42,6 +42,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 
+typedef uint16_t crc_t;
+typedef uint16_t entry_size_t;
+typedef enum {
+    READ_SUCCESS = 0,
+    READ_SER_EOF,
+    READ_INVALID_KISS_ID,
+    READ_ENTRY_SIZE_ERR,
+    READ_MSG_OVERRUN_ERR,
+    INVALID_ENTRY_SIZE,
+    READ_SER_MSG_ERR,
+    DECODE_SER_MSG_ERR,
+    READ_CRC_ERR,
+    CRC_ERR
+} read_ser_msg_err_t;
+
+typedef enum {
+    WRITE_SUCCESS = 0,
+    ENCODE_SER_MSG_ERR, 
+    WRITE_SER_MSG_ERR
+} write_ser_msg_err_t;
+
+#if 0
+static const uint8_t FEND = 0xC0;
+static const uint8_t FESC = 0xDB;
+static const uint8_t TFEND = 0xDC;
+static const uint8_t TFESC = 0xDD;
+static const uint8_t SETHW = 0x06;
+static const uint8_t DATAPKT = 0x00;
+static const size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
+#endif
+
+write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg = true);
+read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f);
+
 extern Mail<shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 
 /// Produces an MbedJSONValue with the current status and queues it for transmission.

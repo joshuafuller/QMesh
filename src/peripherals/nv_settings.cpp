@@ -52,6 +52,7 @@ void rescue_filesystem(void) {
     reboot_system();
 }
 
+
 static void print_dir(string &base_str);
 static void print_dir(string &base_str) {
     DIR *d = opendir(base_str.c_str());
@@ -175,12 +176,10 @@ void load_settings_from_flash(void) {
 
         radio_cb.gps_en = false;
 
-        pb_byte_t buffer[SysCfgMsg_size];
-        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-        pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
-        debug_printf(DBG_INFO, "Settings file is %d bytes, SysCfgMsg_Size is %d\r\n", 
-            stream.bytes_written, SysCfgMsg_size);
-        fwrite(buffer, 1, stream.bytes_written, f);   
+        SerialMsg ser_msg = SerialMsg_init_zero;
+        ser_msg.type = SerialMsg_Type_CONFIG;
+        ser_msg.has_sys_cfg = true;
+        MBED_ASSERT(save_SerialMsg(ser_msg, f));
         fflush(f);
         fclose(f); 
         f = fopen("/fs/settings.bin", "r");
@@ -190,16 +189,11 @@ void load_settings_from_flash(void) {
     stat("/fs/settings.bin", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
-    //MBED_ASSERT(file_stat.st_size == SysCfgMsg_size);
-    uint8_t cfg_buf[SysCfgMsg_size];
-	fread(cfg_buf, 1, file_stat.st_size, f);
-    fflush(f);
-    fclose(f);
-    pb_istream_t stream = pb_istream_from_buffer(cfg_buf, file_stat.st_size);
-    SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
-    radio_cb = sys_cfg_msg_zero;
-    bool status = pb_decode(&stream, SysCfgMsg_fields, &radio_cb);
-    MBED_ASSERT(status);
+    SerialMsg ser_msg = SerialMsg_init_zero;
+    MBED_ASSERT(load_SerialMsg(ser_msg, f));
+    MBED_ASSERT(ser_msg.type == SerialMsg_Type_CONFIG);
+    MBED_ASSERT(ser_msg.has_sys_cfg);
+    radio_cb = ser_msg.sys_cfg;
 
     debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
     debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
@@ -239,32 +233,32 @@ void load_settings_from_flash(void) {
     }
 }
 
+
 void save_settings_to_flash(void) {
     debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
     FILE *f = fopen("/fs/settings.bin", "w"); 
-    pb_byte_t buffer[SysCfgMsg_size];
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&stream, SysCfgMsg_fields, &radio_cb);
-    debug_printf(DBG_INFO, "Settings file is %d bytes\r\n", stream.bytes_written);
-    MBED_ASSERT(stream.bytes_written == SysCfgMsg_size);
-    fwrite(stream.state, 1, stream.bytes_written, f);   
-    MBED_ASSERT(f != 0);
+    MBED_ASSERT(f);
+    SerialMsg ser_msg = SerialMsg_init_zero;
+    ser_msg.has_sys_cfg = true;
+    ser_msg.sys_cfg = radio_cb;
+    MBED_ASSERT(save_SerialMsg(ser_msg, f));
     fclose(f);  
 }
 
+
 void log_boot(void) {
-    FILE *f = fopen("/fs/boot_log.json", "a+");
-    MBED_ASSERT(f);
-    MbedJSONValue log_json;
+    SerialMsg ser_msg = SerialMsg_init_zero;
+    ser_msg.type = SerialMsg_Type_BOOT_LOG;
+    ser_msg.has_boot_log_msg = true;
     time_t my_time = time(NULL);
-    char *time_str = ctime(&my_time);
-    log_json["Time String"] = string(time_str);
-    string log_json_str = log_json.serialize();
-	log_json_str.push_back('\n');
-	debug_printf(DBG_INFO, "Wrote %s\r\n", log_json_str.c_str());
-    fwrite(log_json_str.c_str(), 1, log_json_str.size(), f);
-    fflush(f);
-	fclose(f);
+    ser_msg.boot_log_msg.boot_time = my_time;
+    ser_msg.boot_log_msg.count = 0;
+    ser_msg.boot_log_msg.valid = true;
+
+    FILE *f = fopen("/fs/boot_log.bin", "a+");
+    MBED_ASSERT(f);
+    save_SerialMsg(ser_msg, f);
+    fclose(f);      
 }
 
 
@@ -272,15 +266,15 @@ FILE *open_logfile(void) {
     // Step one: get the size of the current logfile. If current logfile is too big,
     //  move it down the "logfile stack".
     //debug_printf(DBG_INFO, "opening the logfile\r\n");
-    FILE *f = fopen("/fs/log/logfile.json", "r");
+    FILE *f = fopen("/fs/log/logfile.bin", "r");
     if(!f) {
         debug_printf(DBG_INFO, "Need to create the logfile\r\n");
-        f = fopen("/fs/log/logfile.json", "w");
+        f = fopen("/fs/log/logfile.bin", "w");
         MBED_ASSERT(f);
     }
     fclose(f);
     struct stat logfile_statbuf;
-    fs.stat("log/logfile.json", &logfile_statbuf);
+    fs.stat("log/logfile.bin", &logfile_statbuf);
     //debug_printf(DBG_INFO, "logfile size is %d\r\n", logfile_statbuf.st_size);
     if(logfile_statbuf.st_size > LOGFILE_SIZE) {
         for(int i = 11; i >= 0; i--) {
@@ -290,9 +284,9 @@ FILE *open_logfile(void) {
             logfile_name_plusone << "log/logfile" << setw(3) << setfill('0') << i+1 << ".json";
             fs.rename(logfile_name.str().c_str(), logfile_name_plusone.str().c_str());
         }
-        fs.rename("log/logfile.json", "log/logfile000.json");
+        fs.rename("log/logfile.bin", "log/logfile000.bin");
     }
-    f = fopen("/fs/log/logfile.json", "a+");
+    f = fopen("/fs/log/logfile.bin", "a+");
     MBED_ASSERT(f != NULL);
     return f;
 }
@@ -355,13 +349,11 @@ void nv_log_fn(void) {
         time_t uptime = cur_time - boot_timestamp;
         log_msg.uptime = uptime;
 
-        pb_byte_t buffer[LogMsg_size];
-        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-        bool status = pb_encode(&stream, LogMsg_fields, &log_msg);
-        MBED_ASSERT(status);
-        size_t xfer_size = stream.bytes_written;
-        fwrite(&xfer_size, 1, sizeof(xfer_size), f);
-        fwrite(stream.state, 1, stream.bytes_written, f);
+        SerialMsg ser_msg = SerialMsg_init_zero;
+        ser_msg.type = SerialMsg_Type_LOG;
+        ser_msg.has_log_msg = true;
+        ser_msg.log_msg = log_msg;
+        MBED_ASSERT(save_SerialMsg(ser_msg, f));
         fclose(f);
         f = open_logfile();
     }

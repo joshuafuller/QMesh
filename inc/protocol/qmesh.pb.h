@@ -64,7 +64,10 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_SET_TIME = 20,
     SerialMsg_Type_ACK = 21,
     SerialMsg_Type_ERR = 22,
-    SerialMsg_Type_ENTER_KISS_MODE = 23
+    SerialMsg_Type_ENTER_KISS_MODE = 23,
+    SerialMsg_Type_EXIT_KISS_MODE = 24,
+    SerialMsg_Type_BOOT_LOG = 25,
+    SerialMsg_Type_LOG = 26
 } SerialMsg_Type;
 
 typedef enum _DataMsg_Type {
@@ -85,7 +88,7 @@ typedef struct _ClockSetMsg {
     uint32_t time;
 } ClockSetMsg;
 
-typedef PB_BYTES_ARRAY_T(256) DataMsg_payload_t;
+typedef PB_BYTES_ARRAY_T(512) DataMsg_payload_t;
 typedef struct _DataMsg {
     DataMsg_Type type;
     uint32_t stream_id;
@@ -246,8 +249,8 @@ typedef struct _SerialMsg {
 #define _StatusMsg_Status_ARRAYSIZE ((StatusMsg_Status)(StatusMsg_Status_RUNNING+1))
 
 #define _SerialMsg_Type_MIN SerialMsg_Type_GET_CONFIG
-#define _SerialMsg_Type_MAX SerialMsg_Type_ENTER_KISS_MODE
-#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_ENTER_KISS_MODE+1))
+#define _SerialMsg_Type_MAX SerialMsg_Type_LOG
+#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_LOG+1))
 
 #define _DataMsg_Type_MIN DataMsg_Type_TX
 #define _DataMsg_Type_MAX DataMsg_Type_KISSRX
@@ -598,9 +601,9 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           1551
+#define SerialMsg_size                           1807
 #define ErrorMsg_size                            258
-#define DataMsg_size                             291
+#define DataMsg_size                             547
 
 #ifdef __cplusplus
 } /* extern "C" */
