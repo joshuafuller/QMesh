@@ -117,10 +117,13 @@ void init_filesystem(void) {
 extern Thread rx_serial_thread;
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Stats on settings.bin\r\n");
+    printf("Loading settings from flash\r\n");
     FILE *f;    
     f = fopen("/fs/settings.bin", "r");
     if(!f) {
+        printf("Creating new file\r\n");
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
+        fclose(f);
         f = fopen("/fs/settings.bin", "w");
         SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
         radio_cb = sys_cfg_msg_zero;
@@ -179,7 +182,8 @@ void load_settings_from_flash(void) {
         SerialMsg ser_msg = SerialMsg_init_zero;
         ser_msg.type = SerialMsg_Type_CONFIG;
         ser_msg.has_sys_cfg = true;
-        MBED_ASSERT(save_SerialMsg(ser_msg, f));
+        ser_msg.sys_cfg = radio_cb;
+        MBED_ASSERT(save_SerialMsg(ser_msg, f) == WRITE_SUCCESS);
         fflush(f);
         fclose(f); 
         f = fopen("/fs/settings.bin", "r");
@@ -190,7 +194,7 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
     SerialMsg ser_msg = SerialMsg_init_zero;
-    MBED_ASSERT(load_SerialMsg(ser_msg, f));
+    MBED_ASSERT(load_SerialMsg(ser_msg, f) == READ_SUCCESS);
     MBED_ASSERT(ser_msg.type == SerialMsg_Type_CONFIG);
     MBED_ASSERT(ser_msg.has_sys_cfg);
     radio_cb = ser_msg.sys_cfg;

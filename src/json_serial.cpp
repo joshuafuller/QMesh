@@ -69,24 +69,23 @@ static crc_t compute_frame_crc(const uint8_t *buf, const size_t buf_size) {
 
 static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size) {
     crc_t crc = compute_frame_crc(buf, buf_size-2);
-    union {
-        crc_t c;
-        uint8_t b[2];
-    } crc_actual;
-    memcpy(crc_actual.b, buf+buf_size-sizeof(crc), sizeof(crc));
-    return crc == crc_actual.c;
+    crc_t crc_actual;
+    memcpy(&crc_actual, buf+buf_size-sizeof(crc), sizeof(crc));
+    return crc == crc_actual;
 }
 
 
 write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) {
     // Serialize the protobuf
-    uint8_t buf[SerialMsg_size+sizeof(crc_t)];
-    pb_ostream_t stream = pb_ostream_from_buffer(buf, sizeof(buf)-sizeof(crc_t)); 
+    vector<uint8_t> buf(SerialMsg_size);
+    pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
     if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
         return ENCODE_SER_MSG_ERR;
     }
-    crc_t crc = compute_frame_crc(buf, stream.bytes_written);
-    memcpy(buf+stream.bytes_written, &crc, sizeof(crc_t));
+    vector<uint8_t> comb_buf(stream.bytes_written+sizeof(crc_t));
+    memcpy(comb_buf.data(), buf.data(), stream.bytes_written);
+    crc_t crc = compute_frame_crc(comb_buf.data(), stream.bytes_written);
+    memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t));
 
     // Make it into a KISS frame and write it out
     if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
@@ -96,14 +95,14 @@ write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool
         if(fputc(DATAPKT, f) == EOF) { return WRITE_SER_MSG_ERR; }  
     }
     for(uint32_t i = 0; i < stream.bytes_written+sizeof(crc_t); i++) {
-        if(buf[i] == FEND) {
+        if(comb_buf[i] == FEND) {
             if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
             if(fputc(TFEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
-        } else if(buf[i] == FESC) {
+        } else if(comb_buf[i] == FESC) {
             if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
             if(fputc(TFESC, f) == EOF) { return WRITE_SER_MSG_ERR; }            
         } else {
-            if(fputc(buf[i], f) == EOF) { return WRITE_SER_MSG_ERR; } 
+            if(fputc(comb_buf[i], f) == EOF) { return WRITE_SER_MSG_ERR; } 
         }
     }
     if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; } 
@@ -118,13 +117,19 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     for(;;) {
         int cur_byte = fgetc(f);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        while(cur_byte == FEND) {
+            cur_byte = fgetc(f);
+            if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        }
         if(cur_byte == EOF) { 
             return READ_SER_EOF; 
         } else if(cur_byte != FEND) {
             if(cur_byte == SETHW) {
                 kiss_extended = true;
+                break;
             } else if(cur_byte == DATAPKT) {
                 kiss_extended = false;
+                break;
             } else if(cur_byte == EXITKISS) {
                 ser_msg = ser_msg_zero;
                 ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
@@ -135,7 +140,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
         }
     }
     // Pull in the main frame
-    vector<uint8_t> buf;
+    vector<uint8_t> buf(0);
     for(;;) {
         int cur_byte = fgetc(f);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
@@ -143,6 +148,16 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             return READ_SER_EOF;
         } else if(cur_byte == FEND) {
             break;
+        } else if(cur_byte == FESC) {
+            cur_byte = fgetc(f);
+            if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+            if(cur_byte == TFESC) {
+                buf.push_back(FESC);
+            } else if(cur_byte == TFEND) {
+                buf.push_back(FEND);
+            } else {
+                return INVALID_CHAR;
+            }
         } else {
             buf.push_back((uint8_t) cur_byte);
         }
@@ -150,13 +165,14 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     if(kiss_extended) {
         // Check the CRC
         if(!compare_frame_crc(buf.data(), buf.size())) {
+            printf("CRC error\r\n");
             return CRC_ERR;
         }
         // Deserialize it
         ser_msg = ser_msg_zero;
-        crc_t crc = 0;
-        pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc));
+        pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
+            printf("DECODE error\r\n");
             return DECODE_SER_MSG_ERR;
         }
     } else {

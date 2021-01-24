@@ -54,7 +54,8 @@ typedef enum {
     READ_SER_MSG_ERR,
     DECODE_SER_MSG_ERR,
     READ_CRC_ERR,
-    CRC_ERR
+    CRC_ERR,
+    INVALID_CHAR
 } read_ser_msg_err_t;
 
 typedef enum {
@@ -73,7 +74,7 @@ static const uint8_t DATAPKT = 0x00;
 static const size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
 #endif
 
-write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg = true);
+write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg = false);
 read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f);
 
 extern Mail<shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
