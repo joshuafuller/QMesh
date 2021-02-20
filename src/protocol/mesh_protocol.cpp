@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 
+extern EventQueue background_queue;
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
@@ -193,12 +194,14 @@ void mesh_protocol_fsm(void) {
                     total_rx_pkt.store(total_rx_pkt.load()+1);
                     last_rx_rssi.store(radio_event->rssi);
                     last_rx_snr.store(radio_event->snr);
+                    background_queue.call(oled_mon_fn);
                     // Load up the frame
                     led2.LEDSolid();
                     rx_frame_sptr = make_shared<Frame>(fec);
                     PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(radio_event->buf);
                     if(pkt_status == PKT_OK) {
                         total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
+                        background_queue.call(oled_mon_fn);
                         auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
                         rx_frame_sptr->setSender(radio_cb.address);
                         rx_frame_sptr->incrementTTL();
@@ -240,6 +243,7 @@ void mesh_protocol_fsm(void) {
 
             case TX_PACKET:
                 total_tx_pkt.store(total_tx_pkt.load()+1);
+                background_queue.call(oled_mon_fn);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 radio.lock();
                 radio.standby();

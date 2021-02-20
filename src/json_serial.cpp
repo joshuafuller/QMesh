@@ -35,6 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include "USBSerial.h"
 
+extern EventQueue background_queue;
+
 UARTSerial kiss_ser_fh(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
 Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
 
@@ -283,8 +285,10 @@ void rx_serial_thread_fn(void) {
         }
         if(ser_msg.type == SerialMsg_Type_EXIT_KISS_MODE) {
             kiss_mode.store(false);
+            background_queue.call(oled_mon_fn);
         } else if(ser_msg.type == SerialMsg_Type_ENTER_KISS_MODE) {
             kiss_mode.store(true);
+            background_queue.call(oled_mon_fn);
         } else if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
             SerialMsg out_msg = SerialMsg_init_zero;
             out_msg.type = SerialMsg_Type_CONFIG;

@@ -123,7 +123,6 @@ void load_settings_from_flash(void) {
     if(!f) {
         printf("Creating new file\r\n");
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
-        fclose(f);
         f = fopen("/fs/settings.bin", "w");
         SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
         radio_cb = sys_cfg_msg_zero;
@@ -152,7 +151,7 @@ void load_settings_from_flash(void) {
         radio_cb.net_cfg = net_cfg_zero;
         string def_msg = "KG5VBY Default Message";
         memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
-        radio_cb.net_cfg.beacon_interval = 600;
+        radio_cb.net_cfg.beacon_interval = 6;
         radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
 
         radio_cb.has_fec_cfg = true;

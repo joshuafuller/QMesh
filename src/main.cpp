@@ -264,7 +264,7 @@ while(1);
     ThisThread::sleep_for(250);
  
     // Start the OLED monitoring
-    background_queue.call_every(1000, oled_mon_fn);
+    background_queue.call(oled_mon_fn);
 
     debug_printf(DBG_INFO, "Started everything\r\n");
 
