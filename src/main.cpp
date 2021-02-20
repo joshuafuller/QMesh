@@ -69,7 +69,7 @@ void print_stats()
     printf("Uptime: %-20lld", stats.uptime);
     printf("Idle time: %-20lld", stats.idle_time);
     printf("Sleep time: %-20lld", stats.sleep_time);
-    printf("Deep sleep time: %-20lld\n", stats.deep_sleep_time);
+    printf("Deep sleep time: %-2F0lld\n", stats.deep_sleep_time);
     }
 #if 0
     {
@@ -97,7 +97,6 @@ int main()
 {
     start_cal();
     time(&boot_timestamp);
-
     background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
 
     // Set up the LEDs
@@ -175,7 +174,6 @@ int main()
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
     load_settings_from_flash();
-    while(1);
     log_boot();
 
     // Start up the GPS code
@@ -200,7 +198,6 @@ int main()
     led1.LEDBlink();
     led2.LEDOff();
     led3.LEDOff();
-
     // Test the FEC
 #if 0
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
@@ -228,7 +225,6 @@ print_memory_info();
 ThisThread::sleep_for(500);
 while(1);
 #endif
-
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);

@@ -381,9 +381,9 @@ extern atomic<bool> kiss_mode;
 void oled_mon_fn(void) {
     oled->clearDisplay();
     if(kiss_mode.load()) {
-        oled->printf("PACKET STATISTICS  K\r\n");
+        oled->printf("PACKET STATS  K\r\n");
     } else {
-        oled->printf("PACKET STATISTICS  K+\r\n");        
+        oled->printf("PACKET STATS  K+\r\n");        
     }
     oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
     oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
