@@ -295,13 +295,14 @@ void rx_serial_thread_fn(void) {
             kiss_mode.store(true);
             background_queue.call(oled_mon_fn);
         } else if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
-            debug_printf(DBG_INFO, "Configuration requested\r\n");
             SerialMsg out_msg = SerialMsg_init_zero;
             out_msg.type = SerialMsg_Type_CONFIG;
             out_msg.has_sys_cfg = true;
             out_msg.sys_cfg = radio_cb;
             auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
-            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);   
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);
+            send_ack();
+            reboot_system();
         } else if(ser_msg.type == SerialMsg_Type_SET_CONFIG) {
             if(!ser_msg.has_sys_cfg) {
                 send_error(string("No Configuration Sent!\r\n"));
