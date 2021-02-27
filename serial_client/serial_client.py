@@ -59,12 +59,10 @@ def make_kiss_frame(frame):
 
 # Callback whenever new received messages come in from the broker
 def input_cb(ch, method, properties, body):
-    print("Hello, a message has been received")
     global ser
     frame = bytearray()
     frame += FEND
     frame += SETHW
-    print(body)
     for frame_byte in body:
         if(frame_byte == FEND):
             frame += FESC
@@ -74,9 +72,6 @@ def input_cb(ch, method, properties, body):
             frame += TFESC
         else:
             frame.append(frame_byte)
-
-    #crc = binascii.crc_hqx(body, 0) # This uses the CRC-CCITT polynomial
-
     _CRC_FUNC = crcmod.mkCrcFun(0x11021, initCrc=0xffff, rev=False)
     crc = _CRC_FUNC(body)
     crc_bytes = crc.to_bytes(2, byteorder="little")
