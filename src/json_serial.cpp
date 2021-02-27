@@ -295,6 +295,7 @@ void rx_serial_thread_fn(void) {
             kiss_mode.store(true);
             background_queue.call(oled_mon_fn);
         } else if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
+            debug_printf(DBG_INFO, "Configuration requested\r\n");
             SerialMsg out_msg = SerialMsg_init_zero;
             out_msg.type = SerialMsg_Type_CONFIG;
             out_msg.has_sys_cfg = true;
