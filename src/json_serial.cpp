@@ -118,9 +118,11 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     // Get past the first delimiter(s)
     for(;;) {
         int cur_byte = fgetc(f);
+        printf("Read byte 0x%x\r\n", cur_byte);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
             cur_byte = fgetc(f);
+            printf("Read byte 0x%x\r\n", cur_byte);
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte == EOF) { 
@@ -145,6 +147,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     vector<uint8_t> buf(0);
     for(;;) {
         int cur_byte = fgetc(f);
+        printf("Read byte 0x%x\r\n", cur_byte);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         if(cur_byte == EOF) {
             return READ_SER_EOF;
@@ -152,6 +155,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             break;
         } else if(cur_byte == FESC) {
             cur_byte = fgetc(f);
+            printf("Read byte 0x%x\r\n", cur_byte);
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
             if(cur_byte == TFESC) {
                 buf.push_back(FESC);
@@ -280,8 +284,9 @@ void rx_serial_thread_fn(void) {
         SerialMsg ser_msg = SerialMsg_init_zero;
         FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
         printf("Entering the RX serial\r\n");
-        if(load_SerialMsg(ser_msg, kiss_ser)) {
-            debug_printf(DBG_WARN, "Error in reading serial port entry\r\n");
+        int err = load_SerialMsg(ser_msg, kiss_ser);
+        if(err != 0) {
+            debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
         }
         if(ser_msg.type == SerialMsg_Type_EXIT_KISS_MODE) {
             kiss_mode.store(false);

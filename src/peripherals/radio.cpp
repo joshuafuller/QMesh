@@ -120,7 +120,25 @@ void init_radio(void) {
     radio.configure_freq_hop(radio_cb.address, freqs);
     debug_printf(DBG_INFO, "POCSAG Frequency is %d\r\n", radio_cb.pocsag_cfg.frequency); 
     debug_printf(DBG_INFO, "POCSAG Beacon Interval is %d\r\n", radio_cb.pocsag_cfg.beacon_interval);
-    debug_printf(DBG_INFO, "FEC algorithm is %s\r\n", radio_cb.fec_cfg.type); 
+    switch(radio_cb.fec_cfg.type) {
+        case FECCfg_Type_NONE:
+            debug_printf(DBG_INFO, "FEC algorithm is NONE\r\n");
+            break;
+        case FECCfg_Type_INTERLEAVE:
+            debug_printf(DBG_INFO, "FEC algorithm is INTERLEAVE\r\n");
+            break;    
+        case FECCfg_Type_CONV:
+            debug_printf(DBG_INFO, "FEC algorithm is CONV\r\n");
+            break;    
+        case FECCfg_Type_RSV:
+            debug_printf(DBG_INFO, "FEC algorithm is RSV\r\n");
+            break;    
+        case FECCfg_Type_RSVGOLAY:
+            debug_printf(DBG_INFO, "FEC algorithm is RSVGOLAY\r\n");
+            break; 
+        default:
+            MBED_ASSERT(false);   
+    }
     if(radio_cb.fec_cfg.type == FECCfg_Type_NONE) {
         frame_fec = make_shared<FEC>(Frame::size());
     }

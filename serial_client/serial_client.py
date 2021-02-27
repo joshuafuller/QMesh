@@ -40,6 +40,8 @@ DATAPKT = 0x00.to_bytes(1, 'little')
 FRAME_MAX_SIZE = 8192
 def make_kiss_frame(frame):
     out_frame = bytearray()
+    out_frame += FEND
+    out_frame += SETHW
     for cur_byte in frame:
         cur_byte_arr = bytearray()
         cur_byte_arr.append(cur_byte)
@@ -57,12 +59,30 @@ def make_kiss_frame(frame):
 
 # Callback whenever new received messages come in from the broker
 def input_cb(ch, method, properties, body):
+    print("Hello, a message has been received")
     global ser
     frame = bytearray()
-    frame += body
-    crc = binascii.crc_hqx(frame) # This uses the CRC-CCITT polynomial
+    frame += FEND
+    frame += SETHW
+    print(body)
+    for frame_byte in body:
+        if(frame_byte == FEND):
+            frame += FESC
+            frame += TFEND
+        elif(frame_byte == FESC):
+            frame += FESC
+            frame += TFESC
+        else:
+            frame.append(frame_byte)
+
+    #crc = binascii.crc_hqx(body, 0) # This uses the CRC-CCITT polynomial
+
+    _CRC_FUNC = crcmod.mkCrcFun(0x11021, initCrc=0xffff, rev=False)
+    crc = _CRC_FUNC(body)
     crc_bytes = crc.to_bytes(2, byteorder="little")
+
     frame += crc_bytes
+    frame += FEND
     ser.write(bytearray(frame))
 
 
@@ -138,7 +158,8 @@ def input_thread_fn():
                 if(calc_crc != crc): 
                     raise CRCError
                 ser_msg = qmesh_pb2.SerialMsg()
-                ser_msg.ParseFromString(pld)
+                try: ser_msg.ParseFromString(pld)
+                except UnicodeDecodeError: print("Failed to decode")
                 channel.basic_publish(exchange='board_output', routing_key='', 
                                         body=ser_msg.SerializeToString())
             except CRCError:
@@ -160,8 +181,8 @@ if __name__ == "__main__":
                 serial_ports = serial_ports[1:] + [serial_ports[0]]
             time.sleep(1)
     # Put the TNC in KISS+ mode
-    kiss_frame = make_kiss_frame(0xFF.to_bytes(1, 'little'))
-    ser.write(kiss_frame)
+    #kiss_frame = make_kiss_frame(0xFF.to_bytes(1, 'little'))
+    #ser.write(kiss_frame)
     # Set up the callbacks
     input_thread = threading.Thread(target=input_thread_fn)
     input_thread.start()
@@ -179,7 +200,7 @@ if __name__ == "__main__":
             frame = bytearray()
             frame += FEND
             frame += bytes(ser_msg.SerializeToString())
-            crc = binascii.crc_hqx(frame)
+            crc = binascii.crc_hqx(frame, 0)
             crc_bytes = crc.to_bytes(2, byteorder="little")
             frame += crc_bytes
             frame += FEND
