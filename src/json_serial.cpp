@@ -362,11 +362,13 @@ void rx_serial_thread_fn(void) {
                     struct dirent *dir_entry = readdir(log_dir);
                     if(!dir_entry) { break; }
                     stringstream fname;
-                    fname << "/fs/log/" << dir_entry->d_name; 
-                    debug_printf(DBG_INFO, "Deleting %s\r\n", fname.str().c_str());
-                    int rem_err = fs.remove(fname.str().c_str());
-                    if(rem_err) {
-                        debug_printf(DBG_ERR, "File remove failed with code %d\r\n", rem_err);
+                    fname << "/log/" << dir_entry->d_name; 
+                    if(string(dir_entry->d_name) != "." && string(dir_entry->d_name) != "..") {
+                        debug_printf(DBG_INFO, "Deleting %s\r\n", fname.str().c_str());
+                        int rem_err = fs.remove(fname.str().c_str());
+                        if(rem_err) {
+                            debug_printf(DBG_WARN, "File remove failed with code %d\r\n", rem_err);
+                        }
                     }
                 }
             }
@@ -395,6 +397,7 @@ void rx_serial_thread_fn(void) {
             reboot_system();
         }
         else if(ser_msg.type == SerialMsg_Type_READ_LOG) {
+            debug_printf(DBG_INFO, "Read log found\r\n");
             static vector<string> logfile_names;
             stay_in_management = true;
             while(current_mode == BOOTING);
