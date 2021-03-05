@@ -128,7 +128,7 @@ int main()
     push_button->SetQueue(background_queue);
 	
     // Start the WDT thread
-    wdt_thread.start(wdt_fn);
+    //wdt_thread.start(wdt_fn);
     ThisThread::sleep_for(1000);
     debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
     // Start the serial handler threads

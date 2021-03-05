@@ -75,7 +75,6 @@ def input_cb(ch, method, properties, body):
     _CRC_FUNC = crcmod.mkCrcFun(0x11021, initCrc=0xffff, rev=False)
     crc = _CRC_FUNC(body)
     crc_bytes = crc.to_bytes(2, byteorder="little")
-
     frame += crc_bytes
     frame += FEND
     ser.write(bytearray(frame))
@@ -128,8 +127,10 @@ def get_kiss_frame(ser):
             next_byte = ser.read(1)
             if(next_byte == TFEND):
                 frame += FEND 
-            if(next_byte == TFESC):
+            elif(next_byte == TFESC):
                 frame += FESC
+            else:
+                raise Exception
         else:
             frame += cur_byte
         

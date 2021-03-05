@@ -58,10 +58,11 @@ qmesh_common.stay_in_management()
 
 # Send out the settings block
 ser_msg = qmesh_pb2.SerialMsg()
+ser_msg.type = ser_msg.SET_CONFIG
 ser_msg.sys_cfg.address = node_id
 ser_msg.sys_cfg.radio_cfg.type = qmesh_pb2.RadioCfg.LORA
 ser_msg.sys_cfg.radio_cfg.frequency = cfg_dict['frequency']
-ser_msg.sys_cfg.radio_cfg.frequencies = cfg_dict['frequencies']
+ser_msg.sys_cfg.radio_cfg.frequencies.extend(cfg_dict['frequencies'])
 ser_msg.sys_cfg.radio_cfg.tx_power = tx_power
 ser_msg.sys_cfg.radio_cfg.lora_cfg.bw = cfg_dict['bw']
 ser_msg.sys_cfg.radio_cfg.lora_cfg.sf = cfg_dict['sf']
@@ -69,7 +70,7 @@ ser_msg.sys_cfg.radio_cfg.lora_cfg.cr = cfg_dict['cr']
 ser_msg.sys_cfg.radio_cfg.lora_cfg.preamble_length = cfg_dict['preamble_length']
 ser_msg.sys_cfg.test_cfg.cw_test_mode = cfg_dict['cw_test_mode']
 ser_msg.sys_cfg.test_cfg.preamble_test_mode = cfg_dict['preamble_test_mode']
-ser_msg.sys_cfg.test_cfg.test_fec = cfg_dict['fec_test_mode']
+ser_msg.sys_cfg.test_cfg.test_fec = cfg_dict['test_fec']
 ser_msg.sys_cfg.fec_cfg.type = cfg_dict['fec_algo']
 ser_msg.sys_cfg.fec_cfg.conv_rate = cfg_dict['conv_rate']
 ser_msg.sys_cfg.fec_cfg.conv_order = cfg_dict['conv_order']
@@ -78,11 +79,11 @@ ser_msg.sys_cfg.net_cfg.beacon_msg = cfg_dict['beacon_msg']
 ser_msg.sys_cfg.net_cfg.beacon_interval = beacon_interval
 ser_msg.sys_cfg.net_cfg.num_offsets = cfg_dict['num_offsets']
 ser_msg.sys_cfg.net_cfg.pld_len = cfg_dict['payload_length']
-ser_msg.sys_cfg.net_cfg.pocsag_cfg.enabled = cfg_dict['pocsag_enabled']
-ser_msg.sys_cfg.net_cfg.pocsag_cfg.frequency = cfg_dict['pocsag_freq']
-ser_msg.sys_cfg.net_cfg.pocsag_cfg.beacon_interval = cfg_dict['pocsag_beacon_interval']
+ser_msg.sys_cfg.pocsag_cfg.enabled = cfg_dict['pocsag_enabled']
+ser_msg.sys_cfg.pocsag_cfg.frequency = cfg_dict['pocsag_freq']
+ser_msg.sys_cfg.pocsag_cfg.beacon_interval = cfg_dict['pocsag_beacon_interval']
 ser_msg.sys_cfg.gps_en = cfg_dict['gps_en']
-ser_msg.sys_cfg.log_packets_en = cfg_dict['log_packets']
+ser_msg.sys_cfg.log_packets_en = cfg_dict['log_packets_en']
 ser_msg.sys_cfg.boot_log_en = cfg_dict['log_boot']
 
 qmesh_common.publish_msg(ser_msg)

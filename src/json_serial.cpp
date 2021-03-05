@@ -154,6 +154,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
         } else if(cur_byte == FEND) {
             break;
         } else if(cur_byte == FESC) {
+            printf("Escaped Character\r\n");
             cur_byte = fgetc(f);
             printf("Read byte 0x%x\r\n", cur_byte);
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
@@ -268,7 +269,7 @@ void send_error(const string &err_str) {
     size_t str_len = err_str.size() < 256 ? err_str.size() : 256;
     memcpy((char *) ser_msg.error_msg.msg, err_str.c_str(), str_len);
     auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
-    debug_printf(DBG_ERR, "%s", err_str.c_str());
+    debug_printf(DBG_WARN, "%s", err_str.c_str());
     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);   
 }  
 
@@ -304,6 +305,7 @@ void rx_serial_thread_fn(void) {
             send_ack();
             reboot_system();
         } else if(ser_msg.type == SerialMsg_Type_SET_CONFIG) {
+            debug_printf(DBG_INFO, "Serial config received\r\n");
             if(!ser_msg.has_sys_cfg) {
                 send_error(string("No Configuration Sent!\r\n"));
             } else {
@@ -403,21 +405,24 @@ void rx_serial_thread_fn(void) {
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
 				if(!reading_log) {
-                    logfile_names.clear();
+                    //logfile_names.clear();
                     DIR *log_dir = opendir("/fs/log");
                     MBED_ASSERT(log_dir);
                     for(;;) {
                         struct dirent *my_dirent = readdir(log_dir);
                         if(!my_dirent) { break; }
-                        stringstream file_path;
-                        file_path << "/fs/log/" << my_dirent->d_name;
                         if(string(my_dirent->d_name) == "." || 
                             string(my_dirent->d_name) == "..") { continue; }
-                        debug_printf(DBG_INFO, "STUFF: %s\r\n", file_path.str().c_str());
-                        logfile_names.push_back(file_path.str());
-                    }
+                        string file_path;
+                        file_path.append("/fs/log/");
+                        file_path.append(my_dirent->d_name);
+                        //debug_printf(DBG_INFO, "STUFF: %s\r\n", file_path.str().c_str());
+                        debug_printf(DBG_INFO, "STUFF: %s\r\n", my_dirent->d_name);
+                        logfile_names.push_back(file_path);
+                    }								
                     reading_log = true;
-                    if(!fopen(logfile_names[0].c_str(), "r")) {
+                    f = fopen(logfile_names[0].c_str(), "r");
+                    if(!f) {
                         string err_msg = "Unable to open logfile ";
                         err_msg.append(logfile_names[0]);
                         err_msg.append("\r\n");
@@ -427,6 +432,7 @@ void rx_serial_thread_fn(void) {
                     }
 				}
 				SerialMsg cur_log_msg = SerialMsg_init_zero;
+                // Need to have an actually-open filehandle here
                 if(!load_SerialMsg(cur_log_msg, f)) { // Go to the next file if it exists
                     if(logfile_names.size() == 0) {
                         SerialMsg reply_msg = SerialMsg_init_zero;
