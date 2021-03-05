@@ -357,7 +357,7 @@ void nv_log_fn(void) {
         ser_msg.type = SerialMsg_Type_LOG;
         ser_msg.has_log_msg = true;
         ser_msg.log_msg = log_msg;
-        MBED_ASSERT(save_SerialMsg(ser_msg, f));
+        MBED_ASSERT(!save_SerialMsg(ser_msg, f));
         fclose(f);
         f = open_logfile();
     }
