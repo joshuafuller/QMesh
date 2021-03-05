@@ -59,24 +59,28 @@ def make_kiss_frame(frame):
 
 # Callback whenever new received messages come in from the broker
 def input_cb(ch, method, properties, body):
+    print("new version")
+    body_with_crc = body
+    _CRC_FUNC = crcmod.predefined.mkCrcFun('crc-ccitt-false')
+    crc = _CRC_FUNC(body)
+    crc_bytes = crc.to_bytes(2, byteorder="little")
+    body_with_crc += crc_bytes
     global ser
     frame = bytearray()
     frame += FEND
     frame += SETHW
-    for frame_byte in body:
-        if(frame_byte == FEND):
+    for frame_byte in body_with_crc:
+        if(frame_byte.to_bytes(1, 'little') == FEND):
             frame += FESC
             frame += TFEND
-        elif(frame_byte == FESC):
+        elif(frame_byte.to_bytes(1, 'little') == FESC):
             frame += FESC
             frame += TFESC
         else:
             frame.append(frame_byte)
-    _CRC_FUNC = crcmod.mkCrcFun(0x11021, initCrc=0xffff, rev=False)
-    crc = _CRC_FUNC(body)
-    crc_bytes = crc.to_bytes(2, byteorder="little")
-    frame += crc_bytes
     frame += FEND
+    for frame_byte in frame:
+        print(hex(frame_byte))
     ser.write(bytearray(frame))
 
 
@@ -148,7 +152,7 @@ def input_thread_fn():
                 print("Full frame content is %s" % frame)
                 crc = int.from_bytes(frame[-2:], "little", signed=False)
                 frame = frame[:-2]
-                _CRC_FUNC = crcmod.mkCrcFun(0x11021, initCrc=0xffff, rev=False)
+                _CRC_FUNC = crcmod.predefined.mkCrcFun('crc-ccitt-false')
                 calc_crc = _CRC_FUNC(frame)
                 pld = frame
                 if(calc_crc != crc): 

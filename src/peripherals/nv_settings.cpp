@@ -242,9 +242,10 @@ void save_settings_to_flash(void) {
     FILE *f = fopen("/fs/settings.bin", "w"); 
     MBED_ASSERT(f);
     SerialMsg ser_msg = SerialMsg_init_zero;
+    ser_msg.type = SerialMsg_Type_CONFIG;
     ser_msg.has_sys_cfg = true;
     ser_msg.sys_cfg = radio_cb;
-    MBED_ASSERT(save_SerialMsg(ser_msg, f));
+    MBED_ASSERT(!save_SerialMsg(ser_msg, f));
     fclose(f);  
 }
 

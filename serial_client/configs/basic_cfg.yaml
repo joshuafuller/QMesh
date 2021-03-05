@@ -13,7 +13,8 @@ preamble_length: 16
 preamble_slots: 1
 payload_length: 32
 beacon_msg: 'KG5VBY Beacon Test'
-fec_algo: 'RSV'
+# NONE = 0; INTERLEAVE = 1; CONV = 2; RSV = 3; RSVGOLAY = 4;
+fec_algo: 4
 conv_rate: 2
 conv_order: 7
 rs_num_roots: 8

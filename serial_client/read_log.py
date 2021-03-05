@@ -56,6 +56,7 @@ qmesh_common.channel.start_consuming()
 qmesh_common.stay_in_management()
 
 while True:
+    print("Starting the read log process")
     ser_msg = qmesh_pb2.SerialMsg()
     ser_msg.type = qmesh_pb2.SerialMsg.READ_LOG
     qmesh_common.publish_msg(ser_msg)

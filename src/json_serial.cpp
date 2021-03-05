@@ -125,9 +125,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             printf("Read byte 0x%x\r\n", cur_byte);
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         }
-        if(cur_byte == EOF) { 
-            return READ_SER_EOF; 
-        } else if(cur_byte != FEND) {
+        if(cur_byte != FEND) {
             if(cur_byte == SETHW) {
                 kiss_extended = true;
                 break;
@@ -149,9 +147,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
         int cur_byte = fgetc(f);
         printf("Read byte 0x%x\r\n", cur_byte);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
-        if(cur_byte == EOF) {
-            return READ_SER_EOF;
-        } else if(cur_byte == FEND) {
+        if(cur_byte == FEND) {
             break;
         } else if(cur_byte == FESC) {
             printf("Escaped Character\r\n");
