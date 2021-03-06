@@ -118,11 +118,9 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     // Get past the first delimiter(s)
     for(;;) {
         int cur_byte = fgetc(f);
-        printf("Read byte 0x%x\r\n", cur_byte);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
             cur_byte = fgetc(f);
-            printf("Read byte 0x%x\r\n", cur_byte);
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
@@ -145,14 +143,11 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     vector<uint8_t> buf(0);
     for(;;) {
         int cur_byte = fgetc(f);
-        printf("Read byte 0x%x\r\n", cur_byte);
         if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         if(cur_byte == FEND) {
             break;
         } else if(cur_byte == FESC) {
-            printf("Escaped Character\r\n");
             cur_byte = fgetc(f);
-            printf("Read byte 0x%x\r\n", cur_byte);
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
             if(cur_byte == TFESC) {
                 buf.push_back(FESC);
@@ -168,14 +163,12 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     if(kiss_extended) {
         // Check the CRC
         if(!compare_frame_crc(buf.data(), buf.size())) {
-            printf("CRC error\r\n");
             return CRC_ERR;
         }
         // Deserialize it
         ser_msg = ser_msg_zero;
         pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
-            printf("DECODE error\r\n");
             return DECODE_SER_MSG_ERR;
         }
     } else {
@@ -271,16 +264,14 @@ void send_error(const string &err_str) {
 
 
 void rx_serial_thread_fn(void) {
-    printf("Entering the RX serial function\r\n");
 	FILE *f = NULL;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
     static SerialMsg past_log_msg = SerialMsg_init_zero;
+    FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
     for(;;) {
         SerialMsg ser_msg = SerialMsg_init_zero;
-        FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
-        printf("Entering the RX serial\r\n");
         int err = load_SerialMsg(ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
@@ -429,7 +420,9 @@ void rx_serial_thread_fn(void) {
 				}
 				SerialMsg cur_log_msg = SerialMsg_init_zero;
                 // Need to have an actually-open filehandle here
-                if(!load_SerialMsg(cur_log_msg, f)) { // Go to the next file if it exists
+                int err_ser = load_SerialMsg(cur_log_msg, f); 
+                debug_printf(DBG_INFO, "Serial Error is %d\r\n", err_ser);
+                if(err_ser) { // Go to the next file if it exists
                     if(logfile_names.size() == 0) {
                         SerialMsg reply_msg = SerialMsg_init_zero;
                         reply_msg.type = SerialMsg_Type_REPLY_LOG;
@@ -470,6 +463,8 @@ void rx_serial_thread_fn(void) {
                         send_error("Logfile entry has no log message\r\n");
                     }
                     reply_msg.log_msg = cur_log_msg.log_msg;
+                    reply_msg.has_log_msg = true;
+                    reply_msg.log_msg.valid = true;
                     auto reply_msg_sptr = make_shared<SerialMsg>(reply_msg);
                     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
 				}

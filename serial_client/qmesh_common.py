@@ -153,7 +153,7 @@ def stay_in_management():
 def print_log_msg(log_msg):
     ret_str = ''
     ret_str += "----------\r\n"
-    ret_str += "Timestamp: %s\r\n" % (time.asctime(log_msg.timestamp))
+    ret_str += "Timestamp: %s\r\n" % (log_msg.timestamp)
     ret_str += "Count: %s\r\n" % (log_msg.count)
     ret_str += "Sender: %s\r\n" % (log_msg.sender)
     ret_str += "TTL: %s\r\n" % (log_msg.ttl)

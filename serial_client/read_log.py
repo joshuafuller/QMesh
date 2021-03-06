@@ -20,9 +20,10 @@ import sys, os
 import pika
 import qmesh_pb2
 import qmesh_common
+import time
 
 # Write out to file
-out_file = open("board_log.json", 'w')
+out_file = open("board_log.bin", 'w')
 
 def dbg_process(ch, method, properties, body):
     ser_msg = qmesh_pb2.SerialMsg()
@@ -41,14 +42,19 @@ def log_process(ch, method, properties, body):
         if(ser_msg.status.status == ser_msg.status.MANAGEMENT):
             qmesh_common.channel.stop_consuming()
     elif(ser_msg.type == ser_msg.REPLY_LOG):
+        print(ser_msg.log_msg.valid)
+        print(ser_msg.log_msg)
         if(ser_msg.log_msg.valid == False):
             print("Finished reading in log entries")
             sys.exit(0)
         else:
             log_msg_str = qmesh_common.print_log_msg(ser_msg.log_msg)
+            print(log_msg_str)
             out_file.write(log_msg_str)
             out_file.flush()
-            ch.stop_consuming()
+            ser_msg = qmesh_pb2.SerialMsg()
+            ser_msg.type = qmesh_pb2.SerialMsg.READ_LOG
+            qmesh_common.publish_msg(ser_msg)
 
 qmesh_common.setup_outgoing_rabbitmq(dbg_process)
 qmesh_common.reboot_board()

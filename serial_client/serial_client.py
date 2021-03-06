@@ -59,7 +59,7 @@ def make_kiss_frame(frame):
 
 # Callback whenever new received messages come in from the broker
 def input_cb(ch, method, properties, body):
-    print("new version")
+    #print("new version")
     body_with_crc = body
     _CRC_FUNC = crcmod.predefined.mkCrcFun('crc-ccitt-false')
     crc = _CRC_FUNC(body)
@@ -79,8 +79,8 @@ def input_cb(ch, method, properties, body):
         else:
             frame.append(frame_byte)
     frame += FEND
-    for frame_byte in frame:
-        print(hex(frame_byte))
+    #for frame_byte in frame:
+    #    print(hex(frame_byte))
     ser.write(bytearray(frame))
 
 
