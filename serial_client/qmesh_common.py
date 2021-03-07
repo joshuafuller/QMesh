@@ -173,7 +173,7 @@ def print_log_msg(log_msg):
 def print_bootlog_msg(bootlog_msg):
     ret_str = ''
     ret_str += "----------\r\n"
-    ret_str += "Timestamp: %s\r\n" % (time.asctime(bootlog_msg.timestamp))
+    ret_str += "Boot Time: %s\r\n" % (bootlog_msg.boot_time)
     ret_str += "Count: %s\r\n" % (bootlog_msg.count)
     print(ret_str)
     return ret_str

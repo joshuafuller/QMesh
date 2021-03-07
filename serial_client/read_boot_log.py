@@ -23,7 +23,7 @@ import qmesh_common
 
 
 # Write out to file
-out_file = open("boot_log.json", 'w')
+out_file = open("boot_log.log", 'w')
 
 def dbg_process(ch, method, properties, body):
     ser_msg = qmesh_pb2.SerialMsg()
@@ -33,6 +33,7 @@ def dbg_process(ch, method, properties, body):
         if(ser_msg.status.status == ser_msg.status.MANAGEMENT):
             qmesh_common.channel.stop_consuming()
 			
+
 def log_process(ch, method, properties, body):
     ser_msg = qmesh_pb2.SerialMsg()
     ser_msg.ParseFromString(body)
@@ -41,24 +42,27 @@ def log_process(ch, method, properties, body):
         if(ser_msg.status.status == ser_msg.status.MANAGEMENT):
             qmesh_common.channel.stop_consuming()
     elif(ser_msg.type == ser_msg.REPLY_BOOT_LOG):
-        if(ser_msg.log_msg.valid == False):
+        if(ser_msg.boot_log_msg.valid == False):
             print("Finished reading in boot log entries")
             sys.exit(0)
         else:
-            log_msg_str = qmesh_common.print_bootlog_msg(ser_msg.log_msg)
+            log_msg_str = qmesh_common.print_bootlog_msg(ser_msg.boot_log_msg)
             out_file.write(log_msg_str)
             out_file.flush()
-            ch.stop_consuming()
+            ser_msg = qmesh_pb2.SerialMsg()
+            ser_msg.type = qmesh_pb2.SerialMsg.READ_BOOT_LOG
+            qmesh_common.publish_msg(ser_msg)
 
-qmesh_common.setup_outgoing_rabbitmq()
+qmesh_common.setup_outgoing_rabbitmq(dbg_process)
 qmesh_common.reboot_board()	
 qmesh_common.channel.start_consuming()
 qmesh_common.stay_in_management()
 
 while True:
+    print("Starting the read boot log process")
     ser_msg = qmesh_pb2.SerialMsg()
     ser_msg.type = qmesh_pb2.SerialMsg.READ_BOOT_LOG
-    qmesh_common.publish_msg()
+    qmesh_common.publish_msg(ser_msg)
     qmesh_common.channel.basic_consume(queue=qmesh_common.queue_name, auto_ack=True, \
-        on_message_callback=qmesh_common.log_process)	
+        on_message_callback=log_process)	
     qmesh_common.channel.start_consuming()

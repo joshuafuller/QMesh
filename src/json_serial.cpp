@@ -270,9 +270,11 @@ void rx_serial_thread_fn(void) {
 	bool reading_bootlog = false;
     static SerialMsg past_log_msg = SerialMsg_init_zero;
     FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
+    SerialMsg ser_msg;
+    int err;
     for(;;) {
-        SerialMsg ser_msg = SerialMsg_init_zero;
-        int err = load_SerialMsg(ser_msg, kiss_ser);
+        ser_msg = SerialMsg_init_zero;
+        err = load_SerialMsg(ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
         }
@@ -392,7 +394,6 @@ void rx_serial_thread_fn(void) {
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
 				if(!reading_log) {
-                    //logfile_names.clear();
                     DIR *log_dir = opendir("/fs/log");
                     MBED_ASSERT(log_dir);
                     for(;;) {
@@ -403,7 +404,6 @@ void rx_serial_thread_fn(void) {
                         string file_path;
                         file_path.append("/fs/log/");
                         file_path.append(my_dirent->d_name);
-                        //debug_printf(DBG_INFO, "STUFF: %s\r\n", file_path.str().c_str());
                         debug_printf(DBG_INFO, "STUFF: %s\r\n", my_dirent->d_name);
                         logfile_names.push_back(file_path);
                     }								
@@ -480,7 +480,8 @@ void rx_serial_thread_fn(void) {
 					MBED_ASSERT(f);
 				}
                 SerialMsg cur_log_msg = SerialMsg_init_zero;
-                if(!load_SerialMsg(cur_log_msg, f)) {
+                int err_ser = load_SerialMsg(cur_log_msg, f);
+                if(err_ser) {
                     SerialMsg reply_msg = SerialMsg_init_zero;
                     reply_msg.type = SerialMsg_Type_REPLY_BOOT_LOG;
                     reply_msg.has_boot_log_msg = true;
@@ -490,11 +491,10 @@ void rx_serial_thread_fn(void) {
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
 					reboot_system();	    
 				} else {
-                    cur_log_msg.type = SerialMsg_Type_READ_BOOT_LOG;
+                    cur_log_msg.type = SerialMsg_Type_REPLY_BOOT_LOG;
                     cur_log_msg.boot_log_msg.count = line_count++;
                     auto reply_msg_sptr = make_shared<SerialMsg>(cur_log_msg);
-                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);                     
-					debug_printf(DBG_WARN, "Now rebooting...\r\n");                    						
+                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);                               						
 				}
             }
         }		
