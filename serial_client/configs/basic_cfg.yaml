@@ -28,5 +28,6 @@ pocsag_freq: 439987500
 pocsag_beacon_interval: 120
 log_packets_en: 1
 log_boot: 1
+watchdog_timer_en: 1
 
 ...

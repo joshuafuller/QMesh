@@ -128,7 +128,7 @@ void load_settings_from_flash(void) {
         radio_cb = sys_cfg_msg_zero;
         radio_cb.mode = SysCfgMsg_Mode_NORMAL;
         radio_cb.address = DEFAULT_ADDRESS;
-        
+
         radio_cb.has_radio_cfg = true;
         RadioCfg radio_cfg_zero = RadioCfg_init_zero;
         radio_cb.radio_cfg = radio_cfg_zero;
@@ -177,6 +177,8 @@ void load_settings_from_flash(void) {
         radio_cb.test_cfg.test_fec = false;
 
         radio_cb.gps_en = false;
+
+        radio_cb.watchdog_timer_en = false;
 
         SerialMsg ser_msg = SerialMsg_init_zero;
         ser_msg.type = SerialMsg_Type_CONFIG;
@@ -269,7 +271,6 @@ void log_boot(void) {
 FILE *open_logfile(void) {
     // Step one: get the size of the current logfile. If current logfile is too big,
     //  move it down the "logfile stack".
-    //debug_printf(DBG_INFO, "opening the logfile\r\n");
     FILE *f = fopen("/fs/log/logfile.bin", "r");
     if(!f) {
         debug_printf(DBG_INFO, "Need to create the logfile\r\n");
@@ -279,7 +280,6 @@ FILE *open_logfile(void) {
     fclose(f);
     struct stat logfile_statbuf;
     fs.stat("log/logfile.bin", &logfile_statbuf);
-    //debug_printf(DBG_INFO, "logfile size is %d\r\n", logfile_statbuf.st_size);
     if(logfile_statbuf.st_size > LOGFILE_SIZE) {
         for(int i = 11; i >= 0; i--) {
             stringstream logfile_name, logfile_name_plusone;

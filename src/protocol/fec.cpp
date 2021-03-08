@@ -300,48 +300,6 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
             const int32_t my_rs_corr_bytes) 
     : FECConv(my_msg_len, inv_rate, order) {
     name = "RSV";
-#if 0    
-    // Set up the convolutional outer code
-    this->inv_rate = inv_rate;
-    this->order = order;
-    correct_convolutional_polynomial_t *poly = NULL;
-    switch(inv_rate) {
-        case 2: // 1/2
-            switch(order) {
-                case 6: poly = conv_r12_6_polynomial; break;
-                case 7: poly = libfec_r12_7_polynomial; break;
-                case 8: poly = conv_r12_8_polynomial; break;
-                case 9: poly = conv_r12_9_polynomial; break;
-                default:
-                    debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                break;
-            }
-        break;
-        case 3: // 1/3
-            switch(order) {
-                case 6: poly = conv_r13_6_polynomial; break;
-                case 7: poly = conv_r13_7_polynomial; break;
-                case 8: poly = conv_r13_8_polynomial; break;
-                case 9: poly = libfec_r13_9_polynomial; break;
-                default:
-                    debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-                break;
-            }
-        break;
-        case 6: // 1/6
-            if(order == 15) {
-                poly = libfec_r16_15_polynomial;
-            }
-            else {
-                debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");                
-            }
-        break;
-        default:
-            debug_printf(DBG_ERR, "Invalid convolutional coding parameters selected\r\n");
-        break;
-    }
-    corr_con = correct_convolutional_create(inv_rate, order, poly);
-#endif
 
     // Set up all of the other major parameters
     msg_len = my_msg_len;
@@ -361,7 +319,6 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
     int_params.bits_f = conv_params.bytes*8;
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
-    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
     int_params.bits = (int32_t) int_params.bits_f;
     int_params.bytes = (int32_t) ceilf((int_params.row_f*int_params.col_f)/8.0f);
     int_params.row = (int32_t) int_params.row_f;
@@ -396,8 +353,6 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     MBED_ASSERT(msg.size() == msg_len);
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     correct_reed_solomon_encode(rs_con, msg.data(), msg_len, rs_enc_msg.data());
-    //debug_printf(DBG_INFO, "rs_size is %d %d %d %d\r\n", msg_len, rs_size, rs_enc_msg_size,
-    //            conv_params.bytes);
     // Convolutional encode
     vector<uint8_t> conv_enc_msg(conv_params.bytes, 0);
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
@@ -406,9 +361,7 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     MBED_ASSERT((int32_t) conv_enc_msg.size() == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);
-    //debug_printf(DBG_INFO, "rsv-pre-int %d\r\n", int_enc_msg.size());
     interleaveBits(conv_enc_msg, int_enc_msg);
-    //debug_printf(DBG_INFO, "rsv-post-int %d\r\n", int_enc_msg.size());
 	MBED_ASSERT(int_enc_msg.size() == enc_size);
     enc_msg.resize(enc_size);
     copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
@@ -460,7 +413,6 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
     int_params.bits_f = msg_len*8;
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
-    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
     int_params.bits = (size_t) int_params.bits_f;
     int_params.bytes = (size_t) ceilf((int_params.row_f*int_params.col_f)/8.0f);
     int_params.row = (size_t) int_params.row_f;

@@ -185,21 +185,11 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
 
 void tx_serial_thread_fn(void) {
     FILE *kiss_ser = fdopen(&kiss_ser_fh, "w");
-    printf("Entering the tx loop\r\n");
-#if 0
-    while(1) {
-        string test_string("Hello world\r\n");
-        //kiss_ser_fh->write(test_string.c_str(), test_string.size());
-        fprintf(kiss_ser, "Testing out the KISS port \r\n");
-        printf("Did another iteration\r\n");
-    }
-#endif
     for(;;) {
         auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
         SerialMsg ser_msg = *ser_msg_sptr;
         // In KISS mode, we only send out data packets in KISS format.
         if(kiss_mode.load()) {
-            printf("In KISS mode\r\n");
             // Silently drop anything that isn't a KISSRX frame when we're in KISS mode
             if(ser_msg.type == SerialMsg_Type_DATA && ser_msg.has_data_msg && 
                 ser_msg.data_msg.type == DataMsg_Type_KISSRX) {

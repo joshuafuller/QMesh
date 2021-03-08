@@ -36,6 +36,7 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['gps_en'] = ser_msg.sys_cfg.gps_en
     cfg_dict['log_packets'] = ser_msg.sys_cfg.log_packets_en
     cfg_dict['log_boot'] = ser_msg.sys_cfg.boot_log_en
+    cfg_dict['watchdog_timer_en'] = ser_msg.sys_cfg.watchdog_timer_en
 
     yaml_str = yaml.dump(cfg_dict)
     f = open(yaml_file_path, 'w')
@@ -89,6 +90,7 @@ def print_cfg_msg(ser_msg):
     print("\tGPS Enabled: %s" % (sys_cfg.gps_en))
     print("\tLog Packets Enabled: %s" % (sys_cfg.log_packets_en))
     print("\tBoot Log Enabled: %s" % (sys_cfg.boot_log_en))
+    print("\tWatchdog Timer Enabled: %s" % (sys_cfg.watchdog_timer_en))
 
 
 def publish_msg(ser_msg):

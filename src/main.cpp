@@ -127,8 +127,6 @@ int main()
     auto push_button = new PushButton(USER_BUTTON);
     push_button->SetQueue(background_queue);
 	
-    // Start the WDT thread
-    //wdt_thread.start(wdt_fn);
     ThisThread::sleep_for(1000);
     debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
     // Start the serial handler threads
@@ -136,15 +134,7 @@ int main()
     rx_frame_thread.start(rx_frame_ser_thread_fn);
     debug_printf(DBG_INFO, "Serial threads started");
     send_status();
-    printf("Hello\r\n");
 
-#if 0
-    // Just do an infinite loop of debug_printfs
-    for(;;) {
-        debug_printf(DBG_INFO, "Test Line");
-        ThisThread::sleep_for(500);
-    }
-#endif
 #if 0
     // Set up the RDA1846 module control
     DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);
@@ -265,6 +255,13 @@ while(1);
  
     // Start the OLED monitoring
     background_queue.call(oled_mon_fn);
+
+    // Enable the watchdog timer if configured to do so
+    if(radio_cb.watchdog_timer_en) {
+        debug_printf(DBG_INFO, "Enabling watchdog timer\r\n");
+        // Start the WDT thread
+        wdt_thread.start(wdt_fn);
+    }
 
     debug_printf(DBG_INFO, "Started everything\r\n");
 

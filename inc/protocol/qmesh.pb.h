@@ -205,6 +205,7 @@ typedef struct _SysCfgMsg {
     bool gps_en;
     bool log_packets_en;
     bool boot_log_en;
+    bool watchdog_timer_en;
 } SysCfgMsg;
 
 typedef struct _SerialMsg {
@@ -264,7 +265,7 @@ typedef struct _SerialMsg {
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default}
 #define NetCfg_init_default                      {"", 0, 0, 0, 0}
 #define POCSAGCfg_init_default                   {0, 0, 0}
-#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, POCSAGCfg_init_default, 0, 0, 0}
+#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, POCSAGCfg_init_default, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
 #define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0}
 #define DbgMsg_init_default                      {""}
@@ -282,7 +283,7 @@ typedef struct _SerialMsg {
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero}
 #define NetCfg_init_zero                         {"", 0, 0, 0, 0}
 #define POCSAGCfg_init_zero                      {0, 0, 0}
-#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, POCSAGCfg_init_zero, 0, 0, 0}
+#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, POCSAGCfg_init_zero, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
 #define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0}
 #define DbgMsg_init_zero                         {""}
@@ -365,6 +366,7 @@ typedef struct _SerialMsg {
 #define SysCfgMsg_gps_en_tag                     8
 #define SysCfgMsg_log_packets_en_tag             9
 #define SysCfgMsg_boot_log_en_tag                10
+#define SysCfgMsg_watchdog_timer_en_tag          11
 #define SerialMsg_type_tag                       1
 #define SerialMsg_retry_tag                      2
 #define SerialMsg_sys_cfg_tag                    3
@@ -438,7 +440,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  net_cfg,           6) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  pocsag_cfg,        7) \
 X(a, STATIC,   SINGULAR, BOOL,     gps_en,            8) \
 X(a, STATIC,   SINGULAR, BOOL,     log_packets_en,    9) \
-X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,      10)
+X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,      10) \
+X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  11)
 #define SysCfgMsg_CALLBACK NULL
 #define SysCfgMsg_DEFAULT NULL
 #define SysCfgMsg_radio_cfg_MSGTYPE RadioCfg
@@ -592,7 +595,7 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define RadioCfg_size                            232
 #define NetCfg_size                              282
 #define POCSAGCfg_size                           14
-#define SysCfgMsg_size                           595
+#define SysCfgMsg_size                           597
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           10
 #define DbgMsg_size                              258
@@ -601,7 +604,7 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           1807
+#define SerialMsg_size                           1809
 #define ErrorMsg_size                            258
 #define DataMsg_size                             547
 

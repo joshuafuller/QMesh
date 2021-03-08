@@ -1,5 +1,4 @@
 #!/bin/bash
-
 nanopb_generator.py -I . -D . qmesh.proto
 mv qmesh.pb.c ../src/protocol/
 mv qmesh.pb.h ../inc/protocol/

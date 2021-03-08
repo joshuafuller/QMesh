@@ -85,6 +85,7 @@ ser_msg.sys_cfg.pocsag_cfg.beacon_interval = cfg_dict['pocsag_beacon_interval']
 ser_msg.sys_cfg.gps_en = cfg_dict['gps_en']
 ser_msg.sys_cfg.log_packets_en = cfg_dict['log_packets_en']
 ser_msg.sys_cfg.boot_log_en = cfg_dict['log_boot']
+ser_msg.sys_cfg.watchdog_timer_en = cfg_dict['watchdog_timer_en']
 
 qmesh_common.publish_msg(ser_msg)
 qmesh_common.channel.start_consuming()
