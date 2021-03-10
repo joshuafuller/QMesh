@@ -31,7 +31,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "USBSerial.h"
 
 
-JSONSerial rx_json_ser, tx_json_ser;
 extern IndicatorLED led1, led2, led3;
 Thread tx_serial_thread(osPriorityNormal, 16384, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
 Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
@@ -45,7 +44,9 @@ Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thr
 
 time_t boot_timestamp;
 
+#ifdef APRS
 Afsk my_afsk;
+#endif
 
 system_state_t current_mode = BOOTING;
 bool stay_in_management = false;
@@ -141,6 +142,7 @@ int main()
 #endif
 
     // Initialize the LibAPRS components
+#ifdef APRS
     debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
     AFSK_init(&my_afsk);
     APRS_init(0, false);
@@ -160,6 +162,7 @@ int main()
     //while(1) {
         APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
     //}
+#endif
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();

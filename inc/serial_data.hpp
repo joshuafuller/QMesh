@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SERIAL_DATA_HPP
 
 #include "mbed.h"
-#include "MbedJSONValue.hpp"
 #include <string>
 #include "params.hpp"
 #include "nv_settings.hpp"

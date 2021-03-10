@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <fstream>
 #include <sstream>
-#include "MbedJSONValue.hpp"
 #include "qmesh.pb.h"
 #include "pb_common.h"
 #include "pb_encode.h"
