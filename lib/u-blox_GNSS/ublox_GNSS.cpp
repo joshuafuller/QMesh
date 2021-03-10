@@ -11,7 +11,7 @@ Distributed as-is; no warranty is given.
 #include "ublox_GNSS.h"
 #include <cstdint>
 #include "mbed.h"
-#include "json_serial.hpp"
+#include "kiss_serial.hpp"
 
 void GNSS::clearUART( void )
 {

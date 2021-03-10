@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include "params.hpp"
 #include "nv_settings.hpp"
-#include "json_serial.hpp"
+#include "kiss_serial.hpp"
 #include "fec.hpp"
 #include "qmesh.pb.h"
 #include "pb_common.h"

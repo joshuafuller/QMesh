@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 #include "fec.hpp"
-#include "json_serial.hpp"
+#include "kiss_serial.hpp"
 #include <random>
 #include "qmesh.pb.h"
 #include "pb_encode.h"

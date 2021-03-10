@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include "serial_data.hpp"
 #include "fec.hpp"
-#include "json_serial.hpp"
+#include "kiss_serial.hpp"
 #include "mesh_protocol.hpp"
 #include "mem_trace.hpp"
 #include "Adafruit_SSD1306.h"

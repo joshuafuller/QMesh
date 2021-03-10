@@ -31,7 +31,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include <iomanip>
 #include <random>
 #include <sstream>
-#include "json_serial.hpp"
+#include "kiss_serial.hpp"
 
 // Squash a warning about wait_ms being deprecated
 #define wait_ms(x) wait_us(x*1000)
