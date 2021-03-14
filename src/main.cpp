@@ -49,7 +49,7 @@ Afsk my_afsk;
 #endif
 
 system_state_t current_mode = BOOTING;
-bool stay_in_management = false;
+atomic<bool> stay_in_management(false);
 
 #define SLEEP_TIME                  500 // (msec)
 #define PRINT_AFTER_N_LOOPS         20
@@ -129,12 +129,20 @@ int main()
     push_button->SetQueue(background_queue);
 	
     ThisThread::sleep_for(1000);
-    debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
+    //debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
     // Start the serial handler threads
-    tx_serial_thread.start(tx_serial_thread_fn);
-    rx_frame_thread.start(rx_frame_ser_thread_fn);
-    debug_printf(DBG_INFO, "Serial threads started");
+    UARTSerial *kiss_ser_fh = new UARTSerial(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
+    MBED_ASSERT(kiss_ser_fh);
+    KISSSerial *bt_ser = new KISSSerial(*kiss_ser_fh, string("BT"), DEBUG_PORT);
+    MBED_ASSERT(bt_ser);
+    KISSSerial *dbg_ser = new KISSSerial(string("DEBUG"), DEBUG_PORT);
+    MBED_ASSERT(dbg_ser);
+    debug_printf(DBG_INFO, "Serial threads started0");
+    debug_printf(DBG_INFO, "Serial threads started1");
+    debug_printf(DBG_INFO, "Serial threads started2");
+    debug_printf(DBG_INFO, "Serial threads started3");
     send_status();
+    while(1);
 
 #if 0
     // Set up the RDA1846 module control
@@ -163,11 +171,14 @@ int main()
         APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
     //}
 #endif
-
+    while(1);
     // Mount the filesystem, load the configuration, log the bootup
+    print_memory_info();
     init_filesystem();
     load_settings_from_flash();
+    while(1);
     log_boot();
+    rx_frame_thread.start(rx_frame_ser_thread_fn);
 
     // Start up the GPS code
     if(radio_cb.gps_en) {
@@ -216,7 +227,6 @@ int main()
     } 
 print_memory_info();
 ThisThread::sleep_for(500);
-while(1);
 #endif
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");

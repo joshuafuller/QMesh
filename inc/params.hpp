@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Defines key parameters
 
 // Size of the various inter-thread queues
-#define QUEUE_DEPTH 64
+#define QUEUE_DEPTH 16
 
 // Test mode selection
 #define TX_TEST_MODE

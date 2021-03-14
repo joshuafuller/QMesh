@@ -377,18 +377,21 @@ void beacon_pocsag_fn(void) {
 
 
 extern Adafruit_SSD1306_I2c *oled;
-extern atomic<bool> kiss_mode;
 /**
  * Function called by the OLED display monitor thread. Every second, it 
  *  updates the OLED display with new packet status information.
  */
 void oled_mon_fn(void) {
     oled->clearDisplay();
-    if(kiss_mode.load()) {
-        oled->printf("PACKET STATS  K\r\n");
-    } else {
-        oled->printf("PACKET STATS  K+\r\n");        
+    string kiss_modes_str;
+    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+        if((*iter)->kiss_mode) {
+            kiss_modes_str.append("KS ");
+        } else {
+            kiss_modes_str.append("K+ ");
+        }
     }
+    oled->printf("PACKET STATS  %s\r\n", kiss_modes_str.c_str());      
     oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
     oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
                     (float) total_rx_pkt.load())*100));

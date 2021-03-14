@@ -230,11 +230,11 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
 
 
 static Mutex dbg_printf_mutex;
+static char tmp_str[512];
 int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     dbg_printf_mutex.lock();
     va_list args;
     va_start(args, fmt);
-    static char tmp_str[512];
     vsprintf(tmp_str, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
@@ -259,12 +259,15 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     auto ser_msg_sptr = make_shared<SerialMsg>();
-    SerialMsg ser_msg_zero = SerialMsg_init_zero;
-    *ser_msg_sptr = ser_msg_zero;
+    *ser_msg_sptr = SerialMsg_init_zero;
     ser_msg_sptr->type = SerialMsg_Type_DEBUG_MSG;
     ser_msg_sptr->has_dbg_msg = true;
     sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
-    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
+    kiss_sers_mtx.lock();
+    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+        (*iter)->enqueue_msg(ser_msg_sptr);
+    }
+    kiss_sers_mtx.unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
         ThisThread::sleep_for(2000);
         MBED_ASSERT(false);
@@ -274,13 +277,11 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     return 0;
 }
 
-
+static char tmp_str_clean[512];
 int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-
-    static char tmp_str[512];
-    vsprintf(tmp_str, fmt, args);
+    vsprintf(tmp_str_clean, fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
         #ifndef DEBUG_INFO
@@ -307,9 +308,12 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     SerialMsg ser_msg_zero = SerialMsg_init_zero;
     *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
-    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str, 256);
-    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);      
-
+    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str_clean, 256);
+    kiss_sers_mtx.lock();
+    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+        (*iter)->enqueue_msg(ser_msg_sptr);
+    }
+    kiss_sers_mtx.unlock();
     va_end(args);
     return 0;
 }
@@ -324,6 +328,10 @@ void rx_frame_ser_thread_fn(void) {
         ser_msg_sptr->has_data_msg = true;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
         ser_msg_sptr->data_msg.type = DataMsg_Type_RX;
-        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
+        kiss_sers_mtx.lock();
+        for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+            (*iter)->enqueue_msg(ser_msg_sptr);
+        }
+        kiss_sers_mtx.lock();
     }
 }

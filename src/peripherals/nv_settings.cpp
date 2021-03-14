@@ -113,14 +113,13 @@ void init_filesystem(void) {
     print_dir(base_str);
 }
 
-extern Thread rx_serial_thread;
+//extern Thread rx_serial_thread;
 void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Stats on settings.bin\r\n");
-    printf("Loading settings from flash\r\n");
+    ThisThread::sleep_for(1000);
     FILE *f;    
     f = fopen("/fs/settings.bin", "r");
     if(!f) {
-        printf("Creating new file\r\n");
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
         f = fopen("/fs/settings.bin", "w");
         SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
@@ -225,16 +224,18 @@ void load_settings_from_flash(void) {
     MBED_ASSERT(radio_cb.has_fec_cfg);
     MBED_ASSERT(radio_cb.fec_cfg.conv_rate == 2);
     MBED_ASSERT(radio_cb.fec_cfg.conv_order == 7);
+#if 0
     // Check if low-power mode is set. If so, delete the UART
-    rx_serial_thread.start(rx_serial_thread_fn);
+    //rx_serial_thread.start(rx_serial_thread_fn);
     FILE *low_power_fh = fopen("/fs/low_power.mode", "r");
     if(low_power_fh) {
-        rx_serial_thread.terminate();
+        //rx_serial_thread.terminate();
         oled->displayOff();
         mbed_file_handle(STDIN_FILENO)->enable_input(false); 
         //gps_serial.enable_input(false); 
         fclose(low_power_fh);
     }
+#endif
 }
 
 

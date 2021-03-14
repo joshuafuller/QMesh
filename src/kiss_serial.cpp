@@ -36,10 +36,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern EventQueue background_queue;
 
-UARTSerial kiss_ser_fh(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
-Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
-
 void print_memory_info();
+
+// debug_printf() uses this vector to determine which serial ports to send out
+vector<KISSSerial *> kiss_sers;
+Mutex kiss_sers_mtx;
 
 static const uint8_t FEND = 0xC0;
 static const uint8_t FESC = 0xDB;
@@ -49,11 +50,11 @@ static const uint8_t SETHW = 0x06;
 static const uint8_t DATAPKT = 0x00;
 static const uint8_t EXITKISS = 0xFF;
 static const size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
-static const SerialMsg ser_msg_zero = SerialMsg_init_zero;
-atomic<bool> kiss_mode(false);
 
 static crc_t compute_frame_crc(const uint8_t *buf, const size_t buf_size); 
 static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size);
+
+static Mutex shared_mtx;
 
 
 static crc_t compute_frame_crc(const uint8_t *buf, const size_t buf_size) {
@@ -76,17 +77,33 @@ static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size) {
 }
 
 
-write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) {
-    // Serialize the protobuf
-    vector<uint8_t> buf(SerialMsg_size);
-    pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
-    if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
-        return ENCODE_SER_MSG_ERR;
+void send_status(void) {
+    kiss_sers_mtx.lock();
+    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+        (*iter)->send_status();
     }
-    vector<uint8_t> comb_buf(stream.bytes_written+sizeof(crc_t));
-    memcpy(comb_buf.data(), buf.data(), stream.bytes_written);
-    crc_t crc = compute_frame_crc(comb_buf.data(), stream.bytes_written);
-    memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t));
+    kiss_sers_mtx.unlock();
+}
+
+
+write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) {
+    vector<uint8_t> comb_buf;
+    // If we're not doing KISS, we want to send the whole serialized protobuf message.
+    // OTOH, if we're doing KISS, we just want to send back the payload.
+    if(!kiss_data_msg) {
+        vector<uint8_t> buf(SerialMsg_size);
+        pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
+        if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
+            return ENCODE_SER_MSG_ERR;
+        }
+        comb_buf.resize(stream.bytes_written+sizeof(crc_t));
+        memcpy(comb_buf.data(), buf.data(), stream.bytes_written);
+        crc_t crc = compute_frame_crc(comb_buf.data(), stream.bytes_written);
+        memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t));
+    } else {
+        comb_buf.resize(ser_msg.data_msg.payload.size);
+        memcpy(comb_buf.data(), ser_msg.data_msg.payload.bytes, ser_msg.data_msg.payload.size);
+    }
 
     // Make it into a KISS frame and write it out
     if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
@@ -95,7 +112,7 @@ write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool
     } else {
         if(fputc(DATAPKT, f) == EOF) { return WRITE_SER_MSG_ERR; }  
     }
-    for(uint32_t i = 0; i < stream.bytes_written+sizeof(crc_t); i++) {
+    for(uint32_t i = 0; i < comb_buf.size(); i++) {
         if(comb_buf[i] == FEND) {
             if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
             if(fputc(TFEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
@@ -108,6 +125,87 @@ write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool
     }
     if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; } 
     return WRITE_SUCCESS;
+}
+
+
+KISSSerial::KISSSerial(const string &port_name, const ser_port_type_t ser_port_type) {
+    using_stdio = true;
+    kiss_mode = false;
+    port_type = ser_port_type;
+
+    string rx_ser_name("RX-SERIAL-");
+    rx_ser_name.append(port_name);
+    rx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, rx_ser_name.c_str());
+    string tx_ser_name("TX-SERIAL-");
+    tx_ser_name.append(port_name);
+    tx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, tx_ser_name.c_str());
+
+    kiss_sers_mtx.lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx.unlock();
+
+    rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+    tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
+}
+
+
+KISSSerial::KISSSerial(UARTSerial &ser_port, const string &port_name, const ser_port_type_t ser_port_type) {
+    ser = &ser_port;
+    using_stdio = false;
+    kiss_mode = false;
+    port_type = ser_port_type;
+
+    string rx_ser_name("RX-SERIAL-");
+    rx_ser_name.append(port_name);
+    rx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, rx_ser_name.c_str());
+    string tx_ser_name("TX-SERIAL-");
+    tx_ser_name.append(port_name);
+    tx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, tx_ser_name.c_str());
+
+    kiss_sers_mtx.lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx.unlock();
+
+    rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+    tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
+}
+
+
+KISSSerial::~KISSSerial() {
+    kiss_sers_mtx.lock();
+    kiss_sers.erase(find(kiss_sers.begin(), kiss_sers.end(), this));
+    kiss_sers_mtx.unlock();
+    rx_ser_thread->join();
+    delete rx_ser_thread;
+    tx_ser_thread->join();
+    delete tx_ser_thread;
+}
+
+
+void KISSSerial::enqueue_msg(shared_ptr<SerialMsg> ser_msg_sptr) {
+    if(ser_msg_sptr->type == SerialMsg_Type_DATA) {
+        MBED_ASSERT(ser_msg_sptr->has_data_msg);
+        auto out_ser_msg = make_shared<SerialMsg>();
+        *out_ser_msg = SerialMsg_init_zero;
+        *out_ser_msg = *ser_msg_sptr;
+        if(kiss_mode) {
+            if(out_ser_msg->data_msg.type == DataMsg_Type_TX) {
+                out_ser_msg->data_msg.type = DataMsg_Type_KISSTX;
+            }
+            if(out_ser_msg->data_msg.type == DataMsg_Type_RX) {
+                out_ser_msg->data_msg.type = DataMsg_Type_KISSRX;
+            }
+        }
+        if(ser_msg_sptr->data_msg.voice && 
+            (port_type == DEBUG_PORT || port_type == VOICE_PORT)) {
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);  
+        } else if (!ser_msg_sptr->data_msg.voice && 
+            (port_type == DEBUG_PORT || port_type == APRS_PORT)) {
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);  
+        }
+    } else if(!kiss_mode) {
+        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
+    }
 }
 
 
@@ -130,7 +228,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
                 kiss_extended = false;
                 break;
             } else if(cur_byte == EXITKISS) {
-                ser_msg = ser_msg_zero;
+                ser_msg = SerialMsg_init_zero;
                 ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
                 return READ_SUCCESS;
             } else {
@@ -165,13 +263,13 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             return CRC_ERR;
         }
         // Deserialize it
-        ser_msg = ser_msg_zero;
+        ser_msg = SerialMsg_init_zero;
         pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
             return DECODE_SER_MSG_ERR;
         }
     } else {
-        ser_msg = ser_msg_zero;
+        ser_msg = SerialMsg_init_zero;
         ser_msg.type = SerialMsg_Type_DATA;
         ser_msg.has_data_msg = true;
         ser_msg.data_msg.type = DataMsg_Type_KISSRX;
@@ -182,22 +280,26 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
 }
 
 
-void tx_serial_thread_fn(void) {
-    FILE *kiss_ser = fdopen(&kiss_ser_fh, "w");
+void KISSSerial::tx_serial_thread_fn(void) {
+    FILE *kiss_ser;
+    if(using_stdio) {
+        kiss_ser = stdout;
+    } else {
+        kiss_ser = fdopen(ser, "w");
+    }
     for(;;) {
         auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
-        SerialMsg ser_msg = *ser_msg_sptr;
         // In KISS mode, we only send out data packets in KISS format.
         if(kiss_mode.load()) {
             // Silently drop anything that isn't a KISSRX frame when we're in KISS mode
-            if(ser_msg.type == SerialMsg_Type_DATA && ser_msg.has_data_msg && 
-                ser_msg.data_msg.type == DataMsg_Type_KISSRX) {
-                save_SerialMsg(ser_msg, kiss_ser, true);
+            if(ser_msg_sptr->type == SerialMsg_Type_DATA && ser_msg_sptr->has_data_msg && 
+                ser_msg_sptr->data_msg.type == DataMsg_Type_KISSRX) {
+                save_SerialMsg(*ser_msg_sptr, kiss_ser, true);
             } else {
                 continue;
             }           
         } else {
-            save_SerialMsg(ser_msg, kiss_ser, false);  
+            save_SerialMsg(*ser_msg_sptr, kiss_ser, false);  
         }
     }
 }
@@ -205,115 +307,126 @@ void tx_serial_thread_fn(void) {
 /**
  * Sends the current status.
  */
-void send_status(void);
-void send_status(void) {
-    SerialMsg ser_msg = SerialMsg_init_zero;
-    ser_msg.type = SerialMsg_Type_STATUS;
-    ser_msg.has_status = true;
+void KISSSerial::send_status(void) {
+    auto ser_msg = make_shared<SerialMsg>();
+    *ser_msg = SerialMsg_init_zero;
+    ser_msg->type = SerialMsg_Type_STATUS;
+    ser_msg->has_status = true;
     if(current_mode == BOOTING) {
-        ser_msg.status.status = StatusMsg_Status_BOOTING;      
+        ser_msg->status.status = StatusMsg_Status_BOOTING;      
     } else if(current_mode == MANAGEMENT) {
-        ser_msg.status.status = StatusMsg_Status_MANAGEMENT;     
+        ser_msg->status.status = StatusMsg_Status_MANAGEMENT;     
     } else if(current_mode == RUNNING) {
-        ser_msg.status.status = StatusMsg_Status_RUNNING;
+        ser_msg->status.status = StatusMsg_Status_RUNNING;
     } else {
         MBED_ASSERT(false);
     }
     if(tx_frame_mail.full()) {
-        ser_msg.status.tx_full = true;
+        ser_msg->status.tx_full = true;
     } else {
-        ser_msg.status.tx_full = false;
+        ser_msg->status.tx_full = false;
     }
-    ser_msg.status.time = time(NULL);
-    auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
-    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
+    ser_msg->status.time = time(NULL);
+    //auto ser_msg_sptr = make_shared<SerialMsg>(*);
+    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg);
 }  
 
 
-void send_ack(void);
-void send_ack(void) {
-    SerialMsg ser_msg = SerialMsg_init_zero;
-    ser_msg.type = SerialMsg_Type_ACK;
-    auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
+void KISSSerial::send_ack(void) {
+    auto ser_msg_sptr = make_shared<SerialMsg>();
+    *ser_msg_sptr = SerialMsg_init_zero;
+    ser_msg_sptr->type = SerialMsg_Type_ACK;
     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);    
 }  
 
 
-void send_error(const string &err_str);
-void send_error(const string &err_str) {
-    SerialMsg ser_msg = SerialMsg_init_zero;
-    ser_msg.type = SerialMsg_Type_ERR;
-    ser_msg.has_error_msg = true;
+void KISSSerial::send_error(const string &err_str) {
+    auto ser_msg_sptr = make_shared<SerialMsg>();
+    *ser_msg_sptr = SerialMsg_init_zero;
+    ser_msg_sptr->type = SerialMsg_Type_ERR;
+    ser_msg_sptr->has_error_msg = true;
     size_t str_len = err_str.size() < 256 ? err_str.size() : 256;
-    memcpy((char *) ser_msg.error_msg.msg, err_str.c_str(), str_len);
-    auto ser_msg_sptr = make_shared<SerialMsg>(ser_msg);
+    memcpy((char *) ser_msg_sptr->error_msg.msg, err_str.c_str(), str_len);
     debug_printf(DBG_WARN, "%s", err_str.c_str());
     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);   
 }  
 
 
-void rx_serial_thread_fn(void) {
+void KISSSerial::rx_serial_thread_fn(void) {
 	FILE *f = NULL;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
-    static SerialMsg past_log_msg = SerialMsg_init_zero;
-    FILE *kiss_ser = fdopen(&kiss_ser_fh, "r");
-    SerialMsg ser_msg;
+    past_log_msg = SerialMsg_init_zero;
+    FILE *kiss_ser;
+    if(using_stdio) {
+        kiss_ser = stdin;
+    } else {
+        kiss_ser = fdopen(ser, "r");
+    }
+    auto ser_msg = make_shared<SerialMsg>();
     int err;
     for(;;) {
-        ser_msg = SerialMsg_init_zero;
-        err = load_SerialMsg(ser_msg, kiss_ser);
+        *ser_msg = SerialMsg_init_zero;
+        err = load_SerialMsg(*ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
         }
-        if(ser_msg.type == SerialMsg_Type_EXIT_KISS_MODE) {
+        if(ser_msg->type == SerialMsg_Type_EXIT_KISS_MODE) {
+            shared_mtx.lock();
             kiss_mode.store(false);
             background_queue.call(oled_mon_fn);
-        } else if(ser_msg.type == SerialMsg_Type_ENTER_KISS_MODE) {
+            shared_mtx.unlock();
+        } else if(ser_msg->type == SerialMsg_Type_ENTER_KISS_MODE) {
+            shared_mtx.lock();
             kiss_mode.store(true);
             background_queue.call(oled_mon_fn);
-        } else if(ser_msg.type == SerialMsg_Type_GET_CONFIG) {
-            SerialMsg out_msg = SerialMsg_init_zero;
-            out_msg.type = SerialMsg_Type_CONFIG;
-            out_msg.has_sys_cfg = true;
-            out_msg.sys_cfg = radio_cb;
-            auto out_msg_sptr = make_shared<SerialMsg>(out_msg);
+            shared_mtx.unlock();
+        } else if(ser_msg->type == SerialMsg_Type_GET_CONFIG) {
+            auto out_msg_sptr = make_shared<SerialMsg>();
+            *out_msg_sptr = SerialMsg_init_zero;
+            out_msg_sptr->type = SerialMsg_Type_CONFIG;
+            out_msg_sptr->has_sys_cfg = true;
+            out_msg_sptr->sys_cfg = radio_cb;
             enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);
             send_ack();
             reboot_system();
-        } else if(ser_msg.type == SerialMsg_Type_SET_CONFIG) {
+        } else if(ser_msg->type == SerialMsg_Type_SET_CONFIG) {
             debug_printf(DBG_INFO, "Serial config received\r\n");
-            if(!ser_msg.has_sys_cfg) {
+            if(!ser_msg->has_sys_cfg) {
                 send_error(string("No Configuration Sent!\r\n"));
             } else {
-                radio_cb = ser_msg.sys_cfg;
+                shared_mtx.lock();
+                radio_cb = ser_msg->sys_cfg;
                 save_settings_to_flash();
+                shared_mtx.unlock();
 			    send_ack();
             }
         }
-        else if(ser_msg.type == SerialMsg_Type_GET_STATUS) {
+        else if(ser_msg->type == SerialMsg_Type_GET_STATUS) {
             send_status();      
         }
-        else if(ser_msg.type == SerialMsg_Type_CLOCK_SET) {
-            MBED_ASSERT(ser_msg.has_clock_set);
-            set_time(ser_msg.clock_set.time);
+        else if(ser_msg->type == SerialMsg_Type_CLOCK_SET) {
+            MBED_ASSERT(ser_msg->has_clock_set);
+            shared_mtx.lock();
+            set_time(ser_msg->clock_set.time);
+            shared_mtx.unlock();
             send_ack();
         }
-        else if(ser_msg.type == SerialMsg_Type_STAY_IN_MGT) {
+        else if(ser_msg->type == SerialMsg_Type_STAY_IN_MGT) {
             stay_in_management = true;           
             send_ack();
         }
-        else if(ser_msg.type == SerialMsg_Type_DEBUG_MSG) {
+        else if(ser_msg->type == SerialMsg_Type_DEBUG_MSG) {
             send_ack();
         }
-        else if(ser_msg.type == SerialMsg_Type_DATA) {
-            if(ser_msg.data_msg.type == DataMsg_Type_TX) {
+        else if(ser_msg->type == SerialMsg_Type_DATA) {
+            if(ser_msg->data_msg.type == DataMsg_Type_TX) {
                 auto frame = make_shared<Frame>();
-                frame->loadFromPB(ser_msg.data_msg);
+                frame->loadFromPB(ser_msg->data_msg);
                 enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
                 send_ack();
-            } else if(ser_msg.data_msg.type == DataMsg_Type_KISSTX) {
+            } else if(ser_msg->data_msg.type == DataMsg_Type_KISSTX) {
                 auto frame = make_shared<Frame>();
                 // Right now, we're just doing a single frame for a KISS frame. 
                 //  Given that AX.25/APRS frames can be considerably bigger than
@@ -321,18 +434,19 @@ void rx_serial_thread_fn(void) {
                 //  fragmentation scheme. This scheme should be able to support 
                 //  some sort of erasure support that uses e.g. Reed-Solomon to 
                 //  recover from a missing fragment.
-                frame->createFromKISS(ser_msg.data_msg);
+                frame->createFromKISS(ser_msg->data_msg);
                 enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
             } else {
                 MBED_ASSERT(false);
             }        
         }
-        else if(ser_msg.type == SerialMsg_Type_REBOOT) {
+        else if(ser_msg->type == SerialMsg_Type_REBOOT) {
             debug_printf(DBG_INFO, "Received reboot command\r\n");
             send_ack();
             reboot_system();
         }
-        else if(ser_msg.type == SerialMsg_Type_ERASE_LOGS) {
+        else if(ser_msg->type == SerialMsg_Type_ERASE_LOGS) {
+            shared_mtx.lock();
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
@@ -352,36 +466,41 @@ void rx_serial_thread_fn(void) {
                     }
                 }
             }
+            shared_mtx.unlock();
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(ser_msg.type == SerialMsg_Type_ERASE_BOOT_LOGS) {
+        else if(ser_msg->type == SerialMsg_Type_ERASE_BOOT_LOGS) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
+                shared_mtx.lock();
                 fs.remove("boot_log.bin");
+                shared_mtx.unlock();
             }
             send_status();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(ser_msg.type == SerialMsg_Type_ERASE_CFG) {
+        else if(ser_msg->type == SerialMsg_Type_ERASE_CFG) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
+                shared_mtx.lock();
                 fs.remove("settings.bin");
+                shared_mtx.unlock();
             }
             send_ack();
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(ser_msg.type == SerialMsg_Type_READ_LOG) {
+        else if(ser_msg->type == SerialMsg_Type_READ_LOG) {
             debug_printf(DBG_INFO, "Read log found\r\n");
-            static vector<string> logfile_names;
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
+                shared_mtx.lock();
 				if(!reading_log) {
                     DIR *log_dir = opendir("/fs/log");
                     MBED_ASSERT(log_dir);
@@ -457,12 +576,14 @@ void rx_serial_thread_fn(void) {
                     auto reply_msg_sptr = make_shared<SerialMsg>(reply_msg);
                     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
 				}
+                shared_mtx.unlock();
             }
         }
-        else if(ser_msg.type == SerialMsg_Type_READ_BOOT_LOG) {
+        else if(ser_msg->type == SerialMsg_Type_READ_BOOT_LOG) {
             stay_in_management = true;
             while(current_mode == BOOTING);
             if(current_mode == MANAGEMENT) {
+                shared_mtx.lock();
 				if(!reading_bootlog) {
 					reading_bootlog = true;
 					f = fopen("/fs/boot_log.bin", "r");
@@ -485,6 +606,7 @@ void rx_serial_thread_fn(void) {
                     auto reply_msg_sptr = make_shared<SerialMsg>(cur_log_msg);
                     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);                               						
 				}
+                shared_mtx.unlock();
             }
         }		
         else {

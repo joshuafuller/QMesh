@@ -28,7 +28,7 @@ typedef enum {
 } system_state_t;
 
 extern system_state_t current_mode;
-extern bool stay_in_management;
+extern atomic<bool> stay_in_management;
 
 /**
  * Core function that implmements the QMesh mesh protocol.

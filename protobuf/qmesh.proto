@@ -192,4 +192,5 @@ message DataMsg {
   uint32 sym_offset = 5;
   bytes payload = 6 [(nanopb).max_size = 512];
   uint32 crc = 7; 
+  bool voice = 8;
 }
