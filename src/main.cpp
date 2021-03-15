@@ -34,13 +34,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern IndicatorLED led1, led2, led3;
 //Thread tx_serial_thread(osPriorityNormal, 16384, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
 //Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
-Thread mesh_protocol_thread(osPriorityRealtime, 8192, NULL, "MESH-FSM"); /// Handles the mesh protocol
-Thread rx_frame_thread(osPriorityNormal, 8192, NULL, "RX-FRAME"); /// Processes and routes received Frames
-Thread nv_log_thread(osPriorityNormal, 16384, NULL, "NV-LOG"); /// Logging to the QSPI flash
+Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
+Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
+Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
 Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 EventQueue background_queue;
-Thread background_thread(osPriorityNormal, 8192, NULL, "BG"); /// Background thread
+Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
 
 time_t boot_timestamp;
 

@@ -248,10 +248,10 @@ KISSSerial::KISSSerial(const string &port_name, const ser_port_type_t ser_port_t
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
-    rx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, rx_ser_name.c_str());
+    rx_ser_thread = new Thread(osPriorityNormal, 8192, NULL, rx_ser_name.c_str());
     string tx_ser_name("TX-SERIAL-");
     tx_ser_name.append(port_name);
-    tx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, tx_ser_name.c_str());
+    tx_ser_thread = new Thread(osPriorityNormal, 8192, NULL, tx_ser_name.c_str());
 
     kiss_sers_mtx.lock();
     kiss_sers.push_back(this);
@@ -270,10 +270,10 @@ KISSSerial::KISSSerial(UARTSerial &ser_port, const string &port_name, const ser_
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
-    rx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, rx_ser_name.c_str());
+    rx_ser_thread = new Thread(osPriorityNormal, 8192, NULL, rx_ser_name.c_str());
     string tx_ser_name("TX-SERIAL-");
     tx_ser_name.append(port_name);
-    tx_ser_thread = new Thread(osPriorityNormal, 16384, NULL, tx_ser_name.c_str());
+    tx_ser_thread = new Thread(osPriorityNormal, 8192, NULL, tx_ser_name.c_str());
 
     kiss_sers_mtx.lock();
     kiss_sers.push_back(this);
