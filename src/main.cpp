@@ -32,15 +32,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 extern IndicatorLED led1, led2, led3;
-Thread tx_serial_thread(osPriorityNormal, 16384, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
-Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
-Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
-Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
-Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
+//Thread tx_serial_thread(osPriorityNormal, 16384, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
+//Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
+Thread mesh_protocol_thread(osPriorityRealtime, 8192, NULL, "MESH-FSM"); /// Handles the mesh protocol
+Thread rx_frame_thread(osPriorityNormal, 8192, NULL, "RX-FRAME"); /// Processes and routes received Frames
+Thread nv_log_thread(osPriorityNormal, 16384, NULL, "NV-LOG"); /// Logging to the QSPI flash
 Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 EventQueue background_queue;
-Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
+Thread background_thread(osPriorityNormal, 8192, NULL, "BG"); /// Background thread
 
 time_t boot_timestamp;
 
@@ -129,6 +129,7 @@ int main()
     push_button->SetQueue(background_queue);
 	
     ThisThread::sleep_for(1000);
+#if 0
     //debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
     // Start the serial handler threads
     UARTSerial *kiss_ser_fh = new UARTSerial(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
@@ -142,7 +143,8 @@ int main()
     debug_printf(DBG_INFO, "Serial threads started2");
     debug_printf(DBG_INFO, "Serial threads started3");
     send_status();
-    while(1);
+    //while(1);
+#endif
 
 #if 0
     // Set up the RDA1846 module control
@@ -167,17 +169,33 @@ int main()
     APRS_printSettings();
     // Try to send out a test packet
     string comment = "LibAPRS location update";
-    //while(1) {
+    while(1) {
         APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
     //}
 #endif
-    while(1);
+    //while(1);
     // Mount the filesystem, load the configuration, log the bootup
     print_memory_info();
     init_filesystem();
+    print_memory_info();
     load_settings_from_flash();
-    while(1);
+    //while(1);
     log_boot();
+
+    //debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
+    // Start the serial handler threads
+    UARTSerial *kiss_ser_fh = new UARTSerial(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
+    MBED_ASSERT(kiss_ser_fh);
+    KISSSerial *bt_ser = new KISSSerial(*kiss_ser_fh, string("BT"), DEBUG_PORT);
+    MBED_ASSERT(bt_ser);
+#if 0
+    KISSSerial *dbg_ser = new KISSSerial(string("DEBUG"), DEBUG_PORT);
+    MBED_ASSERT(dbg_ser);
+#endif
+    debug_printf(DBG_INFO, "Serial threads started");
+    send_status();
+    //while(1);
+
     rx_frame_thread.start(rx_frame_ser_thread_fn);
 
     // Start up the GPS code

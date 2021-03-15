@@ -88,9 +88,11 @@ protected:
     void rx_serial_thread_fn(void);
     /// Produces an MbedJSONValue with the current status and queues it for transmission.
     void tx_serial_thread_fn(void);
+    write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg);
+    read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f);
 
 public:
-    atomic<bool> kiss_mode;
+    atomic<bool> kiss_extended;
     void send_status(void);
     KISSSerial(const string &port_name, const ser_port_type_t ser_port_type);
     KISSSerial(UARTSerial &ser_port, const string &port_name, const ser_port_type_t ser_port_type);

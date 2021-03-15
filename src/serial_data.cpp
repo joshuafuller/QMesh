@@ -305,8 +305,7 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     auto ser_msg_sptr = shared_ptr<SerialMsg>();
-    SerialMsg ser_msg_zero = SerialMsg_init_zero;
-    *ser_msg_sptr = ser_msg_zero;
+    *ser_msg_sptr = SerialMsg_init_zero;;
     ser_msg_sptr->has_dbg_msg = true;
     strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str_clean, 256);
     kiss_sers_mtx.lock();

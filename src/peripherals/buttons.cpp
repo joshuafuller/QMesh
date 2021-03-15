@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "LittleFileSystem.h"
 #include "Adafruit_SSD1306.h"
 
-extern Thread tx_serial_thread, rx_serial_thread;
+//extern Thread tx_serial_thread, rx_serial_thread;
 extern Thread mesh_protocol_thread;
 extern Thread beacon_thread;
 extern Thread nv_log_thread;
@@ -61,7 +61,7 @@ void button_fn(void) {
         fprintf(f, "In low power mode\r\n");
         fclose(f);
         mbed_file_handle(STDIN_FILENO)->enable_input(false);   
-        rx_serial_thread.terminate();
+        //rx_serial_thread.terminate();
         //gps_serial.enable_input(false);
         oled->displayOff();
     }

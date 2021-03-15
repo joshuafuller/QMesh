@@ -385,7 +385,7 @@ void oled_mon_fn(void) {
     oled->clearDisplay();
     string kiss_modes_str;
     for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
-        if((*iter)->kiss_mode) {
+        if(!(*iter)->kiss_extended) {
             kiss_modes_str.append("KS ");
         } else {
             kiss_modes_str.append("K+ ");
