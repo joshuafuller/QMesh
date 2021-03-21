@@ -315,7 +315,7 @@ bool gpsd_get_coordinates(float &lat, float &lon) {
 void gpsd_thread_fn(void) {
     GNSS *gnss;
     debug_printf(DBG_INFO, "Starting the GPS...\r\n");
-    gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
+    //gnss = new GNSS(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX);
     gnss->init();
     while(1) {
         float new_lon, new_lat, new_acc;

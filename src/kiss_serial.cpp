@@ -241,10 +241,12 @@ write_ser_msg_err_t KISSSerial::save_SerialMsg(const SerialMsg &ser_msg, FILE *f
 }
 
 
-KISSSerial::KISSSerial(const string &port_name, const ser_port_type_t ser_port_type) {
+KISSSerial::KISSSerial(const string &my_port_name, const ser_port_type_t ser_port_type) {
     using_stdio = true;
     kiss_extended = true;
     port_type = ser_port_type;
+    hc05 = false;
+    port_name = my_port_name;
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
@@ -262,11 +264,17 @@ KISSSerial::KISSSerial(const string &port_name, const ser_port_type_t ser_port_t
 }
 
 
-KISSSerial::KISSSerial(UARTSerial &ser_port, const string &port_name, const ser_port_type_t ser_port_type) {
-    ser = &ser_port;
+KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name, 
+                        const ser_port_type_t ser_port_type) {
+    tx_port = tx;
+    rx_port = rx;
+    ser = new UARTSerial(tx_port, rx_port, 230400);
+    MBED_ASSERT(ser);
     using_stdio = false;
     kiss_extended = true;
     port_type = ser_port_type;
+    port_name = my_port_name;
+    hc05 = false;
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
@@ -281,6 +289,61 @@ KISSSerial::KISSSerial(UARTSerial &ser_port, const string &port_name, const ser_
 
     tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
     rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+}
+
+
+void KISSSerial::configure_hc05(void) {
+    *en_pin = 1;
+    ThisThread::sleep_for(250);
+    ser->set_baud(38400);
+    ThisThread::sleep_for(250);
+    FILE *ser_fh = fdopen(ser, "w");
+    // Reset the module's configuration
+    string reset_cmd("AT+ORGL");
+    fprintf(ser_fh, "%s", reset_cmd.c_str());
+    // Change the name
+    string bt_name_cmd("AT+NAME=");
+    bt_name_cmd.append("\"");
+    bt_name_cmd.append(port_name);
+    bt_name_cmd.append("\"\\r\\n");
+    fprintf(ser_fh, "%s", bt_name_cmd.c_str());
+    // Change the baudrate
+    string baud_cmd("AT+UART=115200,0,0");
+    ThisThread::sleep_for(250);
+    ser->set_baud(115200);
+    fprintf(ser_fh, "%s", bt_name_cmd.c_str());
+    ThisThread::sleep_for(250);
+    *en_pin = 0;
+}
+
+
+KISSSerial::KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
+            const string &my_port_name, const ser_port_type_t ser_port_type) 
+            : KISSSerial(tx, Rx, my_port_name, ser_port_type) {
+    port_name = my_port_name;
+    hc05 = true;
+    en_pin = new DigitalOut(En);
+    *en_pin = 0;
+    state_pin = new DigitalIn(State);
+    configure_hc05();
+}
+
+
+void KISSSerial::sleep(void) {
+    if(ser) {
+        delete ser;
+    }
+}
+
+
+void KISSSerial::wake(void) {
+    if(!ser) {
+        ser = new UARTSerial(tx_port, rx_port, 230000);
+        MBED_ASSERT(ser);
+    }
+    if(hc05) {
+        configure_hc05();
+    }
 }
 
 
@@ -292,6 +355,13 @@ KISSSerial::~KISSSerial() {
     delete rx_ser_thread;
     tx_ser_thread->join();
     delete tx_ser_thread;
+    if(ser) {
+        delete ser;
+    }
+    if(hc05) {
+        delete en_pin;
+        delete state_pin;
+    }
 }
 
 

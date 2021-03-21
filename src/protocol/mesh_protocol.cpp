@@ -384,6 +384,7 @@ extern Adafruit_SSD1306_I2c *oled;
 void oled_mon_fn(void) {
     oled->clearDisplay();
     string kiss_modes_str;
+    kiss_sers_mtx.lock();
     for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
         if(!(*iter)->kiss_extended) {
             kiss_modes_str.append("KS ");
@@ -391,6 +392,7 @@ void oled_mon_fn(void) {
             kiss_modes_str.append("K+ ");
         }
     }
+    kiss_sers_mtx.unlock();
     oled->printf("PACKET STATS  %s\r\n", kiss_modes_str.c_str());      
     oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
     oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/

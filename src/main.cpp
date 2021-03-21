@@ -37,7 +37,7 @@ extern IndicatorLED led1, led2, led3;
 Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
-Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
+//Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 EventQueue background_queue;
 Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
@@ -129,65 +129,35 @@ int main()
     push_button->SetQueue(background_queue);
 	
     ThisThread::sleep_for(1000);
-#if 0
-    //debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
-    // Start the serial handler threads
-    UARTSerial *kiss_ser_fh = new UARTSerial(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
-    MBED_ASSERT(kiss_ser_fh);
-    KISSSerial *bt_ser = new KISSSerial(*kiss_ser_fh, string("BT"), DEBUG_PORT);
-    MBED_ASSERT(bt_ser);
-    KISSSerial *dbg_ser = new KISSSerial(string("DEBUG"), DEBUG_PORT);
-    MBED_ASSERT(dbg_ser);
-    debug_printf(DBG_INFO, "Serial threads started0");
-    debug_printf(DBG_INFO, "Serial threads started1");
-    debug_printf(DBG_INFO, "Serial threads started2");
-    debug_printf(DBG_INFO, "Serial threads started3");
-    send_status();
-    //while(1);
-#endif
 
-#if 0
-    // Set up the RDA1846 module control
-    DRA818(MBED_CONF_APP_GPS_UART_TX, MBED_CONF_APP_GPS_UART_RX, PD_7, PD_4, PD_3, PE_2);
-#endif
-
-    // Initialize the LibAPRS components
-#ifdef APRS
-    debug_printf(DBG_INFO, "Starting LibAPRS...\r\n");
-    AFSK_init(&my_afsk);
-    APRS_init(0, false);
-    string call_str = "NOCALL";
-    APRS_setCallsign((char *) call_str.data(), 1);
-    string lat_str = "5530.80N";
-    APRS_setLat((char *) lat_str.c_str());
-    string lon_str = "01143.89E";
-    APRS_setLon((char *) lon_str.c_str());
-    APRS_setPower(2);
-    APRS_setHeight(4);
-    APRS_setGain(7);
-    APRS_setDirectivity(0);
-    APRS_printSettings();
-    // Try to send out a test packet
-    string comment = "LibAPRS location update";
-    while(1) {
-        APRS_sendLoc((char *) comment.c_str(), strlen(comment.c_str()));
-    //}
-#endif
-    //while(1);
     // Mount the filesystem, load the configuration, log the bootup
     print_memory_info();
     init_filesystem();
     print_memory_info();
     load_settings_from_flash();
-    //while(1);
     log_boot();
 
-    //debug_printf(DBG_INFO, "Starting serial threads..."); // Removing this causes a hard fault???
+#if 0
     // Start the serial handler threads
-    UARTSerial *kiss_ser_fh = new UARTSerial(MBED_CONF_APP_KISS_UART_TX, MBED_CONF_APP_KISS_UART_RX, 230400);
-    MBED_ASSERT(kiss_ser_fh);
-    KISSSerial *bt_ser = new KISSSerial(*kiss_ser_fh, string("BT"), DEBUG_PORT);
+    KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
+                                        MBED_CONF_APP_KISS_UART_RX, 
+                                        MBED_CONF_APP_KISS_UART_EN, 
+                                        MBED_CONF_APP_KISS_UART_ST,
+                                        string("BT"), DEBUG_PORT);
     MBED_ASSERT(bt_ser);
+#else
+    // Start the serial handler threads
+    KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
+                                        MBED_CONF_APP_KISS_UART_RX, 
+                                        string("BT"), DEBUG_PORT);
+    MBED_ASSERT(bt_ser);
+#endif
+#if 0
+    KISSSerial *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
+                                        MBED_CONF_APP_KISS_UART_RX_ALT, 
+                                        string("BT-ALT"), DEBUG_PORT);
+    MBED_ASSERT(bt_alt_ser);
+#endif
 #if 0
     KISSSerial *dbg_ser = new KISSSerial(string("DEBUG"), DEBUG_PORT);
     MBED_ASSERT(dbg_ser);
@@ -199,9 +169,11 @@ int main()
     rx_frame_thread.start(rx_frame_ser_thread_fn);
 
     // Start up the GPS code
+#if 0
     if(radio_cb.gps_en) {
         gps_thread.start(gpsd_thread_fn);
     }
+#endif
 
     // Wait for 2 seconds in MANAGEMENT mode
     current_mode = MANAGEMENT;

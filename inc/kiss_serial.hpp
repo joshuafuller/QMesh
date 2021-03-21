@@ -74,14 +74,20 @@ typedef enum {
 
 class KISSSerial { 
 protected:
+    PinName tx_port, rx_port;
     UARTSerial *ser;
+    bool hc05;
     bool using_stdio;
+    string port_name;
+    DigitalOut *en_pin;
+    DigitalIn *state_pin;
     Thread *rx_ser_thread, *tx_ser_thread;
     ser_port_type_t port_type;
     Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
     vector<string> logfile_names;
     SerialMsg past_log_msg;
 
+    void configure_hc05(void);
     void send_ack(void);
     void send_error(const string &err_str);
     /// Serial thread function that receives serial data, and processes it accordingly.
@@ -94,10 +100,14 @@ protected:
 public:
     atomic<bool> kiss_extended;
     void send_status(void);
-    KISSSerial(const string &port_name, const ser_port_type_t ser_port_type);
-    KISSSerial(UARTSerial &ser_port, const string &port_name, const ser_port_type_t ser_port_type);
+    KISSSerial(const string &my_port_name, const ser_port_type_t ser_port_type);
+    KISSSerial(PinName tx, PinName Rx, const string &my_port_name, const ser_port_type_t ser_port_type);
+    KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
+                const string &my_port_name, const ser_port_type_t ser_port_type);
     ~KISSSerial();
     void enqueue_msg(shared_ptr<SerialMsg> ser_msg_sptr);
+    void sleep(void);
+    void wake(void);
 };
 
 // debug_printf() uses this vector to determine which serial ports to send out

@@ -4,7 +4,7 @@
             "help": "Which radio to use (options: SX1272,SX1276,SX126X)",
             "value": "SX126X"
         },
-        "main_stack_size":     { "value": 4096 },
+        "main_stack_size":     { "value": 8192 },
         "lora-spi-mosi":       { "value": "D11" },
         "lora-spi-miso":       { "value": "D12" },
         "lora-spi-sclk":       { "value": "D13" },
@@ -21,12 +21,14 @@
         "qspi-flash-io1":      { "value": "PD_12"},
         "qspi-flash-io2":      { "value": "PE_2"},
         "qspi-flash-io3":      { "value": "PD_13"},
-        "dra818_uart_tx":      { "value": "PA_11" },
-        "dra818_uart_rx":      { "value": "PA_12" },
-        "gps_uart_tx":         { "value": "PD_5" },
-        "gps_uart_rx":         { "value": "PD_6" },
         "kiss_uart_tx":        { "value": "PF_7" },
         "kiss_uart_rx":        { "value": "PF_6" },
+        "kiss_uart_en":        { "value": "PC_13"},
+        "kiss_uart_st":        { "value": "PC_14"},
+        "kiss_uart_tx_alt":    { "value": "PA_11"},
+        "kiss_uart_rx_alt":    { "value": "PA_12"},
+        "kiss_uart_en_alt":    { "value": "PC_8"},
+        "kiss_uart_st_alt":    { "value": "PC_6"},
         "rx_int_mon":          { "value": "PD_0"},
         "tx_int_mon":          { "value": "PD_1"},
         "int_trig_mon":        { "value": "PG_0"},
@@ -59,14 +61,14 @@
         },
 
         "NUCLEO_F746ZG" : {
-            "dra818_uart_tx":    "PA_9" ,
-            "dra818_uart_rx":    "PA_10"
+            "kiss_uart_tx_alt":    "PA_9" ,
+            "kiss_uart_rx_alt":    "PA_10"
         },
 
         "NUCLEO_H743ZI2" : {
-            "dra818_uart_tx":    "PA_9" ,
-            "dra818_uart_rx":    "PA_10",
-            "qspi-flash-csn":    "PG_6"
+            "kiss_uart_tx_alt":    "PA_9" ,
+            "kiss_uart_rx_alt":    "PA_10",
+            "qspi-flash-csn":      "PG_6"
         },
 
         "K64F": {
