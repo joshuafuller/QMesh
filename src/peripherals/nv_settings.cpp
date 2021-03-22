@@ -43,6 +43,8 @@ LittleFileSystem fs("fs");
 //extern UARTSerial gps_serial;
 extern Adafruit_SSD1306_I2c *oled;
 
+static SerialMsg ser_msg_zero = SerialMsg_init_zero;
+
 
 void rescue_filesystem(void) {
     bd.init();
@@ -178,7 +180,7 @@ void load_settings_from_flash(void) {
         radio_cb.watchdog_timer_en = false;
 
         auto ser_msg = make_shared<SerialMsg>();
-        *ser_msg = SerialMsg_init_zero;
+        *ser_msg = ser_msg_zero;
         ser_msg->type = SerialMsg_Type_CONFIG;
         ser_msg->has_sys_cfg = true;
         ser_msg->sys_cfg = radio_cb;
@@ -193,7 +195,7 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
     auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = SerialMsg_init_zero;
+    *ser_msg = ser_msg_zero;
     MBED_ASSERT(load_SerialMsg(*ser_msg, f) == READ_SUCCESS);
     MBED_ASSERT(ser_msg->type == SerialMsg_Type_CONFIG);
     MBED_ASSERT(ser_msg->has_sys_cfg);
@@ -245,7 +247,7 @@ void save_settings_to_flash(void) {
     FILE *f = fopen("/fs/settings.bin", "w"); 
     MBED_ASSERT(f);
     auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = SerialMsg_init_zero;
+    *ser_msg = ser_msg_zero;
     ser_msg->type = SerialMsg_Type_CONFIG;
     ser_msg->has_sys_cfg = true;
     ser_msg->sys_cfg = radio_cb;
@@ -256,7 +258,7 @@ void save_settings_to_flash(void) {
 
 void log_boot(void) {
     auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = SerialMsg_init_zero;
+    *ser_msg = ser_msg_zero;
     ser_msg->type = SerialMsg_Type_BOOT_LOG;
     ser_msg->has_boot_log_msg = true;
     time_t my_time = time(NULL);
@@ -359,7 +361,7 @@ void nv_log_fn(void) {
         log_msg.uptime = uptime;
 
         auto ser_msg = make_shared<SerialMsg>();
-        *ser_msg = SerialMsg_init_zero;
+        *ser_msg = ser_msg_zero;
         ser_msg->type = SerialMsg_Type_LOG;
         ser_msg->has_log_msg = true;
         ser_msg->log_msg = log_msg;

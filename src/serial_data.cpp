@@ -31,6 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
+static SerialMsg ser_msg_zero = SerialMsg_init_zero;
+
 size_t Frame::size(void) {
     return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
 }
@@ -259,7 +261,7 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     auto ser_msg_sptr = make_shared<SerialMsg>();
-    *ser_msg_sptr = SerialMsg_init_zero;
+    *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->type = SerialMsg_Type_DEBUG_MSG;
     ser_msg_sptr->has_dbg_msg = true;
     sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
@@ -306,7 +308,7 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
         MBED_ASSERT(false);
     }
     auto ser_msg_sptr = shared_ptr<SerialMsg>();
-    *ser_msg_sptr = SerialMsg_init_zero;
+    *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
     strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str_clean, 256);
     kiss_sers_mtx.lock();
@@ -324,7 +326,6 @@ void rx_frame_ser_thread_fn(void) {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
         auto ser_msg_sptr = shared_ptr<SerialMsg>();
-        SerialMsg ser_msg_zero = SerialMsg_init_zero;
         *ser_msg_sptr = ser_msg_zero;
         ser_msg_sptr->has_data_msg = true;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);

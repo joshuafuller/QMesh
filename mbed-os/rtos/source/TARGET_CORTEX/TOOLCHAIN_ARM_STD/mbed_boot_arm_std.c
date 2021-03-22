@@ -156,7 +156,7 @@ void *__user_perthread_libspace(void)
  */
 
 typedef void *mutex;
-#define OS_MUTEX_STATIC_NUM   8
+#define OS_MUTEX_STATIC_NUM   16
 mutex _static_mutexes[OS_MUTEX_STATIC_NUM] = {NULL};
 mbed_rtos_storage_mutex_t _static_mutexes_mem[OS_MUTEX_STATIC_NUM] = {NULL};
 

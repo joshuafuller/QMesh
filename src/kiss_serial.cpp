@@ -56,6 +56,8 @@ static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size);
 
 static Mutex shared_mtx;
 
+static SerialMsg ser_msg_zero = SerialMsg_init_zero;
+
 
 read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
     size_t byte_read_count = 0;
@@ -76,7 +78,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
                 kiss_extended = false;
                 break;
             } else if(cur_byte == EXITKISS) {
-                ser_msg = SerialMsg_init_zero;
+                ser_msg = ser_msg_zero;
                 ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
                 return READ_SUCCESS;
             } else {
@@ -111,13 +113,13 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             return CRC_ERR;
         }
         // Deserialize it
-        ser_msg = SerialMsg_init_zero;
+        ser_msg = ser_msg_zero;
         pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
             return DECODE_SER_MSG_ERR;
         }
     } else {
-        ser_msg = SerialMsg_init_zero;
+        ser_msg = ser_msg_zero;
         ser_msg.type = SerialMsg_Type_DATA;
         ser_msg.has_data_msg = true;
         ser_msg.data_msg.type = DataMsg_Type_KISSRX;
@@ -369,7 +371,7 @@ void KISSSerial::enqueue_msg(shared_ptr<SerialMsg> ser_msg_sptr) {
     if(ser_msg_sptr->type == SerialMsg_Type_DATA) {
         MBED_ASSERT(ser_msg_sptr->has_data_msg);
         auto out_ser_msg = make_shared<SerialMsg>();
-        *out_ser_msg = SerialMsg_init_zero;
+        *out_ser_msg = ser_msg_zero;
         *out_ser_msg = *ser_msg_sptr;
         if(!kiss_extended) {
             if(out_ser_msg->data_msg.type == DataMsg_Type_TX) {
@@ -410,7 +412,7 @@ read_ser_msg_err_t KISSSerial::load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
                 kiss_extended = false;
                 break;
             } else if(cur_byte == EXITKISS) {
-                ser_msg = SerialMsg_init_zero;
+                ser_msg = ser_msg_zero;
                 ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
                 return READ_SUCCESS;
             } else {
@@ -445,13 +447,13 @@ read_ser_msg_err_t KISSSerial::load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             return CRC_ERR;
         }
         // Deserialize it
-        ser_msg = SerialMsg_init_zero;
+        ser_msg = ser_msg_zero;
         pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
             return DECODE_SER_MSG_ERR;
         }
     } else {
-        ser_msg = SerialMsg_init_zero;
+        ser_msg = ser_msg_zero;
         ser_msg.type = SerialMsg_Type_DATA;
         ser_msg.has_data_msg = true;
         ser_msg.data_msg.type = DataMsg_Type_KISSRX;
@@ -491,7 +493,7 @@ void KISSSerial::tx_serial_thread_fn(void) {
  */
 void KISSSerial::send_status(void) {
     auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = SerialMsg_init_zero;
+    *ser_msg = ser_msg_zero;
     ser_msg->type = SerialMsg_Type_STATUS;
     ser_msg->has_status = true;
     if(current_mode == BOOTING) {
@@ -516,7 +518,7 @@ void KISSSerial::send_status(void) {
 
 void KISSSerial::send_ack(void) {
     auto ser_msg_sptr = make_shared<SerialMsg>();
-    *ser_msg_sptr = SerialMsg_init_zero;
+    *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->type = SerialMsg_Type_ACK;
     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);    
 }  
@@ -524,7 +526,7 @@ void KISSSerial::send_ack(void) {
 
 void KISSSerial::send_error(const string &err_str) {
     auto ser_msg_sptr = make_shared<SerialMsg>();
-    *ser_msg_sptr = SerialMsg_init_zero;
+    *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->type = SerialMsg_Type_ERR;
     ser_msg_sptr->has_error_msg = true;
     size_t str_len = err_str.size() < 256 ? err_str.size() : 256;
@@ -539,7 +541,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
-    past_log_msg = SerialMsg_init_zero;
+    past_log_msg = ser_msg_zero;
     FILE *kiss_ser;
     if(using_stdio) {
         kiss_ser = stdin;
@@ -549,7 +551,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
     auto ser_msg = make_shared<SerialMsg>();
     int err;
     for(;;) {
-        *ser_msg = SerialMsg_init_zero;
+        *ser_msg = ser_msg_zero;
         err = load_SerialMsg(*ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
@@ -566,7 +568,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
             shared_mtx.unlock();
         } else if(ser_msg->type == SerialMsg_Type_GET_CONFIG) {
             auto out_msg_sptr = make_shared<SerialMsg>();
-            *out_msg_sptr = SerialMsg_init_zero;
+            *out_msg_sptr = ser_msg_zero;
             out_msg_sptr->type = SerialMsg_Type_CONFIG;
             out_msg_sptr->has_sys_cfg = true;
             out_msg_sptr->sys_cfg = radio_cb;
@@ -709,14 +711,14 @@ void KISSSerial::rx_serial_thread_fn(void) {
                     }
 				}
 				auto cur_log_msg = make_shared<SerialMsg>();
-                *cur_log_msg = SerialMsg_init_zero;
+                *cur_log_msg = ser_msg_zero;
                 // Need to have an actually-open filehandle here
                 int err_ser = load_SerialMsg(*cur_log_msg, f); 
                 debug_printf(DBG_INFO, "Serial Error is %d\r\n", err_ser);
                 if(err_ser) { // Go to the next file if it exists
                     if(logfile_names.size() == 0) {
                         auto reply_msg_sptr = make_shared<SerialMsg>(); 
-                        *reply_msg_sptr = SerialMsg_init_zero;
+                        *reply_msg_sptr = ser_msg_zero;
                         reply_msg_sptr->type = SerialMsg_Type_REPLY_LOG;
                         reply_msg_sptr->has_log_msg = true;
                         reply_msg_sptr->log_msg.valid = false;
@@ -730,7 +732,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
                         string cur_line;
                         if(!load_SerialMsg(*cur_log_msg, f)) {
                             auto reply_msg_sptr = make_shared<SerialMsg>();
-                            *reply_msg_sptr = SerialMsg_init_zero;
+                            *reply_msg_sptr = ser_msg_zero;
                             reply_msg_sptr->type = SerialMsg_Type_REPLY_LOG;
                             reply_msg_sptr->has_log_msg = true;
                             reply_msg_sptr->log_msg.valid = true;
@@ -746,7 +748,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
                     }
 				} else {
                     auto reply_msg_sptr = make_shared<SerialMsg>();
-                    *reply_msg_sptr = SerialMsg_init_zero;
+                    *reply_msg_sptr = ser_msg_zero;
                     reply_msg_sptr->type = SerialMsg_Type_REPLY_LOG;
                     reply_msg_sptr->has_log_msg = true;
                     reply_msg_sptr->log_msg.valid = true;
@@ -773,11 +775,11 @@ void KISSSerial::rx_serial_thread_fn(void) {
 					MBED_ASSERT(f);
 				}
                 auto cur_log_msg = make_shared<SerialMsg>();
-                *cur_log_msg = SerialMsg_init_zero;
+                *cur_log_msg = ser_msg_zero;
                 int err_ser = load_SerialMsg(*cur_log_msg, f);
                 if(err_ser) {
                     auto reply_msg = make_shared<SerialMsg>();
-                    *reply_msg = SerialMsg_init_zero;
+                    *reply_msg = ser_msg_zero;
                     reply_msg->type = SerialMsg_Type_REPLY_BOOT_LOG;
                     reply_msg->has_boot_log_msg = true;
                     reply_msg->boot_log_msg.valid = false;
