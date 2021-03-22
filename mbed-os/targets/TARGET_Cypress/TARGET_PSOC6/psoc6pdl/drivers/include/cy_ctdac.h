@@ -1,12 +1,12 @@
 /***************************************************************************//**
 * \file cy_ctdac.h
-* \version 2.0
+* \version 2.0.2
 *
 * Header file for the CTDAC driver
 *
 ********************************************************************************
 * \copyright
-* Copyright 2017-2019 Cypress Semiconductor Corporation
+* Copyright 2017-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,8 +27,8 @@
 * \{
 * The CTDAC driver provides APIs to configure the 12-bit Continuous-Time DAC.
 *
-* The functions and other declarations used in this driver are in cy_ctdac.h. 
-* You can include cy_pdl.h (ModusToolbox only) to get access to all functions 
+* The functions and other declarations used in this driver are in cy_ctdac.h.
+* You can include cy_pdl.h to get access to all functions
 * and declarations in the PDL.
 *
 * - 12-bit continuous time output
@@ -296,34 +296,23 @@
 *
 * Refer to the technical reference manual (TRM) and the device datasheet.
 *
-* \section group_ctdac_MISRA MISRA-C Compliance]
-*
-* This driver has the following specific deviations:
-*
-* <table class="doxtable">
-*   <tr>
-*     <th>MISRA Rule</th>
-*     <th>Rule Class (Required/Advisory)</th>
-*     <th>Rule Description</th>
-*     <th>Description of Deviation(s)</th>
-*   </tr>
-*   <tr>
-*     <td>11.4</td>
-*     <td>Advisory</td>
-*     <td>A cast should not be performed between a pointer to object type and a different pointer to object type.</td>
-*     <td>The cy_syspm driver defines the pointer to void in the \ref cy_stc_syspm_callback_params_t.base field.
-*       This CTDAC driver implements a Deep Sleep callback conforming to the cy_syspm driver requirements.
-*       When the callback is called, the base is cast to a pointer to CTDAC_Type.
-*     </td>
-*   </tr>
-* </table>
-*
 * \section group_ctdac_changelog Changelog
 * <table class="doxtable">
 *   <tr><th>Version</th><th>Changes</th><th>Reason for Change</th></tr>
 *   <tr>
+*     <td>2.0.2</td>
+*     <td>Minor documentation updates.</td>
+*     <td>Documented MISRA 2012 violations. Updated Cy_CTDAC_ConfigureClock()
+*         function parameters description. </td>
+*   </tr>
+*   <tr>
+*     <td>2.0.1</td>
+*     <td>Minor documentation updates.</td>
+*     <td>Documentation enhancement.</td>
+*   </tr>
+*   <tr>
 *     <td rowspan="2">2.0</td>
-*     <td>Flattened the organization of the driver source code into the single 
+*     <td>Flattened the organization of the driver source code into the single
 *         source directory and the single include directory.
 *     </td>
 *     <td>Driver library directory-structure simplification.</td>
@@ -331,7 +320,7 @@
 *   <tr>
 *     <td>Added register access layer. Use register access macros instead
 *         of direct register access using dereferenced pointers.</td>
-*     <td>Makes register access device-independent, so that the PDL does 
+*     <td>Makes register access device-independent, so that the PDL does
 *         not need to be recompiled for each supported part number.</td>
 *   </tr>
 *   <tr>
@@ -377,6 +366,9 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+CY_MISRA_DEVIATE_BLOCK_START('MISRA C-2012 Rule 11.3', 13, \
+'CTDAC_Type will typecast to either CTDAC_V1_Type or CTDAC_V2_Type but not both on PDL initialization based on the target device at compile time.');
 
 /** \addtogroup group_ctdac_macros
 * \{
@@ -1072,6 +1064,7 @@ __STATIC_INLINE uint32_t Cy_CTDAC_GetInterruptStatusMasked(const CTDAC_Type *bas
 /** \} */
 
 /** \} group_ctdac_functions */
+CY_MISRA_BLOCK_END('MISRA C-2012 Rule 11.3');
 
 #if defined(__cplusplus)
 }
@@ -1084,4 +1077,3 @@ __STATIC_INLINE uint32_t Cy_CTDAC_GetInterruptStatusMasked(const CTDAC_Type *bas
 /** \} group_ctdac */
 
 /* [] END OF FILE */
-

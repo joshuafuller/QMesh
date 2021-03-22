@@ -55,7 +55,7 @@
 #define LP_TIMER_SAFE_GUARD 5
 
 
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
 #if defined(CORE_CM7)
 #define LPTIM_MST_BASE            LPTIM4_BASE
 #define LPTIM_MST                 ((LPTIM_TypeDef *)LPTIM_MST_BASE)
@@ -112,7 +112,11 @@
 #define RCC_LPTIMCLKSOURCE_LSE    RCC_LPTIM1CLKSOURCE_LSE
 #define RCC_LPTIMCLKSOURCE_LSI    RCC_LPTIM1CLKSOURCE_LSI
 
+#if defined(STM32G071xx)
+#define LPTIM_MST_IRQ             TIM6_DAC_LPTIM1_IRQn
+#else
 #define LPTIM_MST_IRQ             LPTIM1_IRQn
+#endif
 #define LPTIM_MST_RCC             __HAL_RCC_LPTIM1_CLK_ENABLE
 
 #define LPTIM_MST_RESET_ON        __HAL_RCC_LPTIM1_FORCE_RESET
@@ -166,7 +170,11 @@ void lp_ticker_init(void)
 
     /* Enable LSE clock */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
+#if MBED_CONF_TARGET_LSE_BYPASS
+    RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+#else
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+#endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
 
     /* Select the LSE clock as LPTIM peripheral clock */
@@ -204,7 +212,7 @@ void lp_ticker_init(void)
 #endif /* TARGET_STM32L0 */
 
 #endif /* MBED_CONF_TARGET_LSE_AVAILABLE */
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
     while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
     }
 #endif /* DUAL_CORE */
@@ -221,7 +229,7 @@ void lp_ticker_init(void)
     LPTIM_MST_RCC();
     LPTIM_MST_RESET_ON();
     LPTIM_MST_RESET_OFF();
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
     /* Configure EXTI wakeup and configure autonomous mode */
     LPTIM_MST_RCC_CLKAM();
     LPTIM_MST_EXTI_LPTIM_WAKEUP_CONFIG();
@@ -253,13 +261,20 @@ void lp_ticker_init(void)
     LptimHandle.Init.Trigger.SampleTime = LPTIM_TRIGSAMPLETIME_DIRECTTRANSITION;
 #endif
 
+    LptimHandle.Init.UltraLowPowerClock.SampleTime = LPTIM_TRIGSAMPLETIME_DIRECTTRANSITION; // L5 ?
+
     LptimHandle.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
     LptimHandle.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
     LptimHandle.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
-#if defined (LPTIM_INPUT1SOURCE_GPIO) /* STM32L4 */
+#if defined (LPTIM_INPUT1SOURCE_GPIO) /* STM32L4 / STM32L5 */
     LptimHandle.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
     LptimHandle.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
 #endif /* LPTIM_INPUT1SOURCE_GPIO */
+
+#if defined(LPTIM_RCR_REP) /* STM32L4 / STM32L5 */
+    LptimHandle.Init.RepetitionCounter = 0;
+#endif /* LPTIM_RCR_REP */
+
 
     if (HAL_LPTIM_Init(&LptimHandle) != HAL_OK) {
         error("HAL_LPTIM_Init ERROR\n");
@@ -268,6 +283,11 @@ void lp_ticker_init(void)
 
     NVIC_SetVector(LPTIM_MST_IRQ, (uint32_t)LPTIM_IRQHandler);
 
+#if (LPTIM_MST_BASE == LPTIM1_BASE)
+#if defined (__HAL_LPTIM_LPTIM1_EXTI_ENABLE_IT)
+__HAL_LPTIM_LPTIM1_EXTI_ENABLE_IT();
+#endif
+#endif
 #if defined (__HAL_LPTIM_WAKEUPTIMER_EXTI_ENABLE_IT)
     /* EXTI lines are not configured by default */
     __HAL_LPTIM_WAKEUPTIMER_EXTI_ENABLE_IT();

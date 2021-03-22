@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_crypto_core_crc_v1.c
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the source code for CRC API
 *  in the Crypto driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,9 @@ extern "C" {
 
 #include "cy_crypto_core_hw_v1.h"
 #include "cy_syslib.h"
+
+CY_MISRA_DEVIATE_BLOCK_START('MISRA C-2012 Rule 11.3', 3, \
+'This piece of code is written for CRYPTO_V1_Type and will not execute for CRYPTO_V2_Type');
 
 /*******************************************************************************
 * Function Name: Cy_Crypto_Core_V1_Crc_Init
@@ -385,7 +388,7 @@ cy_en_crypto_status_t Cy_Crypto_Core_V1_Crc_Calc(CRYPTO_Type *base,
 
     return (CY_CRYPTO_SUCCESS);
 }
-
+CY_MISRA_BLOCK_END('MISRA C-2012 Rule 11.3');
 #endif /* #if (CPUSS_CRYPTO_CRC == 1) */
 
 #if defined(__cplusplus)

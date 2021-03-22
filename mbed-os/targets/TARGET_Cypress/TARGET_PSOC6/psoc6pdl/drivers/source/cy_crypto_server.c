@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_crypto_server.c
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the source code to the API for Crypto Server
 *  in the Crypto driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,7 +84,7 @@ static cy_stc_crypto_pfn_t const *cy_CryptoFunctionTable = NULL;
 /*
  * The global variable to store a pointer to crypto processing context data.
  */
-cy_stc_crypto_context_t *processData = NULL;
+static cy_stc_crypto_context_t *processData = NULL;
 
 static cy_stc_crypto_server_context_t *cy_crypto_serverContext;
 
@@ -768,9 +768,6 @@ void Cy_Crypto_Server_GetDataHandler(void)
 * This function available for CM0+ core only.
 *
 * This function is internal and should not to be called directly by user software
-*
-* \param base
-* The pointer to the CRYPTO instance.
 *
 * \param cryptoContext
 * The pointer to cy_stc_crypto_context_t structure which stores

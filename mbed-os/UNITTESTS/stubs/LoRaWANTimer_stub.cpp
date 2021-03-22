@@ -16,7 +16,7 @@
  */
 
 #include "mbed_assert.h"
-#include "LoRaWANTimer.h"
+#include "system/LoRaWANTimer.h"
 
 #include "LoRaWANTimer_stub.h"
 
@@ -59,6 +59,11 @@ void LoRaWANTimeHandler::start(timer_event_t &obj, const uint32_t timeout)
 }
 
 void LoRaWANTimeHandler::stop(timer_event_t &obj)
+{
+    obj.timer_id = 0;
+}
+
+void LoRaWANTimeHandler::clear(timer_event_t &obj)
 {
     obj.timer_id = 0;
 }

@@ -9,7 +9,7 @@
 *
 ********************************************************************************
 * \copyright
-* Copyright 2018-2019 Cypress Semiconductor Corporation
+* Copyright 2018-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,14 +29,14 @@
 
 #include "cyhal_system.h"
 
-#ifdef CY_IP_MXS40SRSS
+#if defined(CY_IP_MXS40SRSS) || defined(CY_IP_S8SRSSLT)
 
-#define cyhal_system_critical_section_enter()     Cy_SysLib_EnterCriticalSection()
+#define cyhal_system_critical_section_enter()   Cy_SysLib_EnterCriticalSection()
 
 #define cyhal_system_critical_section_exit(x)   Cy_SysLib_ExitCriticalSection(x)
 
-#define cyhal_system_sleep()                    Cy_SysPm_CpuEnterSleep(CY_SYSPM_WAIT_FOR_INTERRUPT)
+#define cyhal_system_delay_us(microseconds)     Cy_SysLib_DelayUs(microseconds)
 
-#define cyhal_system_deepsleep()                Cy_SysPm_CpuEnterDeepSleep(CY_SYSPM_WAIT_FOR_INTERRUPT)
+#define cyhal_system_clear_reset_reason()       Cy_SysLib_ClearResetReason()
 
-#endif /* CY_IP_MXS40SRSS */
+#endif /* defined(CY_IP_MXS40SRSS) || defined(CY_IP_S8SRSSLT) */

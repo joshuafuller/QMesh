@@ -1,12 +1,12 @@
 /***************************************************************************//**
 * \file cy_smif.h
-* \version 1.40
+* \version 2.0
 *
 * Provides an API declaration of the Cypress SMIF driver.
 *
 ********************************************************************************
 * \copyright
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,20 +25,21 @@
 /**
 * \addtogroup group_smif
 * \{
-* The SPI-based communication interface for external memory devices.
+* The SPI-based communication interface to the external quad SPI (QSPI) 
+* high-speed memory devices.
 *
 * The functions and other declarations used in this driver are in cy_smif.h and 
 * cy_smif_memslot.h (if used). If you are using the ModusToolbox QSPI Configurator, 
 * also include cycfg_qspi_memslot.h. 
 *
-* SMIF: Serial Memory Interface: This IP block implements an SPI-based
-* communication interface for interfacing external memory devices to PSoC. The SMIF
-* supports Octal-SPI, Dual Quad-SPI, Quad-SPI, Dual-SPI, and SPI.
-*
+* **SMIF: Serial Memory Interface**: This IP block implements an SPI-based
+* communication interface for interfacing external memory devices to PSoC.
+* The SMIF supports SPI, dual SPI (DSPI), quad SPI (QSPI), dual QSPI and octal SPI.
+* 
 * Features
 *   - Standard SPI Master interface
-*   - Supports Single/Dual/Quad/Octal SPI Memories
-*   - Supports Dual-Quad SPI mode
+*   - Supports single/dual/quad/octal SPI memory devices
+*   - Supports dual quad SPI mode
 *   - Design-time configurable support for multiple (up to 4) external serial
 *   memory devices
 *   - eXecute-In-Place (XIP) operation mode for both read and write accesses
@@ -122,12 +123,12 @@
 * See the documentation for Cy_SMIF_Init() and Cy_SMIF_MemInit() for details
 * on the required configuration structures and other initialization topics. 
 *
-* The normal (MMIO) mode is used for implementing a generic SPI/DSPI/QSPI/Dual
-* Quad-SPI/Octal-SPI communication interface using the SMIF block. This
+* The normal (MMIO) mode is used for implementing a generic SPI/DSPI/QSPI/dual
+* QSPI/octal SPI communication interface using the SMIF block. This
 * interface can be used to implement special commands like Program/Erase of
 * flash, memory device configuration, sleep mode entry for memory devices or
 * other special commands specific to the memory device. The transfer width
-* (SPI/DSP/Quad-SPI/Octal-SPI) of a transmission is a parameter set for each
+* (SPI/DSPI/QSPI/octal SPI) of a transmission is a parameter set for each
 * transmit/receive operation. So these can be changed at run time.
 *
 * In a typical memory interface with flash memory, the SMIF is used in the
@@ -186,32 +187,51 @@
 * Configuration Tool User Guide located in \<PDL_DIR\>/tools/\<OS_DIR\>/SMIFConfigurationTool/
 * folder
 *
-* \section group_smif_MISRA MISRA-C Compliance]
-* <table class="doxtable">
-*   <tr>
-*     <th>MISRA rule</th>
-*     <th>Rule Class (Required/Advisory)</th>
-*     <th>Rule Description</th>
-*     <th>Description of Deviation(s)</th>
-*   </tr>
-*   <tr>
-*     <td>11.4</td>
-*     <td>A</td>
-*     <td>The cast is be performed between a pointer to the object type and a different pointer to the object type.</td>
-*     <td>The cast from the pointer to void to the pointer to an unsigned integer does not have any unintended effect, as
-*         it is a consequence of the definition of a structure based on hardware registers.</td>
-*   </tr>
-*   <tr>
-*     <td>11.5</td>
-*     <td>R</td>
-*     <td>Not performed, the cast that removes any const or volatile qualification from the type addressed by a pointer.</td>
-*     <td>The removal of the volatile qualification inside the function has no side effects.</td>
-*   </tr>
-* </table>
-*
 * \section group_smif_changelog Changelog
 * <table class="doxtable">
 *   <tr><th>Version</th><th>Changes</th><th>Reason for Change</th></tr>
+*   <tr>
+*     <td rowspan="4">2.0</td>
+*     <td>Reworked the \ref Cy_SMIF_MemRead and \ref Cy_SMIF_MemWrite functions to use polling instead of interrupts.</td>
+*     <td>Extend the usability of these functions.</td>
+*   </tr>
+*   <tr>
+*    <td>Reworked the length-parameter check in the \ref Cy_SMIF_MemEraseSector function.
+*     The Erase operation is not performed and \ref CY_SMIF_SUCCESS is no longer returned when the sectors are not aligned.</td>
+*     <td>Fix the user error-handling of the length parameter.</td>
+*   </tr>
+*   <tr>
+*    <td>Fixed the address-parameter check in the \ref Cy_SMIF_MemLocateHybridRegion function.
+*     \ref CY_SMIF_SUCCESS or \ref CY_SMIF_NOT_HYBRID_MEM is no longer returned when the address exceeds the memory size.</td>
+*     <td>Address a defect.</td>
+*   </tr>
+*   <tr>
+*     <td>Fixed MISRA 2012 violations.</td>
+*     <td>MISRA 2012 compliance.</td>
+*   </tr>
+*   <tr>
+*     <td>1.50.1</td>
+*     <td>Minor documentation updates. </td>
+*     <td>Documentation improvement. </td>
+*   </tr>
+*   <tr>
+*     <td>1.50</td>
+*     <td>Added a new function: \ref Cy_SMIF_MemLocateHybridRegion.\n
+*     Added a new structure \ref cy_stc_smif_hybrid_region_info_t.\n
+*     Updated the \ref Cy_SMIF_MemEraseSector and \ref Cy_SMIF_MemCmdSectorErase functions.\n
+*     Updated the \ref Cy_SMIF_MemSfdpDetect function. \n
+*     Updated the \ref cy_stc_smif_mem_device_cfg_t structure.</td>
+*     <td>Support for memories with hybrid regions.</td>
+*   </tr>
+*   <tr>
+*     <td rowspan="2">1.40.1</td>
+*     <td>The \ref Cy_SMIF_MemInit is changed. </td>
+*     <td>Corrected a false assertion during initialization in SFDP mode.</td>
+*   </tr>
+*   <tr>
+*     <td>Minor documentation updates. </td>
+*     <td></td>
+*   </tr>
 *   <tr>
 *     <td rowspan="5">1.40</td>
 *     <td>The following functions are renamed:\n
@@ -437,10 +457,10 @@ extern "C" {
 */
 
 /** The driver major version */
-#define CY_SMIF_DRV_VERSION_MAJOR       1
+#define CY_SMIF_DRV_VERSION_MAJOR       2
 
 /** The driver minor version */
-#define CY_SMIF_DRV_VERSION_MINOR       40
+#define CY_SMIF_DRV_VERSION_MINOR       0
 
 /** One microsecond timeout for Cy_SMIF_TimeoutRun() */
 #define CY_SMIF_WAIT_1_UNIT             (1U)
@@ -591,7 +611,7 @@ extern "C" {
 /** The Transfer width options for the command, data, the address and the mode. */
 typedef enum
 {
-    CY_SMIF_WIDTH_SINGLE   = 0U,    /**< Normal SPI mode. */
+    CY_SMIF_WIDTH_SINGLE   = 0U,    /**< Single SPI mode. */
     CY_SMIF_WIDTH_DUAL     = 1U,    /**< Dual SPI mode. */
     CY_SMIF_WIDTH_QUAD     = 2U,    /**< Quad SPI mode. */
     CY_SMIF_WIDTH_OCTAL    = 3U,    /**< Octal SPI mode. */
@@ -614,7 +634,7 @@ typedef enum
 {
     /**
     * smif.spi_data[0] = DATA0, smif.spi_data[1] = DATA1, ..., smif.spi_data[7] = DATA7.
-    * This value is allowed for the SPI, DSPI, quad-SPI, dual quad-SPI, and octal-SPI modes.
+    * This value is allowed for the SPI, DSPI, QSPI, dual QSPI, and octal SPI modes.
     */
     CY_SMIF_DATA_SEL0      = 0,
     /**
@@ -624,7 +644,7 @@ typedef enum
     CY_SMIF_DATA_SEL1      = 1,
     /**
     * smif.spi_data[4] = DATA0, smif.spi_data[5] = DATA1, ..., smif.spi_data[7] = DATA3.
-    * This value is only allowed for the SPI, DSPI, quad-SPI and dual quad-SPI modes.
+    * This value is only allowed for the SPI, DSPI, QSPI and dual QSPI modes.
     */
     CY_SMIF_DATA_SEL2      = 2,
     /**
@@ -669,6 +689,8 @@ typedef enum
     CY_SMIF_NO_QE_BIT       = CY_SMIF_ID |CY_PDL_STATUS_ERROR | 0x03U,
     CY_SMIF_BAD_PARAM       = CY_SMIF_ID |CY_PDL_STATUS_ERROR | 0x04U,   /**< The SMIF API received the wrong parameter */
     CY_SMIF_NO_SFDP_SUPPORT = CY_SMIF_ID |CY_PDL_STATUS_ERROR | 0x05U,   /**< The external memory does not support SFDP (JESD216B). */
+    CY_SMIF_NOT_HYBRID_MEM  = CY_SMIF_ID |CY_PDL_STATUS_ERROR | 0x06U,   /**< The external memory is not hybrid */
+    CY_SMIF_SFDP_CORRUPTED_TABLE = CY_SMIF_ID |CY_PDL_STATUS_ERROR | 0x07U, /**< The SFDP table is corrupted */
     /** Failed to initialize the slave select 0 external memory by auto detection (SFDP). */
     CY_SMIF_SFDP_SS0_FAILED = CY_SMIF_ID |CY_PDL_STATUS_ERROR |
                             ((uint32_t)CY_SMIF_SFDP_FAIL << CY_SMIF_SFDP_FAIL_SS0_POS),

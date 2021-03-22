@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_crypto_core_hw.c
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the source code to the API for the utils
 *  in the Crypto driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,9 @@ extern "C" {
 #include "cy_crypto_core_hw_vu.h"
 #include "cy_syslib.h"
 #include <stdbool.h>
+
+CY_MISRA_DEVIATE_BLOCK_START('MISRA C-2012 Rule 11.3', 4, \
+'CRYPTO_Type will typecast to either CRYPTO_V1_Type or CRYPTO_V2_Type but not both on PDL initialization based on the target device at compile time.');
 
 #if !defined(CY_CRYPTO_SERVICE_LIBRARY_LEVEL)
     #define CY_CRYPTO_SERVICE_LIBRARY_LEVEL CY_CRYPTO_FULL_LIBRARY
@@ -118,6 +121,9 @@ const cy_stc_cryptoIP_t cy_cryptoIpBlockCfgPSoC6_02 =
 *
 * \param base
 * The pointer to the CRYPTO instance.
+
+* \param blockingMode
+* Sets the blocking or non-blocking operation mode.
 *
 * \param instr
 * The Opcode of the called instruction.
@@ -220,7 +226,7 @@ void Cy_Crypto_Core_HwInit(void)
 cy_en_crypto_status_t Cy_Crypto_Core_SetVuMemoryAddress(CRYPTO_Type *base,
                                                         uint32_t const *vuMemoryAddr, uint32_t vuMemorySize)
 {
-	cy_en_crypto_status_t resultVal = CY_CRYPTO_BAD_PARAMS;
+    cy_en_crypto_status_t resultVal = CY_CRYPTO_BAD_PARAMS;
     uint32_t *vuMemAddr = (uint32_t *)vuMemoryAddr;
     uint32_t  vuMemSize = vuMemorySize;
 
@@ -235,7 +241,7 @@ cy_en_crypto_status_t Cy_Crypto_Core_SetVuMemoryAddress(CRYPTO_Type *base,
         /* Check for new memory size is less or equal to maximal IP allowed value */
         if ((vuMemAddr != NULL) && (vuMemSize != 0uL) && (vuMemSize <= 32768u))
         {
-        	/* mxcrypto (V1) IP uses MEM_BUF aligned to 16KB */
+            /* mxcrypto (V1) IP uses MEM_BUF aligned to 16KB */
             uint32_t memAlignMask = 16384uL - 1uL;
 
             uint32_t memFrameMask = 0xFFFFFFFFuL;
@@ -286,33 +292,34 @@ cy_en_crypto_status_t Cy_Crypto_Core_SetVuMemoryAddress(CRYPTO_Type *base,
                     memFrameMask = 0x7Fu;
                     break;
                 default:
+            /* Unknown mask */
                     break;
             }
 
             if (memFrameMask != 0xFFFFFFFFuL)
             {
-            	if (!(CY_CRYPTO_V1))
-    			{
+                if (!(CY_CRYPTO_V1))
+                {
                     memAlignMask = vuMemSize - 1uL;
-    			}
+                }
 
-            	/* Use the new address when it aligned to appropriate memory block size */
-    			if (((uint32_t)vuMemAddr & (memAlignMask)) == 0uL)
-    			{
-    				if (!(CY_CRYPTO_V1))
-    				{
-    					REG_CRYPTO_VU_CTL2(base) = _VAL2FLD(CRYPTO_V2_VU_CTL2_MASK, memFrameMask);
-    				}
+                /* Use the new address when it aligned to appropriate memory block size */
+                if (((uint32_t)vuMemAddr & (memAlignMask)) == 0uL)
+                {
+                    if (!(CY_CRYPTO_V1))
+                    {
+                        REG_CRYPTO_VU_CTL2(base) = _VAL2FLD(CRYPTO_V2_VU_CTL2_MASK, memFrameMask);
+                    }
 
-    				REG_CRYPTO_VU_CTL1(base) = (uint32_t)vuMemAddr;
+                    REG_CRYPTO_VU_CTL1(base) = (uint32_t)vuMemAddr;
 
-    				/* Set the stack pointer to the Crypto buff size, in words */
-    				CY_CRYPTO_VU_SET_REG(base, CY_CRYPTO_VU_HW_REG15, vuMemSize / 4u, 1u);
+                    /* Set the stack pointer to the Crypto buff size, in words */
+                    CY_CRYPTO_VU_SET_REG(base, CY_CRYPTO_VU_HW_REG15, vuMemSize / 4u, 1u);
 
-    				cy_cryptoVuMemSize = vuMemSize;
+                    cy_cryptoVuMemSize = vuMemSize;
 
-    				resultVal = CY_CRYPTO_SUCCESS;
-    			}
+                    resultVal = CY_CRYPTO_SUCCESS;
+                }
             }
         }
     }
@@ -385,6 +392,7 @@ uint32_t Cy_Crypto_Core_GetVuMemorySize(CRYPTO_Type *base)
                     memSize = 256uL;
                     break;
                 default:
+            /* Unknown mask */
                     break;
             }
         }
@@ -555,6 +563,7 @@ void Cy_Crypto_Core_InvertEndianness(void *inArrPtr, uint32_t byteSize)
 }
 
 /** \} group_crypto_lld_hw_functions */
+CY_MISRA_BLOCK_END('MISRA C-2012 Rule 11.3');
 
 #if defined(__cplusplus)
 }
@@ -564,4 +573,3 @@ void Cy_Crypto_Core_InvertEndianness(void *inArrPtr, uint32_t byteSize)
 
 
 /* [] END OF FILE */
-

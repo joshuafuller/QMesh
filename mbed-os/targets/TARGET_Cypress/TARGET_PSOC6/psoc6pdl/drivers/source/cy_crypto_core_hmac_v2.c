@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_crypto_core_hmac_v2.c
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the source code to the API for the HMAC method
 *  in the Crypto block driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,6 @@ extern "C" {
 #include "cy_crypto_core_hw_v2.h"
 #include "cy_crypto_core_mem_v2.h"
 #include "cy_syslib.h"
-#include <string.h>
 
 #define CY_CRYPTO_HMAC_IPAD               (0x36u)
 #define CY_CRYPTO_HMAC_0PAD               (0x5Cu)

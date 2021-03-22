@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_smartio.c
-* \version 1.0
+* \version 1.0.2
 *
 * \brief
 * Provides an API implementation of the Smart I/O driver
 *
 ********************************************************************************
 * \copyright
-* Copyright 2018-2019 Cypress Semiconductor Corporation
+* Copyright 2018-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,9 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+CY_MISRA_DEVIATE_BLOCK_START('MISRA C-2012 Rule 10.8', 12, \
+'Value extracted from _FLD2VAL macro will not exceed enum range.');
 
 /*******************************************************************************
 * Function Name: Cy_SmartIO_Init
@@ -51,13 +54,13 @@ extern "C" {
 cy_en_smartio_status_t Cy_SmartIO_Init(SMARTIO_PRT_Type* base, const cy_stc_smartio_config_t* config)
 {
     cy_en_smartio_status_t status = CY_SMARTIO_SUCCESS;
-    
+
     if(NULL != config)
     {
         SMARTIO_PRT_CTL(base) = _VAL2FLD(SMARTIO_PRT_CTL_BYPASS, config->bypassMask)
                                 | _VAL2FLD(SMARTIO_PRT_CTL_CLOCK_SRC, config->clkSrc)
                                 | _VAL2FLD(SMARTIO_PRT_CTL_HLD_OVR, config->hldOvr)
-                                | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_ENABLE) 
+                                | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_ENABLE)
                                 | _VAL2FLD(SMARTIO_PRT_CTL_ENABLED, CY_SMARTIO_DISABLE);
         SMARTIO_PRT_SYNC_CTL(base) = _VAL2FLD(SMARTIO_PRT_SYNC_CTL_IO_SYNC_EN, config->ioSyncEn)
                                 | _VAL2FLD(SMARTIO_PRT_SYNC_CTL_CHIP_SYNC_EN, config->chipSyncEn);
@@ -145,7 +148,7 @@ cy_en_smartio_status_t Cy_SmartIO_Init(SMARTIO_PRT_Type* base, const cy_stc_smar
     {
         status = CY_SMARTIO_BAD_PARAM;
     }
-    
+
     return(status);
 }
 
@@ -167,7 +170,7 @@ void Cy_SmartIO_Deinit(SMARTIO_PRT_Type* base)
 {
     SMARTIO_PRT_CTL(base) = _VAL2FLD(SMARTIO_PRT_CTL_BYPASS, CY_SMARTIO_CHANNEL_ALL)
                             | _VAL2FLD(SMARTIO_PRT_CTL_CLOCK_SRC, CY_SMARTIO_CLK_GATED)
-                            | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_ENABLE) 
+                            | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_ENABLE)
                             | _VAL2FLD(SMARTIO_PRT_CTL_ENABLED, CY_SMARTIO_DISABLE);
     SMARTIO_PRT_SYNC_CTL(base) = CY_SMARTIO_DEINIT;
     for(uint8_t idx = 0u; idx < CY_SMARTIO_LUTMAX; idx++)
@@ -197,10 +200,10 @@ void Cy_SmartIO_Deinit(SMARTIO_PRT_Type* base)
 void Cy_SmartIO_Enable(SMARTIO_PRT_Type* base)
 {
     uint32_t tempReg;
-    
+
     tempReg = (SMARTIO_PRT_CTL(base) & (~(SMARTIO_PRT_CTL_PIPELINE_EN_Msk | SMARTIO_PRT_CTL_ENABLED_Msk)));
-    SMARTIO_PRT_CTL(base) = tempReg 
-                | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_DISABLE) 
+    SMARTIO_PRT_CTL(base) = tempReg
+                | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_DISABLE)
                 | _VAL2FLD(SMARTIO_PRT_CTL_ENABLED, CY_SMARTIO_ENABLE);
 }
 
@@ -221,10 +224,10 @@ void Cy_SmartIO_Enable(SMARTIO_PRT_Type* base)
 void Cy_SmartIO_Disable(SMARTIO_PRT_Type* base)
 {
     uint32_t tempReg;
-    
+
     tempReg = (SMARTIO_PRT_CTL(base) & (~(SMARTIO_PRT_CTL_PIPELINE_EN_Msk | SMARTIO_PRT_CTL_ENABLED_Msk)));
-    SMARTIO_PRT_CTL(base) = tempReg 
-                | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_ENABLE) 
+    SMARTIO_PRT_CTL(base) = tempReg
+                | _VAL2FLD(SMARTIO_PRT_CTL_PIPELINE_EN, CY_SMARTIO_ENABLE)
                 | _VAL2FLD(SMARTIO_PRT_CTL_ENABLED, CY_SMARTIO_DISABLE);
 }
 
@@ -266,14 +269,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetChBypass(SMARTIO_PRT_Type* base, uint8_t by
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_CTL(base) & (~SMARTIO_PRT_CTL_BYPASS_Msk));
         SMARTIO_PRT_CTL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_CTL_BYPASS, bypassMask);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -303,14 +306,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetClock(SMARTIO_PRT_Type* base, cy_en_smartio
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_CTL(base) & (~SMARTIO_PRT_CTL_CLOCK_SRC_Msk));
         SMARTIO_PRT_CTL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_CTL_CLOCK_SRC, clkSrc);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -352,14 +355,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetIoSync(SMARTIO_PRT_Type* base, uint8_t ioSy
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_SYNC_CTL(base) & (~SMARTIO_PRT_SYNC_CTL_IO_SYNC_EN_Msk));
         SMARTIO_PRT_SYNC_CTL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_SYNC_CTL_IO_SYNC_EN, ioSyncEn);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -401,14 +404,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetChipSync(SMARTIO_PRT_Type* base, uint8_t ch
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_SYNC_CTL(base) & (~SMARTIO_PRT_SYNC_CTL_CHIP_SYNC_EN_Msk));
         SMARTIO_PRT_SYNC_CTL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_SYNC_CTL_CHIP_SYNC_EN, chipSyncEn);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -422,7 +425,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetChipSync(SMARTIO_PRT_Type* base, uint8_t ch
 * In Deep-Sleep power mode, the HSIOM holds the GPIO output and output enable
 * signals for all signals that operate in chip active domain. Enabling the hold
 * override allows the Smart I/O to deliver Deep-Sleep output functionality
-* on these GPIO terminals. If the Smart I/O should not drive any of the GPIO 
+* on these GPIO terminals. If the Smart I/O should not drive any of the GPIO
 * outputs, the hold override should be disabled.
 *
 * \param base
@@ -445,14 +448,14 @@ cy_en_smartio_status_t Cy_SmartIO_HoldOverride(SMARTIO_PRT_Type* base, bool hldO
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_CTL(base) & (~SMARTIO_PRT_CTL_HLD_OVR_Msk));
         SMARTIO_PRT_CTL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_CTL_HLD_OVR, hldOvr);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -482,7 +485,7 @@ cy_en_smartio_status_t Cy_SmartIO_HoldOverride(SMARTIO_PRT_Type* base, bool hldO
 cy_en_smartio_luttr_t Cy_SmartIO_GetLutTr(SMARTIO_PRT_Type* base, cy_en_smartio_lutnum_t lutNum, cy_en_smartio_trnum_t trNum)
 {
     cy_en_smartio_luttr_t trSrc;
-    
+
     switch(trNum)
     {
         case(CY_SMARTIO_TR0):
@@ -506,7 +509,7 @@ cy_en_smartio_luttr_t Cy_SmartIO_GetLutTr(SMARTIO_PRT_Type* base, cy_en_smartio_
             break;
         }
     }
-        
+
     return(trSrc);
 }
 
@@ -542,7 +545,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetLutTr(SMARTIO_PRT_Type* base, cy_en_smartio
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         status = CY_SMARTIO_SUCCESS;
@@ -573,7 +576,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetLutTr(SMARTIO_PRT_Type* base, cy_en_smartio
             }
         }
     }
-    
+
     return(status);
 }
 
@@ -606,20 +609,20 @@ cy_en_smartio_status_t Cy_SmartIO_SetLutTrAll(SMARTIO_PRT_Type* base, cy_en_smar
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
-        tempReg = (SMARTIO_PRT_LUT_SEL(base, lutNum) 
-                    & (~(SMARTIO_PRT_LUT_SEL_LUT_TR0_SEL_Msk 
-                        | SMARTIO_PRT_LUT_SEL_LUT_TR1_SEL_Msk 
+        tempReg = (SMARTIO_PRT_LUT_SEL(base, lutNum)
+                    & (~(SMARTIO_PRT_LUT_SEL_LUT_TR0_SEL_Msk
+                        | SMARTIO_PRT_LUT_SEL_LUT_TR1_SEL_Msk
                         | SMARTIO_PRT_LUT_SEL_LUT_TR2_SEL_Msk)));
-        SMARTIO_PRT_LUT_SEL(base, lutNum) = tempReg 
+        SMARTIO_PRT_LUT_SEL(base, lutNum) = tempReg
                                 | _VAL2FLD(SMARTIO_PRT_LUT_SEL_LUT_TR0_SEL, trSrc)
                                 | _VAL2FLD(SMARTIO_PRT_LUT_SEL_LUT_TR1_SEL, trSrc)
                                 | _VAL2FLD(SMARTIO_PRT_LUT_SEL_LUT_TR2_SEL, trSrc);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -652,14 +655,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetLutOpcode(SMARTIO_PRT_Type* base, cy_en_sma
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_LUT_CTL(base, lutNum) & (~SMARTIO_PRT_LUT_CTL_LUT_OPC_Msk));
         SMARTIO_PRT_LUT_CTL(base, lutNum) = tempReg | _VAL2FLD(SMARTIO_PRT_LUT_CTL_LUT_OPC, opcode);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -704,14 +707,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetLutMap(SMARTIO_PRT_Type* base, cy_en_smarti
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_LUT_CTL(base, lutNum) & (~SMARTIO_PRT_LUT_CTL_LUT_Msk));
         SMARTIO_PRT_LUT_CTL(base, lutNum) = tempReg | _VAL2FLD(SMARTIO_PRT_LUT_CTL_LUT, lutMap);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return(status);
 }
 
@@ -738,7 +741,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetLutMap(SMARTIO_PRT_Type* base, cy_en_smarti
 cy_en_smartio_dutr_t Cy_SmartIO_GetDuTr(SMARTIO_PRT_Type* base, cy_en_smartio_trnum_t trNum)
 {
     cy_en_smartio_dutr_t trSrc;
-    
+
     switch(trNum)
     {
         case(CY_SMARTIO_TR0):
@@ -762,7 +765,7 @@ cy_en_smartio_dutr_t Cy_SmartIO_GetDuTr(SMARTIO_PRT_Type* base, cy_en_smartio_tr
             break;
         }
     }
-        
+
     return(trSrc);
 }
 
@@ -795,7 +798,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuTr(SMARTIO_PRT_Type* base, cy_en_smartio_
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         status = CY_SMARTIO_SUCCESS;
@@ -826,7 +829,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuTr(SMARTIO_PRT_Type* base, cy_en_smartio_
             }
         }
     }
-    
+
     return status;
 }
 
@@ -856,20 +859,20 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuTrAll(SMARTIO_PRT_Type* base, cy_en_smart
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         tempReg = (SMARTIO_PRT_DU_SEL(base)
-                    & (~(SMARTIO_PRT_DU_SEL_DU_TR0_SEL_Msk 
-                        | SMARTIO_PRT_DU_SEL_DU_TR1_SEL_Msk 
+                    & (~(SMARTIO_PRT_DU_SEL_DU_TR0_SEL_Msk
+                        | SMARTIO_PRT_DU_SEL_DU_TR1_SEL_Msk
                         | SMARTIO_PRT_DU_SEL_DU_TR2_SEL_Msk)));
-        SMARTIO_PRT_DU_SEL(base) = tempReg 
+        SMARTIO_PRT_DU_SEL(base) = tempReg
                         | _VAL2FLD(SMARTIO_PRT_DU_SEL_DU_TR0_SEL, trSrc)
                         | _VAL2FLD(SMARTIO_PRT_DU_SEL_DU_TR1_SEL, trSrc)
                         | _VAL2FLD(SMARTIO_PRT_DU_SEL_DU_TR2_SEL, trSrc);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return status;
 }
 
@@ -902,7 +905,7 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuData(SMARTIO_PRT_Type* base, cy_en_smarti
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
     uint32_t tempReg;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         if(dataNum == CY_SMARTIO_DATA0)
@@ -913,11 +916,11 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuData(SMARTIO_PRT_Type* base, cy_en_smarti
         else
         {
             tempReg = (SMARTIO_PRT_DU_SEL(base) & (~SMARTIO_PRT_DU_SEL_DU_DATA1_SEL_Msk));
-            SMARTIO_PRT_DU_SEL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_DU_SEL_DU_DATA1_SEL, dataSrc);  
+            SMARTIO_PRT_DU_SEL(base) = tempReg | _VAL2FLD(SMARTIO_PRT_DU_SEL_DU_DATA1_SEL, dataSrc);
         }
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return status;
 }
 
@@ -949,14 +952,14 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuData(SMARTIO_PRT_Type* base, cy_en_smarti
 cy_en_smartio_status_t Cy_SmartIO_SetDuOperation(SMARTIO_PRT_Type* base, cy_en_smartio_duopc_t opcode, cy_en_smartio_dusize_t size)
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         SMARTIO_PRT_DU_CTL(base) = _VAL2FLD(SMARTIO_PRT_DU_CTL_DU_SIZE, size)
                                     | _VAL2FLD(SMARTIO_PRT_DU_CTL_DU_OPC, opcode);
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return status;
 }
 
@@ -985,17 +988,17 @@ cy_en_smartio_status_t Cy_SmartIO_SetDuOperation(SMARTIO_PRT_Type* base, cy_en_s
 cy_en_smartio_status_t Cy_SmartIO_SetDataReg(SMARTIO_PRT_Type* base, uint8_t dataReg)
 {
     cy_en_smartio_status_t status = CY_SMARTIO_LOCKED;
-    
+
     if(CY_SMARTIO_DISABLE == _FLD2VAL(SMARTIO_PRT_CTL_ENABLED, SMARTIO_PRT_CTL(base)))
     {
         SMARTIO_PRT_DATA(base) = dataReg;
         status = CY_SMARTIO_SUCCESS;
     }
-    
+
     return status;
 }
 
-
+CY_MISRA_BLOCK_END('MISRA C-2012 Rule 10.8');
 
 #if defined(__cplusplus)
 }

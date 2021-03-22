@@ -1,12 +1,12 @@
 /***************************************************************************//**
 * \file cy_crypto.h
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the public interface for the Crypto driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@
 *
 * The functions and other declarations used in this driver are in cy_crypto.h,
 * cy_crypto_core.h, and cy_crypto_server.h. You can also include cy_pdl.h
-* (ModusToolbox only) to get access to all functions and declarations in the PDL.
+* to get access to all functions and declarations in the PDL.
 *
 * The driver implements two usage models:
 * * \ref group_crypto_cli_srv
@@ -237,59 +237,45 @@
 *
 * See the "Cryptographic Function Block" chapter of the Technical Reference Manual.
 *
-* \section group_crypto_MISRA MISRA-C Compliance
-* The Crypto driver has the following specific deviations:
-*
-* <table class="doxtable">
-*   <tr>
-*     <th>MISRA Rule</th>
-*     <th>Rule Class (Required/Advisory)</th>
-*     <th>Rule Description</th>
-*     <th>Description of Deviation(s)</th>
-*   </tr>
-*   <tr>
-*     <td>8.8</td>
-*     <td>A</td>
-*     <td>An external object or function shall be declared in one and only
-*         one file.</td>
-*     <td>The pointer to the operation context memory can not be public
-*         accessible (can not be defined in the header file) but it should be
-*         extarnally accessed, because it is used by other Cypress software
-*         resources.</td>
-*   </tr>
-*   <tr>
-*     <td>11.4</td>
-*     <td>A</td>
-*     <td>A cast should not be performed between a pointer to object type and
-*         a different pointer to object type.</td>
-*     <td>The pointers to the context memory are void to allow handling of
-*         different data types for different operations.
-*         The cast operation is safe because the configuration is verified
-*         before operation is performed.
-*         </td>
-*   </tr>
-*   <tr>
-*     <td>16.7</td>
-*     <td>A</td>
-*     <td>A pointer parameter in a function prototype should be declared as
-*         pointer to const if the pointer is not used to modify the addressed
-*         object.</td>
-*     <td>The objects pointed to by the base addresses of the CRYPTO are not
-*         always modified. While a const qualifier can be used in select
-*         scenarios, it brings little benefit in adding this to the affected
-*         functions. </td>
-*   </tr>
-*   <tr>
-*     <td>20.6</td>
-*     <td>R</td>
-*     <td>The macro offsetof, in library <stddef.h>, shall not be used.</td>
-*     <td>The only HW block register offsets are defined using this macro.</td>
-*   </tr>
-* </table>
-*
 * \section group_crypto_changelog Changelog
 * <table class="doxtable">
 *   <tr><th>Version</th><th>Changes</th><th>Reason for Change</th></tr>
+*   <tr>
+*     <td>2.40</td>
+*     <td>
+*         Resolve MISRA 2012 standard defects.
+*     </td>
+*     <td>
+*         MISRA 2012 compliance.
+*     </td>
+*   </tr>
+*   <tr>
+*     <td>2.30.4</td>
+*     <td>
+*         Updated code snippets for client-server usage model.
+*     </td>
+*     <td>
+*         Documentation enhancement.
+*     </td>
+*   </tr>
+*   <tr>
+*     <td>2.30.3</td>
+*     <td>
+*         Minor documentation updates.
+*     </td>
+*     <td>
+*         Documentation enhancement.
+*     </td>
+*   </tr>
+*   <tr>
+*     <td>2.30.2</td>
+*     <td>
+*         Code formatting cleanup, updated copyright date.
+*     </td>
+*     <td>
+*         PDL project update.
+*     </td>
+*   </tr>
 *   <tr>
 *     <td>2.30.1</td>
 *     <td>
@@ -304,7 +290,7 @@
 *     <td>
 *         <ul>
 *         <li>Added a multi-instance support for AES and SHA.</li>
-*		  <li>Added a small chunks mode for SHA with any chunk size (from one
+*         <li>Added a small chunks mode for SHA with any chunk size (from one
 *             byte).</li>
 *         <li>Added the operation memory buffer management (set a new address,
 *             get a size).</li>
@@ -440,7 +426,7 @@
 *
 *   The functions and other declarations used in this part of the driver are in
 *   cy_crypto.h and cy_crypto_server.h. You can also include cy_pdl.h
-*   (ModusToolbox only) to get access to all functions and declarations in the
+*   to get access to all functions and declarations in the
 *   PDL.
 *
 *   The firmware initializes and starts the Crypto server. The server can run on any

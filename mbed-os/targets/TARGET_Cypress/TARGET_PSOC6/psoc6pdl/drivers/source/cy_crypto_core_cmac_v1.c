@@ -1,6 +1,6 @@
 /***************************************************************************//**
 * \file cy_crypto_core_cmac_v1.c
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the source code to the API for the CMAC method
@@ -10,7 +10,7 @@
 *  nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38b.pdf
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,9 @@ extern "C" {
 #include "cy_crypto_core_hw_v1.h"
 #include "cy_crypto_core_mem_v1.h"
 #include "cy_syslib.h"
-#include <string.h>
+
+CY_MISRA_DEVIATE_BLOCK_START('MISRA C-2012 Rule 11.3', 2, \
+'Pointer type conversion is intentional');
 
 static void Cy_Crypto_Core_V1_Cmac_CalcSubKey(uint8_t *srcDstPtr);
 
@@ -305,6 +307,8 @@ cy_en_crypto_status_t Cy_Crypto_Core_V1_Cmac(CRYPTO_Type *base,
 
     return (CY_CRYPTO_SUCCESS);
 }
+
+CY_MISRA_BLOCK_END('MISRA C-2012 Rule 11.3');
 
 #endif /* (CPUSS_CRYPTO_AES == 1) */
 

@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_ipc_sema.c
-* \version 1.40
+* \version 1.50
 *
 *  Description:
 *   IPC Semaphore Driver - This source file contains the source code for the
 *   semaphore level APIs for the IPC interface.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@
 #include <string.h> /* The memset() definition */
 
 /* Defines a mask to Check if semaphore count is a multiple of 32 */
-#define CY_IPC_SEMA_PER_WORD_MASK    (CY_IPC_SEMA_PER_WORD - 1ul)
+#define CY_IPC_SEMA_PER_WORD_MASK    (CY_IPC_SEMA_PER_WORD - 1UL)
 
 /* Pointer to IPC structure used for semaphores */
 static IPC_STRUCT_Type* cy_semaIpcStruct;
@@ -73,7 +73,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Init(uint32_t ipcChannel,
                                         uint32_t count, uint32_t memPtr[])
 {
     /* Structure containing semaphores control data */
-    CY_SECTION(".cy_sharedmem")
+    CY_SECTION_SHAREDMEM
     static cy_stc_ipc_sema_t       cy_semaData;
 
     cy_en_ipcsema_status_t retStatus = CY_IPC_SEMA_BAD_PARAM;
@@ -93,7 +93,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Init(uint32_t ipcChannel,
 
         retStatus = Cy_IPC_Sema_InitExt(ipcChannel, &cy_semaData);
     }
-    
+
     else
     {
         retStatus = CY_IPC_SEMA_BAD_PARAM;
@@ -121,7 +121,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Init(uint32_t ipcChannel,
 * The IPC channel number used for semaphores
 *
 * \param ipcSema
-*  This is configuration structure of the IPC semaphore. 
+*  This is configuration structure of the IPC semaphore.
 *  See \ref cy_stc_ipc_sema_t.
 *
 * \return Status of the operation
@@ -129,7 +129,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Init(uint32_t ipcChannel,
 *    \retval CY_IPC_SEMA_BAD_PARAM:     Memory pointer is NULL and count is not zero,
 *                             or count not multiple of 32
 *    \retval CY_IPC_SEMA_ERROR_LOCKED:  Could not acquire semaphores IPC channel
-* 
+*
 *******************************************************************************/
 cy_en_ipcsema_status_t Cy_IPC_Sema_InitExt(uint32_t ipcChannel, cy_stc_ipc_sema_t *ipcSema)
 {
@@ -144,7 +144,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_InitExt(uint32_t ipcChannel, cy_stc_ipc_sema_
         if(NULL != ipcSema)
         {
             /* Check if semaphore count is a multiple of 32 */
-            if( 0ul == (ipcSema->maxSema & CY_IPC_SEMA_PER_WORD_MASK))
+            if( 0UL == (ipcSema->maxSema & CY_IPC_SEMA_PER_WORD_MASK))
             {
                 cy_semaIpcStruct = Cy_IPC_Drv_GetIpcBaseAddress(ipcChannel);
 
@@ -230,7 +230,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Set(uint32_t semaNumber, bool preemptable)
 {
     uint32_t semaIndex;
     uint32_t semaMask;
-    uint32_t interruptState = 0ul;
+    uint32_t interruptState = 0UL;
 
     cy_stc_ipc_sema_t      *semaStruct;
     cy_en_ipcsema_status_t  retStatus = CY_IPC_SEMA_LOCKED;
@@ -241,7 +241,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Set(uint32_t semaNumber, bool preemptable)
     if (semaNumber < semaStruct->maxSema)
     {
         semaIndex = semaNumber / CY_IPC_SEMA_PER_WORD;
-        semaMask = (uint32_t)(1ul << (semaNumber - (semaIndex * CY_IPC_SEMA_PER_WORD) ));
+        semaMask = (uint32_t)(1UL << (semaNumber - (semaIndex * CY_IPC_SEMA_PER_WORD) ));
 
         if (!preemptable)
         {
@@ -252,7 +252,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Set(uint32_t semaNumber, bool preemptable)
            If so, check if specific channel can be locked. */
         if(CY_IPC_DRV_SUCCESS == Cy_IPC_Drv_LockAcquire (cy_semaIpcStruct))
         {
-            if((semaStruct->arrayPtr[semaIndex] & semaMask) == 0ul)
+            if((semaStruct->arrayPtr[semaIndex] & semaMask) == 0UL)
             {
                 semaStruct->arrayPtr[semaIndex] |= semaMask;
                 retStatus = CY_IPC_SEMA_SUCCESS;
@@ -318,7 +318,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Clear(uint32_t semaNumber, bool preemptable)
 {
     uint32_t semaIndex;
     uint32_t semaMask;
-    uint32_t interruptState = 0ul;
+    uint32_t interruptState = 0UL;
 
     cy_stc_ipc_sema_t      *semaStruct;
     cy_en_ipcsema_status_t  retStatus = CY_IPC_SEMA_LOCKED;
@@ -329,7 +329,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Clear(uint32_t semaNumber, bool preemptable)
     if (semaNumber < semaStruct->maxSema)
     {
         semaIndex = semaNumber / CY_IPC_SEMA_PER_WORD;
-        semaMask = (uint32_t)(1ul << (semaNumber - (semaIndex * CY_IPC_SEMA_PER_WORD) ));
+        semaMask = (uint32_t)(1UL << (semaNumber - (semaIndex * CY_IPC_SEMA_PER_WORD) ));
 
         if (!preemptable)
         {
@@ -340,7 +340,7 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Clear(uint32_t semaNumber, bool preemptable)
            If so, check if specific channel can be locked. */
         if(CY_IPC_DRV_SUCCESS == Cy_IPC_Drv_LockAcquire (cy_semaIpcStruct))
         {
-            if((semaStruct->arrayPtr[semaIndex] & semaMask) != 0ul)
+            if((semaStruct->arrayPtr[semaIndex] & semaMask) != 0UL)
             {
                 semaStruct->arrayPtr[semaIndex] &= ~semaMask;
                 retStatus = CY_IPC_SEMA_SUCCESS;
@@ -399,9 +399,9 @@ cy_en_ipcsema_status_t Cy_IPC_Sema_Status(uint32_t semaNumber)
     {
         /* Get the index into the semaphore array and calculate the mask */
         semaIndex = semaNumber / CY_IPC_SEMA_PER_WORD;
-        semaMask = (uint32_t)(1ul << (semaNumber - (semaIndex * CY_IPC_SEMA_PER_WORD) ));
+        semaMask = (uint32_t)(1UL << (semaNumber - (semaIndex * CY_IPC_SEMA_PER_WORD) ));
 
-        if((semaStruct->arrayPtr[semaIndex] & semaMask) != 0ul)
+        if((semaStruct->arrayPtr[semaIndex] & semaMask) != 0UL)
         {
             retStatus =  CY_IPC_SEMA_STATUS_LOCKED;
         }

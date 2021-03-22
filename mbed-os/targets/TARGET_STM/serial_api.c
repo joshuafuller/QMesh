@@ -158,14 +158,9 @@ static void _serial_init_direct(serial_t *obj, const serial_pinmap_t *pinmap)
 
     // Configure UART pins
     pin_function(pinmap->tx_pin, pinmap->tx_function);
+    pin_mode(pinmap->tx_pin, PullUp);
     pin_function(pinmap->rx_pin, pinmap->rx_function);
-
-    if (pinmap->tx_pin != NC) {
-        pin_mode(pinmap->tx_pin, PullUp);
-    }
-    if (pinmap->rx_pin != NC) {
-        pin_mode(pinmap->rx_pin, PullUp);
-    }
+    pin_mode(pinmap->rx_pin, PullUp);
 
     // Configure UART
     obj_s->baudrate = 9600; // baudrate default value
@@ -228,7 +223,7 @@ void serial_free(serial_t *obj)
     struct serial_s *obj_s = SERIAL_S(obj);
 
     // Reset UART and disable clock
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
     while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
     }
 #endif /* DUAL_CORE */
@@ -351,13 +346,23 @@ void serial_free(serial_t *obj)
         __HAL_RCC_LPUART1_CLK_DISABLE();
     }
 #endif
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, HSEM_CR_COREID_CURRENT);
 #endif /* DUAL_CORE */
 
     // Configure GPIOs
     pin_function(obj_s->pin_tx, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
+
     pin_function(obj_s->pin_rx, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
+
+#if DEVICE_SERIAL_FC
+    if ( (obj_s->hw_flow_ctl == UART_HWCONTROL_RTS) || (obj_s->hw_flow_ctl == UART_HWCONTROL_RTS_CTS) ) {
+        pin_function(obj_s->pin_rts, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
+    }
+    if ( (obj_s->hw_flow_ctl == UART_HWCONTROL_CTS) || (obj_s->hw_flow_ctl == UART_HWCONTROL_RTS_CTS) ) {
+        pin_function(obj_s->pin_cts, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
+    }
+#endif
 
     serial_irq_ids[obj_s->index] = 0;
 }
@@ -381,24 +386,24 @@ void serial_baud(serial_t *obj, int baudrate)
                 RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
                 RCC_OscInitStruct.LSEState       = RCC_LSE_ON;
                 RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_OFF;
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
                 while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
                 }
 #endif /* DUAL_CORE */
                 HAL_RCC_OscConfig(&RCC_OscInitStruct);
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
                 LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, HSEM_CR_COREID_CURRENT);
 #endif /* DUAL_CORE */
             }
             // Keep it to verify if HAL_RCC_OscConfig didn't exit with a timeout
             if (__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY)) {
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
                 while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
                 }
 #endif /* DUAL_CORE */
                 PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_LSE;
                 HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
                 LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, HSEM_CR_COREID_CURRENT);
 #endif /* DUAL_CORE */
                 if (init_uart(obj) == HAL_OK) {
@@ -422,24 +427,24 @@ void serial_baud(serial_t *obj, int baudrate)
             RCC_OscInitStruct.HSIState            = RCC_HSI_ON;
             RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_OFF;
             RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
             while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
             }
 #endif /* DUAL_CORE */
             HAL_RCC_OscConfig(&RCC_OscInitStruct);
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
             LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, HSEM_CR_COREID_CURRENT);
 #endif /* DUAL_CORE */
         }
         // Keep it to verify if HAL_RCC_OscConfig didn't exit with a timeout
         if (__HAL_RCC_GET_FLAG(RCC_FLAG_HSIRDY)) {
             PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_HSI;
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
             while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
             }
 #endif /* DUAL_CORE */
             HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
             LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, HSEM_CR_COREID_CURRENT);
 #endif /* DUAL_CORE */
             if (init_uart(obj) == HAL_OK) {
@@ -449,12 +454,12 @@ void serial_baud(serial_t *obj, int baudrate)
 #endif
         // Last chance using SYSCLK
         PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_SYSCLK;
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
         while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
         }
 #endif /* DUAL_CORE */
         HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
         LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, HSEM_CR_COREID_CURRENT);
 #endif /* DUAL_CORE */
     }
@@ -616,6 +621,18 @@ HAL_StatusTypeDef init_uart(serial_t *obj)
     huart->TxXferSize        = 0;
     huart->RxXferCount       = 0;
     huart->RxXferSize        = 0;
+#if defined(UART_ONE_BIT_SAMPLE_DISABLE) // F0/F3/F7/G0/H7/L0/L4/L5/WB
+    huart->Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+#endif
+#if defined(UART_PRESCALER_DIV1) // G0/H7/L4/L5/WB
+    huart->Init.ClockPrescaler = UART_PRESCALER_DIV1;
+#endif
+#if defined(UART_ADVFEATURE_NO_INIT) // F0/F3/F7/G0/H7/L0/L4//5/WB
+    huart->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+#endif
+#if defined(UART_FIFOMODE_DISABLE) // G0/H7/L4/L5/WB
+    huart->FifoMode = UART_FIFOMODE_DISABLE;
+#endif
 
     if (obj_s->pin_rx == NC) {
         huart->Init.Mode = UART_MODE_TX;

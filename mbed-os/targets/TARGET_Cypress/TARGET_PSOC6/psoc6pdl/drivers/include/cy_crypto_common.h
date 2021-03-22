@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_crypto_common.h
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides common constants and parameters
 *  for the Crypto driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,7 +62,7 @@ extern "C" {
 #define CY_CRYPTO_DRV_VERSION_MAJOR         2
 
 /** Driver minor version */
-#define CY_CRYPTO_DRV_VERSION_MINOR         30
+#define CY_CRYPTO_DRV_VERSION_MINOR         40
 
 /**
 * \addtogroup group_crypto_cli_srv_macros
@@ -100,10 +100,10 @@ extern "C" {
 #define CY_CRYPTO_AES_MAX_KEY_SIZE        (CY_CRYPTO_AES_256_KEY_SIZE)
 
 /** Defines the Crypto AES_256 key maximum size (in four-byte words) */
-#define CY_CRYPTO_AES_MAX_KEY_SIZE_U32    (uint32_t)(CY_CRYPTO_AES_MAX_KEY_SIZE / 4ul)
+#define CY_CRYPTO_AES_MAX_KEY_SIZE_U32    (uint32_t)(CY_CRYPTO_AES_MAX_KEY_SIZE / 4UL)
 
 /** Defines size of the AES block, in four-byte words */
-#define CY_CRYPTO_AES_BLOCK_SIZE_U32      (uint32_t)(CY_CRYPTO_AES_BLOCK_SIZE / 4ul)
+#define CY_CRYPTO_AES_BLOCK_SIZE_U32      (uint32_t)(CY_CRYPTO_AES_BLOCK_SIZE / 4UL)
 
 #if (CPUSS_CRYPTO_SHA == 1)
 

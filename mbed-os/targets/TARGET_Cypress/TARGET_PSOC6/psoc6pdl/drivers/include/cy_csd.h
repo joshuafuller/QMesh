@@ -1,12 +1,12 @@
 /***************************************************************************//**
 * \file cy_csd.h
-* \version 1.10
+* \version 1.10.2
 *
 * The header file of the CSD driver.
 *
 ********************************************************************************
 * \copyright
-* Copyright 2018-2019 Cypress Semiconductor Corporation
+* Copyright 2018-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -254,22 +254,22 @@
 * * <a href="http://www.cypress.com/trm218176"><b>Technical Reference Manual (TRM)</b></a>
 *
 * * <a href="https://github.com/cypresssemiconductorco/capsense">
-*   <b>Cypress CapSense Middleware Library</b></a>
+*   <b>CapSense Middleware Library</b></a>
 *
 * * <a href="https://cypresssemiconductorco.github.io/capsense/capsense_api_reference_manual/html/index.html">
-*   <b>Cypress CapSense Middleware API Reference Guide</b></a>
+*   <b>CapSense Middleware API Reference Guide</b></a>
 *
 * * <a href="https://github.com/cypresssemiconductorco/csdadc">
-*   <b>Cypress CSDADC Middleware Library</b></a>
+*   <b>CSDADC Middleware Library</b></a>
 *
 * * <a href="https://cypresssemiconductorco.github.io/csdadc/csdadc_api_reference_manual/html/index.html">
-*   <b>Cypress CSDADC Middleware API Reference Guide</b></a>
+*   <b>CSDADC Middleware API Reference Guide</b></a>
 *
 * * <a href="https://github.com/cypresssemiconductorco/csdidac">
-*   <b>Cypress CSDIDAC Middleware Library</b></a>
+*   <b>CSDIDAC Middleware Library</b></a>
 *
 * * <a href="https://cypresssemiconductorco.github.io/csdidac/csdidac_api_reference_manual/html/index.html">
-*   <b>Cypress CSDIDAC Middleware API Reference Guide</b></a>
+*   <b>CSDIDAC Middleware API Reference Guide</b></a>
 *
 * * \ref page_getting_started "Getting Started with the PDL"
 *
@@ -280,37 +280,20 @@
 * * <a href="http://www.cypress.com/an210781"><b>AN210781 Getting Started with PSoC 6 MCU with Bluetooth Low Energy (BLE) Connectivity</b></a>
 *
 ********************************************************************************
-* \section group_csd_MISRA MISRA-C Compliance
-********************************************************************************
-* <table class="doxtable">
-*   <tr>
-*     <th>MISRA Rule</th>
-*     <th>Rule Class (Required/Advisory)</th>
-*     <th>Rule Description</th>
-*     <th>Description of Deviation(s)</th>
-*   </tr>
-*   <tr>
-*     <td>14.2</td>
-*     <td>R</td>
-*     <td>All non-null statements shall either: a) have at least one side-effect
-*         however executed, or b) cause control flow to change.</td>
-*     <td>The unused function parameters are cast to void. This statement
-*         has no side effect and is used to suppress a compiler warning.</td>
-*   </tr>
-*   <tr>
-*     <td>20.6</td>
-*     <td>R</td>
-*     <td>The macro offsetof, in library <stddef.h>, shall not be used.</td>
-*     <td>The only CSD HW block register offsets are defined using this macro 
-*         to implement functions Read/WriteReg.</td>
-*   </tr>
-* </table>
-*
-********************************************************************************
 * \section group_csd_changelog Changelog
 ********************************************************************************
 * <table class="doxtable">
 *   <tr><th>Version</th><th>Changes</th><th>Reason for Change</th></tr>
+*   <tr>
+*     <td>1.10.2</td>
+*     <td>Documentation updates</td>
+*     <td>Documented MISRA 2012 violations</td>
+*   </tr>
+*   <tr>
+*     <td>1.10.1</td>
+*     <td>Documentation updates</td>
+*     <td>Update middleware references</td>
+*   </tr>
 *   <tr>
 *     <td rowspan="2">1.10</td>
 *     <td>The CSD driver sources are enclosed with the conditional compilation 

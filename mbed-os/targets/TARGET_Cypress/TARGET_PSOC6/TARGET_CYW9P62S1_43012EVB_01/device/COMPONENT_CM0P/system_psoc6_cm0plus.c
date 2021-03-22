@@ -1,12 +1,12 @@
 /***************************************************************************//**
 * \file system_psoc6_cm0plus.c
-* \version 2.70
+* \version 2.90
 *
 * The device system-source file.
 *
 ********************************************************************************
 * \copyright
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,10 @@
     #endif /* defined(CY_DEVICE_PSOC6ABLE2) */
 #endif /* !defined(CY_IPC_DEFAULT_CFG_DISABLE) */
 
+#if defined(CY_DEVICE_SECURE)
+    #include "cy_pra.h"
+#endif /* defined(CY_DEVICE_SECURE) */
+
 
 /*******************************************************************************
 * SystemCoreClockUpdate()
@@ -54,8 +58,6 @@
 /** Default SlowClk system core frequency in Hz */
 #define CY_CLK_SYSTEM_FREQ_HZ_DEFAULT       (4000000UL)
 
-/** ALTLF frequency in Hz */
-#define CY_CLK_ALTLF_FREQ_HZ                (32768UL)
 
 /**
 * Holds the SlowClk (Cortex-M0+) or FastClk (Cortex-M4) system core clock,
@@ -80,11 +82,7 @@ uint32_t cy_Hfclk0FreqHz  = CY_CLK_HFCLK0_FREQ_HZ_DEFAULT;
 uint32_t cy_PeriClkFreqHz = CY_CLK_PERICLK_FREQ_HZ_DEFAULT;
 
 /** Holds the Alternate high frequency clock in Hz. Updated by \ref Cy_BLE_EcoConfigure(). */
-#if (defined (CY_IP_MXBLESS) && (CY_IP_MXBLESS == 1UL)) || defined (CY_DOXYGEN)
-    uint32_t cy_BleEcoClockFreqHz = CY_CLK_ALTHF_FREQ_HZ;
-#else
-    uint32_t cy_BleEcoClockFreqHz = 0UL;
-#endif /* (defined (CY_IP_MXBLESS) && (CY_IP_MXBLESS == 1UL)) || defined (CY_DOXYGEN) */
+uint32_t cy_BleEcoClockFreqHz = 0UL;
 
 
 /*******************************************************************************
@@ -132,6 +130,7 @@ uint32_t cy_delay32kMs    = CY_DELAY_MS_OVERFLOW_THRESHOLD *
 * - Unlocks and disables WDT.
 * - Calls Cy_PDL_Init() function to define the driver library.
 * - Calls the Cy_SystemInit() function, if compiled from PSoC Creator.
+* - Calls \ref Cy_PRA_Init() for PSoC 64 devices.
 * - Calls \ref SystemCoreClockUpdate().
 *
 *******************************************************************************/
@@ -160,15 +159,11 @@ void SystemInit(void)
     Cy_SystemInit();
     SystemCoreClockUpdate();
 
-#if defined(CY_DEVICE_PSOC6ABLE2) && !defined(CY_PSOC6ABLE2_REV_0A_SUPPORT_DISABLE)
-    if (CY_SYSLIB_DEVICE_REV_0A == Cy_SysLib_GetDeviceRevision())
-    {
-        /* Clear data register of IPC structure #7, reserved for the Deep-Sleep operations. */
-        IPC_STRUCT7->DATA = 0UL;
-        /* Release IPC structure #7 to avoid deadlocks in case of SW or WDT reset during Deep-Sleep entering. */
-        IPC_STRUCT7->RELEASE = 0UL;
-    }
-#endif /* defined(CY_DEVICE_PSOC6ABLE2) && !defined(CY_PSOC6ABLE2_REV_0A_SUPPORT_DISABLE) */
+    /* Clear data register of IPC structure #7, reserved for the Deep-Sleep operations. */
+    REG_IPC_STRUCT_DATA(CY_IPC_STRUCT_PTR(CY_IPC_CHAN_DDFT)) = 0UL;
+
+    /* Release IPC structure #7 to avoid deadlocks in case of SW or WDT reset during Deep-Sleep entering. */
+    REG_IPC_STRUCT_RELEASE(CY_IPC_STRUCT_PTR(CY_IPC_CHAN_DDFT)) = 0UL;
 
 #if !defined(CY_IPC_DEFAULT_CFG_DISABLE)
     /* Allocate and initialize semaphores for the system operations. */
@@ -222,16 +217,18 @@ void SystemInit(void)
     /* .userPipeIsrHandler       */  &Cy_SysIpcPipeIsrCm0
     };
 
-    if (cy_device->flashPipeRequired != 0u)
-    {
-        Cy_IPC_Pipe_Init(&systemIpcPipeConfigCm0);
-    }
+    Cy_IPC_Pipe_Init(&systemIpcPipeConfigCm0);
 
 #if defined(CY_DEVICE_PSOC6ABLE2)
     Cy_Flash_Init();
 #endif /* defined(CY_DEVICE_PSOC6ABLE2) */
 
 #endif /* !defined(CY_IPC_DEFAULT_CFG_DISABLE) */
+
+    #if defined(CY_DEVICE_SECURE)
+        /* Initialize Protected Regsiter Access driver. */
+        Cy_PRA_Init();
+    #endif /* defined(CY_DEVICE_SECURE) */
 }
 
 
@@ -276,7 +273,7 @@ void SystemCoreClockUpdate (void)
         cy_Hfclk0FreqHz = locHf0Clock;
         cy_PeriClkFreqHz = locHf0Clock / (1UL + (uint32_t)Cy_SysClk_ClkPeriGetDivider());
         SystemCoreClock = cy_PeriClkFreqHz / (1UL + (uint32_t)Cy_SysClk_ClkSlowGetDivider());
-        
+
         /* Sets clock frequency for Delay API */
         cy_delayFreqMhz = (uint8_t)CY_SYSLIB_DIV_ROUNDUP(SystemCoreClock, CY_DELAY_1M_THRESHOLD);
         cy_delayFreqKhz = CY_SYSLIB_DIV_ROUNDUP(SystemCoreClock, CY_DELAY_1K_THRESHOLD);

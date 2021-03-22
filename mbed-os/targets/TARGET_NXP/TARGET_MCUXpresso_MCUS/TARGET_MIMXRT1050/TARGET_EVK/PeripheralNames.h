@@ -1,5 +1,6 @@
 /* mbed Microcontroller Library
  * Copyright (c) 2006-2013 ARM Limited
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,6 +132,7 @@ typedef enum {
     SPI_1 = 1,
     SPI_2 = 2,
     SPI_3 = 3,
+    SPI_4 = 4,
 } SPIName;
 
 #ifdef __cplusplus

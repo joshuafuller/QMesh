@@ -1,3 +1,3 @@
-#define WHD_VERSION "v1.70.0"
-#define WHD_BRANCH "v1.70.0"
-#define WHD_DATE "2019-12-02 04:14:53 -0600"
+#define WHD_VERSION "v1.92.0"
+#define WHD_BRANCH "v1.92.0"
+#define WHD_DATE "2020-09-25 03:12:36 -0500"

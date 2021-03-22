@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_device.h
-* \version 2.10
+* \version 2.30
 *
 * This file specifies the structure for core and peripheral block HW base
 * addresses, versions, and parameters.
 *
 ********************************************************************************
 * \copyright
-* Copyright 2018-2019 Cypress Semiconductor Corporation
+* Copyright 2018-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,31 +22,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-/**
-* \section group_device_MISRA MISRA-C Compliance
-* <table class="doxtable">
-*   <tr>
-*     <th>MISRA Rule</th>
-*     <th>Rule Class (Required/Advisory)</th>
-*     <th>Rule Description</th>
-*     <th>Description of Deviation(s)</th>
-*   </tr>
-*   <tr>
-*     <td>10.1</td>
-*     <td>R</td>
-*     <td>The value of an expression of integer type shall not be implicitly converted to a different underlying type
-*         under some circumstances.</td>
-*     <td>An operand of essentially enum type is being converted to unsigned type as a result of an arithmetic or
-*         conditional operation. The conversion does not have any unintended effect.</td>
-*   </tr>
-*   <tr>
-*     <td>20.6</td>
-*     <td>R</td>
-*     <td>The macro offsetof, in library <stddef.h>, shall not be used.</td>
-*     <td>The only HW block register offsets are defined using this macro.</td>
-*   </tr>
-* </table>
-*/
 
 #ifndef CY_DEVICE_H_
 #define CY_DEVICE_H_
@@ -84,6 +59,17 @@
 #include "ip/cyip_sdhc.h"
 #include "ip/cyip_canfd.h"
 #include "ip/cyip_smartio.h"
+#include "ip/cyip_tcpwm.h"
+#include "ip/cyip_tcpwm_v2.h"
+#include "ip/cyip_ctbm.h"
+#include "ip/cyip_ctbm_v2.h"
+#include "ip/cyip_ctdac.h"
+#include "ip/cyip_ctdac_v2.h"
+#include "ip/cyip_sar.h"
+#include "ip/cyip_sar_v2.h"
+#include "ip/cyip_pass.h"
+#include "ip/cyip_pass_v2.h"
+#include "cy_device_headers.h"
 
 /* Device descriptor type */
 typedef struct
@@ -99,6 +85,7 @@ typedef struct
     uint32_t passBase;
     uint32_t ipcBase;
     uint32_t cryptoBase;
+    uint32_t sar0Base;
 
     /* IP block versions: [7:4] major, [3:0] minor */
     uint8_t  cpussVersion;
@@ -107,6 +94,7 @@ typedef struct
     uint8_t  ipcVersion;
     uint8_t  periVersion;
     uint8_t  srssVersion;
+    uint8_t  passVersion;
 
     /* Parameters */
     uint8_t  cpussIpcNr;
@@ -120,6 +108,7 @@ typedef struct
     uint8_t  srssNumClkpath;
     uint8_t  srssNumPll;
     uint8_t  srssNumHfroot;
+    uint8_t  srssIsPiloPresent;
     uint8_t  periClockNr;
     uint8_t  smifDeviceNr;
     uint8_t  passSarChannels;
@@ -138,6 +127,9 @@ typedef struct
     uint8_t  flashCtlMainWs2Freq;
     uint8_t  flashCtlMainWs3Freq;
     uint8_t  flashCtlMainWs4Freq;
+    uint8_t  tcpwmCC1Present;
+    uint8_t  tcpwmAMCPresent;
+    uint8_t  tcpwmSMCPrecent;
 
     /* Peripheral register offsets */
 
@@ -200,6 +192,7 @@ typedef struct
 extern const cy_stc_device_t   cy_deviceIpBlockCfgPSoC6_01;
 extern const cy_stc_device_t   cy_deviceIpBlockCfgPSoC6_02;
 extern const cy_stc_device_t   cy_deviceIpBlockCfgPSoC6_03;
+extern const cy_stc_device_t   cy_deviceIpBlockCfgPSoC6_04;
 extern const cy_stc_device_t * cy_device;
 
 
@@ -218,6 +211,8 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 
 #define CY_SRSS_V1_3                        (0x13U == cy_device->srssVersion)
 #define CY_SRSS_MFO_PRESENT                 (CY_SRSS_V1_3)
+
+#define CY_SRSS_PILO_PRESENT                 (1U == cy_device->srssIsPiloPresent)
 
 #define CY_SRSS_NUM_CLKPATH                 ((uint32_t)(cy_device->srssNumClkpath))
 #define CY_SRSS_NUM_PLL                     ((uint32_t)(cy_device->srssNumPll))
@@ -353,6 +348,7 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define FLASHC_FLASH_CMD                    (((FLASHC_V1_Type *) cy_device->flashcBase)->FLASH_CMD)
 #define FLASHC_FLASH_CTL                    (((FLASHC_V1_Type *) cy_device->flashcBase)->FLASH_CTL)
 #define FLASHC_BIST_DATA_0                  (((FLASHC_V1_Type *) cy_device->flashcBase)->BIST_DATA[0U])
+#define FLASHC_BIST_STATUS                  (((FLASHC_V1_Type *) cy_device->flashcBase)->BIST_STATUS)
 
 
 /*******************************************************************************
@@ -501,10 +497,43 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define TCPWM_CNT_TR_CTRL1(base, cntNum)     (((TCPWM_V1_Type *)(base))->CNT[cntNum].TR_CTRL1)
 #define TCPWM_CNT_TR_CTRL2(base, cntNum)     (((TCPWM_V1_Type *)(base))->CNT[cntNum].TR_CTRL2)
 
+#define TCPWM_GRP_CC1(grp)                   ((((cy_device->tcpwmCC1Present) >> (grp)) & 0x01U) != 0U)
+#define TCPWM_GRP_AMC(grp)                   ((((cy_device->tcpwmAMCPresent) >> (grp)) & 0x01U) != 0U)
+#define TCPWM_GRP_SMC(grp)                   ((((cy_device->tcpwmSMCPrecent) >> (grp)) & 0x01U) != 0U)
+
+#define TCPWM_GRP_CNT_GET_GRP(cntNum)        ((cntNum )/ 256U)
+
+#define TCPWM_GRP_CNT_CTRL(base, grp, cntNum)           (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].CTRL)
+#define TCPWM_GRP_CNT_STATUS(base, grp, cntNum)         (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].STATUS)
+#define TCPWM_GRP_CNT_COUNTER(base, grp, cntNum)        (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].COUNTER)
+#define TCPWM_GRP_CNT_CC0(base, grp, cntNum)            (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].CC0)
+#define TCPWM_GRP_CNT_CC0_BUFF(base, grp, cntNum)       (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].CC0_BUFF)
+#define TCPWM_GRP_CNT_CC1(base, grp, cntNum)            (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].CC1)
+#define TCPWM_GRP_CNT_CC1_BUFF(base, grp, cntNum)       (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].CC1_BUFF)
+#define TCPWM_GRP_CNT_PERIOD(base, grp, cntNum)         (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].PERIOD)
+#define TCPWM_GRP_CNT_PERIOD_BUFF(base, grp, cntNum)    (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].PERIOD_BUFF)
+#define TCPWM_GRP_CNT_LINE_SEL(base, grp, cntNum)       (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].LINE_SEL)
+#define TCPWM_GRP_CNT_LINE_SEL_BUFF(base, grp, cntNum)  (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].LINE_SEL_BUFF)
+#define TCPWM_GRP_CNT_DT(base, grp, cntNum)             (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].DT)
+#define TCPWM_GRP_CNT_TR_CMD(base, grp, cntNum)         (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].TR_CMD)
+#define TCPWM_GRP_CNT_TR_IN_SEL0(base, grp, cntNum)     (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].TR_IN_SEL0)
+#define TCPWM_GRP_CNT_TR_IN_SEL1(base, grp, cntNum)     (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].TR_IN_SEL1)
+#define TCPWM_GRP_CNT_TR_IN_EDGE_SEL(base, grp, cntNum) (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].TR_IN_EDGE_SEL)
+#define TCPWM_GRP_CNT_TR_PWM_CTRL(base, grp, cntNum)    (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].TR_PWM_CTRL)
+#define TCPWM_GRP_CNT_TR_OUT_SEL(base, grp, cntNum)     (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].TR_OUT_SEL)
+#define TCPWM_GRP_CNT_INTR(base, grp, cntNum)           (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].INTR)
+#define TCPWM_GRP_CNT_INTR_SET(base, grp, cntNum)       (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].INTR_SET)
+#define TCPWM_GRP_CNT_INTR_MASK(base, grp, cntNum)      (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].INTR_MASK)
+#define TCPWM_GRP_CNT_INTR_MASKED(base, grp, cntNum)    (((TCPWM_V2_Type *)(base))->GRP[grp].CNT[((cntNum) % 256U)].INTR_MASKED)
+
 
 /*******************************************************************************
 *                SAR
 *******************************************************************************/
+
+#define CY_SAR_INSTANCES                    (2UL)
+#define CY_SAR0_BASE                        ((SAR_Type*)(cy_device->sar0Base))
+#define CY_SAR_INSTANCE(base)               ((CY_SAR0_BASE == (base)) ? 0UL : 1UL)
 
 #define SAR_SAMPLE_CTRL(base)               (((SAR_V1_Type *)(base))->SAMPLE_CTRL)
 #define SAR_SAMPLE_TIME01(base)             (((SAR_V1_Type *)(base))->SAMPLE_TIME01)
@@ -543,6 +572,9 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define SAR_SATURATE_INTR_MASK(base)        (((SAR_V1_Type *)(base))->SATURATE_INTR_MASK)
 #define SAR_SATURATE_INTR_MASKED(base)      (((SAR_V1_Type *)(base))->SATURATE_INTR_MASKED)
 #define SAR_SATURATE_INTR_SET(base)         (((SAR_V1_Type *)(base))->SATURATE_INTR_SET)
+
+#define SAR_INJ_CHAN_CONFIG(base)           (((SAR_V1_Type *)(base))->INJ_CHAN_CONFIG)
+#define SAR_INJ_RESULT(base)                (((SAR_V1_Type *)(base))->INJ_RESULT)
 
 
 /*******************************************************************************
@@ -592,13 +624,13 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 *                SMARTIO
 *******************************************************************************/
 
-#define SMARTIO_PRT_CTL(base)               (((SMARTIO_PRT_V1_Type *)(base))->CTL)
-#define SMARTIO_PRT_SYNC_CTL(base)          (((SMARTIO_PRT_V1_Type *)(base))->SYNC_CTL)
-#define SMARTIO_PRT_LUT_SEL(base, idx)      (((SMARTIO_PRT_V1_Type *)(base))->LUT_SEL[idx])
-#define SMARTIO_PRT_LUT_CTL(base, idx)      (((SMARTIO_PRT_V1_Type *)(base))->LUT_CTL[idx])
-#define SMARTIO_PRT_DU_SEL(base)            (((SMARTIO_PRT_V1_Type *)(base))->DU_SEL)
-#define SMARTIO_PRT_DU_CTL(base)            (((SMARTIO_PRT_V1_Type *)(base))->DU_CTL)
-#define SMARTIO_PRT_DATA(base)              (((SMARTIO_PRT_V1_Type *)(base))->DATA)
+#define SMARTIO_PRT_CTL(base)               (((SMARTIO_PRT_Type *)(base))->CTL)
+#define SMARTIO_PRT_SYNC_CTL(base)          (((SMARTIO_PRT_Type *)(base))->SYNC_CTL)
+#define SMARTIO_PRT_LUT_SEL(base, idx)      (((SMARTIO_PRT_Type *)(base))->LUT_SEL[idx])
+#define SMARTIO_PRT_LUT_CTL(base, idx)      (((SMARTIO_PRT_Type *)(base))->LUT_CTL[idx])
+#define SMARTIO_PRT_DU_SEL(base)            (((SMARTIO_PRT_Type *)(base))->DU_SEL)
+#define SMARTIO_PRT_DU_CTL(base)            (((SMARTIO_PRT_Type *)(base))->DU_CTL)
+#define SMARTIO_PRT_DATA(base)              (((SMARTIO_PRT_Type *)(base))->DATA)
 
 
 /*******************************************************************************
@@ -684,10 +716,10 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define CY_DW_STATUS_CH_IDX_Pos             ((uint32_t)(cy_device->dwStatusChIdxPos))
 #define CY_DW_STATUS_CH_IDX_Msk             (cy_device->dwStatusChIdxMsk)
 
-#define DW_CTL(base)                        (((DW_V1_Type*)(base))->CTL)
-#define DW_STATUS(base)                     (((DW_V1_Type const*)(base))->STATUS)
-#define DW_DESCR_SRC(base)                  (((DW_V1_Type*)(base))->ACT_DESCR_SRC)
-#define DW_DESCR_DST(base)                  (((DW_V1_Type*)(base))->ACT_DESCR_DST)
+#define DW_CTL(base)                        (((DW_Type*)(base))->CTL)
+#define DW_STATUS(base)                     (((DW_Type const*)(base))->STATUS)
+#define DW_DESCR_SRC(base)                  (((DW_Type*)(base))->ACT_DESCR_SRC)
+#define DW_DESCR_DST(base)                  (((DW_Type*)(base))->ACT_DESCR_DST)
 
 #define DW_CRC_CTL(base)                    (((DW_V2_Type*)(base))->CRC_CTL)
 #define DW_CRC_DATA_CTL(base)               (((DW_V2_Type*)(base))->CRC_DATA_CTL)
@@ -733,7 +765,7 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 
 #define CY_PERI_V1                          (0x20U > cy_device->periVersion) /* true if the mxperi version is 1.x */
 #define CY_PERI_V2_TR_GR_SIZE               (sizeof(PERI_TR_GR_V2_Type))
-#define CY_PERI_TR_CTL_NUM                  (cy_device->periTrGrSize / sizeof(uint32_t))
+#define CY_PERI_TR_CTL_NUM                  ((uint32_t)cy_device->periTrGrSize / sizeof(uint32_t))
 #define CY_PERI_TR_CTL_SEL_Pos              (0UL)
 #define CY_PERI_TR_CTL_SEL_Msk              ((uint32_t)CY_PERI_TR_CTL_NUM - 1UL)
 #define CY_PERI_TR_CMD_GROUP_SEL_Pos        (PERI_TR_CMD_GROUP_SEL_Pos)
@@ -809,18 +841,18 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 
 #define CY_PROT_PC_MAX                      (8UL)
 #define CY_PROT_BUS_MASTER_MASK             (cy_device->protBusMasterMask)
-#define PROT_MPU_MS_CTL(mpu)                (((PROT_V1_Type*)CY_PROT_BASE)->CYMPU[(mpu)].MS_CTL)
-#define PROT_MPU_MPU_STRUCT_ADDR(base)      (((PROT_MPU_MPU_STRUCT_V1_Type *) (base))->ADDR)
-#define PROT_MPU_MPU_STRUCT_ATT(base)       (((PROT_MPU_MPU_STRUCT_V1_Type *) (base))->ATT)
+#define PROT_MPU_MS_CTL(mpu)                (((PROT_Type*)CY_PROT_BASE)->CYMPU[(mpu)].MS_CTL)
+#define PROT_MPU_MPU_STRUCT_ADDR(base)      (((PROT_MPU_MPU_STRUCT_Type *) (base))->ADDR)
+#define PROT_MPU_MPU_STRUCT_ATT(base)       (((PROT_MPU_MPU_STRUCT_Type *) (base))->ATT)
 
-#define PROT_SMPU_SMPU_STRUCT_ADDR0(base)   (((PROT_SMPU_SMPU_STRUCT_V1_Type *) (base))->ADDR0)
-#define PROT_SMPU_SMPU_STRUCT_ADDR1(base)   (((PROT_SMPU_SMPU_STRUCT_V1_Type *) (base))->ADDR1)
-#define PROT_SMPU_SMPU_STRUCT_ATT0(base)    (((PROT_SMPU_SMPU_STRUCT_V1_Type *) (base))->ATT0)
-#define PROT_SMPU_SMPU_STRUCT_ATT1(base)    (((PROT_SMPU_SMPU_STRUCT_V1_Type *) (base))->ATT1)
+#define PROT_SMPU_SMPU_STRUCT_ADDR0(base)   (((PROT_SMPU_SMPU_STRUCT_Type *) (base))->ADDR0)
+#define PROT_SMPU_SMPU_STRUCT_ADDR1(base)   (((PROT_SMPU_SMPU_STRUCT_Type *) (base))->ADDR1)
+#define PROT_SMPU_SMPU_STRUCT_ATT0(base)    (((PROT_SMPU_SMPU_STRUCT_Type *) (base))->ATT0)
+#define PROT_SMPU_SMPU_STRUCT_ATT1(base)    (((PROT_SMPU_SMPU_STRUCT_Type *) (base))->ATT1)
 
-#define PROT_SMPU_SMPU_STRUCT_IDX_ATT0(stcIdx)    (((PROT_SMPU_V1_Type *) CY_PROT_BASE)->SMPU_STRUCT[(stcIdx)].ATT0)
-#define PROT_SMPU_SMPU_STRUCT_IDX_ATT1(stcIdx)    (((PROT_SMPU_V1_Type *) CY_PROT_BASE)->SMPU_STRUCT[(stcIdx)].ATT1)
-#define PROT_SMPU_SMPU_STRUCT_IDX(stcIdx)         (((PROT_SMPU_SMPU_STRUCT_V1_Type *) &((PROT_SMPU_V1_Type *) CY_PROT_BASE)->SMPU_STRUCT[(stcIdx)]))
+#define PROT_SMPU_SMPU_STRUCT_IDX_ATT0(stcIdx)    (((PROT_SMPU_Type *) CY_PROT_BASE)->SMPU_STRUCT[(stcIdx)].ATT0)
+#define PROT_SMPU_SMPU_STRUCT_IDX_ATT1(stcIdx)    (((PROT_SMPU_Type *) CY_PROT_BASE)->SMPU_STRUCT[(stcIdx)].ATT1)
+#define PROT_SMPU_SMPU_STRUCT_IDX(stcIdx)         (((PROT_SMPU_SMPU_STRUCT_Type *) &((PROT_SMPU_Type *) CY_PROT_BASE)->SMPU_STRUCT[(stcIdx)]))
 
 
 /*******************************************************************************
@@ -834,15 +866,15 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define GPIO_INTR_CAUSE2                   (((GPIO_V1_Type*)(cy_device->gpioBase))->INTR_CAUSE2)
 #define GPIO_INTR_CAUSE3                   (((GPIO_V1_Type*)(cy_device->gpioBase))->INTR_CAUSE3)
 
-#define GPIO_PRT_OUT(base)                 (((GPIO_PRT_V1_Type*)(base))->OUT)
-#define GPIO_PRT_OUT_CLR(base)             (((GPIO_PRT_V1_Type*)(base))->OUT_CLR)
-#define GPIO_PRT_OUT_SET(base)             (((GPIO_PRT_V1_Type*)(base))->OUT_SET)
-#define GPIO_PRT_OUT_INV(base)             (((GPIO_PRT_V1_Type*)(base))->OUT_INV)
-#define GPIO_PRT_IN(base)                  (((GPIO_PRT_V1_Type*)(base))->IN)
-#define GPIO_PRT_INTR(base)                (((GPIO_PRT_V1_Type*)(base))->INTR)
-#define GPIO_PRT_INTR_MASK(base)           (((GPIO_PRT_V1_Type*)(base))->INTR_MASK)
-#define GPIO_PRT_INTR_MASKED(base)         (((GPIO_PRT_V1_Type*)(base))->INTR_MASKED)
-#define GPIO_PRT_INTR_SET(base)            (((GPIO_PRT_V1_Type*)(base))->INTR_SET)
+#define GPIO_PRT_OUT(base)                 (((GPIO_PRT_Type*)(base))->OUT)
+#define GPIO_PRT_OUT_CLR(base)             (((GPIO_PRT_Type*)(base))->OUT_CLR)
+#define GPIO_PRT_OUT_SET(base)             (((GPIO_PRT_Type*)(base))->OUT_SET)
+#define GPIO_PRT_OUT_INV(base)             (((GPIO_PRT_Type*)(base))->OUT_INV)
+#define GPIO_PRT_IN(base)                  (((GPIO_PRT_Type*)(base))->IN)
+#define GPIO_PRT_INTR(base)                (((GPIO_PRT_Type*)(base))->INTR)
+#define GPIO_PRT_INTR_MASK(base)           (((GPIO_PRT_Type*)(base))->INTR_MASK)
+#define GPIO_PRT_INTR_MASKED(base)         (((GPIO_PRT_Type*)(base))->INTR_MASKED)
+#define GPIO_PRT_INTR_SET(base)            (((GPIO_PRT_Type*)(base))->INTR_SET)
 
 #define GPIO_PRT_INTR_CFG(base)            (*(volatile uint32_t *)((uint32_t)(base) + (uint32_t)(cy_device->gpioPrtIntrCfgOffset)))
 #define GPIO_PRT_CFG(base)                 (*(volatile uint32_t *)((uint32_t)(base) + (uint32_t)(cy_device->gpioPrtCfgOffset)))
@@ -927,19 +959,23 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 
 #define CY_IPC_V1                              (0x20u > cy_device->ipcVersion) /* true if the IPC version is 1.x */
 
-#define REG_IPC_STRUCT_ACQUIRE(base)           (((IPC_STRUCT_V1_Type*)(base))->ACQUIRE)
-#define REG_IPC_STRUCT_RELEASE(base)           (((IPC_STRUCT_V1_Type*)(base))->RELEASE)
-#define REG_IPC_STRUCT_NOTIFY(base)            (((IPC_STRUCT_V1_Type*)(base))->NOTIFY)
+#define REG_IPC_STRUCT_ACQUIRE(base)           (((IPC_STRUCT_Type*)(base))->ACQUIRE)
+#define REG_IPC_STRUCT_RELEASE(base)           (((IPC_STRUCT_Type*)(base))->RELEASE)
+#define REG_IPC_STRUCT_NOTIFY(base)            (((IPC_STRUCT_Type*)(base))->NOTIFY)
+#if (CY_IP_M4CPUSS_VERSION == 1U)
 #define REG_IPC_STRUCT_DATA(base)              (((IPC_STRUCT_V1_Type*)(base))->DATA)
+#else
+#define REG_IPC_STRUCT_DATA(base)              (((IPC_STRUCT_V2_Type*)(base))->DATA0)
+#endif
 #define REG_IPC_STRUCT_DATA1(base)             (((IPC_STRUCT_V2_Type*)(base))->DATA1)
 #define REG_IPC_STRUCT_LOCK_STATUS(base)       (*(volatile uint32_t*)((uint32_t)(base) + cy_device->ipcLockStatusOffset))
 
-#define REG_IPC_INTR_STRUCT_INTR(base)         (((IPC_INTR_STRUCT_V1_Type*)(base))->INTR)
-#define REG_IPC_INTR_STRUCT_INTR_SET(base)     (((IPC_INTR_STRUCT_V1_Type*)(base))->INTR_SET)
-#define REG_IPC_INTR_STRUCT_INTR_MASK(base)    (((IPC_INTR_STRUCT_V1_Type*)(base))->INTR_MASK)
-#define REG_IPC_INTR_STRUCT_INTR_MASKED(base)  (((IPC_INTR_STRUCT_V1_Type*)(base))->INTR_MASKED)
+#define REG_IPC_INTR_STRUCT_INTR(base)         (((IPC_INTR_STRUCT_Type*)(base))->INTR)
+#define REG_IPC_INTR_STRUCT_INTR_SET(base)     (((IPC_INTR_STRUCT_Type*)(base))->INTR_SET)
+#define REG_IPC_INTR_STRUCT_INTR_MASK(base)    (((IPC_INTR_STRUCT_Type*)(base))->INTR_MASK)
+#define REG_IPC_INTR_STRUCT_INTR_MASKED(base)  (((IPC_INTR_STRUCT_Type*)(base))->INTR_MASKED)
 
-#define CY_IPC_STRUCT_PTR(ipcIndex)            ((IPC_STRUCT_V1_Type*)(cy_device->ipcBase + (cy_device->ipcStructSize * (ipcIndex))))
+#define CY_IPC_STRUCT_PTR(ipcIndex)            ((IPC_STRUCT_Type*)(cy_device->ipcBase + (cy_device->ipcStructSize * (ipcIndex))))
 
 #define CY_IPC_CHANNELS                        (uint32_t)(cy_device->cpussIpcNr)
 #define CY_IPC_INTERRUPTS                      (uint32_t)(cy_device->cpussIpcIrqNr)
@@ -949,6 +985,7 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define CY_IPC_CHAN_SYSCALL_CM4             (1U)  /* System calls for the 1st non-CM0 processor */
 #define CY_IPC_CHAN_SYSCALL_DAP             (2UL) /* System calls for the DAP */
 #define CY_IPC_CHAN_SEMA                    (3UL) /* IPC data channel for the Semaphores */
+#define CY_IPC_CHAN_PRA                     (4UL) /* IPC data channel for PRA */
 #define CY_IPC_CHAN_CYPIPE_EP0              (5UL) /* IPC data channel for CYPIPE EP0 */
 #define CY_IPC_CHAN_CYPIPE_EP1              (6UL) /* IPC data channel for CYPIPE EP1 */
 #define CY_IPC_CHAN_DDFT                    (7UL) /* IPC data channel for DDFT */
@@ -957,6 +994,7 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 #define CY_IPC_INTR_SYSCALL1                (0UL)
 #define CY_IPC_INTR_CYPIPE_EP0              (3UL)
 #define CY_IPC_INTR_CYPIPE_EP1              (4UL)
+#define CY_IPC_INTR_PRA                     (5UL)
 #define CY_IPC_INTR_SPARE                   (7UL)
 
 /* Endpoint indexes in the pipe array */
@@ -1011,9 +1049,41 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 *                SYSANALOG
 *******************************************************************************/
 
-#define PASS_AREF_AREF_CTRL                 (((PASS_V1_Type*) cy_device->passBase)->AREF.AREF_CTRL)
-#define PASS_INTR_CAUSE                     (((PASS_V1_Type*) cy_device->passBase)->INTR_CAUSE)
+#define CY_PASS_V1                          (0x20U > cy_device->passVersion)
+#define CY_PASS_ADDR                        ((PASS_Type*)cy_device->passBase)
+#define CY_PASS_V2_ADDR                     ((PASS_V2_Type*)cy_device->passBase)
+#define CY_PASS_BASE(sarBase)               ((NULL != (sarBase)) ? ((PASS_V2_Type*) cy_device->passBase) : NULL) /* temporary solution for single pass instance */
 
+#define PASS_AREF_AREF_CTRL                 (((PASS_V1_Type*) CY_PASS_ADDR)->AREF.AREF_CTRL)
+#define PASS_INTR_CAUSE(passBase)           (((PASS_V1_Type*) (passBase))->INTR_CAUSE)
+#define PASS_CTBM_CLOCK_SEL(passBase)       (((PASS_V2_Type*) (passBase))->CTBM_CLOCK_SEL)
+#define PASS_DPSLP_CLOCK_SEL(passBase)      (((PASS_V2_Type*) (passBase))->DPSLP_CLOCK_SEL)
+#define PASS_LPOSC_CTRL(passBase)           (((PASS_V2_Type*) (passBase))->LPOSC.CTRL)
+#define PASS_LPOSC_CONFIG(passBase)         (((PASS_V2_Type*) (passBase))->LPOSC.CONFIG)
+#define PASS_TIMER_CTRL(passBase)           (((PASS_V2_Type*) (passBase))->TIMER.CTRL)
+#define PASS_TIMER_CONFIG(passBase)         (((PASS_V2_Type*) (passBase))->TIMER.CONFIG)
+#define PASS_TIMER_PERIOD(passBase)         (((PASS_V2_Type*) (passBase))->TIMER.PERIOD)
+
+#define PASS_SAR_SIMULT_CTRL(passBase)      (((PASS_V2_Type*) (passBase))->SAR_SIMULT_CTRL)
+#define PASS_SAR_TR_SCAN_CNT(passBase)      (((PASS_V2_Type*) (passBase))->SAR_TR_SCAN_CNT)
+#define PASS_SAR_OVR_CTRL(passBase)         (((PASS_V2_Type*) (passBase))->SAR_OVR_CTRL)
+#define PASS_SAR_SIMULT_FW_START_CTRL(passBase) (((PASS_V2_Type*) (passBase))->SAR_SIMULT_FW_START_CTRL)
+#define PASS_ANA_PWR_CFG(passBase)          (((PASS_V2_Type*) (passBase))->ANA_PWR_CFG)
+#define PASS_SAR_TR_OUT_CTRL(passBase)      (((PASS_V2_Type*) (passBase))->SAR_TR_OUT_CTRL)
+
+#define PASS_SAR_DPSLP_CTRL(sarBase)        (((PASS_V2_Type*) cy_device->passBase)->SAR_DPSLP_CTRL[CY_SAR_INSTANCE(sarBase)])
+#define PASS_SAR_CLOCK_SEL(sarBase)         (((PASS_V2_Type*) cy_device->passBase)->SAR_CLOCK_SEL[CY_SAR_INSTANCE(sarBase)])
+
+#define PASS_FIFO_BASE(sarBase)             ((PASS_FIFO_V2_Type*)&(((PASS_V2_Type*)cy_device->passBase)->FIFO[CY_SAR_INSTANCE(sarBase)]))
+#define PASS_FIFO_CTRL(sarBase)             (PASS_FIFO_BASE(sarBase)->CTRL)
+#define PASS_FIFO_CONFIG(sarBase)           (PASS_FIFO_BASE(sarBase)->CONFIG)
+#define PASS_FIFO_LEVEL(sarBase)            (PASS_FIFO_BASE(sarBase)->LEVEL)
+#define PASS_FIFO_USED(sarBase)             (PASS_FIFO_BASE(sarBase)->USED)
+#define PASS_FIFO_RD_DATA(sarBase)          (PASS_FIFO_BASE(sarBase)->RD_DATA)
+#define PASS_FIFO_INTR(sarBase)             (PASS_FIFO_BASE(sarBase)->INTR)
+#define PASS_FIFO_INTR_SET(sarBase)         (PASS_FIFO_BASE(sarBase)->INTR_SET)
+#define PASS_FIFO_INTR_MASK(sarBase)        (PASS_FIFO_BASE(sarBase)->INTR_MASK)
+#define PASS_FIFO_INTR_MASKED(sarBase)      (PASS_FIFO_BASE(sarBase)->INTR_MASKED)
 
 /*******************************************************************************
 *                SCB
@@ -1084,26 +1154,26 @@ void Cy_PDL_Init(const cy_stc_device_t * device);
 *                BLE
 *******************************************************************************/
 
-#define BLE_RCB_INTR                        (((BLE_V1_Type *) BLE)->RCB.INTR)
-#define BLE_RCB_TX_FIFO_WR                  (((BLE_V1_Type *) BLE)->RCB.TX_FIFO_WR)
-#define BLE_RCB_RX_FIFO_RD                  (((BLE_V1_Type *) BLE)->RCB.RX_FIFO_RD)
-#define BLE_RCB_CTRL                        (((BLE_V1_Type *) BLE)->RCB.CTRL)
-#define BLE_RCB_RCBLL_CTRL                  (((BLE_V1_Type *) BLE)->RCB.RCBLL.CTRL)
-#define BLE_BLESS_XTAL_CLK_DIV_CONFIG       (((BLE_V1_Type *) BLE)->BLESS.XTAL_CLK_DIV_CONFIG)
-#define BLE_BLESS_MT_CFG                    (((BLE_V1_Type *) BLE)->BLESS.MT_CFG)
-#define BLE_BLESS_MT_STATUS                 (((BLE_V1_Type *) BLE)->BLESS.MT_STATUS)
-#define BLE_BLESS_MT_DELAY_CFG              (((BLE_V1_Type *) BLE)->BLESS.MT_DELAY_CFG)
-#define BLE_BLESS_MT_DELAY_CFG2             (((BLE_V1_Type *) BLE)->BLESS.MT_DELAY_CFG2)
-#define BLE_BLESS_MT_DELAY_CFG3             (((BLE_V1_Type *) BLE)->BLESS.MT_DELAY_CFG3)
-#define BLE_BLESS_MT_VIO_CTRL               (((BLE_V1_Type *) BLE)->BLESS.MT_VIO_CTRL)
-#define BLE_BLESS_LL_CLK_EN                 (((BLE_V1_Type *) BLE)->BLESS.LL_CLK_EN)
-#define BLE_BLESS_MISC_EN_CTRL              (((BLE_V1_Type *) BLE)->BLESS.MISC_EN_CTRL)
-#define BLE_BLESS_INTR_STAT                 (((BLE_V1_Type *) BLE)->BLESS.INTR_STAT)
-#define BLE_BLELL_EVENT_INTR                (((BLE_V1_Type *) BLE)->BLELL.EVENT_INTR)
-#define BLE_BLELL_CONN_INTR                 (((BLE_V1_Type *) BLE)->BLELL.CONN_INTR)
-#define BLE_BLELL_CONN_EXT_INTR             (((BLE_V1_Type *) BLE)->BLELL.CONN_EXT_INTR)
-#define BLE_BLELL_SCAN_INTR                 (((BLE_V1_Type *) BLE)->BLELL.SCAN_INTR)
-#define BLE_BLELL_ADV_INTR                  (((BLE_V1_Type *) BLE)->BLELL.ADV_INTR)
+#define BLE_RCB_INTR                        (((BLE_V1_Type *) BLE_BASE)->RCB.INTR)
+#define BLE_RCB_TX_FIFO_WR                  (((BLE_V1_Type *) BLE_BASE)->RCB.TX_FIFO_WR)
+#define BLE_RCB_RX_FIFO_RD                  (((BLE_V1_Type *) BLE_BASE)->RCB.RX_FIFO_RD)
+#define BLE_RCB_CTRL                        (((BLE_V1_Type *) BLE_BASE)->RCB.CTRL)
+#define BLE_RCB_RCBLL_CTRL                  (((BLE_V1_Type *) BLE_BASE)->RCB.RCBLL.CTRL)
+#define BLE_BLESS_XTAL_CLK_DIV_CONFIG       (((BLE_V1_Type *) BLE_BASE)->BLESS.XTAL_CLK_DIV_CONFIG)
+#define BLE_BLESS_MT_CFG                    (((BLE_V1_Type *) BLE_BASE)->BLESS.MT_CFG)
+#define BLE_BLESS_MT_STATUS                 (((BLE_V1_Type *) BLE_BASE)->BLESS.MT_STATUS)
+#define BLE_BLESS_MT_DELAY_CFG              (((BLE_V1_Type *) BLE_BASE)->BLESS.MT_DELAY_CFG)
+#define BLE_BLESS_MT_DELAY_CFG2             (((BLE_V1_Type *) BLE_BASE)->BLESS.MT_DELAY_CFG2)
+#define BLE_BLESS_MT_DELAY_CFG3             (((BLE_V1_Type *) BLE_BASE)->BLESS.MT_DELAY_CFG3)
+#define BLE_BLESS_MT_VIO_CTRL               (((BLE_V1_Type *) BLE_BASE)->BLESS.MT_VIO_CTRL)
+#define BLE_BLESS_LL_CLK_EN                 (((BLE_V1_Type *) BLE_BASE)->BLESS.LL_CLK_EN)
+#define BLE_BLESS_MISC_EN_CTRL              (((BLE_V1_Type *) BLE_BASE)->BLESS.MISC_EN_CTRL)
+#define BLE_BLESS_INTR_STAT                 (((BLE_V1_Type *) BLE_BASE)->BLESS.INTR_STAT)
+#define BLE_BLELL_EVENT_INTR                (((BLE_V1_Type *) BLE_BASE)->BLELL.EVENT_INTR)
+#define BLE_BLELL_CONN_INTR                 (((BLE_V1_Type *) BLE_BASE)->BLELL.CONN_INTR)
+#define BLE_BLELL_CONN_EXT_INTR             (((BLE_V1_Type *) BLE_BASE)->BLELL.CONN_EXT_INTR)
+#define BLE_BLELL_SCAN_INTR                 (((BLE_V1_Type *) BLE_BASE)->BLELL.SCAN_INTR)
+#define BLE_BLELL_ADV_INTR                  (((BLE_V1_Type *) BLE_BASE)->BLELL.ADV_INTR)
 
 
 /*******************************************************************************

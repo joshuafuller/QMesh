@@ -1,5 +1,5 @@
 /* mbed Microcontroller Library
- * Copyright (c) 2019, Arm Limited and affiliates.
+ * Copyright (c) 2019-2020, Arm Limited and affiliates.
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 #include "cmsis.h"
 #include "us_ticker_api.h"
 #include "mbed_error.h"
+#include "cy_us_ticker.h"
 #include "cyhal_timer.h"
 #include "cy_tcpwm_counter.h"
 
@@ -33,8 +34,8 @@ static bool cy_us_ticker_initialized = false;
 static cy_en_syspm_status_t cy_us_ticker_pm_callback(cy_stc_syspm_callback_params_t *params, cy_en_syspm_callback_mode_t mode)
 {
     if (mode == CY_SYSPM_AFTER_TRANSITION) {
-        Cy_TCPWM_Counter_Enable(cy_us_timer.base, cy_us_timer.resource.channel_num);
-        Cy_TCPWM_TriggerStart(cy_us_timer.base, 1u << cy_us_timer.resource.channel_num);
+        Cy_TCPWM_Counter_Enable(cy_us_timer.tcpwm.base, cy_us_timer.tcpwm.resource.channel_num);
+        Cy_TCPWM_TriggerStart(cy_us_timer.tcpwm.base, 1u << cy_us_timer.tcpwm.resource.channel_num);
     }
     return CY_SYSPM_SUCCESS;
 }
@@ -51,9 +52,36 @@ static void cy_us_ticker_irq_handler(MBED_UNUSED void *arg, MBED_UNUSED cyhal_ti
     us_ticker_irq_handler();
 }
 
+void cy_us_ticker_start()
+{
+    cyhal_timer_start(&cy_us_timer);
+}
+
+void cy_us_ticker_stop()
+{
+    cyhal_timer_stop(&cy_us_timer);
+}
+
 void us_ticker_init(void)
 {
     if (!cy_us_ticker_initialized) {
+
+#ifdef TARGET_TFM
+        /* There are two timers, Timer0 and Timer1, available on the PSoC64.
+         * Timer0 has 8 channels and Timer1 has 24 channels. TF-M regression
+         * tests make use of Timer0 Channel 1 and Timer0 Channel 2. Therefore,
+         * reserve the timer channels used by TF-M. This approach can be
+         * replaced once we have a way to allocate dedicated timers for TF-M
+         * and Mbed OS. */
+        cyhal_resource_inst_t res = { CYHAL_RSC_TCPWM, 0, 0 };
+        if(CY_RSLT_SUCCESS != cyhal_hwmgr_reserve(&res)) {
+            MBED_ERROR(MBED_MAKE_ERROR(MBED_MODULE_DRIVER, MBED_ERROR_CODE_FAILED_OPERATION), "cyhal_timer_init");
+        }
+        res.channel_num = 1;
+        if(CY_RSLT_SUCCESS != cyhal_hwmgr_reserve(&res)) {
+            MBED_ERROR(MBED_MAKE_ERROR(MBED_MODULE_DRIVER, MBED_ERROR_CODE_FAILED_OPERATION), "cyhal_timer_init");
+        }
+#endif
         if (CY_RSLT_SUCCESS != cyhal_timer_init(&cy_us_timer, NC, NULL)) {
             MBED_ERROR(MBED_MAKE_ERROR(MBED_MODULE_DRIVER, MBED_ERROR_CODE_FAILED_OPERATION), "cyhal_timer_init");
         }
@@ -61,8 +89,8 @@ void us_ticker_init(void)
         MBED_ASSERT(cy_PeriClkFreqHz >= 1000000);
         uint32_t div_value = cy_PeriClkFreqHz / 1000000;
         cy_us_ticker_info.frequency = cy_PeriClkFreqHz / div_value;
-        cy_us_ticker_info.bits = CYHAL_TCPWM_DATA[cy_us_timer.resource.block_num].max_count;
-        Cy_SysClk_PeriphSetDivider(cy_us_timer.clock.div_type, cy_us_timer.clock.div_num, div_value - 1u);
+        cy_us_ticker_info.bits = CYHAL_TCPWM_DATA[cy_us_timer.tcpwm.resource.block_num].max_count;
+        Cy_SysClk_PeriphSetDivider(cy_us_timer.tcpwm.clock.div_type, cy_us_timer.tcpwm.clock.div_num, div_value - 1u);
         const cyhal_timer_cfg_t cfg = {
             .is_continuous = true,
             .direction = CYHAL_TIMER_DIR_UP,
@@ -74,7 +102,7 @@ void us_ticker_init(void)
         if (CY_RSLT_SUCCESS != cyhal_timer_configure(&cy_us_timer, &cfg)) {
             MBED_ERROR(MBED_MAKE_ERROR(MBED_MODULE_DRIVER, MBED_ERROR_CODE_FAILED_OPERATION), "cyhal_timer_set_cfg");
         }
-        Cy_TCPWM_ClearInterrupt(cy_us_timer.base, cy_us_timer.resource.channel_num, CY_TCPWM_INT_ON_CC_OR_TC);
+        Cy_TCPWM_ClearInterrupt(cy_us_timer.tcpwm.base, cy_us_timer.tcpwm.resource.channel_num, CY_TCPWM_INT_ON_CC_OR_TC);
         cyhal_timer_register_callback(&cy_us_timer, &cy_us_ticker_irq_handler, NULL);
         if (CY_RSLT_SUCCESS != cyhal_timer_start(&cy_us_timer)) {
             MBED_ERROR(MBED_MAKE_ERROR(MBED_MODULE_DRIVER, MBED_ERROR_CODE_FAILED_OPERATION), "cyhal_timer_start");
@@ -103,15 +131,15 @@ void us_ticker_free(void)
 uint32_t us_ticker_read(void)
 {
     MBED_ASSERT(cy_us_ticker_initialized);
-    return Cy_TCPWM_Counter_GetCounter(cy_us_timer.base, cy_us_timer.resource.channel_num);
+    return Cy_TCPWM_Counter_GetCounter(cy_us_timer.tcpwm.base, cy_us_timer.tcpwm.resource.channel_num);
 }
 
 void us_ticker_set_interrupt(timestamp_t timestamp)
 {
     MBED_ASSERT(cy_us_ticker_initialized);
-    Cy_TCPWM_Counter_SetCompare0(cy_us_timer.base, cy_us_timer.resource.channel_num, timestamp);
-    if (CY_TCPWM_INT_NONE == Cy_TCPWM_GetInterruptMask(cy_us_timer.base, cy_us_timer.resource.channel_num)) {
-        Cy_TCPWM_ClearInterrupt(cy_us_timer.base, cy_us_timer.resource.channel_num, CY_TCPWM_INT_ON_CC_OR_TC);
+    Cy_TCPWM_Counter_SetCompare0(cy_us_timer.tcpwm.base, cy_us_timer.tcpwm.resource.channel_num, timestamp);
+    if (CY_TCPWM_INT_NONE == Cy_TCPWM_GetInterruptMask(cy_us_timer.tcpwm.base, cy_us_timer.tcpwm.resource.channel_num)) {
+        Cy_TCPWM_ClearInterrupt(cy_us_timer.tcpwm.base, cy_us_timer.tcpwm.resource.channel_num, CY_TCPWM_INT_ON_CC_OR_TC);
         cyhal_timer_enable_event(&cy_us_timer, CYHAL_TIMER_IRQ_CAPTURE_COMPARE, CY_US_TICKER_IRQ_PRIORITY, true);
     }
 }
@@ -131,9 +159,9 @@ void us_ticker_fire_interrupt(void)
 {
     MBED_ASSERT(cy_us_ticker_initialized);
     // TODO: no HAL function for this. Needs to work even when masked
-    IRQn_Type irq = cy_us_timer.resource.block_num == 0
+    IRQn_Type irq = cy_us_timer.tcpwm.resource.block_num == 0
                     ? tcpwm_0_interrupts_0_IRQn : tcpwm_1_interrupts_0_IRQn;
-    irq = (IRQn_Type)(irq + cy_us_timer.resource.channel_num);
+    irq = (IRQn_Type)(irq + cy_us_timer.tcpwm.resource.channel_num);
     NVIC_SetPendingIRQ(irq);
 }
 

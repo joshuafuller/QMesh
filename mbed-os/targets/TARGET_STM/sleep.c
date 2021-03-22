@@ -98,7 +98,11 @@ static void ForceOscOutofDeepSleep(void)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
     RCC_OscInitStruct.MSIState = RCC_MSI_ON;
     RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_4; // Intermediate freq, 1MHz range
+#if defined RCC_MSIRANGE_11
+    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_11; // Highest freq, 48MHz range
+#else
+    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6; // 4MHz range
+#endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
 #else /* defined RCC_SYSCLKSOURCE_MSI */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
@@ -177,7 +181,8 @@ __WEAK void hal_deepsleep(void)
     save_timer_ctx();
 
     // Request to enter STOP mode with regulator in low power mode
-#ifdef PWR_CR1_LPMS_STOP2 /* STM32L4 */
+	//PWR_CR1_LPMS_STOP2 -> STM32L4 ; PWR_LOWPOWERMODE_STOP2 -> STM32WL
+#if defined (PWR_CR1_LPMS_STOP2) || defined(PWR_LOWPOWERMODE_STOP2)
     int pwrClockEnabled = __HAL_RCC_PWR_IS_CLK_ENABLED();
     int lowPowerModeEnabled = PWR->CR1 & PWR_CR1_LPR;
 
@@ -188,6 +193,10 @@ __WEAK void hal_deepsleep(void)
         HAL_PWREx_DisableLowPowerRunMode();
     }
 
+#if defined(PWR_CR1_RRSTP)
+    HAL_PWREx_EnableSRAM3ContentRetention();
+#endif
+
     HAL_PWREx_EnterSTOP2Mode(PWR_STOPENTRY_WFI);
 
     if (lowPowerModeEnabled) {
@@ -196,7 +205,7 @@ __WEAK void hal_deepsleep(void)
     if (!pwrClockEnabled) {
         __HAL_RCC_PWR_CLK_DISABLE();
     }
-#elif defined(DUAL_CORE)
+#elif defined(DUAL_CORE) && (TARGET_STM32H7)
     int lowPowerModeEnabled = LL_PWR_GetRegulModeDS();
 
 #if defined(CORE_CM7)
@@ -224,7 +233,7 @@ __WEAK void hal_deepsleep(void)
     mbed_sdk_inited = 0;
 
     /* After wake-up from STOP reconfigure the PLL */
-#if defined(DUAL_CORE)
+#if defined(DUAL_CORE) && (TARGET_STM32H7)
     /* CFG_HW_STOP_MODE_SEMID is used to protect read access to STOP flag, and this avoid both core to configure clocks if both exit from stop at the same time */
     while (LL_HSEM_1StepLock(HSEM, CFG_HW_STOP_MODE_SEMID)) {
     }

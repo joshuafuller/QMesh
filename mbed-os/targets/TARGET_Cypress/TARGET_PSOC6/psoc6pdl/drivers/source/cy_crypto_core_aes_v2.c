@@ -1,13 +1,13 @@
 /***************************************************************************//**
 * \file cy_crypto_core_aes_v2.c
-* \version 2.30.1
+* \version 2.40
 *
 * \brief
 *  This file provides the source code fro the API for the AES method
 *  in the Crypto driver.
 *
 ********************************************************************************
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,8 @@ extern "C" {
 #include "cy_crypto_core_hw_v2.h"
 #include "cy_crypto_core_mem_v2.h"
 #include "cy_syslib.h"
-#include <string.h>
+CY_MISRA_DEVIATE_BLOCK_START('MISRA C-2012 Rule 11.3', 18, \
+'Intentional Pointer Type Conversion');
 
 #define CY_CRYPTO_IS_KEYLENGTH_VALID(keyLength) ((CY_CRYPTO_KEY_AES_128 == (keyLength)) || \
                                                  (CY_CRYPTO_KEY_AES_192 == (keyLength)) || \
@@ -284,7 +285,7 @@ cy_en_crypto_status_t Cy_Crypto_Core_V2_Aes_Cbc(CRYPTO_Type *base,
     cy_en_crypto_status_t tmpResult = CY_CRYPTO_SIZE_NOT_X16;
 
     /* Check whether the data size is multiple of CY_CRYPTO_AES_BLOCK_SIZE */
-    if (0UL == (uint32_t)(srcSize & (uint32_t)(CY_CRYPTO_AES_BLOCK_SIZE - 1U)))
+    if (0UL == (srcSize & ((uint32_t)CY_CRYPTO_AES_BLOCK_SIZE - 1UL)))
     {
 
         (CY_CRYPTO_ENCRYPT == dirMode) ? \
@@ -393,7 +394,7 @@ cy_en_crypto_status_t Cy_Crypto_Core_V2_Aes_Cfb(CRYPTO_Type *base,
     cy_en_crypto_status_t tmpResult = CY_CRYPTO_SIZE_NOT_X16;
 
     /* Check whether the data size is multiple of CY_CRYPTO_AES_BLOCK_SIZE */
-    if (0UL == (uint32_t)(size & (uint32_t)(CY_CRYPTO_AES_BLOCK_SIZE - 1U)))
+    if (0UL == (size & ((uint32_t)CY_CRYPTO_AES_BLOCK_SIZE - 1UL)))
     {
         Cy_Crypto_Core_V2_Aes_LoadEncKey(base, aesState);
 
@@ -493,7 +494,7 @@ cy_en_crypto_status_t Cy_Crypto_Core_V2_Aes_Ctr(CRYPTO_Type *base,
     uint64_t counter;
     uint32_t cnt;
     uint32_t i;
-    
+
     (void)streamBlock; /* Suppress warning */
 
     blockCounter[ 0] = (uint32_t) CY_CRYPTO_MERGE_BYTES(ivPtr[ 3], ivPtr[ 2], ivPtr[ 1], ivPtr[ 0]);
@@ -546,7 +547,8 @@ cy_en_crypto_status_t Cy_Crypto_Core_V2_Aes_Ctr(CRYPTO_Type *base,
 
     return (CY_CRYPTO_SUCCESS);
 }
-
+                                            
+CY_MISRA_BLOCK_END('MISRA C-2012 Rule 11.3');
 #endif /* #if (CPUSS_CRYPTO_AES == 1) */
 
 #if defined(__cplusplus)

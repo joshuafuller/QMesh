@@ -1,12 +1,12 @@
 /***************************************************************************//**
 * \file cy_pdm_pcm.h
-* \version 2.20.1
+* \version 2.30
 *
 * The header file of the PDM_PCM driver.
 *
 ********************************************************************************
 * \copyright
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2020 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,9 +30,9 @@
 * API to manage PDM-PCM conversion. A PDM-PCM converter is used
 * to convert 1-bit digital audio streaming data to PCM data.
 *
-* The functions and other declarations used in this driver are in cy_pdm_pcm.h. 
-* You can include cy_pdl.h (ModusToolbox only) to get access to all functions 
-* and declarations in the PDL. 
+* The functions and other declarations used in this driver are in cy_pdm_pcm.h.
+* You can include cy_pdl.h to get access to all functions
+* and declarations in the PDL.
 *
 * Features:
 * * Supports FIFO buffer for Incoming Data
@@ -82,38 +82,20 @@
 *      the PDM_PCM_PDL Component datasheet;
 *      CE219431 - PSOC 6 MCU PDM-TO-PCM EXAMPLE.
 *
-* \section group_pdm_pcm_MISRA MISRA-C Compliance
-* The PDM-PCM driver has the following specific deviations:
-* <table class="doxtable">
-*   <tr>
-*     <th>MISRA Rule</th>
-*     <th>Rule Class (Required/Advisory)</th>
-*     <th>Rule Description</th>
-*     <th>Description of Deviation(s)</th>
-*   </tr>
-*   <tr>
-*     <td>10.3</td>
-*     <td>R</td>
-*     <td>A composite expression of the "essentially unsigned" type is
-*         cast to a different type category.</td>
-*     <td>The value got from the bitfield physically can't exceed the enumeration
-*         that describes this bitfield. So the code is safe by design.</td>
-*   </tr>
-*   <tr>
-*     <td>11.4</td>
-*     <td>A</td>
-*     <td>A cast should not be performed between a pointer to the object type and
-*         a different pointer to the object type.</td>
-*     <td>The function \ref Cy_PDM_PCM_DeepSleepCallback is a callback of
-*         \ref cy_en_syspm_status_t type. The cast operation safety in this
-*         function becomes the user responsibility because the pointer is
-*         initialized when a callback is registered in SysPm driver.</td>
-*   </tr>
-* </table>
-*
 * \section group_pdm_pcm_changelog Changelog
 * <table class="doxtable">
 *   <tr><th>Version</th><th>Changes</th><th>Reason for Change</th></tr>
+*   <tr><th>Version</th><th>Changes</th><th>Reason for Change</th></tr>
+*   <tr>
+*     <td>2.30</td>
+*     <td>Fixed MISRA 2012 violations.</td>
+*     <td>MISRA 2012 compliance.</td>
+*   </tr>
+*   <tr>
+*     <td>2.20.2</td>
+*     <td>Minor documentation updates.</td>
+*     <td>Documentation enhancement.</td>
+*   </tr>
 *   <tr>
 *     <td>2.20.1</td>
 *     <td>Snippet updated.</td>
@@ -121,7 +103,7 @@
 *   </tr>
 *   <tr>
 *     <td rowspan="2">2.20</td>
-*     <td>Flattened the organization of the driver source code into the single 
+*     <td>Flattened the organization of the driver source code into the single
 *         source directory and the single include directory.
 *     </td>
 *     <td>Driver library directory-structure simplification.</td>
@@ -129,12 +111,12 @@
 *   <tr>
 *     <td>Added register access layer. Use register access macros instead
 *         of direct register access using dereferenced pointers.</td>
-*     <td>Makes register access device-independent, so that the PDL does 
+*     <td>Makes register access device-independent, so that the PDL does
 *         not need to be recompiled for each supported part number.</td>
 *   </tr>
 *   <tr>
 *     <td>2.10</td>
-*     <td>The gain values in range +4.5...+10.5dB (5 items) of /ref cy_en_pdm_pcm_gain_t are corrected. 
+*     <td>The gain values in range +4.5...+10.5dB (5 items) of /ref cy_en_pdm_pcm_gain_t are corrected.
 *         Added Low Power Callback section.</td>
 *     <td>Incorrect setting of gain values in limited range.
 *         Documentation update and clarification.</td>
@@ -142,7 +124,7 @@
 *   <tr>
 *     <td>2.0</td>
 *     <td>Enumeration types for gain and soft mute cycles are added.<br>
-*         Function parameter checks are added.<br>        
+*         Function parameter checks are added.<br>
 *         The next functions are removed:
 *         * Cy_PDM_PCM_EnterLowPowerCallback
 *         * Cy_PDM_PCM_ExitLowPowerCallback
@@ -222,7 +204,7 @@ extern "C"
 #define CY_PDM_PCM_DRV_VERSION_MAJOR       2
 
 /** The driver minor version */
-#define CY_PDM_PCM_DRV_VERSION_MINOR       20
+#define CY_PDM_PCM_DRV_VERSION_MINOR       30
 
 /** The PDM-PCM driver identifier */
 #define CY_PDM_PCM_ID                       CY_PDL_DRV_ID(0x26u)
@@ -375,7 +357,7 @@ typedef struct
                                                     - 1: extension by sign bits */
     cy_en_pdm_pcm_gain_t     gainLeft;            /**< Gain for left channel, see #cy_en_pdm_pcm_gain_t */
     cy_en_pdm_pcm_gain_t     gainRight;           /**< Gain for right channel, see #cy_en_pdm_pcm_gain_t */
-    uint8_t                  rxFifoTriggerLevel;  /**< Fifo interrupt trigger level (in words), 
+    uint8_t                  rxFifoTriggerLevel;  /**< Fifo interrupt trigger level (in words),
                                                     range: 0 - 253 for stereo and 0 - 254 for mono mode */
     bool                     dmaTriggerEnable;    /**< DMA trigger enable */
     uint32_t                 interruptMask;       /**< Interrupts enable mask */
@@ -455,7 +437,7 @@ typedef struct
 
 #define CY_PDM_PCM_IS_CHAN_VALID(chan)         (((chan) == CY_PDM_PCM_CHAN_LEFT) || \
                                                 ((chan) == CY_PDM_PCM_CHAN_RIGHT))
-                                                
+
 #define CY_PDM_PCM_IS_S_CYCLES_VALID(sCycles)  (((sCycles) == CY_PDM_PCM_SOFT_MUTE_CYCLES_64)  || \
                                                 ((sCycles) == CY_PDM_PCM_SOFT_MUTE_CYCLES_96)  || \
                                                 ((sCycles) == CY_PDM_PCM_SOFT_MUTE_CYCLES_128) || \
@@ -464,7 +446,7 @@ typedef struct
                                                 ((sCycles) == CY_PDM_PCM_SOFT_MUTE_CYCLES_256) || \
                                                 ((sCycles) == CY_PDM_PCM_SOFT_MUTE_CYCLES_384) || \
                                                 ((sCycles) == CY_PDM_PCM_SOFT_MUTE_CYCLES_512))
-                                                
+
 #define CY_PDM_PCM_IS_INTR_MASK_VALID(interrupt)  (0UL == ((interrupt) & ((uint32_t) ~CY_PDM_PCM_INTR_MASK)))
 #define CY_PDM_PCM_IS_SINC_RATE_VALID(sincRate)   ((sincRate) <= 127U)
 #define CY_PDM_PCM_IS_STEP_SEL_VALID(stepSel)     ((stepSel)  <= 1UL)
@@ -488,7 +470,7 @@ cy_en_pdm_pcm_gain_t     Cy_PDM_PCM_GetGain(PDM_Type const * base, cy_en_pdm_pcm
 * The driver supports SysPm callback for Deep Sleep transition.
 * \{
 */
-cy_en_syspm_status_t     Cy_PDM_PCM_DeepSleepCallback(cy_stc_syspm_callback_params_t * callbackParams, cy_en_syspm_callback_mode_t mode);
+cy_en_syspm_status_t     Cy_PDM_PCM_DeepSleepCallback(cy_stc_syspm_callback_params_t const * callbackParams, cy_en_syspm_callback_mode_t mode);
 /** \} */
 
 __STATIC_INLINE void     Cy_PDM_PCM_Enable(PDM_Type * base);
@@ -634,7 +616,7 @@ __STATIC_INLINE uint32_t Cy_PDM_PCM_GetInterruptStatus(PDM_Type const * base)
 * Clears one or more PDM-PCM interrupt statuses (sets an INTR register's bits).
 *
 * \param base The pointer to the PDM-PCM instance address
-* \param interrupt 
+* \param interrupt
 *  The interrupt bit mask \ref group_pdm_pcm_macros_interrupt_masks.
 *
 ******************************************************************************/

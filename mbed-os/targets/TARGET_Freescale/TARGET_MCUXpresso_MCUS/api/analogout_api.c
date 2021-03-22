@@ -1,5 +1,6 @@
 /* mbed Microcontroller Library
  * Copyright (c) 2006-2013 ARM Limited
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +53,7 @@ static void _analogout_init_direct(dac_t *obj, const PinMap *pinmap)
 
 void analogout_init(dac_t *obj, PinName pin)
 {
-    int peripheral = (int)pinmap_peripheral(pin, PinMap_ADC);
+    int peripheral = (int)pinmap_peripheral(pin, PinMap_DAC);
 
     const PinMap static_pinmap = {pin, peripheral, 0};
 

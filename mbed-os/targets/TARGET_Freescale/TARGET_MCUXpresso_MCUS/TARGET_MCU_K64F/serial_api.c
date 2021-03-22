@@ -1,5 +1,6 @@
 /* mbed Microcontroller Library
  * Copyright (c) 2006-2013 ARM Limited
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,14 +63,14 @@ void serial_init_direct(serial_t *obj, const serial_pinmap_t *pinmap)
 
     UART_Init(uart_addrs[obj->serial.index], &config, CLOCK_GetFreq(uart_clocks[obj->serial.index]));
 
-    pin_function(pinmap->tx_pin, pinmap->tx_function);
-    pin_function(pinmap->rx_pin, pinmap->rx_function);
 
     if (pinmap->tx_pin != NC) {
+        pin_function(pinmap->tx_pin, pinmap->tx_function);
         UART_EnableTx(uart_addrs[obj->serial.index], true);
         pin_mode(pinmap->tx_pin, PullUp);
     }
     if (pinmap->rx_pin != NC) {
+        pin_function(pinmap->rx_pin, pinmap->rx_function);
         UART_EnableRx(uart_addrs[obj->serial.index], true);
         pin_mode(pinmap->rx_pin, PullUp);
     }

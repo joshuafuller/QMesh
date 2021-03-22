@@ -1,43 +1,48 @@
 {
     "requires": [
         "bare-metal",
-        "rtos-api",
         "greentea-client",
         "utest",
         "unity",
         "psa",
-        "mbed-crypto",
+        "psa-services",
         "mbedtls",
+        "mbedtls-stm",
+        "mbedtls-nuvoton",
         "psa-compliance-framework",
         "filesystem",
         "littlefs",
-        "mbed-trace",
+        "littlefs2",
         "device_key",
         "storage_tdb_internal",
         "storage_filesystem",
         "storage_tdb_external",
         "fat_chan",
         "lora",
+        "sx1276-lora-driver",
         "nfc",
         "network-emac",
         "flashiap-block-device",
         "system-storage",
-        "filesystemstore",
         "SecureStore",
         "storage",
-        "kv-map",
-        "direct-access-devicekey",
+        "kvstore",
         "tdbstore",
+        "filesystemstore",
+        "kv-global-api",
+        "direct-access-devicekey",
         "kv-config",
         "events",
-        "kv-global-api",
         "sd",
         "qspif",
-        "nvstore"
+        "ospif",
+        "spif-driver",
+        "cryptocell310",
+        "drivers-usb"
     ],
     "target_overrides": {
         "*": {
-            "mbed-trace.fea-ipv6": false
+            "target.c_lib": "small"
         }
      }
 }

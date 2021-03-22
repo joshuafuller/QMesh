@@ -4,7 +4,7 @@
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -68,7 +68,7 @@ const PinMap PinMap_ADC_Internal[] = {
 //*** DAC ***
 
 const PinMap PinMap_DAC[] = {
-    {PA_4, DAC_0, STM_PIN_DATA_EXT(STM_MODE_ANALOG, GPIO_NOPULL, 0xFF, 1, 0)}, // DAC_OUT1
+    {PA_4, DAC_1, STM_PIN_DATA_EXT(STM_MODE_ANALOG, GPIO_NOPULL, 0xFF, 1, 0)}, // DAC_OUT1
     {PA_5, DAC_1, STM_PIN_DATA_EXT(STM_MODE_ANALOG, GPIO_NOPULL, 0xFF, 2, 0)}, // DAC_OUT2
     {NC,   NC,    0}
 };
