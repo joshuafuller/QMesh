@@ -343,6 +343,7 @@ void nv_log_fn(void) {
         log_msg.rx_size = rx_size;
         log_msg.comp_crc = log_frame->calcCRC();
         log_msg.crc = log_frame->getCRC();
+#if 0
         if(radio_cb.gps_en) {
             log_msg.has_gps_msg = true;
             float gps_lat, gps_lon;
@@ -351,6 +352,7 @@ void nv_log_fn(void) {
             log_msg.gps_msg.lat = gps_lat;
             log_msg.gps_msg.lon = gps_lon;
         } 
+#endif
         time_t cur_time;
         time(&cur_time);
         time_t uptime = cur_time - boot_timestamp;

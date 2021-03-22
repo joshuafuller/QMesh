@@ -26,8 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mem_trace.hpp"
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
-#include "LibAPRS.h"
-#include "AFSK.h"
 #include "USBSerial.h"
 
 
@@ -37,7 +35,6 @@ extern IndicatorLED led1, led2, led3;
 Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
 Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
 Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
-//Thread gps_thread(osPriorityNormal, 4096, NULL, "GPSD"); /// Handles the GPS receiver
 
 EventQueue background_queue;
 Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
@@ -137,15 +134,7 @@ int main()
     load_settings_from_flash();
     log_boot();
 
-#if 0
-    // Start the serial handler threads
-    KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
-                                        MBED_CONF_APP_KISS_UART_RX, 
-                                        MBED_CONF_APP_KISS_UART_EN, 
-                                        MBED_CONF_APP_KISS_UART_ST,
-                                        string("BT"), DEBUG_PORT);
-    MBED_ASSERT(bt_ser);
-#else
+#if 1
     // Start the serial handler threads
     KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
                                         MBED_CONF_APP_KISS_UART_RX, 
@@ -157,10 +146,6 @@ int main()
                                         MBED_CONF_APP_KISS_UART_RX_ALT, 
                                         string("BT-ALT"), DEBUG_PORT);
     MBED_ASSERT(bt_alt_ser);
-#endif
-#if 0
-    KISSSerial *dbg_ser = new KISSSerial(string("DEBUG"), DEBUG_PORT);
-    MBED_ASSERT(dbg_ser);
 #endif
     debug_printf(DBG_INFO, "Serial threads started");
     send_status();

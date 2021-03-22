@@ -21,6 +21,7 @@
         "qspi-flash-io1":      { "value": "PD_12"},
         "qspi-flash-io2":      { "value": "PE_2"},
         "qspi-flash-io3":      { "value": "PD_13"},
+
         "kiss_uart_tx":        { "value": "PF_7" },
         "kiss_uart_rx":        { "value": "PF_6" },
         "kiss_uart_en":        { "value": "PC_13"},
@@ -66,8 +67,8 @@
         },
 
         "NUCLEO_H743ZI2" : {
-            "kiss_uart_tx_alt":    "PA_9" ,
-            "kiss_uart_rx_alt":    "PA_10",
+            "kiss_uart_tx_alt":    "PD_1" ,
+            "kiss_uart_rx_alt":    "PD_0",
             "qspi-flash-csn":      "PG_6"
         },
 
