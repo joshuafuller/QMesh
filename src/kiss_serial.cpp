@@ -319,15 +319,36 @@ void KISSSerial::configure_hc05(void) {
 }
 
 
-KISSSerial::KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
-            const string &my_port_name, const ser_port_type_t ser_port_type) 
-            : KISSSerial(tx, Rx, my_port_name, ser_port_type) {
+KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
+            const string &my_port_name, const ser_port_type_t ser_port_type) {
     port_name = my_port_name;
     hc05 = true;
     en_pin = new DigitalOut(En);
     *en_pin = 0;
-    state_pin = new DigitalIn(State);
+    state_pin = new DigitalIn(State);                
+    tx_port = tx;
+    rx_port = rx;
+    ser = new UARTSerial(tx_port, rx_port, 230400);
+    MBED_ASSERT(ser);
+    using_stdio = false;
+    kiss_extended = true;
+    port_type = ser_port_type;
+
     configure_hc05();
+
+    string rx_ser_name("RX-SERIAL-");
+    rx_ser_name.append(port_name);
+    rx_ser_thread = new Thread(osPriorityNormal, 8192, NULL, rx_ser_name.c_str());
+    string tx_ser_name("TX-SERIAL-");
+    tx_ser_name.append(port_name);
+    tx_ser_thread = new Thread(osPriorityNormal, 8192, NULL, tx_ser_name.c_str());
+
+    kiss_sers_mtx.lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx.unlock();
+
+    tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
+    rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
 }
 
 

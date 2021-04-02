@@ -134,22 +134,19 @@ int main()
     load_settings_from_flash();
     log_boot();
 
-#if 1
     // Start the serial handler threads
     KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
                                         MBED_CONF_APP_KISS_UART_RX, 
                                         string("BT"), DEBUG_PORT);
     MBED_ASSERT(bt_ser);
-#endif
-#if 1
     KISSSerial *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
-                                        MBED_CONF_APP_KISS_UART_RX_ALT, 
+                                        MBED_CONF_APP_KISS_UART_RX_ALT,
+                                        MBED_CONF_APP_KISS_UART_EN_ALT,
+                                        MBED_CONF_APP_KISS_UART_ST_ALT, 
                                         string("BT-ALT"), DEBUG_PORT);
     MBED_ASSERT(bt_alt_ser);
-#endif
     debug_printf(DBG_INFO, "Serial threads started");
     send_status();
-    //while(1);
 
     rx_frame_thread.start(rx_frame_ser_thread_fn);
 
