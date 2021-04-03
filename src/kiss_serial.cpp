@@ -328,13 +328,13 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     state_pin = new DigitalIn(State);                
     tx_port = tx;
     rx_port = rx;
-    ser = new UARTSerial(tx_port, rx_port, 230400);
+    ser = new UARTSerial(tx_port, rx_port, 9600);
     MBED_ASSERT(ser);
     using_stdio = false;
     kiss_extended = true;
     port_type = ser_port_type;
 
-    configure_hc05();
+    //configure_hc05();
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
