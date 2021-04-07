@@ -273,7 +273,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name,
     ser = new UARTSerial(tx_port, rx_port, 230400);
     MBED_ASSERT(ser);
     using_stdio = false;
-    kiss_extended = true;
+    kiss_extended = false;
     port_type = ser_port_type;
     port_name = my_port_name;
     hc05 = false;
@@ -331,7 +331,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     ser = new UARTSerial(tx_port, rx_port, 9600);
     MBED_ASSERT(ser);
     using_stdio = false;
-    kiss_extended = true;
+    kiss_extended = false;
     port_type = ser_port_type;
 
     //configure_hc05();

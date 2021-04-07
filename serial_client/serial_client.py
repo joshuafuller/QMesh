@@ -25,8 +25,11 @@ import threading
 import qmesh_pb2
 import binascii
 import crcmod
+from threading import Thread, Lock
+
 
 ser = None
+ser_mutex = Lock()
 params = pika.ConnectionParameters('127.0.0.1', heartbeat=600, 
         blocked_connection_timeout=300)
         
@@ -37,6 +40,7 @@ TFEND = 0xDC.to_bytes(1, 'little')
 TFESC = 0xDD.to_bytes(1, 'little')
 SETHW = 0x06.to_bytes(1, 'little')
 DATAPKT = 0x00.to_bytes(1, 'little')
+EXITKISS = 0xFF.to_bytes(1, 'little')
 FRAME_MAX_SIZE = 8192
 def make_kiss_frame(frame):
     out_frame = bytearray()
@@ -53,6 +57,14 @@ def make_kiss_frame(frame):
             out_frame += TFESC
         else:
             out_frame += cur_byte_arr
+    out_frame += FEND
+    return bytearray(out_frame)
+
+
+def make_kiss_exit_frame():
+    out_frame = bytearray()
+    out_frame += FEND
+    out_frame += EXITKISS
     out_frame += FEND
     return bytearray(out_frame)
 
@@ -81,7 +93,9 @@ def input_cb(ch, method, properties, body):
     frame += FEND
     #for frame_byte in frame:
     #    print(hex(frame_byte))
+    ser_mutex.acquire()
     ser.write(bytearray(frame))
+    ser_mutex.release()
 
 
 def output_thread_fn():
@@ -190,7 +204,12 @@ if __name__ == "__main__":
     output_thread.start()
 
     while True: 
-        try: time.sleep(1)
+        try: 
+            kiss_frame = make_kiss_exit_frame()
+            ser_mutex.acquire()
+            ser.write(kiss_frame)
+            ser_mutex.release()
+            time.sleep(1)
         except (KeyboardInterrupt, SystemExit):
             input_thread.join()
             output_thread.join()
@@ -204,7 +223,9 @@ if __name__ == "__main__":
             crc_bytes = crc.to_bytes(2, byteorder="little")
             frame += crc_bytes
             frame += FEND
+            ser_mutex.acquire()
             ser.write(bytearray(frame))
+            ser_mutex.release()
             sys.exit(0)
 
 
