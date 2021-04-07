@@ -26,10 +26,12 @@
         "kiss_uart_rx":        { "value": "PF_6" },
         "kiss_uart_en":        { "value": "PC_13"},
         "kiss_uart_st":        { "value": "PC_14"},
+
         "kiss_uart_tx_alt":    { "value": "PA_11"},
         "kiss_uart_rx_alt":    { "value": "PA_12"},
-        "kiss_uart_en_alt":    { "value": "PC_8"},
-        "kiss_uart_st_alt":    { "value": "PC_6"},
+        "kiss_uart_en_alt":    { "value": "PG_1"},
+        "kiss_uart_st_alt":    { "value": "PF_9"},
+
         "rx_int_mon":          { "value": "PD_0"},
         "tx_int_mon":          { "value": "PD_1"},
         "int_trig_mon":        { "value": "PG_0"},
