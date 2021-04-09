@@ -238,7 +238,7 @@ void mesh_protocol_fsm(void) {
                 radio.set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
                 led2.LEDOff();
-                led3.LEDSolid();
+                //led3.LEDSolid();
                 tx_frame_sptr->setOffsets(0, 0, next_sym_off);
                 size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 MBED_ASSERT(tx_frame_size < 256);

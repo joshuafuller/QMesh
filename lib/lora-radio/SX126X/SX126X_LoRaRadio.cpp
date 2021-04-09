@@ -1404,6 +1404,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
                                 radio_timing.getWaitNoWarn());
     dangling_flags.wait_any(0x1);
     write_opmode_command_finish();
+    led3.LEDSolid();
     radio.tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), 3000);
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
