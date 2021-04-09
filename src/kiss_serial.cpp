@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "kiss_serial.hpp"
 #include "mbed.h"
+#include <random>
 #include <string>
 #include <memory>
 #include <fstream>
@@ -57,6 +58,7 @@ static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size);
 static Mutex shared_mtx;
 
 static SerialMsg ser_msg_zero = SerialMsg_init_zero;
+static DataMsg data_msg_zero = DataMsg_init_zero;
 
 
 read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
@@ -71,6 +73,8 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
             if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
+            printf("KISS Packet sent\r\n");
+            cur_byte &= 0x0F;
             if(cur_byte == SETHW) {
                 kiss_extended = true;
                 break;
@@ -122,7 +126,7 @@ read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
         ser_msg = ser_msg_zero;
         ser_msg.type = SerialMsg_Type_DATA;
         ser_msg.has_data_msg = true;
-        ser_msg.data_msg.type = DataMsg_Type_KISSRX;
+        ser_msg.data_msg.type = DataMsg_Type_KISSTX;
         ser_msg.data_msg.payload.size = buf.size();
         memcpy(ser_msg.data_msg.payload.bytes, buf.data(), buf.size());
     }
@@ -477,7 +481,7 @@ read_ser_msg_err_t KISSSerial::load_SerialMsg(SerialMsg &ser_msg, FILE *f) {
         ser_msg = ser_msg_zero;
         ser_msg.type = SerialMsg_Type_DATA;
         ser_msg.has_data_msg = true;
-        ser_msg.data_msg.type = DataMsg_Type_KISSRX;
+        ser_msg.data_msg.type = DataMsg_Type_KISSTX;
         ser_msg.data_msg.payload.size = buf.size();
         memcpy(ser_msg.data_msg.payload.bytes, buf.data(), buf.size());
     }
@@ -557,6 +561,23 @@ void KISSSerial::send_error(const string &err_str) {
 }  
 
 
+Mutex stream_id_lock;
+mt19937 stream_id_rng;
+static atomic<int> last_stream_id;
+static uniform_int_distribution<uint8_t> timing_off_dist(0, 255);  
+static uint8_t get_stream_id(void);
+static uint8_t get_stream_id(void) {
+    stream_id_lock.lock();
+    uint8_t new_stream_id;
+    do {
+        new_stream_id = timing_off_dist(stream_id_rng);
+    } while(new_stream_id == last_stream_id);
+    last_stream_id = new_stream_id;
+    stream_id_lock.unlock();
+    return new_stream_id;
+}
+
+
 void KISSSerial::rx_serial_thread_fn(void) {
 	FILE *f = NULL;
 	int line_count = 0;
@@ -629,21 +650,49 @@ void KISSSerial::rx_serial_thread_fn(void) {
             if(ser_msg->data_msg.type == DataMsg_Type_TX) {
                 auto frame = make_shared<Frame>();
                 frame->loadFromPB(ser_msg->data_msg);
-                enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
+                frame->setSender(radio_cb.address);
+                frame->setStreamID(get_stream_id());
+                auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
+                enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
                 send_ack();
             } else if(ser_msg->data_msg.type == DataMsg_Type_KISSTX) {
-                auto frame = make_shared<Frame>();
-                // Right now, we're just doing a single frame for a KISS frame. 
-                //  Given that AX.25/APRS frames can be considerably bigger than
-                //  a single QMesh frame, we need to implement some sort of 
-                //  fragmentation scheme. This scheme should be able to support 
-                //  some sort of erasure support that uses e.g. Reed-Solomon to 
-                //  recover from a missing fragment.
-                frame->createFromKISS(ser_msg->data_msg);
-                enqueue_mail<std::shared_ptr<Frame>>(tx_frame_mail, frame);
+                debug_printf(DBG_INFO, "Received a KISS frame on port %s of size %d\r\n",
+                            port_name.c_str(), ser_msg->data_msg.payload.size); 
+                size_t tot_bytes = ser_msg->data_msg.payload.size;
+                size_t max_pld_size = Frame::getKISSMaxSize();
+                size_t cur_bytes = 0;
+                size_t frame_num = 0;
+                size_t tot_frames = ceilf((float) ser_msg->data_msg.payload.size/(float) max_pld_size);
+                uint8_t stream_id = get_stream_id();
+                while(cur_bytes < tot_bytes) {
+                    auto frag = make_shared<DataMsg>();
+                    *frag = data_msg_zero;
+                    frag->kiss_tot_frames = tot_frames;
+                    frag->kiss_cur_frame = frame_num++;
+                    frag->kiss_stream_id = stream_id;
+                    if(tot_bytes-cur_bytes <= max_pld_size) {
+                        frag->payload.size = tot_bytes-cur_bytes;
+                        memcpy(frag->payload.bytes, ser_msg->data_msg.payload.bytes+cur_bytes, 
+                                tot_bytes-cur_bytes);
+                        cur_bytes += tot_bytes-cur_bytes;
+                    } else {
+                        frag->payload.size = max_pld_size;
+                        memcpy(frag->payload.bytes, ser_msg->data_msg.payload.bytes+cur_bytes, 
+                                max_pld_size);
+                        cur_bytes += max_pld_size;
+                    }
+                    auto frag_frame = make_shared<Frame>();
+                    frag_frame->createFromKISS(*frag);
+                    frag_frame->setSender(radio_cb.address);
+                    auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frag_frame);
+                    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
+                    debug_printf(DBG_INFO, "Enqueued a KISS fragment of size %d\r\n",
+                                    frag->payload.size); 
+                }
             } else {
+                printf("Packet type is %d\r\n", ser_msg->data_msg.type);
                 MBED_ASSERT(false);
-            }        
+            }      
         }
         else if(ser_msg->type == SerialMsg_Type_REBOOT) {
             debug_printf(DBG_INFO, "Received reboot command\r\n");

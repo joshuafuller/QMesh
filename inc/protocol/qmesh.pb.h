@@ -98,6 +98,9 @@ typedef struct _DataMsg {
     DataMsg_payload_t payload;
     uint32_t crc;
     bool voice;
+    uint32_t kiss_cur_frame;
+    uint32_t kiss_tot_frames;
+    uint32_t kiss_stream_id;
 } DataMsg;
 
 typedef struct _DbgMsg {
@@ -277,7 +280,7 @@ typedef struct _SerialMsg {
 #define TimeMsg_init_default                     {0}
 #define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_default, false, ClockSetMsg_init_default, false, StatusMsg_init_default, false, DbgMsg_init_default, false, LogMsg_init_default, false, BootLogMsg_init_default, false, DataMsg_init_default, false, ErrorMsg_init_default, false, TimeMsg_init_default}
 #define ErrorMsg_init_default                    {""}
-#define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0}
+#define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0}
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
@@ -295,7 +298,7 @@ typedef struct _SerialMsg {
 #define TimeMsg_init_zero                        {0}
 #define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_zero, false, ClockSetMsg_init_zero, false, StatusMsg_init_zero, false, DbgMsg_init_zero, false, LogMsg_init_zero, false, BootLogMsg_init_zero, false, DataMsg_init_zero, false, ErrorMsg_init_zero, false, TimeMsg_init_zero}
 #define ErrorMsg_init_zero                       {""}
-#define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0}
+#define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define BootLogMsg_valid_tag                     1
@@ -310,6 +313,9 @@ typedef struct _SerialMsg {
 #define DataMsg_payload_tag                      6
 #define DataMsg_crc_tag                          7
 #define DataMsg_voice_tag                        8
+#define DataMsg_kiss_cur_frame_tag               9
+#define DataMsg_kiss_tot_frames_tag              10
+#define DataMsg_kiss_stream_id_tag               11
 #define DbgMsg_msg_tag                           1
 #define ErrorMsg_msg_tag                         1
 #define FECCfg_type_tag                          1
@@ -548,7 +554,10 @@ X(a, STATIC,   SINGULAR, UINT32,   sender,            4) \
 X(a, STATIC,   SINGULAR, UINT32,   sym_offset,        5) \
 X(a, STATIC,   SINGULAR, BYTES,    payload,           6) \
 X(a, STATIC,   SINGULAR, UINT32,   crc,               7) \
-X(a, STATIC,   SINGULAR, BOOL,     voice,             8)
+X(a, STATIC,   SINGULAR, BOOL,     voice,             8) \
+X(a, STATIC,   SINGULAR, UINT32,   kiss_cur_frame,    9) \
+X(a, STATIC,   SINGULAR, UINT32,   kiss_tot_frames,  10) \
+X(a, STATIC,   SINGULAR, UINT32,   kiss_stream_id,   11)
 #define DataMsg_CALLBACK NULL
 #define DataMsg_DEFAULT NULL
 
@@ -607,9 +616,9 @@ extern const pb_msgdesc_t DataMsg_msg;
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           1811
+#define SerialMsg_size                           1829
 #define ErrorMsg_size                            258
-#define DataMsg_size                             549
+#define DataMsg_size                             567
 
 #ifdef __cplusplus
 } /* extern "C" */

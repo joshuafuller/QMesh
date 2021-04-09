@@ -190,18 +190,27 @@ void Frame::saveToPB(DataMsg &data_msg) {
 }
 
 
-static atomic<uint8_t> kiss_stream_id(0);
 void Frame::createFromKISS(DataMsg &data_msg) {
     hdr.var_subhdr.fields.ttl = 0;
     hdr.var_subhdr.fields.sender = radio_cb.address;
     hdr.var_subhdr.fields.sym_offset = 0;
-    hdr.cons_subhdr.fields.stream_id = kiss_stream_id.load();
-    kiss_stream_id.store(kiss_stream_id.load()+1);
+    hdr.cons_subhdr.fields.stream_id = data_msg.kiss_stream_id;
     hdr.cons_subhdr.fields.type = KISS_FRAME;
 
-    data.resize(data_msg.payload.size);
-    memcpy((char *) data.data(), (char *) data_msg.payload.bytes, data_msg.payload.size);
+    kiss_subhdr kshdr;
+    kshdr.fields.size = data_msg.payload.size;
+    kshdr.fields.cur_frame = data_msg.kiss_cur_frame;
+    kshdr.fields.tot_frames = data_msg.kiss_tot_frames;
+
+    data.resize(radio_cb.net_cfg.pld_len);
+    memcpy((char *) data.data(), (char *) &kshdr, sizeof(kshdr));
+    memcpy((char *) data.data()+sizeof(kshdr), (char *) data_msg.payload.bytes, data_msg.payload.size);
     setCRC();
+}
+
+
+size_t Frame::getKISSMaxSize(void) {
+    return radio_cb.net_cfg.pld_len-sizeof(kiss_subhdr);
 }
 
 

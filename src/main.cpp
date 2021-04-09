@@ -41,6 +41,8 @@ Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thr
 
 time_t boot_timestamp;
 
+extern mt19937 stream_id_rng;
+
 #ifdef APRS
 Afsk my_afsk;
 #endif
@@ -134,6 +136,7 @@ int main()
     load_settings_from_flash();
     log_boot();
 
+    stream_id_rng.seed(radio_cb.address);
     // Start the serial handler threads
     KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
                                         MBED_CONF_APP_KISS_UART_RX, 

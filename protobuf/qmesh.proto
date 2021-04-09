@@ -193,4 +193,7 @@ message DataMsg {
   bytes payload = 6 [(nanopb).max_size = 512];
   uint32 crc = 7; 
   bool voice = 8;
+  uint32 kiss_cur_frame = 9;
+  uint32 kiss_tot_frames = 10;
+  uint32 kiss_stream_id = 11;
 }

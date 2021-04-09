@@ -148,7 +148,6 @@ void mesh_protocol_fsm(void) {
                 radio.rx_hop_frequency(); 
                 radio.receive_cad_rx();
                 radio.unlock();
-                //debug_printf(DBG_INFO, "Started CAD\r\n");
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 radio.stop_cad.store(true);
                 while(radio.cad_pending.load() == true);
@@ -158,26 +157,15 @@ void mesh_protocol_fsm(void) {
                     debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
                     radio.lock();
                     radio.standby();
-                    //ThisThread::sleep_for(250);
-                    //debug_printf(DBG_INFO, "Radio is in standby\r\n");
                     led2.LEDFastBlink();
                     radio.set_channel(radio_cb.pocsag_cfg.frequency);
                     radio.unlock();
-                    //ThisThread::sleep_for(250);
-                    //debug_printf(DBG_INFO, "Channel is set\r\n");
-                    //ThisThread::sleep_for(250);
                     send_pocsag_msg(radio_event->pocsag_msg);
-                    //hisThread::sleep_for(250);
                     tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                    //ThisThread::sleep_for(250);
                     radio.lock();
                     reinit_radio();
                     radio.unlock();
-                    //ThisThread::sleep_for(250);
-                    //ThisThread::sleep_for(250);
-                    //debug_printf(DBG_INFO, "Re-Init of radio complete\r\n");
                     led2.LEDOff();
-                    //ThisThread::sleep_for(3000);
                     state = WAIT_FOR_EVENT;
                 }
                 else if(radio_event->evt_enum == TX_FRAME_EVT) {

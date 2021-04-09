@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -104,6 +104,14 @@ public:
             uint8_t b[2];
         } cons_subhdr;
     } frame_hdr;
+    typedef union {
+        struct __attribute__((__packed__)) {
+            uint32_t size : 8;
+            uint32_t cur_frame : 4;
+            uint32_t tot_frames: 4;
+        } fields;
+        uint8_t b[2];
+    } kiss_subhdr;
     shared_ptr<FEC> fec;
 	bool tx_frame;
 private:
@@ -161,6 +169,8 @@ public:
     void deserialize_pb(const vector<uint8_t> &buf);
 
     void createFromKISS(DataMsg &data_msg);
+
+    static size_t getKISSMaxSize(void);
 
     /// Equality operator for Frames
     bool operator == (const Frame &L) {
