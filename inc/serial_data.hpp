@@ -135,6 +135,8 @@ public:
         switch(hdr.cons_subhdr.fields.type) {
             case 0: return DataMsg_Type_TX; 
             case 1: return DataMsg_Type_RX;
+            case 2: return DataMsg_Type_KISSTX;
+            case 3: return DataMsg_Type_KISSRX;
             default: MBED_ASSERT(false);
         }
     }
