@@ -31,7 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
-static SerialMsg ser_msg_zero = SerialMsg_init_zero;
+static const SerialMsg ser_msg_zero = SerialMsg_init_zero;
+static const DataMsg data_msg_zero = DataMsg_init_zero;
 
 size_t Frame::size(void) {
     return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
@@ -185,8 +186,17 @@ void Frame::saveToPB(DataMsg &data_msg) {
     data_msg.sender = hdr.var_subhdr.fields.sender;
     data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset;
     data_msg.crc = crc.s;
-    data_msg.payload.size = data.size();
-    memcpy(data_msg.payload.bytes, data.data(), data.size());
+    if(data_msg.type == DataMsg_Type_KISSRX || data_msg.type == DataMsg_Type_KISSTX) {
+        kiss_subhdr k_sub;
+        memcpy(&k_sub, data.data(), sizeof(k_sub));
+        data_msg.payload.size = k_sub.fields.size;
+        memcpy(data_msg.payload.bytes, data.data()+sizeof(k_sub), k_sub.fields.size);
+        data_msg.kiss_cur_frame = k_sub.fields.cur_frame;
+        data_msg.kiss_tot_frames = k_sub.fields.tot_frames;
+    } else {
+        data_msg.payload.size = data.size();
+        memcpy(data_msg.payload.bytes, data.data(), data.size());
+    }
 }
 
 
@@ -331,19 +341,113 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
 }
 
 
+
+static Mutex frame_map_mtx;
+extern EventQueue background_queue;
+typedef struct {
+    uint8_t tot_frames;
+    uint8_t stream_id;
+    int tag;
+    vector<shared_ptr<DataMsg>> frags;
+} frag_info_t;
+typedef map<uint8_t, frag_info_t> frag_map_t; 
+static frag_map_t frag_map;
+atomic<int> cur_tag(0);
+
+
+static void purge_frag_map_entry(uint8_t stream_id, int tag);
+static void purge_frag_map_entry(uint8_t stream_id, int tag) {
+    frame_map_mtx.lock();
+    if(frag_map.find(stream_id) != frag_map.end()) { // Make sure it's not already erased
+        // Tag tracks whether this entry has already been erased and a new stream is being tracked
+        if(tag == frag_map.find(stream_id)->second.tag) {
+            frag_map.erase(stream_id);
+        }
+        debug_printf(DBG_INFO, "Purged stream id %d from frag map\r\n", stream_id);
+    }
+    frame_map_mtx.unlock();
+}
+
+
+static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag);
+static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag) {
+    // If the KISS frame is a single fragment, just return
+    shared_ptr<DataMsg> ret_val = NULL;
+    if(frag->kiss_tot_frames == 1) {
+        // Queue up assembled frame
+        ret_val = frag;
+    } else { // Otherwise, handle reassembly
+        frame_map_mtx.lock();
+        frag_map_t::iterator iter = frag_map.find(frag->stream_id);
+        if(iter == frag_map.end()) { // first fragment of this KISS frame being tracked
+            pair<uint8_t, frag_info_t> elem;
+            elem.first = frag->stream_id;
+            elem.second.stream_id = frag->stream_id;
+            elem.second.tot_frames = frag->kiss_tot_frames;
+            elem.second.tag = cur_tag++;
+            elem.second.frags.push_back(frag);
+            frag_map.insert(elem);
+            background_queue.call_in(30000, &purge_frag_map_entry, frag->stream_id, elem.second.tag);
+        } else {
+            iter->second.frags.push_back(frag);
+        }
+        iter = frag_map.find(frag->stream_id);
+        if(iter->second.tot_frames == iter->second.frags.size()) { // We got all the fragments
+            vector<pair<uint8_t, shared_ptr<DataMsg>>> sort_frags;
+            for(vector<shared_ptr<DataMsg>>::iterator it = iter->second.frags.begin(); // Sort the frames
+                it != iter->second.frags.end(); it++) {
+                sort_frags.push_back(pair<uint8_t, shared_ptr<DataMsg>>((**it).kiss_cur_frame, *it));
+            }
+            sort(sort_frags.begin(), sort_frags.end());
+            vector<uint8_t> frag_comb;
+            for(vector<pair<uint8_t, shared_ptr<DataMsg>>>::iterator it = sort_frags.begin();
+                it != sort_frags.end(); it++) {
+                for(int i = 0; i < it->second->payload.size; i++) {
+                    frag_comb.push_back(it->second->payload.bytes[i]);
+                }
+            }
+            auto frag_comb_datamsg = make_shared<DataMsg>();
+            *frag_comb_datamsg = *(sort_frags.begin()->second);
+            frag_comb_datamsg->type = DataMsg_Type_KISSRX;
+            frag_comb_datamsg->payload.size = frag_comb.size();
+            memcpy(frag_comb_datamsg->payload.bytes, frag_comb.data(), frag_comb.size());
+            frag_map.erase(frag->stream_id);
+            ret_val = frag_comb_datamsg;
+        }
+        frame_map_mtx.unlock();
+    }
+    return frag;
+}
+
+
 void rx_frame_ser_thread_fn(void) {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
         auto ser_msg_sptr = shared_ptr<SerialMsg>();
         *ser_msg_sptr = ser_msg_zero;
-        ser_msg_sptr->has_data_msg = true;
+        ser_msg_sptr->has_data_msg = false;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
-        ser_msg_sptr->data_msg.type = DataMsg_Type_RX;
-        kiss_sers_mtx.lock();
-        for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
-            auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
-            (*iter)->enqueue_msg(ser_msg_sptr_en);
+        // Handle KISS frames vs. "regular" QMesh frames
+        if(ser_msg_sptr->data_msg.type == DataMsg_Type_KISSRX || 
+            ser_msg_sptr->data_msg.type == DataMsg_Type_KISSTX) {
+            ser_msg_sptr->data_msg.type = DataMsg_Type_KISSRX;
+            auto frag = make_shared<DataMsg>(ser_msg_sptr->data_msg);
+            auto pkt = handle_incoming_frag(frag);
+            if(pkt != NULL) {
+                ser_msg_sptr->has_data_msg = true;
+                ser_msg_sptr->data_msg = *pkt;
+            }
+        } else {
+            ser_msg_sptr->data_msg.type = DataMsg_Type_RX;
+            ser_msg_sptr->has_data_msg = true;
         }
-        kiss_sers_mtx.unlock();
+        if(ser_msg_sptr->has_data_msg) { // Send it out over the serial ports
+            kiss_sers_mtx.lock();
+            for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+                auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
+                (*iter)->enqueue_msg(ser_msg_sptr_en);
+            }
+            kiss_sers_mtx.unlock();
+        }
     }
 }

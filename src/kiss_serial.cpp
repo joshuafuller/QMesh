@@ -301,22 +301,24 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name,
 void KISSSerial::configure_hc05(void) {
     *en_pin = 1;
     ThisThread::sleep_for(250);
-    ser->set_baud(38400);
+    ser->set_baud(9600);
     ThisThread::sleep_for(250);
     FILE *ser_fh = fdopen(ser, "w");
     // Reset the module's configuration
-    string reset_cmd("AT+ORGL");
+    string reset_cmd("AT+ORGL\r\n");
     fprintf(ser_fh, "%s", reset_cmd.c_str());
+    printf("%s", reset_cmd.c_str());
+    ThisThread::sleep_for(500);
     // Change the name
     string bt_name_cmd("AT+NAME=");
-    bt_name_cmd.append("\"");
     bt_name_cmd.append(port_name);
-    bt_name_cmd.append("\"\\r\\n");
+    bt_name_cmd.append("\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
+    printf("%s", bt_name_cmd.c_str());
     // Change the baudrate
-    string baud_cmd("AT+UART=115200,0,0");
+    //string baud_cmd("AT+UART=115200,0,0\r\n");
     ThisThread::sleep_for(250);
-    ser->set_baud(115200);
+    //ser->set_baud(115200);
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
     ThisThread::sleep_for(250);
     *en_pin = 0;
