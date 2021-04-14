@@ -3,12 +3,16 @@ import time
 import binascii
 import qmesh_pb2
 import yaml
+import sys, os
 
 
 channel = None
 result = None
 queue_name = None
-
+if len(sys.argv) < 2:
+    print('USAGE: <command> <tag_name>')
+    sys.exit()
+tag_name = sys.argv[1]
 
 def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict = {}
@@ -95,7 +99,8 @@ def print_cfg_msg(ser_msg):
 
 def publish_msg(ser_msg):
     global channel
-    channel.basic_publish(exchange='', routing_key='board_input', \
+    global tag_name
+    channel.basic_publish(exchange='', routing_key='board_input_' + tag_name, \
         body=bytes(ser_msg.SerializeToString()))
 
 
@@ -129,13 +134,13 @@ def print_status_msg(status_msg):
 
 
 def setup_outgoing_rabbitmq(my_callback):
-    global channel, result, queue_name
+    global channel, result, queue_name, tag_name
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
-    channel.exchange_declare(exchange='board_output', exchange_type='fanout')
+    channel.exchange_declare(exchange='board_output_' + tag_name, exchange_type='fanout')
     result = channel.queue_declare(queue='', exclusive=True)
     queue_name = result.method.queue
-    channel.queue_bind(exchange='board_output', queue=queue_name)
+    channel.queue_bind(exchange='board_output_' + tag_name, queue=queue_name)
     channel.basic_consume(queue=queue_name, auto_ack=True, on_message_callback=my_callback)
 
 
@@ -179,3 +184,4 @@ def print_bootlog_msg(bootlog_msg):
     ret_str += "Count: %s\r\n" % (bootlog_msg.count)
     print(ret_str)
     return ret_str
+

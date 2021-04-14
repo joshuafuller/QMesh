@@ -99,11 +99,12 @@ def input_cb(ch, method, properties, body):
 
 
 def output_thread_fn():
+    global tag_name
     # Set up the RabbitMQ connections
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
-    channel.queue_declare(queue='board_input')
-    channel.basic_consume(queue='board_input', auto_ack=True, \
+    channel.queue_declare(queue='board_input_' + tag_name)
+    channel.basic_consume(queue='board_input_' + tag_name, auto_ack=True, \
                 on_message_callback=input_cb)
     channel.start_consuming()
 
@@ -154,9 +155,10 @@ def get_kiss_frame(ser):
         
 
 def input_thread_fn():
+    global tag_name
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
-    channel.exchange_declare(exchange='board_output', exchange_type='fanout')
+    channel.exchange_declare(exchange='board_output_' + tag_name, exchange_type='fanout')
     global ser
     while(True):
         frame_gen = get_kiss_frame(ser)
@@ -174,16 +176,18 @@ def input_thread_fn():
                 ser_msg = qmesh_pb2.SerialMsg()
                 try: ser_msg.ParseFromString(pld)
                 except UnicodeDecodeError: print("Failed to decode")
-                channel.basic_publish(exchange='board_output', routing_key='', 
+                channel.basic_publish(exchange='board_output_' + tag_name, routing_key='', 
                                         body=ser_msg.SerializeToString())
             except CRCError:
                 print("CRC Error detected")
 
 
 if __name__ == "__main__":
+    global tag_name
     # Open the serial port
     print("Opening serial port...")
-    serial_ports = sys.argv[1:]
+    tag_name = sys.argv[1]
+    serial_ports = sys.argv[2:]
     while True:
         try:
             print("Trying serial port " + str(serial_ports[0]))
