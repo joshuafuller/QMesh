@@ -364,6 +364,9 @@ static void purge_frag_map_entry(uint8_t stream_id, int tag) {
             frag_map.erase(stream_id);
         }
         debug_printf(DBG_INFO, "Purged stream id %d from frag map\r\n", stream_id);
+    } else {
+        debug_printf(DBG_INFO, "Tried to purge stream id %d from frag map, but frag already reassembled\r\n", 
+                        stream_id);        
     }
     frame_map_mtx.unlock();
 }
@@ -423,7 +426,7 @@ static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag) {
 void rx_frame_ser_thread_fn(void) {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
-        auto ser_msg_sptr = shared_ptr<SerialMsg>();
+        auto ser_msg_sptr = make_shared<SerialMsg>();
         *ser_msg_sptr = ser_msg_zero;
         ser_msg_sptr->has_data_msg = false;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);

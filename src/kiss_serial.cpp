@@ -277,7 +277,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name,
     ser = new UARTSerial(tx_port, rx_port, 230400);
     MBED_ASSERT(ser);
     using_stdio = false;
-    kiss_extended = false;
+    kiss_extended = true;
     port_type = ser_port_type;
     port_name = my_port_name;
     hc05 = false;
