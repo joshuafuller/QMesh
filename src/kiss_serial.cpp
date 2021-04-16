@@ -337,7 +337,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     ser = new UARTSerial(tx_port, rx_port, 9600);
     MBED_ASSERT(ser);
     using_stdio = false;
-    kiss_extended = false;
+    kiss_extended = true;
     port_type = ser_port_type;
 
     //configure_hc05();
