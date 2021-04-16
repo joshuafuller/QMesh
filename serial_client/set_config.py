@@ -26,10 +26,10 @@ if len(sys.argv) < 5:
     print("USAGE: set_config.py <configfile> <node id> <beacon interval> <power level (dBm)>")
     sys.exit(0)
 
-config_file = sys.argv[1]
-node_id = int(sys.argv[2])
-beacon_interval = int(sys.argv[3])
-tx_power = int(sys.argv[4])
+config_file = sys.argv[2]
+node_id = int(sys.argv[3])
+beacon_interval = int(sys.argv[4])
+tx_power = int(sys.argv[5])
 
 cfg_dict = None
 with open(config_file) as file:
