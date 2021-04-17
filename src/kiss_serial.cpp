@@ -669,6 +669,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
                 while(cur_bytes < tot_bytes) {
                     auto frag = make_shared<DataMsg>();
                     *frag = data_msg_zero;
+                    frag->type = DataMsg_Type_KISSTX;
                     frag->kiss_tot_frames = tot_frames;
                     frag->kiss_cur_frame = frame_num++;
                     frag->kiss_stream_id = stream_id;

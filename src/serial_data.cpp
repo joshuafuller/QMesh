@@ -205,7 +205,7 @@ void Frame::createFromKISS(DataMsg &data_msg) {
     hdr.var_subhdr.fields.sender = radio_cb.address;
     hdr.var_subhdr.fields.sym_offset = 0;
     hdr.cons_subhdr.fields.stream_id = data_msg.kiss_stream_id;
-    hdr.cons_subhdr.fields.type = KISS_FRAME;
+    hdr.cons_subhdr.fields.type = DataMsg_Type_KISSTX;
 
     kiss_subhdr kshdr;
     kshdr.fields.size = data_msg.payload.size;
@@ -419,7 +419,7 @@ static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag) {
         }
         frame_map_mtx.unlock();
     }
-    return frag;
+    return ret_val;
 }
 
 
