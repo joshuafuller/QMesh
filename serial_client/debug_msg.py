@@ -25,6 +25,7 @@ import qmesh_common
 def dbg_process(ch, method, properties, body):
     ser_msg = qmesh_pb2.SerialMsg()
     ser_msg.ParseFromString(body)
+    #print("Message type is " + str(ser_msg.type) + "  " + str(ser_msg.DATA))
     if(ser_msg.type == ser_msg.DEBUG_MSG):
         qmesh_common.print_dbg_msg(ser_msg.dbg_msg)
     elif(ser_msg.type == ser_msg.DATA):

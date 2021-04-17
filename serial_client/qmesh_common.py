@@ -109,7 +109,7 @@ def print_data_msg(data_msg):
     print("Type: %d, Stream ID: %d, TTL: %d, Sender: %d, Sym Offset: %d, CRC: %d" % 
         (data_msg.type, data_msg.stream_id, data_msg.ttl, data_msg.sender, data_msg.sym_offset, 
             data_msg.crc))
-    print(binascii.hexlify(bytearray(data_msg.pld)))
+    print(binascii.hexlify(bytearray(data_msg.payload)))
     print("--------------------")
 
 

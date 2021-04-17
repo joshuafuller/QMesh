@@ -428,6 +428,7 @@ void rx_frame_ser_thread_fn(void) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
         auto ser_msg_sptr = make_shared<SerialMsg>();
         *ser_msg_sptr = ser_msg_zero;
+        ser_msg_sptr->type = SerialMsg_Type_DATA;
         ser_msg_sptr->has_data_msg = false;
         rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
         // Handle KISS frames vs. "regular" QMesh frames
