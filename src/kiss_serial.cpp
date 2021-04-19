@@ -301,7 +301,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name,
 void KISSSerial::configure_hc05(void) {
     *en_pin = 1;
     ThisThread::sleep_for(250);
-    ser->set_baud(9600);
+    ser->set_baud(38400);
     ThisThread::sleep_for(250);
     FILE *ser_fh = fdopen(ser, "w");
     // Reset the module's configuration
@@ -315,13 +315,20 @@ void KISSSerial::configure_hc05(void) {
     bt_name_cmd.append("\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
     printf("%s", bt_name_cmd.c_str());
-    // Change the baudrate
-    //string baud_cmd("AT+UART=115200,0,0\r\n");
     ThisThread::sleep_for(250);
-    //ser->set_baud(115200);
-    fprintf(ser_fh, "%s", bt_name_cmd.c_str());
+#if 0
+    string baud_cmd("AT+UART=38400,0,0\r\n");
+    fprintf(ser_fh, "%s", baud_cmd.c_str());    
+    ThisThread::sleep_for(250);
+#endif
+    string reboot_cmd("AT+RESET\r\n");
+    fprintf(ser_fh, "%s", reboot_cmd.c_str());
+    ThisThread::sleep_for(250);
+    string init_cmd("AT+INIT\r\n");
+    fprintf(ser_fh, "%s", init_cmd.c_str());
     ThisThread::sleep_for(250);
     *en_pin = 0;
+    ser->set_baud(9600);
 }
 
 
@@ -340,7 +347,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     kiss_extended = true;
     port_type = ser_port_type;
 
-    //configure_hc05();
+    configure_hc05();
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
