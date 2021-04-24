@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <random>
 #include <list>
 #include <algorithm>
+#include <typeinfo>
 #include "golay.h"
 
 
@@ -91,6 +92,7 @@ protected:
     string name;
     size_t msg_len;
     size_t enc_size;
+    Mutex lock;
 
 public:
     /// Constructor.
@@ -115,9 +117,15 @@ public:
      * @param enc_msg Byte vector of encoded data.
      */
     virtual int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+        if(name == "Dummy FEC") {
+            lock.lock();
+        }
         MBED_ASSERT(msg.size() == msg_len);
         enc_msg = msg;
         return msg.size();
+        if(name == "Dummy FEC") {
+            lock.unlock();
+        }
     }
 
     /**
@@ -126,9 +134,15 @@ public:
      * @param dec_msg Byte vector of decoded data.
      */
     virtual int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+        if(name == "Dummy FEC") {
+            lock.lock();
+        }
         MBED_ASSERT(enc_msg.size() == msg_len);
         dec_msg = enc_msg;
         return msg_len;
+        if(name == "Dummy FEC") {
+            lock.unlock();
+        }
     }
 
     void benchmark(const size_t num_iters);
@@ -258,7 +272,9 @@ public:
      */
     FECRSVGolay(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
             const int32_t my_rs_corr_bytes) : 
-            FECRSV(my_msg_len-2, inv_rate, order, my_rs_corr_bytes) { };
+            FECRSV(my_msg_len-2, inv_rate, order, my_rs_corr_bytes) { 
+        name = "RSVGolay";
+    };
 
     /**
      * Default constructor. Initializes with a convolutional coding rate of 2,

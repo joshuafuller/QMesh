@@ -121,20 +121,34 @@ void testFEC(void) {
 
 
 int32_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    if(name == "Dummy Interleaver") {
+        lock.lock();
+    }
     MBED_ASSERT(msg.size() == msg_len);
     enc_msg.resize(int_params.bytes);
     copy(msg.begin(), msg.end(), enc_msg.begin());
     interleaveBits(msg, enc_msg);
     MBED_ASSERT(enc_msg.size() == enc_size);
+    if(name == "Dummy Interleaver") {
+        lock.unlock();
+    }
+
     return enc_msg.size();
 }
 
 
 int32_t FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    if(name == "Dummy Interleaver") {
+        lock.lock();
+    }
     MBED_ASSERT(enc_msg.size() == enc_size);
     vector<uint8_t> int_msg(enc_size, 0);
     deinterleaveBits(enc_msg, dec_msg);
     MBED_ASSERT(dec_msg.size() == msg_len);
+    if(name == "Dummy Interleaver") {
+        lock.unlock();
+    }
+
     return dec_msg.size();
 }  
 
@@ -145,7 +159,6 @@ void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t>
     vector<uint8_t> new_bytes_preint(int_params.pre_bytes, 0x00);
     vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
     copy(bytes.begin(), bytes.end(), new_bytes_preint.begin());
-    //while(1);
     uint32_t bit_idx = 0;
     for(uint32_t row = 0; row < int_params.row; row++) {
         for(uint32_t col = 0; col < int_params.col; col++) {
@@ -328,6 +341,9 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
 
 
 int32_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    if(name == "Convolutional Coding") {
+        lock.lock();
+    }
     // Convolutional encode
     MBED_ASSERT(msg.size() == msg_len);
     vector<uint8_t> conv_msg(conv_params.bytes, 0);
@@ -344,11 +360,18 @@ int32_t FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
     enc_msg.resize(int_params.bytes);
     copy(int_msg.begin(), int_msg.end(), enc_msg.begin());
     MBED_ASSERT(enc_msg.size() == enc_size);
+    if(name == "Convolutional Coding") {
+        lock.unlock();
+    }
+
     return enc_msg.size();
 }
 
 
 int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    if(name == "RSV") {
+        lock.lock();
+    }
     // Reed-Solomon encode
     MBED_ASSERT(msg.size() == msg_len);
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
@@ -365,11 +388,18 @@ int32_t FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
 	MBED_ASSERT(int_enc_msg.size() == enc_size);
     enc_msg.resize(enc_size);
     copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
+    if(name == "RSV") {
+        lock.unlock();
+    }
+
     return enc_msg.size();
 }
 
 
 int32_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    if(name == "Convolutional Coding") {
+        lock.lock();
+    }
     // Deinterleave
 	MBED_ASSERT(enc_msg.size() == enc_size);
 	vector<uint8_t> deint_msg(conv_params.bytes, 0);
@@ -380,11 +410,18 @@ int32_t FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg
     int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, dec_msg.data());
     MBED_ASSERT(dec_size == (int32_t) msg_len);
+    if(name == "Convolutional Coding") {
+        lock.unlock();
+    }
+
     return dec_size;
 }
 
 
 int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    if(name == "RSV") {
+        lock.lock();
+    }
     // Deinterleave
     MBED_ASSERT(enc_msg.size() == enc_size);
     vector<uint8_t> deint_msg(conv_params.bytes, 0);
@@ -401,6 +438,10 @@ int32_t FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg)
     correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg_size, dec_msg.data());
 
     MBED_ASSERT(dec_msg.size() == msg_len);
+    if(name == "RSV") {
+        lock.unlock();
+    }
+
     return dec_msg.size();
 }
 
@@ -422,6 +463,9 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
 
 
 int32_t FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    if(name == "RSVGolay") {
+        lock.lock();
+    }
     union {
         uint16_t u;
         uint8_t b[2];
@@ -444,11 +488,18 @@ int32_t FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg
     golay_rsv_enc_msg[1] = golay_enc_msg.b[1];
     golay_rsv_enc_msg[2] = golay_enc_msg.b[2];
     enc_msg = golay_rsv_enc_msg;
+    if(name == "RSVGolay") {
+        lock.unlock();
+    }
+
     return enc_msg.size();
 }
 
 
 int32_t FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    if(name == "RSVGolay") {
+        lock.lock();
+    }
     union {
         uint32_t u;
         uint8_t b[4];
@@ -470,5 +521,9 @@ int32_t FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec
     copy(rsv_dec_msg.begin(), rsv_dec_msg.end(), dec_msg.begin()+2);
     dec_msg[0] = golay_msg.b[0];
     dec_msg[1] = golay_msg.b[1];
+    if(name == "RSVGolay") {
+        lock.unlock();
+    }
+
     return dec_msg.size();
 }
