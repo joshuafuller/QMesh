@@ -285,10 +285,12 @@ void SX126X_LoRaRadio::configure_freq_hop(const uint32_t addr, const vector<uint
 // Sequentially scan through the hop frequencies
 void SX126X_LoRaRadio::rx_hop_frequency(void)
 {
-    set_channel(*cur_hop_freq);
-    if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
-        cur_hop_freq = hop_freqs.begin();
-        fhss_mon_sig = !fhss_mon_sig;
+    if(radio_cb.radio_cfg.frequencies_count > 1) {
+        set_channel(*cur_hop_freq);
+        if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
+            cur_hop_freq = hop_freqs.begin();
+            fhss_mon_sig = !fhss_mon_sig;
+        }
     }
 }
 
@@ -297,7 +299,9 @@ void SX126X_LoRaRadio::rx_hop_frequency(void)
 void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset, const bool locking)
 {
     if(locking) { lock(); }
-    set_channel(*(hop_freqs.begin()+(*hop_chan_dist_sptr)(*rand_gen_hop_chan_sptr)) + freq_offset);
+    if(radio_cb.radio_cfg.frequencies_count > 1) {
+        set_channel(*(hop_freqs.begin()+(*hop_chan_dist_sptr)(*rand_gen_hop_chan_sptr)) + freq_offset);
+    }
     if(locking) { unlock(); }
 }
 
@@ -1408,6 +1412,16 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
     radio.tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), 3000);
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
+}
+
+
+void SX126X_LoRaRadio::receive_sel(const bool locking) {
+    if(radio_cb.radio_cfg.frequencies_count == 1) {
+        receive(locking);
+    } else {
+        radio.rx_hop_frequency(); 
+        receive_cad_rx(locking);
+    }
 }
 
 

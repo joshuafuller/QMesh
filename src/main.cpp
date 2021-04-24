@@ -141,7 +141,6 @@ int main()
     KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
                                         MBED_CONF_APP_KISS_UART_RX, 
                                         string("BT"), DEBUG_PORT);
-    MBED_ASSERT(bt_ser);
     KISSSerial *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
                                         MBED_CONF_APP_KISS_UART_RX_ALT,
                                         MBED_CONF_APP_KISS_UART_EN_ALT,

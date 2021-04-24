@@ -299,15 +299,20 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name,
 
 
 void KISSSerial::configure_hc05(void) {
+    char reply_str[64];
     *en_pin = 1;
+    while(1);
     ThisThread::sleep_for(250);
     ser->set_baud(38400);
     ThisThread::sleep_for(250);
-    FILE *ser_fh = fdopen(ser, "w");
+    FILE *ser_fh = fdopen(ser, "rw");
+    printf("testing\r\n");
     // Reset the module's configuration
     string reset_cmd("AT+ORGL\r\n");
     fprintf(ser_fh, "%s", reset_cmd.c_str());
     printf("%s", reset_cmd.c_str());
+    fgets(reply_str, 64, ser_fh);
+    printf("%s", reply_str);
     ThisThread::sleep_for(500);
     // Change the name
     string bt_name_cmd("AT+NAME=");
@@ -317,10 +322,11 @@ void KISSSerial::configure_hc05(void) {
     printf("%s", bt_name_cmd.c_str());
     ThisThread::sleep_for(250);
 #if 0
-    string baud_cmd("AT+UART=38400,0,0\r\n");
+    string baud_cmd("AT+UART=38400,0,0,\r\n");
     fprintf(ser_fh, "%s", baud_cmd.c_str());    
     ThisThread::sleep_for(250);
 #endif
+    //ser->set_baud(38400);
     string reboot_cmd("AT+RESET\r\n");
     fprintf(ser_fh, "%s", reboot_cmd.c_str());
     ThisThread::sleep_for(250);
@@ -328,7 +334,8 @@ void KISSSerial::configure_hc05(void) {
     fprintf(ser_fh, "%s", init_cmd.c_str());
     ThisThread::sleep_for(250);
     *en_pin = 0;
-    ser->set_baud(9600);
+    printf("Done with configuration\r\n");
+
 }
 
 
@@ -341,13 +348,13 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     state_pin = new DigitalIn(State);                
     tx_port = tx;
     rx_port = rx;
-    ser = new UARTSerial(tx_port, rx_port, 9600);
+    ser = new UARTSerial(tx_port, rx_port, 38400);
     MBED_ASSERT(ser);
     using_stdio = false;
     kiss_extended = true;
     port_type = ser_port_type;
 
-    configure_hc05();
+    //configure_hc05();
 
     string rx_ser_name("RX-SERIAL-");
     rx_ser_name.append(port_name);
