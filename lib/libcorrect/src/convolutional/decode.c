@@ -250,7 +250,7 @@ void _convolutional_decode_init(correct_convolutional *conv, unsigned int min_tr
                                 unsigned int traceback_length, unsigned int renormalize_interval) {
     conv->has_init_decode = true;
 
-    conv->distances = calloc_ot(1 << (conv->rate), sizeof(distance_t));
+    conv->distances = calloc(1 << (conv->rate), sizeof(distance_t));
     conv->pair_lookup = pair_lookup_create(conv->rate, conv->order, conv->table);
 
     conv->soft_measurement = CORRECT_SOFT_LINEAR;

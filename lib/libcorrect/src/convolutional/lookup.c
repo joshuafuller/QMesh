@@ -24,9 +24,9 @@ pair_lookup_t pair_lookup_create(unsigned int rate,
                                  const unsigned int *table) {
     pair_lookup_t pairs;
 
-    pairs.keys = malloc_ot(sizeof(unsigned int) * (1 << (order - 1)));
-    pairs.outputs = calloc_ot((1 << (rate * 2)), sizeof(unsigned int));
-    unsigned int *inv_outputs = calloc_ot((1 << (rate * 2)), sizeof(unsigned int));
+    pairs.keys = malloc(sizeof(unsigned int) * (1 << (order - 1)));
+    pairs.outputs = calloc((1 << (rate * 2)), sizeof(unsigned int));
+    unsigned int *inv_outputs = calloc((1 << (rate * 2)), sizeof(unsigned int));
     unsigned int output_counter = 1;
     // for every (even-numbered) shift register state, find the concatenated output of the state
     //   and the subsequent state that follows it (low bit set). then, check to see if this
@@ -51,15 +51,15 @@ pair_lookup_t pair_lookup_create(unsigned int rate,
     pairs.outputs_len = output_counter;
     pairs.output_mask = (1 << (rate)) - 1;
     pairs.output_width = rate;
-    pairs.distances = calloc_ot(pairs.outputs_len, sizeof(distance_pair_t));
-    free_ot(inv_outputs);
+    pairs.distances = calloc(pairs.outputs_len, sizeof(distance_pair_t));
+    free(inv_outputs);
     return pairs;
 }
 
 void pair_lookup_destroy(pair_lookup_t pairs) {
-    free_ot(pairs.keys);
-    free_ot(pairs.outputs);
-    free_ot(pairs.distances);
+    free(pairs.keys);
+    free(pairs.outputs);
+    free(pairs.distances);
 }
 
 void pair_lookup_fill_distance(pair_lookup_t pairs, distance_t *distances) {
