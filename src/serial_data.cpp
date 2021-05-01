@@ -58,7 +58,7 @@ void Frame::serialize(vector<uint8_t> &ser_frame) {
     }
     copy(data.begin(), data.end(), back_inserter(ser_frame));
     for(size_t i = 0; i < sizeof(crc); i++) {
-        ser_frame.push_back(crc.b[i]);
+        ser_frame.push_back(crc);
     }
 }
 
@@ -109,8 +109,8 @@ size_t Frame::serializeCoded(vector<uint8_t> &buf) {
     return fec->encode(ser_buf, buf);
 }
 
-uint16_t Frame::calcCRC(void) {
-    MbedCRC<POLY_16BIT_CCITT, 16> ct;
+uint8_t Frame::calcCRC(void) {
+    MbedCRC<POLY_8BIT_CCITT, 8> ct;
     uint32_t crc = 0;
     vector<uint8_t> crc_buf;
     for(size_t i = 0; i < sizeof(hdr.cons_subhdr); i++) {
@@ -118,7 +118,7 @@ uint16_t Frame::calcCRC(void) {
     }
     copy(data.begin(), data.end(), back_inserter(crc_buf));
     ct.compute((void *) crc_buf.data(), crc_buf.size(), &crc);
-    return crc & 0x0000FFFF;
+    return crc & 0x000000FF;
 }
 
 uint32_t Frame::calcUniqueCRC(void) {
@@ -154,7 +154,7 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
     data.clear();
     copy(dec_buf.begin()+sizeof(hdr), dec_buf.end()-sizeof(crc), back_inserter(data));
     for(size_t i = 0; i < sizeof(crc); i++) {
-        crc.b[i] = *(dec_buf.begin()+sizeof(hdr)+data.size()+i);
+        crc = *(dec_buf.begin()+sizeof(hdr)+data.size()+i);
     }
     // Step three: check the payload CRC
     if(!checkCRC()) {
@@ -173,7 +173,7 @@ void Frame::loadFromPB(const DataMsg &data_msg) {
     hdr.var_subhdr.fields.ttl = data_msg.ttl;
     hdr.var_subhdr.fields.sender = data_msg.sender;
     hdr.var_subhdr.fields.sym_offset = data_msg.sym_offset;
-    crc.s = data_msg.crc;
+    crc = data_msg.crc;
     data.resize(data_msg.payload.size);
     memcpy((char *) data.data(), data_msg.payload.bytes, data_msg.payload.size); 
 }
@@ -185,7 +185,7 @@ void Frame::saveToPB(DataMsg &data_msg) {
     data_msg.ttl = hdr.var_subhdr.fields.ttl;
     data_msg.sender = hdr.var_subhdr.fields.sender;
     data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset;
-    data_msg.crc = crc.s;
+    data_msg.crc = crc;
     if(data_msg.type == DataMsg_Type_KISSRX || data_msg.type == DataMsg_Type_KISSTX) {
         kiss_subhdr k_sub;
         memcpy(&k_sub, data.data(), sizeof(k_sub));
@@ -244,7 +244,7 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
         debug_printf_clean(dbg_type, "%2x ", data[i]);
     }
     debug_printf_clean(dbg_type, "\r\n");
-    debug_printf(dbg_type, "CRC: %4x\r\n", crc.s);
+    debug_printf(dbg_type, "CRC: %4x\r\n", crc);
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "Rx Stats: %d (RSSI), %d (SNR)\r\n", rssi, snr);
 }

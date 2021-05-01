@@ -83,10 +83,7 @@ typedef enum {
  */
 class Frame {
 public:
-    typedef union {
-        uint16_t s;
-        uint8_t b[2];
-    } crc16_t;
+    typedef uint8_t crc8_t;
     typedef struct {
         union {
             struct __attribute__((__packed__)) {
@@ -101,7 +98,7 @@ public:
                 uint32_t type : 2;
                 uint32_t stream_id : 14;
             } fields;
-            uint8_t b[2];
+            uint8_t b;
         } cons_subhdr;
     } frame_hdr;
     typedef union {
@@ -117,7 +114,7 @@ public:
 private:
     frame_hdr hdr;
     vector<uint8_t> data;
-    crc16_t crc;
+    crc8_t crc;
 protected:
     // receive stats
     int16_t rssi;
@@ -237,7 +234,7 @@ public:
     /**
     * Calculate the CRC of the payload.
     */
-    uint16_t calcCRC(void);
+    uint8_t calcCRC(void);
 
     /**
     * Calculate the CRC for the "unique" information.
@@ -251,16 +248,16 @@ public:
      * Check the payload CRC, returning True if a match, False if not.
      */
     bool checkCRC(void) {
-        return (crc.s == calcCRC());
+        return (crc == calcCRC());
     }
 
     /**
      * Sets the payload CRC by computing it based on the curent payload data.
      * Also returns the computed CRC.
      */
-    uint16_t setCRC(void) {
-        uint16_t calc_crc = calcCRC();
-        crc.s = calc_crc;
+    uint8_t setCRC(void) {
+        uint8_t calc_crc = calcCRC();
+        crc = calc_crc;
         return calc_crc;
     }
 
@@ -386,8 +383,8 @@ public:
     /**
      * Returns the payload CRC stored within the Frame object.
      */
-    uint16_t getCRC(void) {
-        return crc.s;
+    uint8_t getCRC(void) {
+        return crc;
     }
 
     /**

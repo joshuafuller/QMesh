@@ -50,7 +50,13 @@ void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_
     // Compute number of payload symbols
     float val = ceilf((8.f*n_pld_bytes_f-4.f*sf_f+28.f-20.f)/
             (4.f*(sf_f-2.f*low_dr_opt_f)));
-    float n_sym_pld_f = 8.f + fmaxf(val*(cr_f+4.f), 0.f);
+#warning I'm not sure this is the right calculation
+    float n_sym_pld_f = NAN;
+    if(sf == 5 || sf == 6) {
+        n_sym_pld_f = 6.25f + 8.f + fmaxf(val*(cr_f+4.f), 0.f);        
+    } else { 
+        n_sym_pld_f = 4.25f + 8.f + fmaxf(val*(cr_f+4.f), 0.f);
+    }
     n_sym_pld = n_sym_pld_f;
 
     // Compute the duration of the payload

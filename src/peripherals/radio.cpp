@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -163,13 +163,19 @@ void init_radio(void) {
     Frame tmp_frame(frame_fec);
     radio_cb.net_cfg.full_pkt_len = tmp_frame.codedSize();
     debug_printf(DBG_INFO, "Setting RX size to %d\r\n", radio_cb.net_cfg.full_pkt_len);
+    uint32_t pre_len = 0;
+    if(radio_cb.radio_cfg.frequencies_count > 1) {
+        pre_len = radio_cb.radio_cfg.lora_cfg.fhss_pre_len;
+    } else {
+        pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length;
+    }
     radio.set_rx_config(MODEM_LORA, 
                             radio_cb.radio_cfg.lora_cfg.bw,
                             radio_cb.radio_cfg.lora_cfg.sf, 
                             radio_cb.radio_cfg.lora_cfg.cr,
                             0, 
-                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
-                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len, 
+                            pre_len,
+                            pre_len, 
                             RADIO_FIXED_LEN,
                             radio_cb.net_cfg.full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
@@ -178,7 +184,7 @@ void init_radio(void) {
                             radio_cb.radio_cfg.lora_cfg.bw, 
                             radio_cb.radio_cfg.lora_cfg.sf,
                             radio_cb.radio_cfg.lora_cfg.bw, 
-                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
+                            pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);
@@ -186,7 +192,7 @@ void init_radio(void) {
     radio_timing.computeTimes(radio_cb.radio_cfg.lora_cfg.bw, 
                         radio_cb.radio_cfg.lora_cfg.sf, 
                         radio_cb.radio_cfg.lora_cfg.cr, 
-                        radio_cb.radio_cfg.lora_cfg.fhss_pre_len, 
+                        pre_len, 
                         radio_cb.net_cfg.full_pkt_len);
     radio.cad_rx_timeout = radio_timing.pkt_time_us / 15.625f;
     if(radio_cb.test_cfg.cw_test_mode) { 
@@ -211,14 +217,20 @@ void init_radio(void) {
 
 
 void reinit_radio(void) {
+    uint32_t pre_len = 0;
+    if(radio_cb.radio_cfg.frequencies_count > 1) {
+        pre_len = radio_cb.radio_cfg.lora_cfg.fhss_pre_len;
+    } else {
+        pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length;
+    }
     // Initialize Radio driver
     radio.set_rx_config(MODEM_LORA, 
                             radio_cb.radio_cfg.lora_cfg.bw,
                             radio_cb.radio_cfg.lora_cfg.sf, 
                             radio_cb.radio_cfg.lora_cfg.cr,
                             0, 
-                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
-                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len, 
+                            pre_len,
+                            pre_len, 
                             RADIO_FIXED_LEN,
                             radio_cb.net_cfg.full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
@@ -227,7 +239,7 @@ void reinit_radio(void) {
                             radio_cb.radio_cfg.lora_cfg.bw, 
                             radio_cb.radio_cfg.lora_cfg.sf,
                             radio_cb.radio_cfg.lora_cfg.bw, 
-                            radio_cb.radio_cfg.lora_cfg.fhss_pre_len,
+                            pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
     radio.set_public_network(false);

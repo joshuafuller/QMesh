@@ -344,7 +344,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     port_name = my_port_name;
     hc05 = true;
     en_pin = new DigitalOut(En);
-    *en_pin = 0;
+    *en_pin = 1;
     state_pin = new DigitalIn(State);                
     tx_port = tx;
     rx_port = rx;
