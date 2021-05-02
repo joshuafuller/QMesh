@@ -1,0 +1,29 @@
+
+Breakpoint=kiss_serial.cpp:302, State=BP_STATE_ON
+OpenDocument="basic_string.h", FilePath="c:/program files (x86)/gnu arm embedded toolchain/10 2020-q4-major/arm-none-eabi/include/c++/10.2.1/bits/basic_string.h", Line=516
+OpenDocument="kiss_serial.cpp", FilePath="c:/Users/danie/QMesh/src/kiss_serial.cpp", Line=292
+OpenDocument="main.cpp", FilePath="c:/Users/danie/QMesh/src/main.cpp", Line=87
+OpenDocument="shared_ptr_base.h", FilePath="c:/program files (x86)/gnu arm embedded toolchain/10 2020-q4-major/arm-none-eabi/include/c++/10.2.1/bits/shared_ptr_base.h", Line=1112
+OpenDocument="startup_stm32h743xx.S", FilePath="c:/Users/danie/QMesh/mbed-os/targets/TARGET_STM/TARGET_STM32H7/TARGET_STM32H743xI/device/TOOLCHAIN_GCC_ARM/startup_stm32h743xx.S", Line=52
+OpenDocument="serial_data.cpp", FilePath="c:/Users/danie/QMesh/src/serial_data.cpp", Line=418
+OpenDocument="mbed_wait_api_no_rtos.c", FilePath="c:/Users/danie/QMesh/mbed-os/platform/source/mbed_wait_api_no_rtos.c", Line=54
+OpenDocument="SysTimer.cpp", FilePath="c:/Users/danie/QMesh/mbed-os/platform/source/SysTimer.cpp", Line=75
+OpenDocument="shared_ptr.h", FilePath="c:/program files (x86)/gnu arm embedded toolchain/10 2020-q4-major/arm-none-eabi/include/c++/10.2.1/bits/shared_ptr.h", Line=130
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Call Stack", DockArea=RIGHT, x=0, y=2, w=527, h=259, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=527, h=259, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Break & Tracepoints", DockArea=LEFT, x=0, y=0, w=492, h=419, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VectorCatchIndexMask=254
+OpenWindow="Memory 1", DockArea=BOTTOM, x=0, y=0, w=1920, h=151, TabPos=1, TopOfStack=0, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x20
+OpenWindow="Global Data", DockArea=RIGHT, x=0, y=1, w=527, h=192, TabPos=1, TopOfStack=0, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Local Data", DockArea=RIGHT, x=0, y=1, w=527, h=192, TabPos=0, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=1, w=492, h=314, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1920, h=151, TabPos=0, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Access";"Scope"], ColWidths=[241;100;100;100;100;0;100]
+TableHeader="Vector Catches", SortCol="None", SortOrder="ASCENDING", VisibleCols=["";"Vector Catch";"Description"], ColWidths=[50;300;500]
+TableHeader="Break & Tracepoints", SortCol="None", SortOrder="ASCENDING", VisibleCols=["";"Type";"Location";"Extras"], ColWidths=[100;100;185;107]
+TableHeader="Functions", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Class";"Source"], ColWidths=[9366;104;100;100;27;311]
+TableHeader="Call Stack", SortCol="Function", SortOrder="ASCENDING", VisibleCols=["Function";"Stack Frame";"Source";"PC";"Return Address";"Stack Used"], ColWidths=[228;154;257;104;234;100]
+TableHeader="Power Sampling", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
+TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
+TableHeader="Local Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Access";"Scope"], ColWidths=[405;313;134;100;824;0;248]
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;682]
