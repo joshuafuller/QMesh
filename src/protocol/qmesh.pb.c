@@ -60,6 +60,10 @@ PB_BIND(ErrorMsg, ErrorMsg, 2)
 PB_BIND(DataMsg, DataMsg, 2)
 
 
+PB_BIND(UpdateMsg, UpdateMsg, 2)
+
+
+
 
 
 
