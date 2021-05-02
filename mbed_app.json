@@ -69,6 +69,7 @@
         },
 
         "NUCLEO_H743ZI2" : {
+            "target.bootloader_img": "bootloader/bootloader_h743.bin",
             "kiss_uart_tx_alt":    "PD_1" ,
             "kiss_uart_rx_alt":    "PD_0",
             "qspi-flash-csn":      "PG_6"
