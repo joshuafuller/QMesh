@@ -1,6 +1,5 @@
 {
     "config": {
-        "main_stack_size":     { "value": 8192 },
         "qspi-flash-csn":      { "value": "PB_6"},
         "qspi-flash-sck":      { "value": "PB_2"},
         "qspi-flash-io0":      { "value": "PD_11"},
@@ -26,20 +25,7 @@
             "platform.stdio-convert-newlines": true,
             "platform.stdio-baud-rate": 230400,
             "platform.default-serial-baud-rate": 230400,
-            "platform.stdio-buffered-serial": true,
-            "platform.cpu-stats-enabled": 1,
-            "platform.thread-stats-enabled": true,
-            "platform.memory-tracing-enabled": true,
-            "platform.heap-stats-enabled": true,
-            "platform.stack-stats-enabled": true,
-            "rtos.idle-thread-stack-size": 8192,
-    		"rtos.idle-thread-stack-size-debug-extra": 8192,
-            "lora.over-the-air-activation": true,
-            "lora.duty-cycle-on": true,
-            "lora.phy": "EU868",
-            "lora.device-eui": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }",
-            "lora.application-eui": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }",
-            "lora.application-key": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }"
+            "platform.stdio-buffered-serial": true
         },
 
         "NUCLEO_F746ZG" : {
