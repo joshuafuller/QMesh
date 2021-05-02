@@ -21,11 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //#include "lora_radio_helper.h"
 #include "nv_settings.hpp"
-#include "radio.hpp"
 #include "leds.hpp"
 #include "buttons.hpp"
-#include "stm32_watchdog.h"
-#include "DRA818.hpp"
-#include "cal_timer.hpp"
 
 #endif /* PERIPHERALS_HPP */

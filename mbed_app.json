@@ -1,20 +1,6 @@
 {
     "config": {
-        "lora-radio": {
-            "help": "Which radio to use (options: SX1272,SX1276,SX126X)",
-            "value": "SX126X"
-        },
         "main_stack_size":     { "value": 8192 },
-        "lora-spi-mosi":       { "value": "D11" },
-        "lora-spi-miso":       { "value": "D12" },
-        "lora-spi-sclk":       { "value": "D13" },
-        "lora-cs":             { "value": "D10" },  
-        "lora-reset":          { "value": "D3" },
-        "lora-busy":           { "value": "D2" },
-        "lora-dio1":           { "value": "D5" },
-        "lora-dio2":           { "value": "D4" },
-        "lora-txctl":          { "value": "D6" },
-        "lora-rxctl":          { "value": "D7" },
         "qspi-flash-csn":      { "value": "PB_6"},
         "qspi-flash-sck":      { "value": "PB_2"},
         "qspi-flash-io0":      { "value": "PD_11"},
@@ -30,15 +16,7 @@
         "kiss_uart_tx_alt":    { "value": "PA_11"},
         "kiss_uart_rx_alt":    { "value": "PA_12"},
         "kiss_uart_en_alt":    { "value": "PG_1"},
-        "kiss_uart_st_alt":    { "value": "PF_9"},
-
-        "rx_int_mon":          { "value": "PD_0"},
-        "tx_int_mon":          { "value": "PD_1"},
-        "int_trig_mon":        { "value": "PG_0"},
-        "retransmit_dis_in":   { "value": "PE_7"},
-        "retransmit_dis_out":  { "value": "PE_8"},
-        "rssi_mon":            { "value": "PF_15"},
-        "fhss_mon":            { "value": "PE_0"}    
+        "kiss_uart_st_alt":    { "value": "PF_9"}
     },
     "target_overrides": {
         "*": {
@@ -273,6 +251,5 @@
             "lora-tcxo":           "RF_TCXO_EN"
         }
     },
-    "macros": ["MBEDTLS_USER_CONFIG_FILE=\"mbedtls_lora_config.h\"",
-        "MBED_CPU_STATS_ENABLED=1"]
+    "macros": ["MBED_CPU_STATS_ENABLED=1"]
 }

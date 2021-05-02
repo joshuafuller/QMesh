@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mbed.h"
 #include "buttons.hpp"
-#include "serial_data.hpp"
 #include "LittleFileSystem.h"
 #include "Adafruit_SSD1306.h"
 
@@ -35,37 +34,7 @@ extern Adafruit_SSD1306_I2c *oled;
 
 volatile bool rebooting = false;
 
-void reboot_system(void) {
-	rebooting = true;
-    debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
-    ThisThread::sleep_for(500);
-    NVIC_SystemReset();
-}
-
-
 void button_thread_fn(void);
-void button_fn(void) {
-    FILE *f = fopen("/fs/low_power.mode", "r");
-    if(f) {
-        fclose(f);
-        fs.remove("low_power.mode");
-        mbed_file_handle(STDIN_FILENO)->enable_input(true);
-        //gps_serial.enable_input(true);
-        oled->displayOn();
-        debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
-        ThisThread::sleep_for(1000);
-        reboot_system();
-    }
-    else {
-        FILE *f = fopen("/fs/low_power.mode", "w");
-        fprintf(f, "In low power mode\r\n");
-        fclose(f);
-        mbed_file_handle(STDIN_FILENO)->enable_input(false);   
-        //rx_serial_thread.terminate();
-        //gps_serial.enable_input(false);
-        oled->displayOff();
-    }
-} 
 
 PushButton::PushButton(PinName button) {
     was_pressed = false;
@@ -73,7 +42,7 @@ PushButton::PushButton(PinName button) {
 }
 
 void PushButton::SetQueue(EventQueue &evt_queue) {
-    btn->rise(evt_queue.event(button_fn));
+    //btn->rise(evt_queue.event(button_fn));
 }
     
 bool PushButton::getPressed(void) {

@@ -1,6 +1,5 @@
 #include "mbed.h"
 #include "mem_trace.hpp"
-#include "serial_data.hpp"
 
 void print_memory_info() {
     // allocate enough room for every thread's stack statistics
