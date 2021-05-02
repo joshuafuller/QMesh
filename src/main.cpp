@@ -98,6 +98,6 @@ int main()
 	ThisThread::sleep_for(1000);
     //init_filesystem();
 
-    
+    mbed_start_application(POST_APPLICATION_ADDR);
 }
 
