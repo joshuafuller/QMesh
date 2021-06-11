@@ -595,7 +595,20 @@ static uint8_t get_stream_id(void) {
 }
 
 
+static bool check_upd_pkt_sha256(UpdateMsg &update_msg);
+static bool check_upd_pkt_sha256(UpdateMsg &update_msg) {
+    mbedtls_sha256_context sha256_cxt;
+    mbedtls_sha256_init(&sha256_cxt);
+    mbedtls_sha256_starts(&sha256_cxt, 0);
+    mbedtls_sha256_update(&sha256_cxt, update_msg.pld.bytes, update_msg.pld.size);
+    uint8_t sha256_cksum[32];
+    mbedtls_sha256_finish(&sha256_cxt, sha256_cksum);
+    return memcmp(update_msg.sha256_pkt.bytes, sha256_cksum, 32) ? false : true;
+}
+
+
 void KISSSerial::rx_serial_thread_fn(void) {
+    int upd_pkt_cnt = -1;
 	FILE *f = NULL;
     FILE *upd_file = NULL;
     mbedtls_sha256_context sha256_cxt;
@@ -616,8 +629,20 @@ void KISSSerial::rx_serial_thread_fn(void) {
         err = load_SerialMsg(*ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
+            if(err == CRC_ERR) {
+                auto reply_msg = make_shared<SerialMsg>();
+                *reply_msg = ser_msg_zero;
+                reply_msg->type = SerialMsg_Type_ERR;
+                reply_msg->has_error_msg = true;
+                reply_msg->error_msg.type = ErrorMsg_Type_CRC_ERR;
+                string err_reason("CRC Error");
+                strncpy(reply_msg->error_msg.msg, err_reason.c_str(), 32);
+                enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
+            }
+            continue;
         }
         if(ser_msg->type == SerialMsg_Type_UPDATE) {
+            debug_printf(DBG_INFO, "Received an update message\r\n");
             auto reply_msg = make_shared<SerialMsg>();
             *reply_msg = ser_msg_zero;
             reply_msg->type = SerialMsg_Type_UPDATE;
@@ -627,80 +652,113 @@ void KISSSerial::rx_serial_thread_fn(void) {
                 ser_msg->update_msg.type == UpdateMsg_Type_ACKERR) {
                 reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
             } else if(ser_msg->update_msg.type == UpdateMsg_Type_FIRST) {
+                upd_pkt_cnt = -1;
                 if(upd_file) {
                     fclose(upd_file);
                 }
                 string upd_fname(ser_msg->update_msg.path);
                 upd_fname.append(".tmp");
                 upd_file = fopen(upd_fname.c_str(), "w");
-                uint32_t start_bytes[32];
-                memset(start_bytes, 0, 32);
-                fwrite(start_bytes, 1, 32, upd_file);
                 mbedtls_sha256_init(&sha256_cxt);
+                mbedtls_sha256_starts(&sha256_cxt, 0);
                 if(!upd_file) {
                     reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
                     string err_reason("No Update File");
                     strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
                 } else {
-                    fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
-                    mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
+                    if(check_upd_pkt_sha256(ser_msg->update_msg)) {
+                        fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
+                        mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
                                             ser_msg->update_msg.pld.size);
-                }
-            } else if(ser_msg->update_msg.type == UpdateMsg_Type_MIDDLE) {
-                if(!upd_file) {
-                    ser_msg->update_msg.type = UpdateMsg_Type_ACKERR;
-                    string err_reason("No Update File");
-                    strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
-                } else {
-                    fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
-                    mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
-                                            ser_msg->update_msg.pld.size);
-                }
-            } else if(ser_msg->update_msg.type == UpdateMsg_Type_LAST) {
-                if(!upd_file) {
-                    reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
-                    string err_reason("No Update File");
-                    strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32); 
-                } else {
-                    fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
-                    fclose(upd_file);
-                    mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
-                                            ser_msg->update_msg.pld.size);
-                    reply_msg->update_msg.sha256.size = 32;
-                    mbedtls_sha256_finish(&sha256_cxt, reply_msg->update_msg.sha256.bytes);
-                    upd_file = fopen(ser_msg->update_msg.path, "w");
-                    if(ser_msg->update_msg.sha256.size == 0) {
-                        reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
-                        string err_reason("No SHA256 checksum");
-                        strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
-                        fclose(upd_file);
-                        string upd_fname(ser_msg->update_msg.path);
-                        upd_fname.append(".tmp");
-                        fs.remove(upd_fname.c_str());
-                    } else if(memcmp(ser_msg->update_msg.sha256.bytes, 
-                                        reply_msg->update_msg.sha256.bytes, 32)) {
-                        reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
-                        string err_reason("SHA256 checksum failed");
-                        strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
-                        fclose(upd_file);
-                        string upd_fname(ser_msg->update_msg.path);
-                        upd_fname.append(".tmp");
-                        fs.remove(upd_fname.c_str());
+                        upd_pkt_cnt += 1;
                     } else {
-                        if(!upd_file) {
-                            reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
-                            string err_reason("No Update File");
-                            strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
-                        } else {
-                            fwrite(reply_msg->update_msg.sha256.bytes, 1, 32, upd_file);
-                            fclose(upd_file);
-                            string upd_fname(ser_msg->update_msg.path);
-                            upd_fname.append(".tmp");
-                            fs.rename(upd_fname.c_str(), ser_msg->update_msg.path);
-                        }
+                        reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+                        string err_reason("SHA256 packet checksum failed");
+                        strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
                     }
                 }
-            }
+			} else if(ser_msg->update_msg.type == UpdateMsg_Type_MIDDLE) {
+				if(!upd_file) {
+					ser_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+					string err_reason("No Update File");
+					strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
+				} else {
+					if(check_upd_pkt_sha256(ser_msg->update_msg)) {
+						fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
+						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
+												ser_msg->update_msg.pld.size);
+						upd_pkt_cnt += 1;
+					} else {
+						reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+						string err_reason("SHA256 packet checksum failed");
+						strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
+					}
+				}
+			} else if(ser_msg->update_msg.type == UpdateMsg_Type_LAST) {
+				if(!upd_file) {
+					reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+					string err_reason("No Update File");
+					strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32); 
+				} else {
+					if(check_upd_pkt_sha256(ser_msg->update_msg)) {
+						fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
+						fclose(upd_file);
+						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
+												ser_msg->update_msg.pld.size);
+						reply_msg->update_msg.sha256_pkt.size = 32;
+						mbedtls_sha256_finish(&sha256_cxt, reply_msg->update_msg.sha256_upd.bytes);
+						upd_file = fopen(ser_msg->update_msg.path, "w");
+						if(ser_msg->update_msg.sha256_upd.size == 0) {
+							reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+							string err_reason("No SHA256 checksum");
+							strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
+							fclose(upd_file);
+							string upd_fname(ser_msg->update_msg.path);
+							upd_fname.append(".tmp");
+							fs.remove(upd_fname.c_str());
+						} else if(memcmp(ser_msg->update_msg.sha256_upd.bytes, 
+                                        reply_msg->update_msg.sha256_upd.bytes, 32)) {
+							reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+							string err_reason("SHA256 checksum failed");
+							strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
+							fclose(upd_file);
+							string upd_fname(ser_msg->update_msg.path);
+							upd_fname.append(".tmp");
+							fs.remove(upd_fname.c_str());
+						} else {
+							if(!upd_file) {
+								reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+								string err_reason("No Update File");
+								strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
+							} else {
+								fclose(upd_file);
+								string upd_fname(ser_msg->update_msg.path);
+								upd_fname.append(".tmp");
+								fs.rename(upd_fname.c_str(), ser_msg->update_msg.path);
+								string upd_fname_sha256(ser_msg->update_msg.path);
+								upd_fname_sha256.append(".sha256");
+								FILE *upd_file_sha256 = fopen(upd_fname_sha256.c_str(), "w");
+								if(upd_file_sha256) {
+									fwrite(ser_msg->update_msg.sha256_upd.bytes, 1, 32, upd_file_sha256);
+									fclose(upd_file_sha256);
+									upd_pkt_cnt += 1;
+								} else {
+									reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+									string err_reason("SHA256 open failed");
+									strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);   
+								}
+							}
+						}
+					} else {
+						reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+						string err_reason("SHA256 packet checksum failed");
+						strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32);
+					}
+				}
+			} else {
+				MBED_ASSERT(false);
+			}
+            reply_msg->update_msg.pkt_cnt = upd_pkt_cnt;
             enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
         } else if(ser_msg->type == SerialMsg_Type_EXIT_KISS_MODE) {
             shared_mtx.lock();

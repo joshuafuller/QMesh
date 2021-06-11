@@ -71,6 +71,11 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_UPDATE = 27
 } SerialMsg_Type;
 
+typedef enum _ErrorMsg_Type {
+    ErrorMsg_Type_CRC_ERR = 0,
+    ErrorMsg_Type_OTHER_ERR = 1
+} ErrorMsg_Type;
+
 typedef enum _DataMsg_Type {
     DataMsg_Type_TX = 0,
     DataMsg_Type_RX = 1,
@@ -117,6 +122,7 @@ typedef struct _DbgMsg {
 } DbgMsg;
 
 typedef struct _ErrorMsg {
+    ErrorMsg_Type type;
     char msg[256];
 } ErrorMsg;
 
@@ -176,12 +182,15 @@ typedef struct _TimeMsg {
 } TimeMsg;
 
 typedef PB_BYTES_ARRAY_T(1024) UpdateMsg_pld_t;
-typedef PB_BYTES_ARRAY_T(32) UpdateMsg_sha256_t;
+typedef PB_BYTES_ARRAY_T(32) UpdateMsg_sha256_pkt_t;
+typedef PB_BYTES_ARRAY_T(32) UpdateMsg_sha256_upd_t;
 typedef struct _UpdateMsg {
     UpdateMsg_Type type;
+    int32_t pkt_cnt;
     char path[128];
     UpdateMsg_pld_t pld;
-    UpdateMsg_sha256_t sha256;
+    UpdateMsg_sha256_pkt_t sha256_pkt;
+    UpdateMsg_sha256_upd_t sha256_upd;
     char err_reason[32];
 } UpdateMsg;
 
@@ -278,6 +287,10 @@ typedef struct _SerialMsg {
 #define _SerialMsg_Type_MAX SerialMsg_Type_UPDATE
 #define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_UPDATE+1))
 
+#define _ErrorMsg_Type_MIN ErrorMsg_Type_CRC_ERR
+#define _ErrorMsg_Type_MAX ErrorMsg_Type_OTHER_ERR
+#define _ErrorMsg_Type_ARRAYSIZE ((ErrorMsg_Type)(ErrorMsg_Type_OTHER_ERR+1))
+
 #define _DataMsg_Type_MIN DataMsg_Type_TX
 #define _DataMsg_Type_MAX DataMsg_Type_KISSRX
 #define _DataMsg_Type_ARRAYSIZE ((DataMsg_Type)(DataMsg_Type_KISSRX+1))
@@ -304,9 +317,9 @@ typedef struct _SerialMsg {
 #define LogMsg_init_default                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_default}
 #define TimeMsg_init_default                     {0}
 #define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_default, false, ClockSetMsg_init_default, false, StatusMsg_init_default, false, DbgMsg_init_default, false, LogMsg_init_default, false, BootLogMsg_init_default, false, DataMsg_init_default, false, ErrorMsg_init_default, false, TimeMsg_init_default, false, UpdateMsg_init_default}
-#define ErrorMsg_init_default                    {""}
+#define ErrorMsg_init_default                    {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0}
-#define UpdateMsg_init_default                   {_UpdateMsg_Type_MIN, "", {0, {0}}, {0, {0}}, ""}
+#define UpdateMsg_init_default                   {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
@@ -323,9 +336,9 @@ typedef struct _SerialMsg {
 #define LogMsg_init_zero                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_zero}
 #define TimeMsg_init_zero                        {0}
 #define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_zero, false, ClockSetMsg_init_zero, false, StatusMsg_init_zero, false, DbgMsg_init_zero, false, LogMsg_init_zero, false, BootLogMsg_init_zero, false, DataMsg_init_zero, false, ErrorMsg_init_zero, false, TimeMsg_init_zero, false, UpdateMsg_init_zero}
-#define ErrorMsg_init_zero                       {""}
+#define ErrorMsg_init_zero                       {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0}
-#define UpdateMsg_init_zero                      {_UpdateMsg_Type_MIN, "", {0, {0}}, {0, {0}}, ""}
+#define UpdateMsg_init_zero                      {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define BootLogMsg_valid_tag                     1
@@ -344,7 +357,8 @@ typedef struct _SerialMsg {
 #define DataMsg_kiss_tot_frames_tag              10
 #define DataMsg_kiss_stream_id_tag               11
 #define DbgMsg_msg_tag                           1
-#define ErrorMsg_msg_tag                         1
+#define ErrorMsg_type_tag                        1
+#define ErrorMsg_msg_tag                         2
 #define FECCfg_type_tag                          1
 #define FECCfg_conv_rate_tag                     2
 #define FECCfg_conv_order_tag                    3
@@ -374,10 +388,12 @@ typedef struct _SerialMsg {
 #define TestCfg_test_fec_tag                     3
 #define TimeMsg_time_tag                         1
 #define UpdateMsg_type_tag                       1
-#define UpdateMsg_path_tag                       2
-#define UpdateMsg_pld_tag                        3
-#define UpdateMsg_sha256_tag                     4
-#define UpdateMsg_err_reason_tag                 5
+#define UpdateMsg_pkt_cnt_tag                    2
+#define UpdateMsg_path_tag                       3
+#define UpdateMsg_pld_tag                        4
+#define UpdateMsg_sha256_pkt_tag                 5
+#define UpdateMsg_sha256_upd_tag                 6
+#define UpdateMsg_err_reason_tag                 7
 #define LogMsg_valid_tag                         1
 #define LogMsg_count_tag                         2
 #define LogMsg_timestamp_tag                     3
@@ -577,7 +593,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  update_msg,       12)
 #define SerialMsg_update_msg_MSGTYPE UpdateMsg
 
 #define ErrorMsg_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, STRING,   msg,               1)
+X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
+X(a, STATIC,   SINGULAR, STRING,   msg,               2)
 #define ErrorMsg_CALLBACK NULL
 #define ErrorMsg_DEFAULT NULL
 
@@ -598,10 +615,12 @@ X(a, STATIC,   SINGULAR, UINT32,   kiss_stream_id,   11)
 
 #define UpdateMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
-X(a, STATIC,   SINGULAR, STRING,   path,              2) \
-X(a, STATIC,   SINGULAR, BYTES,    pld,               3) \
-X(a, STATIC,   SINGULAR, BYTES,    sha256,            4) \
-X(a, STATIC,   SINGULAR, STRING,   err_reason,        5)
+X(a, STATIC,   SINGULAR, INT32,    pkt_cnt,           2) \
+X(a, STATIC,   SINGULAR, STRING,   path,              3) \
+X(a, STATIC,   SINGULAR, BYTES,    pld,               4) \
+X(a, STATIC,   SINGULAR, BYTES,    sha256_pkt,        5) \
+X(a, STATIC,   SINGULAR, BYTES,    sha256_upd,        6) \
+X(a, STATIC,   SINGULAR, STRING,   err_reason,        7)
 #define UpdateMsg_CALLBACK NULL
 #define UpdateMsg_DEFAULT NULL
 
@@ -662,10 +681,10 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           3058
-#define ErrorMsg_size                            258
+#define SerialMsg_size                           3105
+#define ErrorMsg_size                            260
 #define DataMsg_size                             567
-#define UpdateMsg_size                           1226
+#define UpdateMsg_size                           1271
 
 #ifdef __cplusplus
 } /* extern "C" */

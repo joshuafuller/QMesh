@@ -177,7 +177,12 @@ message SerialMsg {
 }
 
 message ErrorMsg {
-  string msg = 1 [(nanopb).max_size = 256];
+  enum Type {
+    CRC_ERR = 0;
+    OTHER_ERR = 1;
+  }
+  Type type = 1;
+  string msg = 2 [(nanopb).max_size = 256];
 }
 
 message DataMsg {
@@ -209,8 +214,10 @@ message UpdateMsg {
     ACKERR = 4;
   }
   Type type = 1;
-  string path = 2 [(nanopb).max_size = 128];
-  bytes pld = 3 [(nanopb).max_size = 1024];
-  bytes sha256 = 4 [(nanopb).max_size = 32];
-  string err_reason = 5 [(nanopb).max_size = 32];
+  int32 pkt_cnt = 2;
+  string path = 3 [(nanopb).max_size = 128];
+  bytes pld = 4 [(nanopb).max_size = 1024];
+  bytes sha256_pkt = 5 [(nanopb).max_size = 32];
+  bytes sha256_upd = 6 [(nanopb).max_size = 32];
+  string err_reason = 7 [(nanopb).max_size = 32];
 }
