@@ -19,7 +19,7 @@
     },
     "target_overrides": {
         "*": {
-            "target.restrict_size": "0x30000",
+            "target.restrict_size": "0x40000",
             "target.features_add": ["STORAGE"],
             "target.components_add": ["SPIF", "QSPIF"],
             "platform.stdio-convert-newlines": true,

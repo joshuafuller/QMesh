@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
 #include "USBSerial.h"
+#include "fw_update.hpp"
 
 
 extern IndicatorLED led1, led2, led3;
@@ -43,9 +44,7 @@ DigitalIn user_button(USER_BUTTON);
 SoftI2C oled_i2c(PB_8, PB_9);
 Adafruit_SSD1306_I2c *oled;
 
-void print_stats()
-{
-    {
+void print_stats() {
     mbed_stats_cpu_t stats;
     mbed_stats_cpu_get(&stats);
 
@@ -53,23 +52,6 @@ void print_stats()
     printf("Idle time: %-20lld", stats.idle_time);
     printf("Sleep time: %-20lld", stats.sleep_time);
     printf("Deep sleep time: %-2F0lld\n", stats.deep_sleep_time);
-    }
-#if 0
-    {
-    mbed_stats_thread_t *stats = new mbed_stats_thread_t[20];
-    int count = mbed_stats_thread_get_each(stats, 20);
-    
-    for(int i = 0; i < count; i++) {
-        printf("ID: 0x%x \n", stats[i].id);
-        printf("Name: %s \n", stats[i].name);
-        printf("State: %d \n", stats[i].state);
-        printf("Priority: %d \n", stats[i].priority);
-        printf("Stack Size: %d \n", stats[i].stack_size);
-        printf("Stack Space: %d \n", stats[i].stack_space);
-        printf("\n");
-    }
-    }
-#endif
 }
 
 
@@ -87,7 +69,7 @@ int main()
     oled_i2c.frequency(400000);
     oled_i2c.start();
     
-    auto oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, 0x78, 32, 128);
+    oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, 0x78, 32, 128);
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
@@ -95,6 +77,9 @@ int main()
     led1.LEDBlink();
     oled->printf("In bootloader...\r\n");
     oled->display();
+    if(check_for_update()) {
+        apply_update();
+    }
 	ThisThread::sleep_for(1000);
     //init_filesystem();
 
