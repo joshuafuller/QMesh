@@ -70,7 +70,7 @@ def dbg_process(ch, method, properties, body):
         #  just resend the last packet
         if(ser_msg.update_msg.type == ser_msg.update_msg.Type.ACK): 
             print("Sent %d bytes" % (tx_byte_count))
-            if(update_msgs[ser_msg.update_msg.pkt_cnt] == ser_msg.update_msg.Type.LAST): 
+            if(update_msgs[ser_msg.update_msg.pkt_cnt].type == ser_msg.update_msg.Type.LAST): 
                 print("Finished sending update")
                 qmesh_common.channel.stop_consuming()
                 sys.exit(0)

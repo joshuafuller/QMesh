@@ -695,12 +695,14 @@ void KISSSerial::rx_serial_thread_fn(void) {
 					}
 				}
 			} else if(ser_msg->update_msg.type == UpdateMsg_Type_LAST) {
+                debug_printf(DBG_INFO, "Received the last message\r\n");
 				if(!upd_file) {
 					reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
 					string err_reason("No Update File");
 					strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 32); 
 				} else {
 					if(check_upd_pkt_sha256(ser_msg->update_msg)) {
+                        debug_printf(DBG_INFO, "Update's SHA256 checkum passes!\r\n");
 						fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
 						fclose(upd_file);
 						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
@@ -741,6 +743,7 @@ void KISSSerial::rx_serial_thread_fn(void) {
 								if(upd_file_sha256) {
 									fwrite(ser_msg->update_msg.sha256_upd.bytes, 1, 32, upd_file_sha256);
 									fclose(upd_file_sha256);
+                                    debug_printf(DBG_INFO, "Successfully finished writing update.\r\n");
 									upd_pkt_cnt += 1;
 								} else {
 									reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;

@@ -70,7 +70,9 @@ def make_kiss_exit_frame():
 
 
 # Callback whenever new received messages come in from the broker
+last_frame = None
 def input_cb(ch, method, properties, body):
+    global last_frame
     #print("new version")
     body_with_crc = body
     _CRC_FUNC = crcmod.predefined.mkCrcFun('crc-ccitt-false')
@@ -96,6 +98,7 @@ def input_cb(ch, method, properties, body):
     ser_mutex.acquire()
     ser.write(bytearray(frame))
     ser_mutex.release()
+    last_frame = frame
 
 
 def output_thread_fn():
@@ -180,6 +183,11 @@ def input_thread_fn():
                                         body=ser_msg.SerializeToString())
             except CRCError:
                 print("CRC Error detected")
+                print("Now retransmitting")
+                # Retransmit the last message
+                ser_mutex.acquire()
+                ser.write(bytearray(frame))
+                ser_mutex.release()
 
 
 if __name__ == "__main__":
