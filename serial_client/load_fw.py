@@ -73,6 +73,8 @@ def dbg_process(ch, method, properties, body):
             if(update_msgs[ser_msg.update_msg.pkt_cnt].type == ser_msg.update_msg.Type.LAST): 
                 print("Finished sending update")
                 qmesh_common.channel.stop_consuming()
+                time.sleep(1)
+                qmesh_common.reboot_board()
                 sys.exit(0)
         elif(ser_msg.update_msg.type == ser_msg.update_msg.ACKERR):
             err_reason = ser_msg.update_msg.err_reason
