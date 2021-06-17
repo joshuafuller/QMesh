@@ -24,52 +24,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoftI2C.h"
 #include "USBSerial.h"
 #include "fw_update.hpp"
+#include <memory>
 
 
-extern IndicatorLED led1, led2, led3;
-
-EventQueue background_queue;
-Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
-
+constexpr uint32_t THREAD_STACK_SIZE = 4096;
+constexpr uint32_t I2C_FREQ = 400000;
+constexpr uint32_t SLEEP_TIME_1S = 1000;
+enum BUTTON_PRESS {
+    NOT_PRESSED = 0,
+    PRESSED = 1
+};
 time_t boot_timestamp;
 
+EventQueue background_queue; /// Event Queue
+Thread background_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
 
-#define SLEEP_TIME                  500 // (msec)
-#define PRINT_AFTER_N_LOOPS         20
-
-void send_status(void);
-
-DigitalIn user_button(USER_BUTTON);
-
-SoftI2C oled_i2c(PB_8, PB_9);
-Adafruit_SSD1306_I2c *oled;
-
-void print_stats() {
-    mbed_stats_cpu_t stats;
-    mbed_stats_cpu_get(&stats);
-
-    printf("Uptime: %-20lld", stats.uptime);
-    printf("Idle time: %-20lld", stats.idle_time);
-    printf("Sleep time: %-20lld", stats.sleep_time);
-    printf("Deep sleep time: %-2F0lld\n", stats.deep_sleep_time);
-}
+// Devices
+DigitalIn user_button(USER_BUTTON); /// Button. When held down, will revert to the golden firmware
+SoftI2C oled_i2c(PB_8, PB_9); /// OLED display's I2C
+unique_ptr<Adafruit_SSD1306_I2c> oled; /// OLED display
 
 
-// main() runs in its own thread in the OS
-
-static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
-int main()
+auto main() -> int
 {
-
     // Set up the LEDs
-    led1.evt_queue = &background_queue;
-    led2.evt_queue = &background_queue;
-    led3.evt_queue = &background_queue;  
+    led1.setEvtQueue(&background_queue);
+    led2.setEvtQueue(&background_queue);
+    led3.setEvtQueue(&background_queue);  
 
-    oled_i2c.frequency(400000);
+    oled_i2c.frequency(I2C_FREQ);
     oled_i2c.start();
     
-    oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, 0x78, 32, 128);
+    constexpr uint32_t SSD1306_INIT_1 = 0x78;
+    constexpr uint32_t SSD1306_NUM_LINES = 32;
+    constexpr uint32_t SSD1306_NUM_COLS = 128;
+    oled = make_unique<Adafruit_SSD1306_I2c>(oled_i2c, PD_13, SSD1306_INIT_1, 
+                        SSD1306_NUM_LINES, SSD1306_NUM_COLS);
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
@@ -77,12 +67,45 @@ int main()
     led1.LEDBlink();
     oled->printf("In bootloader...\r\n");
     oled->display();
-    if(check_for_update()) {
-        apply_update();
+    if(start_fs()) {
+        // First, check for the update file that the program is supposed to remove.
+        FILE *boot_fail = fopen("/fs/boot.fail", "r");
+        if(boot_fail != nullptr) {
+            oled->printf("Boot fail!\r\n");
+            oled->display();
+            // Don't want to end up in an infinite loop where the golden firmware
+            //  keeps getting unsuccessfully loaded
+            fclose(boot_fail);
+            fs.remove("boot.fail");
+            // Load the golden firmware, if it exists
+            string fname("golden.bin");
+            if(check_for_update(fname)) {
+                apply_update(fname, true);
+            }
+        } else if(user_button == PRESSED) {
+            oled->printf("Button pressed!\r\n");
+            oled->display();
+            fclose(boot_fail);
+            fs.remove("boot.fail");
+            boot_fail = fopen("/fs/boot.fail", "w");
+            fclose(boot_fail);
+            // Load the golden firmware, if it exists
+            string fname("golden.bin");
+            if(check_for_update(fname)) {
+                apply_update(fname, true);
+            }
+        } else {
+            fclose(boot_fail);
+            fs.remove("boot.fail");
+            boot_fail = fopen("/fs/boot.fail", "w");
+            fclose(boot_fail);
+            string fname("update.bin");
+            if(check_for_update(fname)) {
+                apply_update(fname, true);
+            }
+        }
+        ThisThread::sleep_for(SLEEP_TIME_1S);
     }
-	ThisThread::sleep_for(1000);
-    //init_filesystem();
-
     mbed_start_application(POST_APPLICATION_ADDR);
 }
 

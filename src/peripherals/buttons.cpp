@@ -34,7 +34,7 @@ extern Adafruit_SSD1306_I2c *oled;
 
 volatile bool rebooting = false;
 
-void button_thread_fn(void);
+void button_thread_fn();
 
 PushButton::PushButton(PinName button) {
     was_pressed = false;
@@ -45,7 +45,7 @@ void PushButton::SetQueue(EventQueue &evt_queue) {
     //btn->rise(evt_queue.event(button_fn));
 }
     
-bool PushButton::getPressed(void) {
+auto PushButton::getPressed() -> bool {
     bool pressed_val = was_pressed;
     was_pressed = false;
     return pressed_val;

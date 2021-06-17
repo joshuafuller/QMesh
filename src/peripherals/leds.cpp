@@ -22,9 +22,12 @@ IndicatorLED led1(LED1);
 IndicatorLED led2(LED2);
 IndicatorLED led3(LED3);
 
-void IndicatorLED::blinkFn(void) {
+constexpr int SLOW_BLINK_PERIOD_MS = 250;
+constexpr int FAST_BLINK_PERIOD_MS = 50;
+
+void IndicatorLED::blinkFn() {
         if(led_state == LED_BLINK) {
-            *pin = !*pin;
+            *pin = *pin == 0 ? 1: 0;
             evt_queue->call_in(blink_period, callback(this, &IndicatorLED::blinkFn));
         }
         else {
@@ -33,27 +36,32 @@ void IndicatorLED::blinkFn(void) {
 }
 
 IndicatorLED::IndicatorLED(PinName led_pin_name) {
+    evt_queue = nullptr;
     led_state = LED_OFF;
     blink_led = false;
-    blink_period = 250;
+    blink_period = SLOW_BLINK_PERIOD_MS;
     pin = new DigitalOut(led_pin_name);
     *pin = 0;
 }
 
-void IndicatorLED::LEDSolid(void) {
+void IndicatorLED::setEvtQueue(EventQueue *q) {
+    evt_queue = q;
+}
+
+void IndicatorLED::LEDSolid() {
     led_state = LED_SOLID;
     blink_led = false;
     *pin = 1;
 }
 
-void IndicatorLED::LEDOff(void) {
+void IndicatorLED::LEDOff() {
     led_state = LED_OFF;
     blink_led = false;
     *pin = 0;
 }   
 
-void IndicatorLED::LEDBlink(void) {
-    blink_period = 250;
+void IndicatorLED::LEDBlink() {
+    blink_period = SLOW_BLINK_PERIOD_MS;
     blink_led = true;
     if(led_state != LED_BLINK) {
         led_state = LED_BLINK;
@@ -61,8 +69,8 @@ void IndicatorLED::LEDBlink(void) {
     }
 }
 
-void IndicatorLED::LEDFastBlink(void) {
-    blink_period = 50;
+void IndicatorLED::LEDFastBlink() {
+    blink_period = FAST_BLINK_PERIOD_MS;
     blink_led = true;
     if(led_state != LED_BLINK) {
         led_state = LED_BLINK;

@@ -27,7 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * rates.
  */
 class IndicatorLED {
-protected:    
+private:
+    EventQueue *evt_queue;
     enum {
         LED_OFF,
         LED_SOLID,
@@ -36,25 +37,37 @@ protected:
     DigitalOut *pin;
     bool blink_led;
     int blink_period;
-
 public:
-    EventQueue *evt_queue;
-
     /// Function resonsible for blinking the LED.
-    void blinkFn(void);
+    void blinkFn();
     /**
      * Constructor.
      * @param led_pin_name Pin that controls the LED.
      */
-    IndicatorLED(PinName led_pin_name);
+    IndicatorLED() {
+        evt_queue = nullptr;
+        pin = nullptr;
+        blink_led = false;
+        blink_period = -1;
+        led_state = LED_OFF;
+    }
+
+    // Default stuff
+    IndicatorLED(const IndicatorLED &led) = default;
+    auto operator=(const IndicatorLED &led) -> IndicatorLED& = default;
+    auto operator=(IndicatorLED &&led) -> IndicatorLED& = default;
+    IndicatorLED(IndicatorLED &&led) = default;
+
+    explicit IndicatorLED(PinName led_pin_name);
+    void setEvtQueue(EventQueue *q);
     /// Set the LED to solid
-    void LEDSolid(void);
+    void LEDSolid();
     /// Turn the LED off
-    void LEDOff(void);
+    void LEDOff();
     /// Blink the LED
-    void LEDBlink(void);
+    void LEDBlink();
     /// Blink the LED quickly
-    void LEDFastBlink(void);
+    void LEDFastBlink();
     /// Destructor
     ~IndicatorLED();
 };
