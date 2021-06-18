@@ -4,6 +4,8 @@
 #include "Adafruit_SSD1306.h"
 #include "sha256.h"
 #include <string>
+#include "zlib.h"
+
 
 constexpr int ONE_SECOND = 1000;
 constexpr uint32_t QSPI_CLOCK_SPEED = 40000000;
@@ -16,6 +18,29 @@ static QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLAS
 LittleFileSystem fs("fs");
 static FlashIAP flash;
 extern Adafruit_SSD1306_I2c *oled;
+
+
+constexpr int DECOMP_BUF_SIZE = 1024;
+static auto decompress_file(const string &in_path, const string &out_path) -> bool;
+static auto decompress_file(const string &in_path, const string &out_path) -> bool {
+    gzFile my_gz_file = gzopen(in_path.c_str(), "rb");
+    if(my_gz_file == nullptr) {
+        return false;
+    }
+    FILE *output_file = fopen(out_path.c_str(), "wb");
+    if(output_file == nullptr) {
+        return false;
+    }
+    array<uint8_t, DECOMP_BUF_SIZE> buf{};
+    while(true) {
+        int bytes_read = gzread(my_gz_file, buf.data(), buf.size());
+        if(bytes_read == 0) { break; }
+        fwrite(buf.data(), 1, bytes_read, output_file);
+    }
+    fclose(output_file);
+    gzclose(my_gz_file);
+    return true;
+}
 
 
 auto start_fs() -> bool {
@@ -81,7 +106,7 @@ auto check_for_update(const string &fname) -> bool {
         }
         fclose(f);
         mbedtls_sha256_finish(&sha256_cxt, sha256_checksum_comp.data());
-        if(sha256_checksum == sha256_checksum_comp) {
+        if(sha256_checksum != sha256_checksum_comp) {
             oled->printf("Hash check: FAIL\r\n");
             oled->display();
             ThisThread::sleep_for(ONE_SECOND);
@@ -105,19 +130,19 @@ void apply_update(const string &fname, const bool golden)
     uint32_t address = POST_APPLICATION_ADDR;
     string upd_path("/fs/");
     upd_path.append(fname);
-    FILE *file = fopen(upd_path.c_str(), "r");
+    gzFile file = gzopen(upd_path.c_str(), "rb");
     if(file == nullptr) {
         oled->clearDisplay();
         oled->printf("Failed to open update file\r\n");
-        fclose(file);
+        gzclose(file);
         return;
     }
-    fseek(file, 0, SEEK_END);
-    int32_t len = ftell(file);
+    gzseek(file, 0, SEEK_END);
+    int32_t len = gztell(file);
     oled->clearDisplay();
     oled->printf("FW size is %ld b\r\n", static_cast<long>(len));
     oled->display();
-    fseek(file, 0, SEEK_SET);
+    gzseek(file, 0, SEEK_SET);
 
     const uint32_t page_size = flash.get_page_size();
     char *page_buffer = new char[page_size];
@@ -129,7 +154,7 @@ void apply_update(const string &fname, const bool golden)
     while (true) {
         // Read data for this page
         memset(page_buffer, 0, sizeof(char) * page_size);
-        int size_read = fread(page_buffer, 1, page_size, file);
+        int size_read = gzread(file, page_buffer, page_size);
         if (size_read <= 0) {
             break;
         }
@@ -151,7 +176,7 @@ void apply_update(const string &fname, const bool golden)
 
         if (++pages_flashed % 3 == 0) {
             constexpr int32_t PERCENT = 100;
-            uint32_t percent_done_new = ftell(file) * PERCENT / len;
+            uint32_t percent_done_new = gztell(file) * PERCENT / len;
             if (percent_done != percent_done_new) {
                 percent_done = percent_done_new;
                 oled->printf("Flashed %3ld%%\r", static_cast<long>(percent_done));
@@ -159,8 +184,9 @@ void apply_update(const string &fname, const bool golden)
             }
         }
     }
-    oled->printf("Flashed 100%%\r\n");
+    oled->printf("Update complete!\r\n");
     oled->display();
+    ThisThread::sleep_for(ONE_SECOND);
 
     delete[] page_buffer;
 
@@ -173,7 +199,14 @@ void apply_update(const string &fname, const bool golden)
         fs.remove(fname_rem.c_str());
     }
 
-    fclose(file);
+    gzclose(file);
+    int err = Z_OK;
+    string errstr(gzerror(file, &err));
+    if(err != Z_OK) {
+        oled->clearDisplay();
+        oled->printf("GZIP Error: %s\r\n", errstr.c_str());
+        oled->display();
+    }
     fs.unmount();
     bd.deinit();
 }

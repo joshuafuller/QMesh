@@ -78,7 +78,7 @@ auto main() -> int
             fclose(boot_fail);
             fs.remove("boot.fail");
             // Load the golden firmware, if it exists
-            string fname("golden.bin");
+            string fname("golden.bin.gz");
             if(check_for_update(fname)) {
                 apply_update(fname, true);
             }
@@ -90,7 +90,7 @@ auto main() -> int
             boot_fail = fopen("/fs/boot.fail", "w");
             fclose(boot_fail);
             // Load the golden firmware, if it exists
-            string fname("golden.bin");
+            string fname("golden.bin.gz");
             if(check_for_update(fname)) {
                 apply_update(fname, true);
             }
@@ -99,9 +99,9 @@ auto main() -> int
             fs.remove("boot.fail");
             boot_fail = fopen("/fs/boot.fail", "w");
             fclose(boot_fail);
-            string fname("update.bin");
+            string fname("update.bin.gz");
             if(check_for_update(fname)) {
-                apply_update(fname, true);
+                apply_update(fname, false);
             }
         }
         ThisThread::sleep_for(SLEEP_TIME_1S);
