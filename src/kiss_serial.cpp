@@ -614,6 +614,7 @@ static auto getFlashCompileString() -> string {
     str.append(__DATE__);
     str.append("; ");
     str.append(__TIME__);
+    str.append("\r\n");
     return str;
 }
 
@@ -653,13 +654,14 @@ void KISSSerial::rx_serial_thread_fn() {
             continue;
         }
         if(ser_msg->type == SerialMsg_Type_VERSION) {
+            debug_printf(DBG_INFO, "Received a FW version request message\r\n");
             auto reply_msg = make_shared<SerialMsg>();
             *reply_msg = ser_msg_zero;
             reply_msg->type = SerialMsg_Type_VERSION;
             reply_msg->has_ver_msg = true;
             string compile_str = getFlashCompileString();
-            strncpy(reply_msg->ver_msg.msg, compile_str.c_str(), 
-                compile_str.size() <= MAX_VER_MSG_SIZE ? MAX_VER_MSG_SIZE : compile_str.size());
+            debug_printf(DBG_INFO, "Sending %s\r\n", compile_str.c_str());
+            strncpy(reply_msg->ver_msg.msg, compile_str.c_str(), 32);
             enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
         }
         if(ser_msg->type == SerialMsg_Type_UPDATE) {
