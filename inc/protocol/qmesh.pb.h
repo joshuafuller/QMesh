@@ -181,7 +181,7 @@ typedef struct _TimeMsg {
     uint32_t time;
 } TimeMsg;
 
-typedef PB_BYTES_ARRAY_T(1024) UpdateMsg_pld_t;
+typedef PB_BYTES_ARRAY_T(4096) UpdateMsg_pld_t;
 typedef PB_BYTES_ARRAY_T(32) UpdateMsg_sha256_pkt_t;
 typedef PB_BYTES_ARRAY_T(32) UpdateMsg_sha256_upd_t;
 typedef struct _UpdateMsg {
@@ -681,10 +681,10 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           3105
+#define SerialMsg_size                           6177
 #define ErrorMsg_size                            260
 #define DataMsg_size                             567
-#define UpdateMsg_size                           1271
+#define UpdateMsg_size                           4343
 
 #ifdef __cplusplus
 } /* extern "C" */

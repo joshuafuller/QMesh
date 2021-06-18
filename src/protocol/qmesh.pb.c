@@ -51,7 +51,7 @@ PB_BIND(LogMsg, LogMsg, AUTO)
 PB_BIND(TimeMsg, TimeMsg, AUTO)
 
 
-PB_BIND(SerialMsg, SerialMsg, 2)
+PB_BIND(SerialMsg, SerialMsg, 4)
 
 
 PB_BIND(ErrorMsg, ErrorMsg, 2)
@@ -60,7 +60,7 @@ PB_BIND(ErrorMsg, ErrorMsg, 2)
 PB_BIND(DataMsg, DataMsg, 2)
 
 
-PB_BIND(UpdateMsg, UpdateMsg, 2)
+PB_BIND(UpdateMsg, UpdateMsg, 4)
 
 
 

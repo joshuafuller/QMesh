@@ -24,10 +24,10 @@ import pika
 import qmesh_pb2
 import qmesh_common
 import hashlib
+import fastlz
 
 
-CHUNK_SIZE = 1024
-
+CHUNK_SIZE = 4096
 
 upd_hashgen = hashlib.sha256()
 def get_file_data(fname):
@@ -39,7 +39,7 @@ def get_file_data(fname):
         hashgen.update(content)
         upd_hashgen.update(content) 
         update_msg = qmesh_pb2.UpdateMsg()
-        update_msg.path = '/fs/update.bin'
+        update_msg.path = '/fs/update.bin.gz'
         update_msg.pld = content
         update_msg.sha256_pkt = hashgen.digest()
         yield update_msg

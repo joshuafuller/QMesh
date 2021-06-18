@@ -113,6 +113,8 @@ void init_filesystem(void) {
         error("error: %s (%d)\n", strerror(errno), -errno);
     }
     print_dir(base_str);
+    // Remove the boot failure file
+    fs.remove("boot.fail");
 }
 
 //extern Thread rx_serial_thread;
