@@ -68,7 +68,8 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_EXIT_KISS_MODE = 24,
     SerialMsg_Type_BOOT_LOG = 25,
     SerialMsg_Type_LOG = 26,
-    SerialMsg_Type_UPDATE = 27
+    SerialMsg_Type_UPDATE = 27,
+    SerialMsg_Type_VERSION = 28
 } SerialMsg_Type;
 
 typedef enum _ErrorMsg_Type {
@@ -194,6 +195,10 @@ typedef struct _UpdateMsg {
     char err_reason[32];
 } UpdateMsg;
 
+typedef struct _VersionMsg {
+    char msg[32];
+} VersionMsg;
+
 typedef struct _LogMsg {
     bool valid;
     uint32_t count;
@@ -263,6 +268,8 @@ typedef struct _SerialMsg {
     TimeMsg time_msg;
     bool has_update_msg;
     UpdateMsg update_msg;
+    bool has_ver_msg;
+    VersionMsg ver_msg;
 } SerialMsg;
 
 
@@ -284,8 +291,8 @@ typedef struct _SerialMsg {
 #define _StatusMsg_Status_ARRAYSIZE ((StatusMsg_Status)(StatusMsg_Status_RUNNING+1))
 
 #define _SerialMsg_Type_MIN SerialMsg_Type_GET_CONFIG
-#define _SerialMsg_Type_MAX SerialMsg_Type_UPDATE
-#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_UPDATE+1))
+#define _SerialMsg_Type_MAX SerialMsg_Type_VERSION
+#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_VERSION+1))
 
 #define _ErrorMsg_Type_MIN ErrorMsg_Type_CRC_ERR
 #define _ErrorMsg_Type_MAX ErrorMsg_Type_OTHER_ERR
@@ -316,7 +323,8 @@ typedef struct _SerialMsg {
 #define GPSMsg_init_default                      {0, 0, 0}
 #define LogMsg_init_default                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_default}
 #define TimeMsg_init_default                     {0}
-#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_default, false, ClockSetMsg_init_default, false, StatusMsg_init_default, false, DbgMsg_init_default, false, LogMsg_init_default, false, BootLogMsg_init_default, false, DataMsg_init_default, false, ErrorMsg_init_default, false, TimeMsg_init_default, false, UpdateMsg_init_default}
+#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_default, false, ClockSetMsg_init_default, false, StatusMsg_init_default, false, DbgMsg_init_default, false, LogMsg_init_default, false, BootLogMsg_init_default, false, DataMsg_init_default, false, ErrorMsg_init_default, false, TimeMsg_init_default, false, UpdateMsg_init_default, false, VersionMsg_init_default}
+#define VersionMsg_init_default                  {""}
 #define ErrorMsg_init_default                    {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0}
 #define UpdateMsg_init_default                   {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
@@ -335,7 +343,8 @@ typedef struct _SerialMsg {
 #define GPSMsg_init_zero                         {0, 0, 0}
 #define LogMsg_init_zero                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_zero}
 #define TimeMsg_init_zero                        {0}
-#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_zero, false, ClockSetMsg_init_zero, false, StatusMsg_init_zero, false, DbgMsg_init_zero, false, LogMsg_init_zero, false, BootLogMsg_init_zero, false, DataMsg_init_zero, false, ErrorMsg_init_zero, false, TimeMsg_init_zero, false, UpdateMsg_init_zero}
+#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, false, SysCfgMsg_init_zero, false, ClockSetMsg_init_zero, false, StatusMsg_init_zero, false, DbgMsg_init_zero, false, LogMsg_init_zero, false, BootLogMsg_init_zero, false, DataMsg_init_zero, false, ErrorMsg_init_zero, false, TimeMsg_init_zero, false, UpdateMsg_init_zero, false, VersionMsg_init_zero}
+#define VersionMsg_init_zero                     {""}
 #define ErrorMsg_init_zero                       {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0}
 #define UpdateMsg_init_zero                      {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
@@ -394,6 +403,7 @@ typedef struct _SerialMsg {
 #define UpdateMsg_sha256_pkt_tag                 5
 #define UpdateMsg_sha256_upd_tag                 6
 #define UpdateMsg_err_reason_tag                 7
+#define VersionMsg_msg_tag                       1
 #define LogMsg_valid_tag                         1
 #define LogMsg_count_tag                         2
 #define LogMsg_timestamp_tag                     3
@@ -435,6 +445,7 @@ typedef struct _SerialMsg {
 #define SerialMsg_error_msg_tag                  10
 #define SerialMsg_time_msg_tag                   11
 #define SerialMsg_update_msg_tag                 12
+#define SerialMsg_ver_msg_tag                    13
 
 /* Struct field encoding specification for nanopb */
 #define LoraCfg_FIELDLIST(X, a) \
@@ -578,7 +589,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  boot_log_msg,      8) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  data_msg,          9) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  error_msg,        10) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  time_msg,         11) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  update_msg,       12)
+X(a, STATIC,   OPTIONAL, MESSAGE,  update_msg,       12) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  ver_msg,          13)
 #define SerialMsg_CALLBACK NULL
 #define SerialMsg_DEFAULT NULL
 #define SerialMsg_sys_cfg_MSGTYPE SysCfgMsg
@@ -591,6 +603,12 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  update_msg,       12)
 #define SerialMsg_error_msg_MSGTYPE ErrorMsg
 #define SerialMsg_time_msg_MSGTYPE TimeMsg
 #define SerialMsg_update_msg_MSGTYPE UpdateMsg
+#define SerialMsg_ver_msg_MSGTYPE VersionMsg
+
+#define VersionMsg_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, STRING,   msg,               1)
+#define VersionMsg_CALLBACK NULL
+#define VersionMsg_DEFAULT NULL
 
 #define ErrorMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
@@ -640,6 +658,7 @@ extern const pb_msgdesc_t GPSMsg_msg;
 extern const pb_msgdesc_t LogMsg_msg;
 extern const pb_msgdesc_t TimeMsg_msg;
 extern const pb_msgdesc_t SerialMsg_msg;
+extern const pb_msgdesc_t VersionMsg_msg;
 extern const pb_msgdesc_t ErrorMsg_msg;
 extern const pb_msgdesc_t DataMsg_msg;
 extern const pb_msgdesc_t UpdateMsg_msg;
@@ -661,6 +680,7 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 #define LogMsg_fields &LogMsg_msg
 #define TimeMsg_fields &TimeMsg_msg
 #define SerialMsg_fields &SerialMsg_msg
+#define VersionMsg_fields &VersionMsg_msg
 #define ErrorMsg_fields &ErrorMsg_msg
 #define DataMsg_fields &DataMsg_msg
 #define UpdateMsg_fields &UpdateMsg_msg
@@ -681,7 +701,8 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           6177
+#define SerialMsg_size                           6212
+#define VersionMsg_size                          33
 #define ErrorMsg_size                            260
 #define DataMsg_size                             567
 #define UpdateMsg_size                           4343

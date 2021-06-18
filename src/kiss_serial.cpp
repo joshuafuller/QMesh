@@ -52,6 +52,7 @@ static const uint8_t SETHW = 0x06;
 static const uint8_t DATAPKT = 0x00;
 static const uint8_t EXITKISS = 0xFF;
 static const size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
+static constexpr int MAX_VER_MSG_SIZE = 32;
 
 static crc_t compute_frame_crc(const uint8_t *buf, const size_t buf_size); 
 static bool compare_frame_crc(const uint8_t *buf, const size_t buf_size);
@@ -607,16 +608,26 @@ static bool check_upd_pkt_sha256(UpdateMsg &update_msg) {
 }
 
 
-void KISSSerial::rx_serial_thread_fn(void) {
+static auto getFlashCompileString() -> string;
+static auto getFlashCompileString() -> string {
+    string str("COMPILE TIME: ");
+    str.append(__DATE__);
+    str.append("; ");
+    str.append(__TIME__);
+    return str;
+}
+
+
+void KISSSerial::rx_serial_thread_fn() {
     int upd_pkt_cnt = -1;
-	FILE *f = NULL;
-    FILE *upd_file = NULL;
+	FILE *f = nullptr;
+    FILE *upd_file = nullptr;
     mbedtls_sha256_context sha256_cxt;
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
     past_log_msg = ser_msg_zero;
-    FILE *kiss_ser;
+    FILE *kiss_ser = nullptr;
     if(using_stdio) {
         kiss_ser = stdin;
     } else {
@@ -640,6 +651,16 @@ void KISSSerial::rx_serial_thread_fn(void) {
                 enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
             }
             continue;
+        }
+        if(ser_msg->type == SerialMsg_Type_VERSION) {
+            auto reply_msg = make_shared<SerialMsg>();
+            *reply_msg = ser_msg_zero;
+            reply_msg->type = SerialMsg_Type_VERSION;
+            reply_msg->has_ver_msg = true;
+            string compile_str = getFlashCompileString();
+            strncpy(reply_msg->ver_msg.msg, compile_str.c_str(), 
+                compile_str.size() <= MAX_VER_MSG_SIZE ? MAX_VER_MSG_SIZE : compile_str.size());
+            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
         }
         if(ser_msg->type == SerialMsg_Type_UPDATE) {
             debug_printf(DBG_INFO, "Received an update message\r\n");

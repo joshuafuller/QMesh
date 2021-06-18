@@ -99,6 +99,9 @@ int main()
     time(&boot_timestamp);
     background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
 
+    // Reset the watchdog timer
+    wdt_pet();
+
     // Set up the LEDs
     led1.evt_queue = &background_queue;
     led2.evt_queue = &background_queue;
@@ -176,6 +179,7 @@ int main()
     led1.LEDBlink();
     led2.LEDOff();
     led3.LEDOff();
+
     // Test the FEC
 #if 0
     debug_printf(DBG_INFO, "Now testing the FEC\r\n");
@@ -244,11 +248,13 @@ ThisThread::sleep_for(500);
     background_queue.call(oled_mon_fn);
 
     // Enable the watchdog timer if configured to do so
+#if 0
     if(radio_cb.watchdog_timer_en) {
         debug_printf(DBG_INFO, "Enabling watchdog timer\r\n");
         // Start the WDT thread
         wdt_thread.start(wdt_fn);
     }
+#endif
 
     debug_printf(DBG_INFO, "Started everything\r\n");
 

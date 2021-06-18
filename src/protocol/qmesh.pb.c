@@ -54,6 +54,9 @@ PB_BIND(TimeMsg, TimeMsg, AUTO)
 PB_BIND(SerialMsg, SerialMsg, 4)
 
 
+PB_BIND(VersionMsg, VersionMsg, AUTO)
+
+
 PB_BIND(ErrorMsg, ErrorMsg, 2)
 
 

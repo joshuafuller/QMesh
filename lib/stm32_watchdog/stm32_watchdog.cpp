@@ -132,14 +132,13 @@ bool STM32Watchdog::WatchdogCausedReset() {
 
 // Watchdog function. Right now, just a dumb thread that 
 //  gets called every minute to kick the dog.
-Thread wdt_thread;
 static STM32Watchdog wdt;
-void wdt_fn(void) {
-    wdt.Configure(70);
-    for(;;) {
-        wdt.Service();
-        ThisThread::sleep_for(30000);
-    }
+static constexpr int TWENTY_MINUTES = 1200;
+static int SERVICE_INTERVAL = TWENTY_MINUTES/2;
+extern EventQueue background_queue;
+void wdt_pet() { // pet the watchdog
+    wdt.Service();
+    background_queue.call_in(SERVICE_INTERVAL, wdt_pet);
 }
 
 

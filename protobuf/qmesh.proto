@@ -161,6 +161,7 @@ message SerialMsg {
     BOOT_LOG = 25;
     LOG = 26;
     UPDATE = 27;
+    VERSION = 28;
   }
   Type type = 1;
   bool retry = 2;
@@ -174,6 +175,11 @@ message SerialMsg {
   ErrorMsg error_msg = 10;
   TimeMsg time_msg = 11;
   UpdateMsg update_msg = 12;
+  VersionMsg ver_msg = 13;
+}
+
+message VersionMsg {
+    string msg = 1 [(nanopb).max_size = 32];
 }
 
 message ErrorMsg {

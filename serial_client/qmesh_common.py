@@ -48,6 +48,10 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     f.close()
 
 
+def print_ver_msg(ser_msg):
+    print(ser_msg.ver_msg.msg)
+
+
 def print_cfg_msg(ser_msg):
     sys_cfg = ser_msg.sys_cfg
     print("CONFIGURATION:")

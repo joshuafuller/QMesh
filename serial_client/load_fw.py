@@ -39,7 +39,10 @@ def get_file_data(fname):
         hashgen.update(content)
         upd_hashgen.update(content) 
         update_msg = qmesh_pb2.UpdateMsg()
-        update_msg.path = '/fs/update.bin.gz'
+        if len(sys.argv) == 4 and sys.argv[3] == "golden":
+            update_msg.path = '/fs/golden.bin.gz'
+        else:
+            update_msg.path = '/fs/update.bin.gz'
         update_msg.pld = content
         update_msg.sha256_pkt = hashgen.digest()
         yield update_msg

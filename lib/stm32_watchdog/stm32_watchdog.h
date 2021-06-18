@@ -98,7 +98,6 @@ private:
     bool wdreset;
 };
 
-extern Thread wdt_thread;
-void wdt_fn(void);
+void wdt_pet();
 
 #endif // STM32_WATCHDOG_H
