@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "USBSerial.h"
 #include "fw_update.hpp"
 #include <memory>
+#include <stm32_watchdog.h>
 
 
 constexpr uint32_t THREAD_STACK_SIZE = 4096;
@@ -43,6 +44,7 @@ Thread background_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); //
 DigitalIn user_button(USER_BUTTON); /// Button. When held down, will revert to the golden firmware
 SoftI2C oled_i2c(PB_8, PB_9); /// OLED display's I2C
 unique_ptr<Adafruit_SSD1306_I2c> oled; /// OLED display
+static STM32Watchdog watchdog;
 
 
 auto main() -> int
@@ -106,6 +108,14 @@ auto main() -> int
         }
         ThisThread::sleep_for(SLEEP_TIME_1S);
     }
+    // Start the watchdog timer for 20s. This should give enough time
+    //  for the main program to start, and reset it.
+    constexpr float WDT_DURATION = 20.F;
+    watchdog.Configure(WDT_DURATION);
+    oled->clearDisplay();
+    oled->printf("Starting QMesh...\r\n");
+    oled->display();
+    ThisThread::sleep_for(SLEEP_TIME_1S);
     mbed_start_application(POST_APPLICATION_ADDR);
 }
 
