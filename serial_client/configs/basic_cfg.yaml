@@ -1,33 +1,33 @@
----
-
-frequency: 426000000
-frequencies: 
+beacon_msg: KG5VBY Beacon Test
+# LoRa Parameters
+preamble_length: 16
+preamble_test_mode: false
+sf: 9
+bw: 1
+cr: 0
+num_offsets: 4
+payload_length: 32
+cw_test_mode: false
+# RF Parameters
+frequencies:
         - 424000000
         - 425000000
         - 426000000
         - 427000000
-bw: 1
-cr: 0
-sf: 9
-preamble_length: 16
-preamble_slots: 1
-payload_length: 32
-beacon_msg: 'KG5VBY Beacon Test'
-# NONE = 0; INTERLEAVE = 1; CONV = 2; RSV = 3; RSVGOLAY = 4;
+frequency: 426000000
+# FEC Parameters
 fec_algo: 4
-conv_rate: 2
 conv_order: 7
+conv_rate: 2
 rs_num_roots: 8
-cw_test_mode: 0
-preamble_test_mode: 0
-test_fec: 0
-num_offsets: 4
-gps_en: 0
-pocsag_enabled: 0
-pocsag_freq: 439987500
+# Testing and Logging
+fec_test_mode: false
+gps_en: false
+log_boot: true
+log_packets: false
+# POCSAG output, which is probably broken
 pocsag_beacon_interval: 120
-log_packets_en: 1
-log_boot: 1
-watchdog_timer_en: 1
-
-...
+pocsag_enabled: false
+pocsag_freq: 439987500
+# Watchgod
+watchdog_timer_en: true

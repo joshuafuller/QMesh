@@ -1428,7 +1428,7 @@ void SX126X_LoRaRadio::receive_sel(const bool locking) {
 void SX126X_LoRaRadio::receive(const bool locking)
 {
     if(locking) { lock(); }
-    MBED_ASSERT(false);
+    //MBED_ASSERT(false);
     if (get_modem() == MODEM_LORA && _reception_mode != RECEPTION_MODE_CONTINUOUS) {
         // Data-sheet Table 13-11: StopOnPreambParam
         // We will use radio's internal timer to mark no reception. This behaviour
