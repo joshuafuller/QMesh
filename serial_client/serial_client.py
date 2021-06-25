@@ -26,9 +26,12 @@ import qmesh_pb2
 import binascii
 import crcmod
 from threading import Thread, Lock
+import socket
 
 
 ser = None
+ser_write = None
+is_serial = True
 ser_mutex = Lock()
 params = pika.ConnectionParameters('127.0.0.1', heartbeat=600, 
         blocked_connection_timeout=300)
@@ -96,7 +99,7 @@ def input_cb(ch, method, properties, body):
     #for frame_byte in frame:
     #    print(hex(frame_byte))
     ser_mutex.acquire()
-    ser.write(bytearray(frame))
+    sock.send(bytearray(frame))
     ser_mutex.release()
     last_frame = frame
 
@@ -125,7 +128,7 @@ def get_kiss_frame(ser):
     print("in kiss frame")
     while(True):
         #print("Reading byte")
-        my_byte = ser.read(1)
+        my_byte = sock.recv(1)
         if(my_byte == FEND): 
             print("End delimiter found")
             break
@@ -134,7 +137,7 @@ def get_kiss_frame(ser):
     while(True):
         if(len(frame) > FRAME_MAX_SIZE): # If we get too big, we need to retry
             frame = bytearray()
-        cur_byte = ser.read(1)
+        cur_byte = sock.recv(1)
         #print("Read byte %s" % cur_byte)
         if(cur_byte == FEND): 
             # Try to deal with FEND bytes used for synchronization
@@ -143,10 +146,10 @@ def get_kiss_frame(ser):
                 yield bytearray(frame)
             frame = bytearray()
             # Need to receive the command code
-            cmd_byte = ser.read(1)
+            cmd_byte = sock.recv(1)
             if(cmd_byte == FEND): continue
         elif(cur_byte == FESC):
-            next_byte = ser.read(1)
+            next_byte = sock.recv(1)
             if(next_byte == TFEND):
                 frame += FEND 
             elif(next_byte == TFESC):
@@ -162,7 +165,7 @@ def input_thread_fn():
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.exchange_declare(exchange='board_output_' + tag_name, exchange_type='fanout')
-    global ser
+    global sock
     while(True):
         frame_gen = get_kiss_frame(ser)
         for frame in frame_gen:
@@ -186,7 +189,7 @@ def input_thread_fn():
                 print("Now retransmitting")
                 # Retransmit the last message
                 ser_mutex.acquire()
-                ser.write(bytearray(frame))
+                sock.send(bytearray(frame))
                 ser_mutex.release()
 
 
@@ -195,20 +198,33 @@ if __name__ == "__main__":
     # Open the serial port
     print("Opening serial port...")
     tag_name = sys.argv[1]
-    serial_ports = sys.argv[2:]
-    while True:
-        try:
-            print("Trying serial port " + str(serial_ports[0]))
-            ser = serial.Serial(serial_ports[0], baudrate=230400)
-            break
-        except serial.serialutil.SerialException:
-            print("Failed to open port. Trying again in 1s...")
-            if len(serial_ports) > 1:
-                serial_ports = serial_ports[1:] + [serial_ports[0]]
-            time.sleep(1)
+    if sys.argv[2] == 'serial':
+        serial_ports = sys.argv[3:]
+        while True:
+            try:
+                print("Trying serial port " + str(serial_ports[0]))
+                ser = serial.Serial(serial_ports[0], baudrate=230400)
+                break
+            except serial.serialutil.SerialException:
+                print("Failed to open port. Trying again in 1s...")
+                if len(serial_ports) > 1:
+                    serial_ports = serial_ports[1:] + [serial_ports[0]]
+                time.sleep(1)
+        ser_write = ser
+    elif sys.argv[2] == 'net':
+        is_serial = False
+        net_addr = sys.argv[3]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((sys.argv[3], 8880))
+        #ser = sock.makefile('rb')
+        #ser_write = sock.makefile('wb')
+    else:
+        print("Invalid parameters")
+        sys.exit()
     # Put the TNC in KISS+ mode
-    #kiss_frame = make_kiss_frame(0xFF.to_bytes(1, 'little'))
-    #ser.write(kiss_frame)
+    kiss_frame = make_kiss_frame(0xFF.to_bytes(1, 'little'))
+    #ser_write.write(kiss_frame)
+    #sock.send(kiss_frame)
     # Set up the callbacks
     input_thread = threading.Thread(target=input_thread_fn)
     input_thread.start()
@@ -219,7 +235,7 @@ if __name__ == "__main__":
         try: 
             kiss_frame = make_kiss_exit_frame()
             ser_mutex.acquire()
-            ser.write(kiss_frame)
+            sock.send(kiss_frame)
             ser_mutex.release()
             time.sleep(1)
         except (KeyboardInterrupt, SystemExit):
@@ -236,7 +252,7 @@ if __name__ == "__main__":
             frame += crc_bytes
             frame += FEND
             ser_mutex.acquire()
-            ser.write(bytearray(frame))
+            sock.send(bytearray(frame))
             ser_mutex.release()
             sys.exit(0)
 
