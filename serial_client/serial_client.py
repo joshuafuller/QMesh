@@ -155,7 +155,8 @@ def get_kiss_frame(ser):
             elif(next_byte == TFESC):
                 frame += FESC
             else:
-                raise Exception
+                pass
+                #raise Exception
         else:
             frame += cur_byte
         
@@ -186,11 +187,11 @@ def input_thread_fn():
                                         body=ser_msg.SerializeToString())
             except CRCError:
                 print("CRC Error detected")
-                print("Now retransmitting")
+                #print("Now retransmitting")
                 # Retransmit the last message
-                ser_mutex.acquire()
-                sock.send(bytearray(frame))
-                ser_mutex.release()
+                #ser_mutex.acquire()
+                #sock.send(bytearray(frame))
+                #ser_mutex.release()
 
 
 if __name__ == "__main__":

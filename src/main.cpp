@@ -141,9 +141,13 @@ int main()
 
     stream_id_rng.seed(radio_cb.address);
     // Start the serial handler threads
+    printf("Starting first serial port\r\n");
+    ThisThread::sleep_for(500);
     KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
                                         MBED_CONF_APP_KISS_UART_RX, 
                                         string("BT"), DEBUG_PORT);
+    printf("Starting second serial port\r\n");
+    ThisThread::sleep_for(500);
     KISSSerial *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
                                         MBED_CONF_APP_KISS_UART_RX_ALT,
                                         MBED_CONF_APP_KISS_UART_EN_ALT,
@@ -151,6 +155,7 @@ int main()
                                         string("BT-ALT"), DEBUG_PORT);
     MBED_ASSERT(bt_alt_ser);
     debug_printf(DBG_INFO, "Serial threads started");
+    ThisThread::sleep_for(500);
     send_status();
 
     rx_frame_thread.start(rx_frame_ser_thread_fn);
