@@ -50,13 +50,13 @@ DigitalOut retransmit_disable_out_n(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
  * of whether it has. 
  * @param rx_frame The frame to check.
  */
-static bool checkRedundantPkt(shared_ptr<Frame> rx_frame);
-static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
+static auto checkRedundantPkt(const shared_ptr<Frame> &rx_frame) -> bool;
+static auto checkRedundantPkt(const shared_ptr<Frame> &rx_frame) -> bool {
     uint32_t crc = rx_frame->calcUniqueCRC();
     bool ret_val = false;
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         past_crc.push_back(crc);
-        past_timestamp.insert(pair<uint32_t, time_t>(crc, time(NULL)));
+        past_timestamp.insert(pair<uint32_t, time_t>(crc, time(nullptr)));
         if(past_crc.size() > PKT_CHK_HISTORY) {
             debug_printf(DBG_INFO, "Exceeded history length\r\n");
             past_timestamp.erase(*(past_crc.begin()));
@@ -64,14 +64,15 @@ static bool checkRedundantPkt(shared_ptr<Frame> rx_frame) {
         }
     }
     else { // redundant packet was found. Check the age of the packet.
-        map<uint32_t, time_t>::iterator it = past_timestamp.find(crc);
+        auto it = past_timestamp.find(crc);
         ret_val = true;
-        if(time(NULL) - it->second > 10) { // Ignore entries more than a minute old
+        constexpr int IGNORE_THRESHOLD_SEC = 10;
+        if(time(nullptr) - it->second > IGNORE_THRESHOLD_SEC) { 
             ret_val = false;
             past_crc.erase(find(past_crc.begin(), past_crc.end(), crc));
             past_timestamp.erase(crc);
             past_crc.push_back(crc);
-            past_timestamp.insert(pair<uint32_t, time_t>(crc, time(NULL)));
+            past_timestamp.insert(pair<uint32_t, time_t>(crc, time(nullptr)));
             debug_printf(DBG_INFO, "Exceeded age\r\n");
         }
     }
@@ -97,7 +98,8 @@ static atomic<int> last_rx_snr(0.0);
 /**
  * Main function handling the mesh protocol.
  */
-void mesh_protocol_fsm(void) {
+static constexpr int FRAME_BUF_SIZE = 256;
+void mesh_protocol_fsm() {
     shared_ptr<FEC> fec;
     FECCfg_Type fec_type = radio_cb.fec_cfg.type;
     debug_printf(DBG_INFO, "%d FEC was chosen\r\n", fec_type);
@@ -107,9 +109,9 @@ void mesh_protocol_fsm(void) {
         fec = make_shared<FECInterleave>(Frame::size());
     } else if(fec_type == FECCfg_Type_CONV) {
         fec = make_shared<FECConv>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
-                                    radio_cb.fec_cfg.conv_order);
+                radio_cb.fec_cfg.conv_order);
     } else if(fec_type == FECCfg_Type_RSV) {
-        fec = make_shared<FECRSVGolay>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
+        fec = make_shared<FECRSV>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
                 radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
     } else if(fec_type == FECCfg_Type_RSVGOLAY) {
         fec = make_shared<FECRSVGolay>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
@@ -117,25 +119,28 @@ void mesh_protocol_fsm(void) {
     } else {
         MBED_ASSERT(false);
     }
-    std::shared_ptr<RadioEvent> radio_event, tx_radio_event;
+    std::shared_ptr<RadioEvent> radio_event;
+    std::shared_ptr<RadioEvent> tx_radio_event;
     std::shared_ptr<Frame> tx_frame_sptr;
     std::shared_ptr<Frame> rx_frame_sptr;
-    static vector<uint8_t> tx_frame_buf(256), rx_frame_buf(256);
+    static vector<uint8_t> tx_frame_buf(FRAME_BUF_SIZE);
+    static vector<uint8_t> rx_frame_buf(FRAME_BUF_SIZE);
     static mt19937 rand_gen(radio_cb.address);
-    int32_t freq_bound = (lora_bw[radio_cb.radio_cfg.lora_cfg.bw]*FREQ_WOBBLE_PROPORTION);
+    int32_t freq_bound = (lora_bw[radio_cb.radio_cfg.lora_cfg.bw]*FREQ_WOBBLE_PROPORTION); //NOLINT
     static uniform_int_distribution<int32_t> freq_dist(-freq_bound, freq_bound);  
     static mt19937 timing_rand_gen(radio_cb.address);
     uniform_int_distribution<uint8_t> timing_off_dist(0, radio_cb.net_cfg.num_offsets-1);  
     uint8_t next_sym_off = timing_off_dist(timing_rand_gen);
     static mt19937 pwr_diff_rand_gen(radio_cb.address);
-    static uniform_int_distribution<int8_t> pwr_diff_dist(0, 6);
+    static constexpr int MAX_PWR_DIFF = 6;
+    static uniform_int_distribution<int8_t> pwr_diff_dist(0, MAX_PWR_DIFF);
 
     // Set up an initial timer
     auto initial_timer = make_shared<Timer>();
     initial_timer->reset();
     initial_timer->start();
     radio_timing.setTimer(initial_timer);
-    radio_timing.waitFullSlots(1); // TODO: change this to be zero once we know zero works
+    radio_timing.waitFullSlots(1); // Change this to be zero once we know zero works
     for(;;) {
         debug_printf(DBG_INFO, "--------------------\r\n");
         //print_memory_info();
@@ -149,7 +154,7 @@ void mesh_protocol_fsm(void) {
                 radio.unlock();
                 radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
                 radio.stop_cad.store(true);
-                while(radio.cad_pending.load() == true);
+                while(radio.cad_pending.load() == true) { };
                 radio.stop_cad.store(false);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
                 if(radio_event->evt_enum == TX_POCSAG_EVT) {
@@ -204,8 +209,9 @@ void mesh_protocol_fsm(void) {
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                             radio.tx_hop_frequency(freq_dist(rand_gen));
                             retransmit_disable_out_n.write(0);
-                            ThisThread::sleep_for(radio_timing.getWaitNoWarn()/2000);
-                            if(retransmit_disable_in_n.read()) {
+                            constexpr int TWO_SECONDS = 2000;
+                            ThisThread::sleep_for(radio_timing.getWaitNoWarn()/TWO_SECONDS);
+                            if(retransmit_disable_in_n.read() != 0) {
                                 state = RETRANSMIT_PACKET;
                             }
                             else {
@@ -257,11 +263,13 @@ void mesh_protocol_fsm(void) {
                 // Subtract the last frame's symbol delay
                 // Add the next frame's symbol delay
                 radio_timing.waitFullSlots(2);              
-                uint8_t pre_off, nsym_off, sym_off;
+                uint8_t pre_off = 0;
+                uint8_t nsym_off = 0;
+                uint8_t sym_off = 0;
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 next_sym_off = timing_off_dist(timing_rand_gen);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
-                radio_timing.waitSymOffset(next_sym_off, 1.0f, radio_cb.net_cfg.num_offsets);
+                radio_timing.waitSymOffset(next_sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
                 state = WAIT_FOR_EVENT;
                 }
             break;
@@ -280,13 +288,15 @@ void mesh_protocol_fsm(void) {
                 //  3. Set the new symbol fraction delay in the frame
                 //  4. Add the symbol fraction delay for the retransmitted packet
 				radio_timing.waitFullSlots(1);
-                uint8_t pre_off, nsym_off, sym_off;
+                uint8_t pre_off = 0;
+                uint8_t nsym_off = 0;
+                uint8_t sym_off = 0;
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                radio_timing.waitSymOffset(sym_off, -1.0f, radio_cb.net_cfg.num_offsets);
+                radio_timing.waitSymOffset(sym_off, -1.0F, radio_cb.net_cfg.num_offsets);
                 rx_frame_sptr->setOffsets(0, 0, timing_off_dist(timing_rand_gen));
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", sym_off);
-                radio_timing.waitSymOffset(sym_off, 1.0f, radio_cb.net_cfg.num_offsets);
+                radio_timing.waitSymOffset(sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
                 radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
                 radio.unlock();
 
@@ -313,7 +323,7 @@ string beacon_msg;
  * Periodically queues up for transmission a beacon message.
  */
 extern time_t boot_timestamp;
-void beacon_fn(void) {
+void beacon_fn() {
     auto beacon_frame_sptr = make_shared<Frame>();
     string beacon_msg(radio_cb.net_cfg.beacon_msg);
     beacon_frame_sptr->setBeaconPayload(beacon_msg);
@@ -327,36 +337,44 @@ void beacon_fn(void) {
 /**
  * Periodically queues up for transmission a beacon message.
  */
-void beacon_pocsag_fn(void) {
+static constexpr int MSG_BUF_SIZE = 128;
+void beacon_pocsag_fn() {
     static bool status = false;
     status = !status;
     if(status) {
         debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
-        char msg[128];
-        sprintf(msg, "KG5VBY:SF%d,BW%d,F%d\r\n", radio_cb.radio_cfg.lora_cfg.bw, 
-                    radio_cb.radio_cfg.lora_cfg.bw, radio_cb.radio_cfg.frequency);
-        string pocsag_msg(msg);
+        vector<char> msg(MSG_BUF_SIZE);
+        snprintf(msg.data(), MSG_BUF_SIZE, "KG5VBY:SF%d,BW%d,F%d\r\n", 
+                    static_cast<int>(radio_cb.radio_cfg.lora_cfg.sf), 
+                    static_cast<int>(radio_cb.radio_cfg.lora_cfg.bw), 
+                    static_cast<int>(radio_cb.radio_cfg.frequency));
+        string pocsag_msg(msg.data());
         auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
         enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
         int pocsag_beacon_interval = radio_cb.pocsag_cfg.beacon_interval;
+        constexpr int ONE_MINUTE = 60000;
         if(pocsag_beacon_interval == -1) {
-            pocsag_beacon_interval = 60000;
+            pocsag_beacon_interval = ONE_MINUTE;
         }
     } else { 
-        time_t cur_time;
+        time_t cur_time = 0;
         time(&cur_time);
+        constexpr int SECS_PER_DAY = 86400;
+        constexpr int SECS_PER_HOUR = 3600;
+        constexpr int SECS_PER_MIN = 60;
         time_t uptime = cur_time - boot_timestamp;
         int uptime_rem = uptime;
-        int uptime_d = uptime_rem / 86400;
-        uptime_rem %= 86400;
-        int uptime_h = uptime_rem / 3600;
-        uptime_rem %= 3600;
-        int uptime_m = uptime_rem / 60;
-        uptime_rem %= 60;
+        int uptime_d = uptime_rem / SECS_PER_DAY;
+        uptime_rem %= SECS_PER_DAY;
+        int uptime_h = uptime_rem / SECS_PER_HOUR;
+        uptime_rem %= SECS_PER_HOUR;
+        int uptime_m = uptime_rem / SECS_PER_MIN;
+        uptime_rem %= SECS_PER_MIN;
         int uptime_s = uptime_rem;
-        char msg[128];
-        sprintf(msg, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", uptime_d, uptime_h, uptime_m, uptime_s);
-        string pocsag_msg(msg);
+        vector<char> msg(MSG_BUF_SIZE);
+        snprintf(msg.data(), MSG_BUF_SIZE, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", 
+                    uptime_d, uptime_h, uptime_m, uptime_s);
+        string pocsag_msg(msg.data());
         auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
         enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
     }
@@ -368,12 +386,12 @@ extern Adafruit_SSD1306_I2c *oled;
  * Function called by the OLED display monitor thread. Every second, it 
  *  updates the OLED display with new packet status information.
  */
-void oled_mon_fn(void) {
+void oled_mon_fn() {
     oled->clearDisplay();
     string kiss_modes_str;
     kiss_sers_mtx.lock();
-    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
-        if(!(*iter)->kiss_extended) {
+    for(auto & kiss_ser : kiss_sers) {
+        if(!kiss_ser->kiss_extended) {
             kiss_modes_str.append("KS ");
         } else {
             kiss_modes_str.append("K+ ");
@@ -382,8 +400,9 @@ void oled_mon_fn(void) {
     kiss_sers_mtx.unlock();
     oled->printf("PACKET STATS  %s\r\n", kiss_modes_str.c_str());      
     oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
-    oled->printf("Pct Corr Rx: %3d\r\n", (int) (((float) total_rx_corr_pkt.load()/
-                    (float) total_rx_pkt.load())*100));
+    constexpr int HUNDRED_PCT = 100;
+    oled->printf("Pct Corr Rx: %3d\r\n", static_cast<int>((static_cast<float>(total_rx_corr_pkt.load())/
+                    static_cast<float>(total_rx_pkt.load()))*HUNDRED_PCT));
     oled->printf("RSSI/SNR: %4d/%4d\r\n", last_rx_rssi.load(), last_rx_snr.load());
     oled->display();
     oled->display();

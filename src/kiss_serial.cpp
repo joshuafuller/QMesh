@@ -142,7 +142,7 @@ auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
 
 
 auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
-    vector<uint8_t> comb_buf;
+    vector<uint8_t> comb_buf; //NOTE: we can probably just have a buf, not a buf and comb_buf
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
     if(!kiss_data_msg) {
@@ -361,6 +361,8 @@ void KISSSerial::configure_hc05() {
 
 KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
             const string &my_port_name, const ser_port_type_t ser_port_type) {
+    past_log_msg = ser_msg_zero;
+    kiss_extended = true;
     port_name = my_port_name;
     hc05 = true;
     en_pin = new DigitalOut(En);
@@ -371,7 +373,6 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     ser = new UARTSerial(tx_port, rx_port, BT_BAUD_RATE);
     MBED_ASSERT(ser);
     using_stdio = false;
-    kiss_extended = true;
     port_type = ser_port_type;
 
     //configure_hc05();

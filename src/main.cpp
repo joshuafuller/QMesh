@@ -103,9 +103,9 @@ int main()
     wdt_pet();
 
     // Set up the LEDs
-    led1.evt_queue = &background_queue;
-    led2.evt_queue = &background_queue;
-    led3.evt_queue = &background_queue;  
+    led1.setEvtQueue(&background_queue);
+    led2.setEvtQueue(&background_queue);
+    led3.setEvtQueue(&background_queue);  
 
     oled_i2c.frequency(400000);
     oled_i2c.start();
@@ -127,9 +127,10 @@ int main()
 		}
 	}
 	led1.LEDSolid();
+#if 0
     auto push_button = new PushButton(USER_BUTTON);
     push_button->SetQueue(background_queue);
-	
+#endif
     ThisThread::sleep_for(1000);
 
     // Mount the filesystem, load the configuration, log the bootup

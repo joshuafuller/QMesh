@@ -62,10 +62,10 @@ static void tx_done_cb(shared_ptr<CalTimer> tmr_sptr);
 static void rx_done_cb(uint8_t const *payload, 
                 shared_ptr<list<pair<uint32_t, uint8_t> > > my_rssi_list_sptr,
                 shared_ptr<CalTimer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr);
-static void tx_timeout_cb(void);
-static void rx_timeout_cb(void);
-static void rx_error_cb(void);
-static void rx_preamble_det_cb(void);
+static void tx_timeout_cb();
+static void rx_timeout_cb();
+static void rx_error_cb();
+static void rx_preamble_det_cb();
 static void fhss_change_channel_cb(uint8_t current_channel);
 
 shared_ptr<FEC> frame_fec;  
@@ -89,7 +89,7 @@ void send_pocsag_msg(string &msg) {
 
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
-void init_radio(void) {
+void init_radio() {
     // Initialize Radio driver
     debug_printf(DBG_INFO, "Now initializing the radio\r\n");
     radio_events.tx_done_tmr = tx_done_cb;
@@ -194,7 +194,7 @@ void init_radio(void) {
                         radio_cb.radio_cfg.lora_cfg.cr, 
                         pre_len, 
                         radio_cb.net_cfg.full_pkt_len);
-    radio.cad_rx_timeout = radio_timing.pkt_time_us / 15.625f;
+    radio.cad_rx_timeout = radio_timing.get_pkt_time_us() / 15.625f;
     if(radio_cb.test_cfg.cw_test_mode) { 
         debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
         radio.set_tx_continuous_wave(0, 0, 0);
@@ -216,7 +216,7 @@ void init_radio(void) {
 }
 
 
-void reinit_radio(void) {
+void reinit_radio() {
     uint32_t pre_len = 0;
     if(radio_cb.radio_cfg.frequencies_count > 1) {
         pre_len = radio_cb.radio_cfg.lora_cfg.fhss_pre_len;
@@ -299,23 +299,17 @@ static void rx_done_cb(uint8_t const *payload, shared_ptr<list<pair<uint32_t, ui
 {
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, tmr_sptr, payload, rssi_list_sptr, 
-                                            (size_t) size, rssi, snr);
+                                            static_cast<size_t>(size), rssi, snr);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
     //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
 }
 
 
-static void rx_preamble_det_cb(void) {
-#if 0
-    if(!deep_sleep_lock) {
-        deep_sleep_lock = new DeepSleepLock();
-    }
-#endif
-}
+static void rx_preamble_det_cb() { }
 
 
-static void tx_timeout_cb(void)
+static void tx_timeout_cb()
 {
     radio.standby();
     init_radio();
@@ -324,30 +318,20 @@ static void tx_timeout_cb(void)
     enqueue_mail<std::shared_ptr<RadioEvent> >(tx_radio_evt_mail, radio_event);
 }
  
-static void rx_timeout_cb(void)
+static void rx_timeout_cb()
 {
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event); 
-#if 0
-    if(deep_sleep_lock) {
-        delete deep_sleep_lock;
-    }
-#endif   
+    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);  
 }
  
-static void rx_error_cb(void)
+static void rx_error_cb()
 {
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
-#if 0
-    if(deep_sleep_lock) {
-        delete deep_sleep_lock;
-    }
-#endif   
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) { }

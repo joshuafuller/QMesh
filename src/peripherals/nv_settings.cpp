@@ -46,7 +46,7 @@ extern Adafruit_SSD1306_I2c *oled;
 static SerialMsg ser_msg_zero = SerialMsg_init_zero;
 
 
-void rescue_filesystem(void) {
+void rescue_filesystem() {
     bd.init();
 	fs.reformat(&bd);
     ThisThread::sleep_for(2000);
@@ -54,17 +54,17 @@ void rescue_filesystem(void) {
 }
 
 
-static void print_dir(string &base_str);
-static void print_dir(string &base_str) {
+static void print_dir(const string &base_str);
+static void print_dir(const string &base_str) {
     DIR *d = opendir(base_str.c_str());
 	for(;;) {
 		struct dirent *dir_val = readdir(d);
-		if(dir_val == NULL) {
+		if(dir_val == nullptr) {
 			break;
 		}
         stringstream fname;
         fname << base_str << "/" << dir_val->d_name;
-		struct stat file_stat;
+		struct stat file_stat{};
         if(string(dir_val->d_name) != "." && string(dir_val->d_name) != "..") {
             string scrubbed_fs_name(fname.str());
             scrubbed_fs_name.erase(0, 3);
@@ -84,7 +84,7 @@ static void print_dir(string &base_str) {
 	}
 }
 
-void init_filesystem(void) {
+void init_filesystem() {
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
     int err = bd.init();
     debug_printf(DBG_INFO, "bd.init -> %d  \r\n", err);
@@ -94,11 +94,11 @@ void init_filesystem(void) {
     debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd.get_erase_size());
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
     err = fs.mount(&bd);
-    debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
-    if(err) {
+    debug_printf(DBG_WARN, "%s\r\n", (err != 0 ? "Fail :(" : "OK"));
+    if(err != 0) {
         debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
         err = fs.reformat(&bd);
-        debug_printf(DBG_WARN, "%s\r\n", (err ? "Fail :(" : "OK"));
+        debug_printf(DBG_WARN, "%s\r\n", (err != 0 ? "Fail :(" : "OK"));
         MBED_ASSERT(!err);
         int err = fs.mount(&bd);
         MBED_ASSERT(!err);
@@ -108,8 +108,8 @@ void init_filesystem(void) {
     fflush(stdout);
     string base_str("/fs");
     DIR *d = opendir(base_str.c_str());
-    debug_printf(DBG_INFO, "%s\n", (!d ? "Fail :(\r\n" : "OK\r\n"));
-    if (!d) {
+    debug_printf(DBG_INFO, "%s\n", (d == nullptr ? "Fail :(\r\n" : "OK\r\n"));
+    if (d == nullptr) {
         error("error: %s (%d)\n", strerror(errno), -errno);
     }
     print_dir(base_str);
@@ -118,9 +118,9 @@ void init_filesystem(void) {
 }
 
 //extern Thread rx_serial_thread;
-void load_settings_from_flash(void) {
+void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Stats on settings.bin\r\n");
-    FILE *f;    
+    FILE *f = nullptr;    
     f = fopen("/fs/settings.bin", "r");
     if(!f) {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
@@ -192,7 +192,7 @@ void load_settings_from_flash(void) {
         f = fopen("/fs/settings.bin", "r");
         MBED_ASSERT(f);
     }
-    struct stat file_stat;
+    struct stat file_stat{};
     stat("/fs/settings.bin", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
@@ -220,7 +220,7 @@ void load_settings_from_flash(void) {
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
     debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
                 radio_cb.net_cfg.num_offsets);
-    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", radio_cb.gps_en);
+    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", static_cast<int>(radio_cb.gps_en));
     MBED_ASSERT(radio_cb.has_pocsag_cfg);
     debug_printf(DBG_INFO, "POCSAG frequency %d\r\n", radio_cb.pocsag_cfg.frequency);
     debug_printf(DBG_INFO, "POCSAG Beacon Interval %d\r\n", radio_cb.pocsag_cfg.beacon_interval);
@@ -244,7 +244,7 @@ void load_settings_from_flash(void) {
 }
 
 
-void save_settings_to_flash(void) {
+void save_settings_to_flash() {
     debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
     FILE *f = fopen("/fs/settings.bin", "w"); 
     MBED_ASSERT(f);
@@ -258,12 +258,12 @@ void save_settings_to_flash(void) {
 }
 
 
-void log_boot(void) {
+void log_boot() {
     auto ser_msg = make_shared<SerialMsg>();
     *ser_msg = ser_msg_zero;
     ser_msg->type = SerialMsg_Type_BOOT_LOG;
     ser_msg->has_boot_log_msg = true;
-    time_t my_time = time(NULL);
+    time_t my_time = time(nullptr);
     ser_msg->boot_log_msg.boot_time = my_time;
     ser_msg->boot_log_msg.count = 0;
     ser_msg->boot_log_msg.valid = true;
@@ -275,21 +275,22 @@ void log_boot(void) {
 }
 
 
-FILE *open_logfile(void) {
+auto open_logfile() -> FILE * {
     // Step one: get the size of the current logfile. If current logfile is too big,
     //  move it down the "logfile stack".
     FILE *f = fopen("/fs/log/logfile.bin", "r");
-    if(!f) {
+    if(f == nullptr) {
         debug_printf(DBG_INFO, "Need to create the logfile\r\n");
         f = fopen("/fs/log/logfile.bin", "w");
         MBED_ASSERT(f);
     }
     fclose(f);
-    struct stat logfile_statbuf;
+    struct stat logfile_statbuf{};
     fs.stat("log/logfile.bin", &logfile_statbuf);
     if(logfile_statbuf.st_size > LOGFILE_SIZE) {
         for(int i = 11; i >= 0; i--) {
-            stringstream logfile_name, logfile_name_plusone;
+            stringstream logfile_name;
+            stringstream logfile_name_plusone;
             logfile_name << "log/logfile" << setw(3) << setfill('0') << i << ".json";
             debug_printf(DBG_INFO, "Now moving %s\r\n", logfile_name.str().c_str());
             logfile_name_plusone << "log/logfile" << setw(3) << setfill('0') << i+1 << ".json";
@@ -298,21 +299,22 @@ FILE *open_logfile(void) {
         fs.rename("log/logfile.bin", "log/logfile000.bin");
     }
     f = fopen("/fs/log/logfile.bin", "a+");
-    MBED_ASSERT(f != NULL);
+    MBED_ASSERT(f != nullptr);
     return f;
 }
 
 
 extern time_t boot_timestamp;
-void nv_log_fn(void) {
+void nv_log_fn() {
     DIR *log_dir = opendir("/fs/log");
-    if(!log_dir && errno == ENOENT) {
+    if((log_dir == nullptr) && errno == ENOENT) {
         debug_printf(DBG_INFO, "Log directory does not exist. Creating...\r\n");
-        if(mkdir("/fs/log", 777)) {
+        constexpr int UGO_RWX = 777;
+        if(mkdir("/fs/log", UGO_RWX) != 0) {
             MBED_ASSERT(false);
         }
         log_dir = opendir("/fs/log");
-        if(!log_dir) {
+        if(log_dir == nullptr) {
             switch(errno) {
                 case EACCES:  debug_printf(DBG_INFO, "EACCES\r\n"); break;
                 case EBADF:   debug_printf(DBG_INFO, "EBADF\r\n"); break;
@@ -332,18 +334,18 @@ void nv_log_fn(void) {
     for(;;) {
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  
-        int16_t rssi;
-        uint16_t rx_size;
-        int8_t snr;
+        int16_t rssi = 0;
+        uint16_t rx_size = 0;
+        int8_t snr = 0;
         log_frame->getRxStats(rssi, snr, rx_size);
         LogMsg log_msg;
-		time_t my_time = time(NULL);
+		time_t my_time = time(nullptr);
 		log_msg.timestamp = my_time;
         log_msg.sender = log_frame->getSender();
         log_msg.ttl = log_frame->getTTL();
         log_msg.stream_id = log_frame->getStreamID();
-        log_msg.rssi = (int) rssi;
-        log_msg.snr = (int) snr;
+        log_msg.rssi = static_cast<int>(rssi);
+        log_msg.snr = static_cast<int>(snr); //NOLINT
         log_msg.rx_size = rx_size;
         log_msg.comp_crc = log_frame->calcCRC();
         log_msg.crc = log_frame->getCRC();
@@ -357,7 +359,7 @@ void nv_log_fn(void) {
             log_msg.gps_msg.lon = gps_lon;
         } 
 #endif
-        time_t cur_time;
+        time_t cur_time = 0;
         time(&cur_time);
         time_t uptime = cur_time - boot_timestamp;
         log_msg.uptime = uptime;

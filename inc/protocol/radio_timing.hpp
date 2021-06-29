@@ -21,11 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mbed.h"
 #include <memory>
+#include <array>
 
 extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; /// GPIO signals to monitor timing accuracy/jitter
 extern DigitalOut rssi_mon;
 
-const float lora_bw[] = {125e3f, 250e3f, 500e3f}; /// Different LoRa bandwidths, in KHz
+const array<float, 3> lora_bw = {125e3F, 250e3F, 500e3F}; /// Different LoRa bandwidths, in KHz
 
 /**
  * A synchronized flooded mesh has all sort of timing-related things it needs to 
@@ -38,7 +39,7 @@ const float lora_bw[] = {125e3f, 250e3f, 500e3f}; /// Different LoRa bandwidths,
  * - Waiting the precise amount of time before e.g. retransmitting.
  */
 class RadioTiming {
-public:
+private:
     float sym_time_s;
     float pre_time_s;
     float pld_time_s;
@@ -69,6 +70,11 @@ public:
     shared_ptr<Timer> tmr_sptr;
     int32_t wait_duration_us;
 
+public:
+auto get_pkt_time_us() const -> uint32_t {
+    return pkt_time_us;
+}
+
 /**
  * Given the various LoRa parameters, pre-compute all of the different timing
  * parameters.
@@ -78,8 +84,7 @@ public:
  * @param n_pre_sym Number of preamble symbols.
  * @param n_pld_bytes Number of payload bytes.
  */
-void computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
-        const uint32_t n_pre_sym, uint8_t n_pld_bytes);
+void computeTimes(uint32_t bw, uint8_t sf, uint8_t cr, uint32_t n_pre_sym, uint8_t n_pld_bytes);
 
 /**
  * Wait for a number of transmit slots. Note that this function uses the timer's
@@ -89,7 +94,7 @@ void computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr,
  * then retransmit it.
  * @param num_slots Number of slots to wait.
  */
-void waitFullSlots(const size_t num_slots);
+void waitFullSlots(size_t num_slots);
 
 
 /**
@@ -98,19 +103,19 @@ void waitFullSlots(const size_t num_slots);
  *  duration, to wait.
  * @papram direction should be either 1.0f or -1.0f, used to set the direction
  */
-void waitSymOffset(const uint8_t symb_frac, const float direction, const uint8_t num_inc);
+void waitSymOffset(uint8_t symb_frac, float direction, uint8_t num_inc);
 
 /**
  * Calculate a random intra-symbol wait duration. Chooses between [0,7]
  * eights of the symbol duration. Stores the result internally within
  * the object.
  */
-void calcWaitSymbol(void);
+void calcWaitSymbol();
 
 /** 
  * Starts the protocol timer.
  */
-void setTimer(shared_ptr<Timer> my_tmr_sptr) {
+void setTimer(const shared_ptr<Timer> &my_tmr_sptr) {
     tmr_sptr = my_tmr_sptr;
 }
 
@@ -118,7 +123,7 @@ void setTimer(shared_ptr<Timer> my_tmr_sptr) {
  * Returns the wait duration, in microseconds. This wait duration factors in 
  *  remaining time as well as any sort of intra-symbol timing offset.
  */
-int32_t getWaitNoWarn(void);
+auto getWaitNoWarn() -> int32_t;
 
 };
 
