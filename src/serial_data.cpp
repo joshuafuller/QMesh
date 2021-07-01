@@ -95,9 +95,9 @@ void Frame::deserialize_pb(const vector<uint8_t> &buf) {
 
 void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed) {
     mt19937 rand_gen(seed);
-    for(vector<uint8_t>::const_iterator iter = buf.begin(); iter != buf.end(); iter++) {
+    for(unsigned char iter : buf) {
         uint8_t rand_byte = rand_gen();
-        wht_buf.push_back(*iter ^ rand_byte);
+        wht_buf.push_back(iter ^ rand_byte);
     }
 }
 
@@ -121,18 +121,19 @@ uint8_t Frame::calcCRC(void) {
     return crc & 0x000000FF;
 }
 
-uint32_t Frame::calcUniqueCRC(void) {
+auto Frame::calcUniqueCRC() -> uint32_t {
     vector<uint8_t> buf;
     //buf.push_back((uint8_t) hdr.type);
-    buf.push_back((uint8_t) hdr.cons_subhdr.fields.stream_id);
+    buf.push_back(static_cast<uint8_t>(hdr.cons_subhdr.fields.stream_id)); //NOLINT
     copy(data.begin(), data.end(), back_inserter(buf));
-    MbedCRC<POLY_32BIT_ANSI, 32> ct;
+    static constexpr int BITS_32 = 32;
+    MbedCRC<POLY_32BIT_ANSI, BITS_32> ct;
     uint32_t crc = 0;
-    ct.compute((void *) buf.data(), buf.size(), &crc);
+    ct.compute(buf.data(), buf.size(), &crc);
     return crc;        
 }
 
-PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
+auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
     //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
@@ -144,7 +145,7 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
         return pkt_status;
     }
     // Step one: check the size of the packet
-    if((ssize_t) Frame::size() != bytes_dec) {
+    if(static_cast<ssize_t>(Frame::size()) != bytes_dec) {
         //debug_printf(DBG_INFO, "Bad packet size\r\n");
         pkt_status = PKT_BAD_SIZE;
         return pkt_status;
@@ -168,29 +169,29 @@ PKT_STATUS_ENUM Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> buf) {
 
 
 void Frame::loadFromPB(const DataMsg &data_msg) {
-    hdr.cons_subhdr.fields.type = data_msg.type;
-    hdr.cons_subhdr.fields.stream_id = data_msg.stream_id;
-    hdr.var_subhdr.fields.ttl = data_msg.ttl;
-    hdr.var_subhdr.fields.sender = data_msg.sender;
-    hdr.var_subhdr.fields.sym_offset = data_msg.sym_offset;
+    hdr.cons_subhdr.fields.type = data_msg.type; //NOLINT
+    hdr.cons_subhdr.fields.stream_id = data_msg.stream_id; //NOLINT
+    hdr.var_subhdr.fields.ttl = data_msg.ttl; //NOLINT
+    hdr.var_subhdr.fields.sender = data_msg.sender; //NOLINT
+    hdr.var_subhdr.fields.sym_offset = data_msg.sym_offset; //NOLINT
     crc = data_msg.crc;
     data.resize(data_msg.payload.size);
-    memcpy((char *) data.data(), data_msg.payload.bytes, data_msg.payload.size); 
+    memcpy(data.data(), data_msg.payload.bytes, data_msg.payload.size); 
 }
 
 
 void Frame::saveToPB(DataMsg &data_msg) {
     data_msg.type = getDataMsgType();
-    data_msg.stream_id = hdr.cons_subhdr.fields.stream_id;
-    data_msg.ttl = hdr.var_subhdr.fields.ttl;
-    data_msg.sender = hdr.var_subhdr.fields.sender;
-    data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset;
+    data_msg.stream_id = hdr.cons_subhdr.fields.stream_id; //NOLINT
+    data_msg.ttl = hdr.var_subhdr.fields.ttl; //NOLINT
+    data_msg.sender = hdr.var_subhdr.fields.sender; //NOLINT
+    data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset; //NOLINT
     data_msg.crc = crc;
     if(data_msg.type == DataMsg_Type_KISSRX || data_msg.type == DataMsg_Type_KISSTX) {
         kiss_subhdr k_sub;
         memcpy(&k_sub, data.data(), sizeof(k_sub));
         data_msg.payload.size = k_sub.fields.size;
-        memcpy(data_msg.payload.bytes, data.data()+sizeof(k_sub), k_sub.fields.size);
+        memcpy(data_msg.payload.bytes, data.data()+sizeof(k_sub), k_sub.fields.size); //NOLINT
         data_msg.kiss_cur_frame = k_sub.fields.cur_frame;
         data_msg.kiss_tot_frames = k_sub.fields.tot_frames;
     } else {
@@ -201,11 +202,11 @@ void Frame::saveToPB(DataMsg &data_msg) {
 
 
 void Frame::createFromKISS(DataMsg &data_msg) {
-    hdr.var_subhdr.fields.ttl = 0;
-    hdr.var_subhdr.fields.sender = radio_cb.address;
-    hdr.var_subhdr.fields.sym_offset = 0;
-    hdr.cons_subhdr.fields.stream_id = data_msg.kiss_stream_id;
-    hdr.cons_subhdr.fields.type = DataMsg_Type_KISSTX;
+    hdr.var_subhdr.fields.ttl = 0; //NOLINT
+    hdr.var_subhdr.fields.sender = radio_cb.address; //NOLINT
+    hdr.var_subhdr.fields.sym_offset = 0; //NOLINT
+    hdr.cons_subhdr.fields.stream_id = data_msg.kiss_stream_id; //NOLINT
+    hdr.cons_subhdr.fields.type = DataMsg_Type_KISSTX; //NOLINT
 
     kiss_subhdr kshdr;
     kshdr.fields.size = data_msg.payload.size;
@@ -213,8 +214,8 @@ void Frame::createFromKISS(DataMsg &data_msg) {
     kshdr.fields.tot_frames = data_msg.kiss_tot_frames;
 
     data.resize(radio_cb.net_cfg.pld_len);
-    memcpy((char *) data.data(), (char *) &kshdr, sizeof(kshdr));
-    memcpy((char *) data.data()+sizeof(kshdr), (char *) data_msg.payload.bytes, data_msg.payload.size);
+    memcpy(data.data(), &kshdr, sizeof(kshdr));
+    memcpy(data.data()+sizeof(kshdr), data_msg.payload.bytes, data_msg.payload.size); //NOLINT
     setCRC();
 }
 
@@ -229,12 +230,12 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "Frame Info\r\n");
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "HEADER\r\n");
-    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", hdr.cons_subhdr.fields.type, 
-                    hdr.cons_subhdr.fields.stream_id);
-    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", hdr.var_subhdr.fields.ttl, 
-                    hdr.var_subhdr.fields.sender);
+    debug_printf(dbg_type, "Type: %2d | Stream ID: %2d\r\n", hdr.cons_subhdr.fields.type, //NOLINT
+                    hdr.cons_subhdr.fields.stream_id); //NOLINT
+    debug_printf(dbg_type, "TTL:  %2d |    Sender: %2d\r\n", hdr.var_subhdr.fields.ttl, //NOLINT
+                    hdr.var_subhdr.fields.sender); //NOLINT
     debug_printf(dbg_type, "Offsets -- %2d (pre), %2d (nsym), %2d (sym)\r\n", 
-                    hdr.var_subhdr.fields.sym_offset);
+                    hdr.var_subhdr.fields.sym_offset); //NOLINT
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
     for(size_t i = 0; i < data.size(); i++) {
@@ -251,12 +252,12 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
 
 
 static Mutex dbg_printf_mutex;
-static char tmp_str[512];
-int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
+auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     dbg_printf_mutex.lock();
+    vector<char> tmp_str((sizeof(ser_msg_zero.dbg_msg.msg)));
     va_list args;
     va_start(args, fmt);
-    vsprintf(tmp_str, fmt, args);
+    vsnprintf(tmp_str.data(), tmp_str.size(), fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
         #ifndef DEBUG_INFO
@@ -283,15 +284,17 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->type = SerialMsg_Type_DEBUG_MSG;
     ser_msg_sptr->has_dbg_msg = true;
-    sprintf(ser_msg_sptr->dbg_msg.msg, "[+] %s -- %s", msg_type.c_str(), tmp_str);   
+    snprintf(ser_msg_sptr->dbg_msg.msg, sizeof(ser_msg_sptr->dbg_msg.msg), 
+                "[+] %s -- %s", msg_type.c_str(), tmp_str.data());   
     kiss_sers_mtx.lock();
-    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+    for(auto & kiss_ser : kiss_sers) {
         auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
-        (*iter)->enqueue_msg(ser_msg_sptr_en);
+        kiss_ser->enqueue_msg(ser_msg_sptr_en);
     }
     kiss_sers_mtx.unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
-        ThisThread::sleep_for(2000);
+        constexpr int TWO_SEC = 2000;
+        ThisThread::sleep_for(TWO_SEC);
         MBED_ASSERT(false);
     }
     va_end(args);
@@ -299,11 +302,12 @@ int debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     return 0;
 }
 
-static char tmp_str_clean[512];
-int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
+
+auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     va_list args;
+    vector<char> tmp_str((sizeof(ser_msg_zero.dbg_msg.msg)));
     va_start(args, fmt);
-    vsprintf(tmp_str_clean, fmt, args);
+    vsnprintf(tmp_str.data(), tmp_str.size(), fmt, args);
     string msg_type;
     if(dbg_type == DBG_INFO) {
         #ifndef DEBUG_INFO
@@ -329,11 +333,11 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
     auto ser_msg_sptr = shared_ptr<SerialMsg>();
     *ser_msg_sptr = ser_msg_zero;
     ser_msg_sptr->has_dbg_msg = true;
-    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str_clean, 256);
+    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str.data(), sizeof(ser_msg_sptr->dbg_msg.msg));
     kiss_sers_mtx.lock();
-    for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+    for(auto & kiss_ser : kiss_sers) {
         auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
-        (*iter)->enqueue_msg(ser_msg_sptr_en);
+        kiss_ser->enqueue_msg(ser_msg_sptr_en);
     }
     kiss_sers_mtx.unlock();
     va_end(args);
@@ -344,13 +348,13 @@ int debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) {
 
 static Mutex frame_map_mtx;
 extern EventQueue background_queue;
-typedef struct {
+using frag_info_t = struct {
     uint8_t tot_frames;
     uint8_t stream_id;
     int tag;
     vector<shared_ptr<DataMsg>> frags;
-} frag_info_t;
-typedef map<uint8_t, frag_info_t> frag_map_t; 
+};
+using frag_map_t = map<uint8_t, frag_info_t>; 
 static frag_map_t frag_map;
 atomic<int> cur_tag(0);
 
@@ -372,16 +376,16 @@ static void purge_frag_map_entry(uint8_t stream_id, int tag) {
 }
 
 
-static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag);
-static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag) {
+static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<DataMsg>;
+static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<DataMsg> {
     // If the KISS frame is a single fragment, just return
-    shared_ptr<DataMsg> ret_val = NULL;
+    shared_ptr<DataMsg> ret_val = nullptr;
     if(frag->kiss_tot_frames == 1) {
         // Queue up assembled frame
         ret_val = frag;
     } else { // Otherwise, handle reassembly
         frame_map_mtx.lock();
-        frag_map_t::iterator iter = frag_map.find(frag->stream_id);
+        auto iter = frag_map.find(frag->stream_id);
         if(iter == frag_map.end()) { // first fragment of this KISS frame being tracked
             pair<uint8_t, frag_info_t> elem;
             elem.first = frag->stream_id;
@@ -390,23 +394,22 @@ static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag) {
             elem.second.tag = cur_tag++;
             elem.second.frags.push_back(frag);
             frag_map.insert(elem);
-            background_queue.call_in(30000, &purge_frag_map_entry, frag->stream_id, elem.second.tag);
+            constexpr int THIRTY_SEC = 30000;
+            background_queue.call_in(THIRTY_SEC, &purge_frag_map_entry, frag->stream_id, elem.second.tag);
         } else {
             iter->second.frags.push_back(frag);
         }
         iter = frag_map.find(frag->stream_id);
         if(iter->second.tot_frames == iter->second.frags.size()) { // We got all the fragments
             vector<pair<uint8_t, shared_ptr<DataMsg>>> sort_frags;
-            for(vector<shared_ptr<DataMsg>>::iterator it = iter->second.frags.begin(); // Sort the frames
-                it != iter->second.frags.end(); it++) {
-                sort_frags.push_back(pair<uint8_t, shared_ptr<DataMsg>>((**it).kiss_cur_frame, *it));
+            for(auto & frag : iter->second.frags) {
+                sort_frags.emplace_back((*frag).kiss_cur_frame, frag); // DOES THIS EVEN WORK???
             }
             sort(sort_frags.begin(), sort_frags.end());
             vector<uint8_t> frag_comb;
-            for(vector<pair<uint8_t, shared_ptr<DataMsg>>>::iterator it = sort_frags.begin();
-                it != sort_frags.end(); it++) {
-                for(int i = 0; i < it->second->payload.size; i++) {
-                    frag_comb.push_back(it->second->payload.bytes[i]);
+            for(auto & sort_frag : sort_frags) {
+                for(int i = 0; i < sort_frag.second->payload.size; i++) {
+                    frag_comb.push_back(sort_frag.second->payload.bytes[i]); //NOLINT
                 }
             }
             auto frag_comb_datamsg = make_shared<DataMsg>();
@@ -423,7 +426,7 @@ static shared_ptr<DataMsg> handle_incoming_frag(shared_ptr<DataMsg> frag) {
 }
 
 
-void rx_frame_ser_thread_fn(void) {
+void rx_frame_ser_thread_fn() {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
         auto ser_msg_sptr = make_shared<SerialMsg>();
@@ -437,7 +440,7 @@ void rx_frame_ser_thread_fn(void) {
             ser_msg_sptr->data_msg.type = DataMsg_Type_KISSRX;
             auto frag = make_shared<DataMsg>(ser_msg_sptr->data_msg);
             auto pkt = handle_incoming_frag(frag);
-            if(pkt != NULL) {
+            if(pkt != nullptr) {
                 ser_msg_sptr->has_data_msg = true;
                 ser_msg_sptr->data_msg = *pkt;
             }
@@ -447,9 +450,9 @@ void rx_frame_ser_thread_fn(void) {
         }
         if(ser_msg_sptr->has_data_msg) { // Send it out over the serial ports
             kiss_sers_mtx.lock();
-            for(vector<KISSSerial *>::iterator iter = kiss_sers.begin(); iter != kiss_sers.end(); iter++) {
+            for(auto & kiss_ser : kiss_sers) {
                 auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
-                (*iter)->enqueue_msg(ser_msg_sptr_en);
+                kiss_ser->enqueue_msg(ser_msg_sptr_en);
             }
             kiss_sers_mtx.unlock();
         }

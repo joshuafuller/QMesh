@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern volatile bool rebooting;
 
-void reboot_system(void);
+void reboot_system();
 
 /**
  * Class that provides useful functionality around the board's
@@ -47,11 +47,11 @@ public:
     void SetQueue(EventQueue &evt_queue);
 
     /// Interrupt handler that gets called on a button press.
-    void btnInterrupt(void);
+    void btnInterrupt();
     
     /// Determine whether button was pressed between now and 
     /// the last time getPressed() was called.
-    bool getPressed(void);
+    auto getPressed() -> bool;
 
     /// Destructor.
     ~PushButton();

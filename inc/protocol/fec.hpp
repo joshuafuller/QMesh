@@ -41,22 +41,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //   and vice-versa
 #define V27POLYA 0155
 #define V27POLYB 0117
-#if 0
-static correct_convolutional_polynomial_t libfec_r12_7_polynomial[] = {V27POLYA, V27POLYB};
-#endif
 
 #define V29POLYA 0657
 #define V29POLYB 0435
-#if 0
-static correct_convolutional_polynomial_t libfec_r12_9_polynomial[] = {V29POLYA, V29POLYB};
-#endif
 
 #define V39POLYA 0755
 #define V39POLYB 0633
 #define V39POLYC 0447
-#if 0
-static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA, V39POLYB, V39POLYC};
-#endif
 
 #define V615POLYA 042631
 #define V615POLYB 047245
@@ -64,19 +55,6 @@ static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA,
 #define V615POLYD 073363
 #define V615POLYE 077267
 #define V615POLYF 064537
-
-#if 0
-static correct_convolutional_polynomial_t libfec_r16_15_polynomial[] = {V615POLYA, V615POLYB, V615POLYC,
-                        V615POLYD, V615POLYE, V615POLYF};
-static correct_convolutional_polynomial_t conv_r12_6_polynomial[] = {073, 061};
-static correct_convolutional_polynomial_t conv_r12_7_polynomial[] = {0161, 0127};
-static correct_convolutional_polynomial_t conv_r12_8_polynomial[] = {0225, 0373};
-static correct_convolutional_polynomial_t conv_r12_9_polynomial[] = {0767, 0545};
-static correct_convolutional_polynomial_t conv_r13_6_polynomial[] = {053, 075, 047};
-static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153, 0121};
-static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257, 0351};
-static correct_convolutional_polynomial_t conv_r13_9_polynomial[] = {0417, 0627, 0675};                        
-#endif
 
 /**
  * Performs some testing of the different Forward Error Correction algorithms.
@@ -96,18 +74,18 @@ protected:
 
 public:
     /// Constructor.
-    FEC(const int32_t my_msg_len) {
+    explicit FEC(const int32_t my_msg_len) {
         name = "Dummy FEC";
         msg_len = my_msg_len;
         enc_size = my_msg_len;
     }
 
     /// Gets the name of the FEC.
-    string getName(void) {
+    auto getName() -> string {
         return name;
     }
 
-    virtual int encSize(void) {
+    virtual auto encSize() -> int {
         return enc_size;
     }
 
@@ -116,7 +94,7 @@ public:
      * @param msg Byte vector of data to be encoded.
      * @param enc_msg Byte vector of encoded data.
      */
-    virtual int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+    virtual auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
         if(name == "Dummy FEC") {
             lock.lock();
         }
@@ -133,7 +111,7 @@ public:
      * @param enc_msg Byte vector of encoded data.
      * @param dec_msg Byte vector of decoded data.
      */
-    virtual int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) {
+    virtual auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
         if(name == "Dummy FEC") {
             lock.lock();
         }
@@ -145,7 +123,7 @@ public:
         }
     }
 
-    void benchmark(const size_t num_iters);
+    void benchmark(size_t num_iters);
 };
 
 
@@ -162,10 +140,10 @@ protected:
     void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int);
     void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint);
 
-    static bool getBit(const vector<uint8_t> &bytes, const int32_t pos) {
+    static auto getBit(const vector<uint8_t> &bytes, const int32_t pos) -> bool {
         uint8_t byte = bytes[pos/8];
         size_t byte_pos = pos % 8;
-        return ((((1 << byte_pos) & byte) == 0) ? false : true);
+        return (((1 << byte_pos) & byte) != 0);
     }
 
     static void setBit(const bool bit, const int32_t pos, vector<uint8_t> &bytes) {
@@ -177,11 +155,11 @@ protected:
 
 
 public:
-    FECInterleave(const int32_t my_msg_len);
+    FECInterleave(int32_t my_msg_len);
 
-    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
+    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
 
-    int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
+    auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
 };
 
 
@@ -210,16 +188,16 @@ public:
      * @param inv_rate Coding rate. 2 and 3 are currently the only rates implemented.
      * @param order Order of the coder. Values supported are 6, 7, 8, and 9.
      */
-    FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order);
+    FECConv(int32_t my_msg_len, int32_t inv_rate, int32_t order);
 
     /// Destructor.
-    ~FECConv(void) {
+    ~FECConv() {
         correct_convolutional_destroy(corr_con);
     }
 
-    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
+    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
 
-    int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
+    auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
 };
 
 
@@ -242,23 +220,22 @@ public:
      * @param order Convolutional coding order.
      * @param my_rs_corr_bytes Number of Reed-Solomon correction bytes.
      */
-    FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
-            const int32_t my_rs_corr_bytes);
+    FECRSV(int32_t my_msg_len, int32_t inv_rate, int32_t order, int32_t my_rs_corr_bytes);
 
     /**
      * Default constructor. Initializes with a convolutional coding rate of 2,
      * n=9, and 32 Reed-Solomon correction bytes.
      */
-    FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, 2, 9, 8) { };
+    explicit FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, 2, 9, 8) { };
 
     /// Destructor.
-    ~FECRSV(void) {
+    ~FECRSV() {
         correct_reed_solomon_destroy(rs_con);
     }
 
-    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg);
+    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) -> int32_t override;
 
-    int32_t decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg);
+    auto decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
 };
 
 
@@ -283,15 +260,15 @@ public:
     FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, 2, 9, 8) { };
 
     /// Destructor.
-    ~FECRSVGolay(void) {
+    ~FECRSVGolay() {
         correct_reed_solomon_destroy(rs_con);
     }
 
-    int32_t encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg);
+    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
 
-    int32_t decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg);
+    auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
 
-    int encSize(void) {
+    auto encSize() -> int override {
         return enc_size+3;
     }
 };

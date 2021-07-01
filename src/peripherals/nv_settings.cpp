@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,11 +34,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_decode.h"
 
 
+static constexpr int SIX_SECONDS = 6;
+static constexpr int TWO_SEC = 2000;
+static constexpr int FREQ_40_MHZ = 40000000;
+static constexpr int NUM_LOGFILES = 11;
+static constexpr int MAX_LOGFILE_SIZE = 1e6;
+
 
 QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
                     MBED_CONF_APP_QSPI_FLASH_IO2, MBED_CONF_APP_QSPI_FLASH_IO3, 
                     MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
-                    0, 40000000);
+                    0, FREQ_40_MHZ);
 LittleFileSystem fs("fs");
 //extern UARTSerial gps_serial;
 extern Adafruit_SSD1306_I2c *oled;
@@ -49,7 +55,7 @@ static SerialMsg ser_msg_zero = SerialMsg_init_zero;
 void rescue_filesystem() {
     bd.init();
 	fs.reformat(&bd);
-    ThisThread::sleep_for(2000);
+    ThisThread::sleep_for(TWO_SEC);
     reboot_system();
 }
 
@@ -122,7 +128,7 @@ void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Stats on settings.bin\r\n");
     FILE *f = nullptr;    
     f = fopen("/fs/settings.bin", "r");
-    if(!f) {
+    if(f == nullptr) {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
         f = fopen("/fs/settings.bin", "w");
         SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
@@ -152,7 +158,7 @@ void load_settings_from_flash() {
         radio_cb.net_cfg = net_cfg_zero;
         string def_msg = "KG5VBY Default Message";
         memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
-        radio_cb.net_cfg.beacon_interval = 6;
+        radio_cb.net_cfg.beacon_interval = SIX_SECONDS;
         radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
 
         radio_cb.has_fec_cfg = true;
@@ -167,8 +173,10 @@ void load_settings_from_flash() {
         POCSAGCfg pocsag_cfg_zero = POCSAGCfg_init_zero;
         radio_cb.pocsag_cfg = pocsag_cfg_zero;
         radio_cb.pocsag_cfg.enabled = true;
-        radio_cb.pocsag_cfg.frequency = 439987500;
-        radio_cb.pocsag_cfg.beacon_interval = 600;
+        constexpr int POCSAG_FREQ = 439987500;
+        constexpr int TEN_MINUTES = 600;
+        radio_cb.pocsag_cfg.frequency = POCSAG_FREQ;
+        radio_cb.pocsag_cfg.beacon_interval = TEN_MINUTES;
 
         radio_cb.has_test_cfg = true;
         TestCfg test_cfg_zero = TestCfg_init_zero;
@@ -207,7 +215,7 @@ void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
     MBED_ASSERT(radio_cb.has_radio_cfg);
     for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
-        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]);        
+        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]); //NOLINT     
     }
     MBED_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
     debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
@@ -287,8 +295,8 @@ auto open_logfile() -> FILE * {
     fclose(f);
     struct stat logfile_statbuf{};
     fs.stat("log/logfile.bin", &logfile_statbuf);
-    if(logfile_statbuf.st_size > LOGFILE_SIZE) {
-        for(int i = 11; i >= 0; i--) {
+    if(logfile_statbuf.st_size > MAX_LOGFILE_SIZE) {
+        for(int i = NUM_LOGFILES; i >= 0; i--) {
             stringstream logfile_name;
             stringstream logfile_name_plusone;
             logfile_name << "log/logfile" << setw(3) << setfill('0') << i << ".json";

@@ -678,7 +678,7 @@ void SX126X_LoRaRadio::set_public_network(const bool enable, const bool locking)
     if(locking) { unlock(); }
 }
 
-uint32_t SX126X_LoRaRadio::time_on_air(const radio_modems_t modem, const uint8_t pkt_len)
+auto SX126X_LoRaRadio::time_on_air(const radio_modems_t modem, const uint8_t pkt_len) -> uint32_t
 {
     uint32_t air_time = 0;
 
@@ -1308,8 +1308,7 @@ void SX126X_LoRaRadio::configure_dio_irq(const uint16_t irq_mask, const uint16_t
     if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size,
-                            const bool locking)
+void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, const bool locking)
 {
     if(locking) { lock(); }
     set_tx_power(_tx_power);
@@ -1360,7 +1359,7 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size,
     if(locking) { unlock(); }
 }
 
-void SX126X_LoRaRadio::dangle_timeout_handler(void) {
+void SX126X_LoRaRadio::dangle_timeout_handler() {
     CriticalSectionLock lock;
     _chip_select = 1;
     tx_int_mon = 1;

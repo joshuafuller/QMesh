@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ static auto checkRedundantPkt(const shared_ptr<Frame> &rx_frame) -> bool {
     bool ret_val = false;
     if(find(past_crc.begin(), past_crc.end(), crc) == past_crc.end()) {
         past_crc.push_back(crc);
-        past_timestamp.insert(pair<uint32_t, time_t>(crc, time(nullptr)));
+        past_timestamp.emplace(crc, time(nullptr));
         if(past_crc.size() > PKT_CHK_HISTORY) {
             debug_printf(DBG_INFO, "Exceeded history length\r\n");
             past_timestamp.erase(*(past_crc.begin()));
@@ -72,7 +72,7 @@ static auto checkRedundantPkt(const shared_ptr<Frame> &rx_frame) -> bool {
             past_crc.erase(find(past_crc.begin(), past_crc.end(), crc));
             past_timestamp.erase(crc);
             past_crc.push_back(crc);
-            past_timestamp.insert(pair<uint32_t, time_t>(crc, time(nullptr)));
+            past_timestamp.emplace(crc, time(nullptr));
             debug_printf(DBG_INFO, "Exceeded age\r\n");
         }
     }
@@ -126,7 +126,7 @@ void mesh_protocol_fsm() {
     static vector<uint8_t> tx_frame_buf(FRAME_BUF_SIZE);
     static vector<uint8_t> rx_frame_buf(FRAME_BUF_SIZE);
     static mt19937 rand_gen(radio_cb.address);
-    int32_t freq_bound = (lora_bw[radio_cb.radio_cfg.lora_cfg.bw]*FREQ_WOBBLE_PROPORTION); //NOLINT
+    int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*FREQ_WOBBLE_PROPORTION);
     static uniform_int_distribution<int32_t> freq_dist(-freq_bound, freq_bound);  
     static mt19937 timing_rand_gen(radio_cb.address);
     uniform_int_distribution<uint8_t> timing_off_dist(0, radio_cb.net_cfg.num_offsets-1);  
@@ -391,7 +391,7 @@ void oled_mon_fn() {
     string kiss_modes_str;
     kiss_sers_mtx.lock();
     for(auto & kiss_ser : kiss_sers) {
-        if(!kiss_ser->kiss_extended) {
+        if(!kiss_ser->isKISSExtended()) {
             kiss_modes_str.append("KS ");
         } else {
             kiss_modes_str.append("K+ ");

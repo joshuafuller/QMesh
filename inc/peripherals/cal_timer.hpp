@@ -3,7 +3,7 @@
 
 #include "mbed.h"
 
-void start_cal(void);
+void start_cal();
 
 #define USE_LPTIMER
 

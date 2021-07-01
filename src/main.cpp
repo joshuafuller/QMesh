@@ -47,13 +47,13 @@ extern mt19937 stream_id_rng;
 Afsk my_afsk;
 #endif
 
-system_state_t current_mode = BOOTING;
+system_state_t current_mode = system_state_t::BOOTING;
 atomic<bool> stay_in_management(false);
 
-#define SLEEP_TIME                  500 // (msec)
-#define PRINT_AFTER_N_LOOPS         20
+constexpr int SLEEP_TIME = 500; // (msec)
+constexpr int PRINT_AFTER_N_LOOPS = 20;
 
-void send_status(void);
+void send_status();
 
 DigitalIn user_button(USER_BUTTON);
 
@@ -169,7 +169,7 @@ int main()
 #endif
 
     // Wait for 2 seconds in MANAGEMENT mode
-    current_mode = MANAGEMENT;
+    current_mode = system_state_t::MANAGEMENT;
     oled->printf("MANAGEMENT mode...\r\n");
     oled->display();
     oled->display();
@@ -179,7 +179,7 @@ int main()
     while(stay_in_management) {
         ThisThread::sleep_for(5000);
     }
-    current_mode = RUNNING;
+    current_mode = system_state_t::RUNNING;
     send_status();
 
     led1.LEDBlink();

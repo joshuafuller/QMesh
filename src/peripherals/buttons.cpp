@@ -35,25 +35,28 @@ extern Adafruit_SSD1306_I2c *oled;
 
 volatile bool rebooting = false;
 
-void reboot_system(void) {
+static constexpr int HALF_SECOND = 500;
+static constexpr int ONE_SECOND = 1000;
+
+void reboot_system() {
 	rebooting = true;
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
-    ThisThread::sleep_for(500);
+    ThisThread::sleep_for(HALF_SECOND);
     NVIC_SystemReset();
 }
 
 
-void button_thread_fn(void);
-void button_fn(void) {
+void button_thread_fn();
+void button_fn() {
     FILE *f = fopen("/fs/low_power.mode", "r");
-    if(f) {
+    if(f != nullptr) {
         fclose(f);
         fs.remove("low_power.mode");
         mbed_file_handle(STDIN_FILENO)->enable_input(true);
         //gps_serial.enable_input(true);
         oled->displayOn();
         debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
-        ThisThread::sleep_for(1000);
+        ThisThread::sleep_for(ONE_SECOND);
         reboot_system();
     }
     else {
@@ -76,7 +79,7 @@ void PushButton::SetQueue(EventQueue &evt_queue) {
     btn->rise(evt_queue.event(button_fn));
 }
     
-bool PushButton::getPressed(void) {
+auto PushButton::getPressed() -> bool {
     bool pressed_val = was_pressed;
     was_pressed = false;
     return pressed_val;

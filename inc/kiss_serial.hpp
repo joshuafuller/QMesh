@@ -41,9 +41,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 
-typedef uint16_t crc_t;
-typedef uint16_t entry_size_t;
-typedef enum {
+using crc_t = uint16_t;
+using entry_size_t = uint16_t;
+using read_ser_msg_err_t = enum read_ser_msg_err_enum {
     READ_SUCCESS = 0,
     READ_SER_EOF,
     READ_INVALID_KISS_ID,
@@ -55,25 +55,25 @@ typedef enum {
     READ_CRC_ERR,
     CRC_ERR,
     INVALID_CHAR
-} read_ser_msg_err_t;
+};
 
-typedef enum {
+using write_ser_msg_err_t = enum write_ser_msg_err_enum {
     WRITE_SUCCESS = 0,
     ENCODE_SER_MSG_ERR, 
     WRITE_SER_MSG_ERR
-} write_ser_msg_err_t;
+};
 
-write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg = false);
-read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f);
+auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, bool kiss_data_msg = false) -> write_ser_msg_err_t;
+auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
 
-typedef enum {
+using ser_port_type_t = enum ser_port_type_enum {
     DEBUG_PORT, // both types of traffic
     VOICE_PORT, // voice/streaming only
     APRS_PORT   // data/telemetry only  
-} ser_port_type_t;
+};
 
 class KISSSerial { 
-protected:
+private:
     PinName tx_port, rx_port;
     UARTSerial *ser;
     bool hc05;
@@ -86,28 +86,31 @@ protected:
     Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
     vector<string> logfile_names;
     SerialMsg past_log_msg;
+    atomic<bool> kiss_extended;
 
-    void configure_hc05(void);
-    void send_ack(void);
+    void configure_hc05();
+    void send_ack();
     void send_error(const string &err_str);
     /// Serial thread function that receives serial data, and processes it accordingly.
-    void rx_serial_thread_fn(void);
+    void rx_serial_thread_fn();
     /// Produces an MbedJSONValue with the current status and queues it for transmission.
-    void tx_serial_thread_fn(void);
-    write_ser_msg_err_t save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg);
-    read_ser_msg_err_t load_SerialMsg(SerialMsg &ser_msg, FILE *f);
+    void tx_serial_thread_fn();
+    auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, bool kiss_data_msg) -> write_ser_msg_err_t;
+    auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
 
 public:
-    atomic<bool> kiss_extended;
-    void send_status(void);
-    KISSSerial(const string &my_port_name, const ser_port_type_t ser_port_type);
-    KISSSerial(PinName tx, PinName Rx, const string &my_port_name, const ser_port_type_t ser_port_type);
+    void send_status();
+    KISSSerial(const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerial(PinName tx, PinName Rx, const string &my_port_name, ser_port_type_t ser_port_type);
     KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
-                const string &my_port_name, const ser_port_type_t ser_port_type);
+                const string &my_port_name, ser_port_type_t ser_port_type);
     ~KISSSerial();
     void enqueue_msg(shared_ptr<SerialMsg> ser_msg_sptr);
-    void sleep(void);
-    void wake(void);
+    void sleep();
+    void wake();
+    auto isKISSExtended() -> bool {
+        return kiss_extended;
+    }
 };
 
 // debug_printf() uses this vector to determine which serial ports to send out

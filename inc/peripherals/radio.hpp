@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,37 +32,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_decode.h"
 
 extern SX126X_LoRaRadio radio;
-extern SysCfgMsg radio_cb;
 
 /// Two modes: normal mesh mode, and beacon mode.
-typedef enum {
-    MESH_MODE_NORMAL,
-    MESH_MODE_BEACON,
-} radio_mode_t;
-
-typedef struct {
-    radio_mode_t mode;
+enum class radio_mode_t { MESH_MODE_NORMAL, MESH_MODE_BEACON, };
+using nv_settings_t = struct { 
+    radio_mode_t mode; 
     uint32_t freq;
     uint32_t bw;
     uint32_t cr;
     uint32_t sf;
     uint32_t pre_len;
-} nv_settings_t;
+};
 
 // Main thread for working with the LoRa radio
 extern Thread radio_thread;
 
 // Send out a POCSAG pager message
-void send_pocsag_msg(string &msg);
+void send_pocsag_msg(const string &msg);
 
 // Initialize the radio
-void init_radio(void);
-void reinit_radio(void);
-void reinit_radio_pocsag(void);
+void init_radio();
+void reinit_radio();
+void reinit_radio_pocsag();
 
 // Test functions, one for transmitting and one for receiving
-#define RX_DONE_SIGNAL 0xAB
-void tx_test_radio(void);
-void rx_test_radio(void);
+constexpr int RX_DONE_SIGNAL = 0xAB;
+void tx_test_radio();
+void rx_test_radio();
 
 #endif /* RADIO_HPP */

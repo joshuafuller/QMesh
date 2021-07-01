@@ -554,11 +554,11 @@ void KISSSerial::send_status() {
     *ser_msg = ser_msg_zero;
     ser_msg->type = SerialMsg_Type_STATUS;
     ser_msg->has_status = true;
-    if(current_mode == BOOTING) {
+    if(current_mode == system_state_t::BOOTING) {
         ser_msg->status.status = StatusMsg_Status_BOOTING;      
-    } else if(current_mode == MANAGEMENT) {
+    } else if(current_mode == system_state_t::MANAGEMENT) {
         ser_msg->status.status = StatusMsg_Status_MANAGEMENT;     
-    } else if(current_mode == RUNNING) {
+    } else if(current_mode == system_state_t::RUNNING) {
         ser_msg->status.status = StatusMsg_Status_RUNNING;
     } else {
         MBED_ASSERT(false);
@@ -934,8 +934,8 @@ void KISSSerial::rx_serial_thread_fn() {
         else if(ser_msg->type == SerialMsg_Type_ERASE_LOGS) {
             shared_mtx.lock();
             stay_in_management = true;
-            while(current_mode == BOOTING) { };
-            if(current_mode == MANAGEMENT) {
+            while(current_mode == system_state_t::BOOTING) { };
+            if(current_mode == system_state_t::MANAGEMENT) {
                 DIR *log_dir = opendir("/fs/log");
                 MBED_ASSERT(log_dir);
                 for(;;) {
@@ -959,8 +959,8 @@ void KISSSerial::rx_serial_thread_fn() {
         }
         else if(ser_msg->type == SerialMsg_Type_ERASE_BOOT_LOGS) {
             stay_in_management = true;
-            while(current_mode == BOOTING) { };
-            if(current_mode == MANAGEMENT) {
+            while(current_mode == system_state_t::BOOTING) { };
+            if(current_mode == system_state_t::MANAGEMENT) {
                 shared_mtx.lock();
                 fs.remove("boot_log.bin");
                 shared_mtx.unlock();
@@ -971,8 +971,8 @@ void KISSSerial::rx_serial_thread_fn() {
         }
         else if(ser_msg->type == SerialMsg_Type_ERASE_CFG) {
             stay_in_management = true;
-            while(current_mode == BOOTING) { };
-            if(current_mode == MANAGEMENT) {
+            while(current_mode == system_state_t::BOOTING) { };
+            if(current_mode == system_state_t::MANAGEMENT) {
                 shared_mtx.lock();
                 fs.remove("settings.bin");
                 shared_mtx.unlock();
@@ -984,8 +984,8 @@ void KISSSerial::rx_serial_thread_fn() {
         else if(ser_msg->type == SerialMsg_Type_READ_LOG) {
             debug_printf(DBG_INFO, "Read log found\r\n");
             stay_in_management = true;
-            while(current_mode == BOOTING) { };
-            if(current_mode == MANAGEMENT) {
+            while(current_mode == system_state_t::BOOTING) { };
+            if(current_mode == system_state_t::MANAGEMENT) {
                 shared_mtx.lock();
 				if(!reading_log) {
                     DIR *log_dir = opendir("/fs/log");
@@ -1068,8 +1068,8 @@ void KISSSerial::rx_serial_thread_fn() {
         }
         else if(ser_msg->type == SerialMsg_Type_READ_BOOT_LOG) {
             stay_in_management = true;
-            while(current_mode == BOOTING) { };
-            if(current_mode == MANAGEMENT) {
+            while(current_mode == system_state_t::BOOTING) { };
+            if(current_mode == system_state_t::MANAGEMENT) {
                 shared_mtx.lock();
 				if(!reading_bootlog) {
 					reading_bootlog = true;

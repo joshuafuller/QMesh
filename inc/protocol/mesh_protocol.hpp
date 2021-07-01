@@ -21,11 +21,7 @@
 #include "mbed.h"
 #include "radio.hpp"
 
-typedef enum {
-    BOOTING,
-    MANAGEMENT,
-    RUNNING
-} system_state_t;
+enum class system_state_t { BOOTING, MANAGEMENT, RUNNING };
 
 extern system_state_t current_mode;
 extern atomic<bool> stay_in_management;
@@ -33,17 +29,17 @@ extern atomic<bool> stay_in_management;
 /**
  * Core function that implmements the QMesh mesh protocol.
  */
-void mesh_protocol_fsm(void);
+void mesh_protocol_fsm();
 
 extern string beacon_msg;
 
 /**
  * Core function that periodically sends out a beacon message.
  */
-void beacon_fn(void);
-void beacon_pocsag_fn(void);
+void beacon_fn();
+void beacon_pocsag_fn();
 
-void oled_mon_fn(void);
+void oled_mon_fn();
 
 
 #endif /* MESH_PROTOCOL_HPP */

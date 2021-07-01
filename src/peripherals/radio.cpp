@@ -70,7 +70,7 @@ static void fhss_change_channel_cb(uint8_t current_channel);
 
 shared_ptr<FEC> frame_fec;  
 
-void send_pocsag_msg(string &msg) {
+void send_pocsag_msg(const string &msg) {
     char *data = (char *) malloc(msg.length()+1);
     memcpy(data, msg.c_str(), msg.length());
     data[msg.length()] = '\0';
@@ -78,12 +78,11 @@ void send_pocsag_msg(string &msg) {
     Pocsag my_pocsag;
     if(!my_pocsag.CreatePocsag(10, 1, data, 1, 1)) {
         debug_printf(DBG_INFO, "Error is %d\r\n", my_pocsag.GetError());
-        while(1);
         MBED_ASSERT(false);
     }
     radio.set_tx_config_pocsag(20);
     debug_printf(DBG_INFO, "POCSAG size is %d\r\n", my_pocsag.GetSize());
-    radio.send((uint8_t *) my_pocsag.GetMsgPointer(), my_pocsag.GetSize());
+    radio.send(static_cast<uint8_t *>(my_pocsag.GetMsgPointer()), my_pocsag.GetSize());
     free(data);
 }
 

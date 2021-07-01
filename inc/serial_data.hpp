@@ -304,12 +304,12 @@ public:
     *
     * @param buf shared_ptr to a vector of received, encoded bytes to decode
     */
-    PKT_STATUS_ENUM deserializeCoded(const shared_ptr<vector<uint8_t>> buf);
+    auto deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM;
 
     /**
      * Increment the TTL, updating the header CRC in the process.
      */
-    void incrementTTL(void) {
+    void incrementTTL() {
         hdr.var_subhdr.fields.ttl += 1;
         setCRC();
     }
@@ -317,21 +317,21 @@ public:
     /**
      * Return the frame's current TTL value
      */
-    uint8_t getTTL(void) {
+    auto getTTL() const -> uint8_t {
         return hdr.var_subhdr.fields.ttl;
     }
 
     /**
      * Returns the size of a packet header
      */
-    static size_t hdrSize(void) {
+    static auto hdrSize() -> size_t {
         return sizeof(hdr);
     }
 
     /**
     * Get the size, in bytes, of a Frame after FEC encoding.
     */
-    size_t codedSize(void);
+    auto codedSize() -> size_t;
 
     /** 
      * Get the offsets from the packet header
@@ -339,7 +339,7 @@ public:
      * @param nsym_offset Number of symbol-length offsets
      * @param sym_offset Intra-symbol offset.
      */
-    void getOffsets(uint8_t &pre_offset, uint8_t &nsym_offset, uint8_t &sym_offset) {
+    void getOffsets(uint8_t &pre_offset, uint8_t &nsym_offset, uint8_t &sym_offset) const {
         pre_offset = 0;
         nsym_offset = 0;
         sym_offset = hdr.var_subhdr.fields.sym_offset;
@@ -383,7 +383,7 @@ public:
     /**
      * Returns the payload CRC stored within the Frame object.
      */
-    uint8_t getCRC(void) {
+    auto getCRC() const -> uint8_t {
         return crc;
     }
 
@@ -391,7 +391,7 @@ public:
     * Pretty-print the Frame's fields to the debug output.
     * @param dbg_type Debug type to use with the calls to debug_printf().
     */
-    void prettyPrint(const enum DBG_TYPES dbg_type);
+    void prettyPrint(enum DBG_TYPES dbg_type);
 
     /**
     * Load the frame's fields from a parsed JSON object
@@ -429,17 +429,17 @@ public:
     shared_ptr<Frame> frame;
     string pocsag_msg;
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum);
+    RadioEvent(radio_evt_enum_t my_evt_enum);
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum, string &pocsag_msg);
+    RadioEvent(radio_evt_enum_t my_evt_enum, string &pocsag_msg);
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr);
+    RadioEvent(radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr);
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr, const uint8_t *my_buf, 
+    RadioEvent(radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr, const uint8_t *my_buf, 
                 shared_ptr<list<pair<uint32_t, uint8_t> > > my_rssi_list_sptr,
-                const size_t my_size, const int16_t my_rssi, const int8_t my_snr);
+                size_t my_size, int16_t my_rssi, int8_t my_snr);
 
-    RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);
+    RadioEvent(radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);
 };
 
 extern Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail, tx_radio_evt_mail;
@@ -486,7 +486,7 @@ void enqueue_mail_nonblocking(Mail<T, QUEUE_DEPTH> &mail_queue, T val) {
  * @param T The type of the value to be dequeued.
  */
 template <class T>
-T dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) {
+auto dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) -> T {
     T mail_item; 
     for(;;) {
         osEvent evt = mail_queue.get();
@@ -501,7 +501,7 @@ T dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) {
 }
 
 template <class T>
-T dequeue_mail_timeout(Mail<T, QUEUE_DEPTH> &mail_queue, const uint32_t timeout_ms, bool &timed_out) {
+auto dequeue_mail_timeout(Mail<T, QUEUE_DEPTH> &mail_queue, const uint32_t timeout_ms, bool &timed_out) -> T {
     T mail_item; 
     timed_out = false;
     osEvent evt = mail_queue.get(timeout_ms);

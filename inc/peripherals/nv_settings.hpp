@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,24 +21,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mbed.h"
 #include "params.hpp"
-#include "peripherals.hpp"
 #include "LittleFileSystem.h"
 #include "QSPIFBlockDevice.h"
 
 extern QSPIFBlockDevice bd;
 extern LittleFileSystem fs;
 
-void nv_log_fn(void);
+void nv_log_fn();
 
-void log_boot(void);
+void log_boot();
 
-void rescue_filesystem(void);
+void rescue_filesystem();
 
-void init_filesystem(void);
+void init_filesystem();
 
-void load_settings_from_flash(void);
+void load_settings_from_flash();
 
-void save_settings_to_flash(void);
+void save_settings_to_flash();
 
 #endif /* NV_SETTINGS_HPP */
 
