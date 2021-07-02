@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; /// GPIO signals to monitor timing accuracy/jitter
 extern DigitalOut rssi_mon;
 
-const array<float, 3> lora_bw = {125e3F, 250e3F, 500e3F}; /// Different LoRa bandwidths, in KHz
+const array<float, 3> lora_bw = {125e3F, 250e3F, 500e3F}; //NOLINT /// Different LoRa bandwidths, in KHz
 
 /**
  * A synchronized flooded mesh has all sort of timing-related things it needs to 

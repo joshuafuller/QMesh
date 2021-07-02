@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <random>
 #include "mem_trace.hpp"
 
 static correct_convolutional_polynomial_t libfec_r12_7_polynomial[] = {V27POLYA, V27POLYB}; //NOLINT
@@ -44,6 +45,9 @@ constexpr int ORDER_8 = 8;
 constexpr int ORDER_9 = 9;
 constexpr int ORDER_15 = 15;
 
+constexpr size_t NUM_TESTS = 10;
+constexpr size_t NUM_BENCHMARK_RUNS = 100;
+
 void testFEC() {
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
@@ -60,13 +64,13 @@ void testFEC() {
 
     for(auto & test_fec : test_fecs) {
         debug_printf(DBG_INFO, "====================\r\n");
-        debug_printf(DBG_INFO, "Now testing %s for correctness...\r\n", test_fec.get()->getName().c_str());
+        debug_printf(DBG_INFO, "Now testing %s for correctness...\r\n", test_fec->getName().c_str());
         ThisThread::sleep_for(ONE_SECOND);
         // Make a random string
         int fec_success = 0;
         int fec_fail = 0;
         int fec_total = 0;
-        for(int i = 0; i < 100; i++) {
+        for(size_t i = 0; i < NUM_BENCHMARK_RUNS; i++) {
             vector<uint8_t> rand_data(radio_cb.net_cfg.pld_len);
             std::generate_n(rand_data.begin(), radio_cb.net_cfg.pld_len, rand);
             auto test_frame = make_shared<Frame>(test_fec);
@@ -86,22 +90,23 @@ void testFEC() {
         debug_printf(DBG_INFO, "Finished testing. FEC succeeded %d times, failed %d times\r\n", 
             fec_success, fec_fail);  
         debug_printf(DBG_INFO, "====================\r\n");
-        debug_printf(DBG_INFO, "Now testing %s for bit error resilience...\r\n", test_fec.get()->getName().c_str());
+        debug_printf(DBG_INFO, "Now testing %s for bit error resilience...\r\n", test_fec->getName().c_str());
         ThisThread::sleep_for(ONE_SECOND);
         Frame size_frame(test_fec);
-        debug_printf(DBG_INFO, "Size of frame is %d\r\n", size_frame.size());
+        debug_printf(DBG_INFO, "Size of frame is %d\r\n", Frame::size());
         fec_success = 0;
         fec_fail = 0;
         fec_total = 0;
-        for(size_t i = 0; i < size_frame.size(); i++) {
-            for(int j = 0; j < 10; j++) {
+        auto rand_gen = make_shared<mt19937>(radio_cb.address);
+        for(size_t i = 0; i < Frame::size(); i++) {
+            for(size_t j = 0; j < NUM_TESTS; j++) {
                 vector<uint8_t> rand_data(radio_cb.net_cfg.pld_len);
                 std::generate_n(rand_data.begin(), radio_cb.net_cfg.pld_len, rand);
                 auto test_frame = make_shared<Frame>(test_fec);
                 test_frame->loadTestFrame(rand_data);
                 vector<uint8_t> serialized_data;
                 test_frame->serializeCoded(serialized_data);
-                serialized_data[i] = rand();
+                serialized_data[i] = (*rand_gen)();
                 auto test_output_frame = make_shared<Frame>(test_fec);
                 auto deserialized_data = make_shared<vector<uint8_t>>(serialized_data);
                 test_output_frame->deserializeCoded(deserialized_data);
@@ -118,12 +123,12 @@ void testFEC() {
             fec_success, fec_fail, fec_total);     
         debug_printf(DBG_INFO, "====================\r\n");
         debug_printf(DBG_INFO, "Now benchmarking performance...\r\n");
-        test_fec->benchmark(100);
+        test_fec->benchmark(NUM_BENCHMARK_RUNS);
     }
 }
 
 
-int32_t FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+auto FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
     if(name == "Dummy Interleaver") {
         lock.lock();
     }
@@ -243,12 +248,12 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
     int_params.pre_bytes = conv_params.bytes;
 
     // Set up the interleaving parameters
-    int_params.bits_f = conv_params.bytes*8;
+    int_params.bits_f = static_cast<float>(conv_params.bytes)*8;
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
     debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
     int_params.bits = static_cast<int32_t>(int_params.bits_f);
-    int_params.bytes = static_cast<int32_t>(ceilf((int_params.row_f*int_params.col_f)/8.0f));
+    int_params.bytes = static_cast<int32_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE));
     int_params.row = static_cast<int32_t>(int_params.row_f);
     int_params.col = static_cast<int32_t>(int_params.col_f);
 
@@ -256,6 +261,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
 }
 
 
+constexpr float MS_IN_SEC = 1000.F;
 void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
@@ -266,9 +272,10 @@ void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "Testing the correctness...\r\n");
     int correct_test = 0;
     int incorrect_test = 0;
-    for(uint32_t j = 0; j < 10; j++) {
-        for(uint32_t i = 0; i < Frame::size(); i++) {
-            msg_data[i] = rand();    
+    auto rand_gen = make_shared<mt19937>(radio_cb.address);
+    for(size_t j = 0; j < NUM_TESTS; j++) {
+        for(size_t i = 0; i < Frame::size(); i++) {
+            msg_data[i] = (*rand_gen)();    
         }
         encode(msg_data, enc_data);
         decode(enc_data, dec_data);
@@ -302,17 +309,16 @@ void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "Benchmarking complete! \r\n");
     debug_printf(DBG_INFO, "Encode: %d iterations complete in %d ms\r\n", num_iters, enc_num_ms);
     float enc_ms_per_iter = static_cast<float>(enc_num_ms) / static_cast<float>(num_iters);
-    float enc_iters_per_sec = static_cast<float>(num_iters) / (static_cast<float>(enc_num_ms) / 1000.f);
+    float enc_iters_per_sec = static_cast<float>(num_iters) / (static_cast<float>(enc_num_ms) / MS_IN_SEC);
     debug_printf(DBG_INFO, "Encode: %f ms/iteration, %f iterations/s\r\n", enc_ms_per_iter, enc_iters_per_sec);
     debug_printf(DBG_INFO, "Decode: %d iterations complete in %d ms\r\n", num_iters, dec_num_ms);
     float dec_ms_per_iter = static_cast<float>(dec_num_ms) / static_cast<float>(num_iters);
-    float dec_iters_per_sec = static_cast<float>(num_iters) / (static_cast<float>(dec_num_ms) / 1000.f);
+    float dec_iters_per_sec = static_cast<float>(num_iters) / (static_cast<float>(dec_num_ms) / MS_IN_SEC);
     debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
     debug_printf(DBG_INFO, "====================\r\n");
 }
 
 
-static constexpr int BITS_IN_BYTE = 8;
 static constexpr float BITS_IN_BYTE_F = 8.F;
 FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
             const int32_t my_rs_corr_bytes) 
@@ -386,7 +392,7 @@ auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
                             rs_enc_msg_size, conv_enc_msg.data());
     MBED_ASSERT(conv_enc_len = conv_params.bits);
-    MBED_ASSERT((int32_t) conv_enc_msg.size() == conv_params.bytes);
+    MBED_ASSERT(static_cast<int32_t>(conv_enc_msg.size()) == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);
     interleaveBits(conv_enc_msg, int_enc_msg);
@@ -409,12 +415,12 @@ auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -
 	MBED_ASSERT(enc_msg.size() == enc_size);
 	vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT((int32_t) deint_msg.size() == conv_params.bytes);
+    MBED_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
     // Convolutional decode
     dec_msg.resize(msg_len);
     int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, dec_msg.data());
-    MBED_ASSERT(dec_size == (int32_t) msg_len);
+    MBED_ASSERT(dec_size == static_cast<int32_t>(msg_len));
     if(name == "Convolutional Coding") {
         lock.unlock();
     }
@@ -431,13 +437,13 @@ auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) ->
     MBED_ASSERT(enc_msg.size() == enc_size);
     vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT((int32_t) deint_msg.size() == conv_params.bytes);
+    MBED_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
     // Convolutional decode
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     size_t deconv_bytes = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, rs_enc_msg.data());
-    MBED_ASSERT((int32_t) deconv_bytes == rs_enc_msg_size);
-    MBED_ASSERT((int32_t) rs_enc_msg.size() == rs_enc_msg_size);
+    MBED_ASSERT(static_cast<int32_t>(deconv_bytes) == rs_enc_msg_size);
+    MBED_ASSERT(static_cast<int32_t>(rs_enc_msg.size()) == rs_enc_msg_size);
     // Reed-Solomon decode
     dec_msg.resize(msg_len);  
     correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg_size, dec_msg.data());
@@ -467,7 +473,7 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
 }
 
 
-int32_t FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) {
+auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
     if(name == "RSVGolay") {
         lock.lock();
     }

@@ -29,15 +29,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "USBSerial.h"
 
 
-extern IndicatorLED led1, led2, led3;
-//Thread tx_serial_thread(osPriorityNormal, 16384, NULL, "TX-SERIAL"); /// Outgoing serial messages handler
-//Thread rx_serial_thread(osPriorityNormal, 8192, NULL, "RX-SERIAL"); /// Incoming serial messages handler
-Thread mesh_protocol_thread(osPriorityRealtime, 4096, NULL, "MESH-FSM"); /// Handles the mesh protocol
-Thread rx_frame_thread(osPriorityNormal, 4096, NULL, "RX-FRAME"); /// Processes and routes received Frames
-Thread nv_log_thread(osPriorityNormal, 4096, NULL, "NV-LOG"); /// Logging to the QSPI flash
+constexpr int THREAD_STACK_SIZE = 4096;
+Thread mesh_protocol_thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
+Thread rx_frame_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
+Thread nv_log_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
 
 EventQueue background_queue;
-Thread background_thread(osPriorityNormal, 4096, NULL, "BG"); /// Background thread
+Thread background_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
 
 time_t boot_timestamp;
 
@@ -50,8 +48,14 @@ Afsk my_afsk;
 system_state_t current_mode = system_state_t::BOOTING;
 atomic<bool> stay_in_management(false);
 
-constexpr int SLEEP_TIME = 500; // (msec)
-constexpr int PRINT_AFTER_N_LOOPS = 20;
+static constexpr int TENTH_SECOND = 100; //NOLINT
+static constexpr int QUARTER_SECOND = 250;
+static constexpr int HALF_SECOND = 500;
+static constexpr int ONE_SECOND = 1000;
+static constexpr int TWO_SECONDS = 2000;
+static constexpr int FIVE_SECONDS = 5000;
+static constexpr int I2C_FREQ = 400000;
+
 
 void send_status();
 
@@ -69,7 +73,7 @@ void print_stats()
     printf("Uptime: %-20lld", stats.uptime);
     printf("Idle time: %-20lld", stats.idle_time);
     printf("Sleep time: %-20lld", stats.sleep_time);
-    printf("Deep sleep time: %-2F0lld\n", stats.deep_sleep_time);
+    printf("Deep sleep time: %-2F0lld\n", static_cast<double>(stats.deep_sleep_time));
     }
 #if 0
     {
@@ -93,7 +97,7 @@ void print_stats()
 // main() runs in its own thread in the OS
 
 static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
-int main()
+auto main() -> int
 {
     start_cal();
     time(&boot_timestamp);
@@ -107,10 +111,13 @@ int main()
     led2.setEvtQueue(&background_queue);
     led3.setEvtQueue(&background_queue);  
 
-    oled_i2c.frequency(400000);
+    oled_i2c.frequency(I2C_FREQ);
     oled_i2c.start();
     
-    oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, 0x78, 32, 128);
+    constexpr int OLED_NUM_LINES = 32;
+    constexpr int OLED_NUM_COLS = 128;
+    constexpr int OLED_CONST = 0x78;
+    oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
@@ -118,11 +125,11 @@ int main()
     led1.LEDBlink();
     oled->printf("In rescue mode...\r\n");
     oled->display();
-	ThisThread::sleep_for(1000);
-	if(user_button) {
+	ThisThread::sleep_for(ONE_SECOND);
+	if(user_button != 0) {
 		led1.LEDFastBlink();
-		ThisThread::sleep_for(1000);
-		if(user_button) {
+		ThisThread::sleep_for(ONE_SECOND);
+		if(user_button != 0) {
 			rescue_filesystem();
 		}
 	}
@@ -131,7 +138,7 @@ int main()
     auto push_button = new PushButton(USER_BUTTON);
     push_button->SetQueue(background_queue);
 #endif
-    ThisThread::sleep_for(1000);
+    ThisThread::sleep_for(ONE_SECOND);
 
     // Mount the filesystem, load the configuration, log the bootup
     print_memory_info();
@@ -143,20 +150,21 @@ int main()
     stream_id_rng.seed(radio_cb.address);
     // Start the serial handler threads
     printf("Starting first serial port\r\n");
-    ThisThread::sleep_for(500);
-    KISSSerial *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
+    ThisThread::sleep_for(HALF_SECOND);
+    auto *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
                                         MBED_CONF_APP_KISS_UART_RX, 
                                         string("BT"), DEBUG_PORT);
     printf("Starting second serial port\r\n");
-    ThisThread::sleep_for(500);
-    KISSSerial *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
+    ThisThread::sleep_for(HALF_SECOND);
+    auto *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
                                         MBED_CONF_APP_KISS_UART_RX_ALT,
                                         MBED_CONF_APP_KISS_UART_EN_ALT,
                                         MBED_CONF_APP_KISS_UART_ST_ALT, 
                                         string("BT-ALT"), DEBUG_PORT);
+    MBED_ASSERT(bt_ser);
     MBED_ASSERT(bt_alt_ser);
     debug_printf(DBG_INFO, "Serial threads started");
-    ThisThread::sleep_for(500);
+    ThisThread::sleep_for(HALF_SECOND);
     send_status();
 
     rx_frame_thread.start(rx_frame_ser_thread_fn);
@@ -175,9 +183,9 @@ int main()
     oled->display();
     send_status();
     led1.LEDFastBlink();
-    ThisThread::sleep_for(2000);
+    ThisThread::sleep_for(TWO_SECONDS);
     while(stay_in_management) {
-        ThisThread::sleep_for(5000);
+        ThisThread::sleep_for(FIVE_SECONDS);
     }
     current_mode = system_state_t::RUNNING;
     send_status();
@@ -194,19 +202,19 @@ int main()
     print_memory_info();
     {
     auto fec_test_fec = make_shared<FEC>(Frame::size());
-    fec_test_fec->benchmark(100);
+    fec_test_fec->benchmark(TENTH_SECOND);
     auto fec_test_interleave = make_shared<FECInterleave>(Frame::size());
-    fec_test_interleave->benchmark(100);
+    fec_test_interleave->benchmark(TENTH_SECOND);
     auto fec_test_conv = make_shared<FECConv>(Frame::size(), 2, 9);
-    fec_test_conv->benchmark(100);
-    ThisThread::sleep_for(500);
+    fec_test_conv->benchmark(TENTH_SECOND);
+    ThisThread::sleep_for(HALF_SECOND);
     auto fec_test_rsv = make_shared<FECRSV>(Frame::size(), 2, 9, 8);
-    fec_test_rsv->benchmark(100);
-    ThisThread::sleep_for(500);
+    fec_test_rsv->benchmark(TENTH_SECOND);
+    ThisThread::sleep_for(HALF_SECOND);
     print_memory_info();
     auto fec_test_rsv_big = make_shared<FECRSV>(Frame::size(), 3, 9, 8);
-    fec_test_rsv_big->benchmark(100);
-    ThisThread::sleep_for(500);
+    fec_test_rsv_big->benchmark(TENTH_SECOND);
+    ThisThread::sleep_for(HALF_SECOND);
     print_memory_info();
     } 
 print_memory_info();
@@ -216,12 +224,12 @@ ThisThread::sleep_for(500);
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread.start(nv_log_fn);
 
-    ThisThread::sleep_for(250);
+    ThisThread::sleep_for(QUARTER_SECOND);
 
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing the Radio\r\n");
     init_radio();
-    ThisThread::sleep_for(250);
+    ThisThread::sleep_for(QUARTER_SECOND);
 
 #if 0
     // Send out a POCSAG message
@@ -229,7 +237,7 @@ ThisThread::sleep_for(500);
     string pocsag_msg = "KG5VBY Testing is here";
     while(1) {
         send_pocsag_msg(pocsag_msg);
-        ThisThread::sleep_for(5000);
+        ThisThread::sleep_for(FIVE_SECONDS);
     }
 #endif
 
@@ -238,17 +246,19 @@ ThisThread::sleep_for(500);
     mesh_protocol_thread.start(mesh_protocol_fsm);
 
     debug_printf(DBG_INFO, "Time to chill...\r\n");
-    ThisThread::sleep_for(250);  
+    ThisThread::sleep_for(QUARTER_SECOND);  
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
-    background_queue.call_every(radio_cb.net_cfg.beacon_interval*1000, beacon_fn);
+    background_queue.call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
+                            beacon_fn);
 
     debug_printf(DBG_INFO, "Starting the POCSAG beacon\r\n");
     if(radio_cb.pocsag_cfg.enabled) {
-        background_queue.call_every(radio_cb.pocsag_cfg.beacon_interval*1000, beacon_pocsag_fn);
+        background_queue.call_every(static_cast<int>(radio_cb.pocsag_cfg.beacon_interval*ONE_SECOND), 
+                            beacon_pocsag_fn);
     }
-    ThisThread::sleep_for(250);
+    ThisThread::sleep_for(QUARTER_SECOND);
  
     // Start the OLED monitoring
     background_queue.call(oled_mon_fn);
@@ -266,7 +276,7 @@ ThisThread::sleep_for(500);
 
     for(;;) {
 //        print_stats();
-        ThisThread::sleep_for(5000);
+        ThisThread::sleep_for(FIVE_SECONDS);
     }
 }
 

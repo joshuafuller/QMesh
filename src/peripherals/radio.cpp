@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <string>
+#include <utility>
 #include "radio.hpp"
 #include "radio_timing.hpp"
 #include "correct.h"
@@ -71,23 +72,24 @@ static void fhss_change_channel_cb(uint8_t current_channel);
 shared_ptr<FEC> frame_fec;  
 
 void send_pocsag_msg(const string &msg) {
-    char *data = (char *) malloc(msg.length()+1);
-    memcpy(data, msg.c_str(), msg.length());
+    vector<char> data(msg.length()+1);
+    memcpy(data.data(), msg.c_str(), msg.length());
     data[msg.length()] = '\0';
     debug_printf(DBG_INFO, "orig size is %d\r\n", msg.length());
     Pocsag my_pocsag;
-    if(!my_pocsag.CreatePocsag(10, 1, data, 1, 1)) {
+    if(my_pocsag.CreatePocsag(10, 1, data.data(), 1, 1) == 0) {
         debug_printf(DBG_INFO, "Error is %d\r\n", my_pocsag.GetError());
         MBED_ASSERT(false);
     }
-    radio.set_tx_config_pocsag(20);
+    radio.set_tx_config_pocsag(radio_cb.radio_cfg.tx_power);
     debug_printf(DBG_INFO, "POCSAG size is %d\r\n", my_pocsag.GetSize());
     radio.send(static_cast<uint8_t *>(my_pocsag.GetMsgPointer()), my_pocsag.GetSize());
-    free(data);
 }
 
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
+static constexpr int QUARTER_SECOND = 250;
+static constexpr int ONE_SECOND = 1000;
 void init_radio() {
     // Initialize Radio driver
     debug_printf(DBG_INFO, "Now initializing the radio\r\n");
@@ -98,7 +100,7 @@ void init_radio() {
     radio_events.rx_timeout = rx_timeout_cb;
     radio_events.rx_preamble_det = rx_preamble_det_cb;
     radio_events.fhss_change_channel = fhss_change_channel_cb;
-    ThisThread::sleep_for(250);
+    ThisThread::sleep_for(QUARTER_SECOND);
     radio.init_radio(&radio_events);
     debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
     debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
@@ -113,7 +115,7 @@ void init_radio() {
             radio_cb.radio_cfg.lora_cfg.fhss_pre_len); 
     vector<uint32_t> freqs;
     for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
-        freqs.push_back(radio_cb.radio_cfg.frequencies[i]);
+        freqs.push_back(radio_cb.radio_cfg.frequencies[i]); 
         debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb.radio_cfg.frequencies[i]);
     }
     radio.configure_freq_hop(radio_cb.address, freqs);
@@ -193,19 +195,20 @@ void init_radio() {
                         radio_cb.radio_cfg.lora_cfg.cr, 
                         pre_len, 
                         radio_cb.net_cfg.full_pkt_len);
-    radio.cad_rx_timeout = radio_timing.get_pkt_time_us() / 15.625f;
+    constexpr float RX_TIMEOUT_INCREMENT = 15.625F;
+    radio.cad_rx_timeout = radio_timing.get_pkt_time_us() / RX_TIMEOUT_INCREMENT;
     if(radio_cb.test_cfg.cw_test_mode) { 
         debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
         radio.set_tx_continuous_wave(0, 0, 0);
         while(true) {
-            ThisThread::sleep_for(1000);
+            ThisThread::sleep_for(ONE_SECOND);
         }
     }
     else if(radio_cb.test_cfg.preamble_test_mode) {
         debug_printf(DBG_WARN, "Starting continuous preamble output...\r\n");
         radio.set_tx_continuous_preamble();
         while(true) {
-            ThisThread::sleep_for(1000);
+            ThisThread::sleep_for(ONE_SECOND);
         }
     }
     else if(radio_cb.test_cfg.test_fec) {
@@ -245,7 +248,7 @@ void reinit_radio() {
 }
 
 
-void reinit_radio_pocsag(void) {
+void reinit_radio_pocsag() {
     radio.set_tx_config_pocsag(radio_cb.radio_cfg.tx_power);
     radio.rx_hop_frequency();
 }
@@ -260,15 +263,15 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, string &my_pocsag_msg
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr_sptr) {
-    tmr_sptr = my_tmr_sptr;
+    tmr_sptr = std::move(my_tmr_sptr);
     evt_enum = my_evt_enum;
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr_sptr, const uint8_t *my_buf,
         shared_ptr<list<pair<uint32_t, uint8_t> > > my_rssi_list_sptr,
         const size_t my_size, const int16_t my_rssi, const int8_t my_snr) {
-    rssi_list_sptr = my_rssi_list_sptr;
-    tmr_sptr = my_tmr_sptr;
+    rssi_list_sptr = std::move(my_rssi_list_sptr);
+    tmr_sptr = std::move(my_tmr_sptr);
     evt_enum = my_evt_enum;
     MBED_ASSERT(my_size <= 256);
     buf = std::make_shared<vector<uint8_t>>();

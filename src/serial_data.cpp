@@ -32,23 +32,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
 static const SerialMsg ser_msg_zero = SerialMsg_init_zero;
-static const DataMsg data_msg_zero = DataMsg_init_zero;
 
-size_t Frame::size(void) {
+auto Frame::size() -> size_t {
     return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
 }
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
+    constexpr int NUM_HOPS = 7;
+    constexpr int SENDER_ADDR = 11;
     hdr.cons_subhdr.fields.type = 0;
     hdr.cons_subhdr.fields.stream_id = 1;
-    hdr.var_subhdr.fields.ttl = 7;
-    hdr.var_subhdr.fields.sender = 0xB;
+    hdr.var_subhdr.fields.ttl = NUM_HOPS;
+    hdr.var_subhdr.fields.sender = SENDER_ADDR;
     hdr.var_subhdr.fields.sym_offset = 0;
     data.assign(buf.begin(), buf.end());
     setCRC();
 }
 
-size_t Frame::codedSize(void) {
+auto Frame::codedSize() -> size_t {
     return fec->encSize();
 }
 
@@ -101,7 +102,7 @@ void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const u
     }
 }
 
-size_t Frame::serializeCoded(vector<uint8_t> &buf) {
+auto Frame::serializeCoded(vector<uint8_t> &buf) -> size_t {
     //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
     vector<uint8_t> ser_buf;
     serialize(ser_buf);
@@ -109,16 +110,18 @@ size_t Frame::serializeCoded(vector<uint8_t> &buf) {
     return fec->encode(ser_buf, buf);
 }
 
-uint8_t Frame::calcCRC(void) {
-    MbedCRC<POLY_8BIT_CCITT, 8> ct;
+auto Frame::calcCRC() -> uint8_t {
+    constexpr int CRC_SIZE = 8;
+    MbedCRC<POLY_8BIT_CCITT, CRC_SIZE> ct;
     uint32_t crc = 0;
     vector<uint8_t> crc_buf;
     for(size_t i = 0; i < sizeof(hdr.cons_subhdr); i++) {
         crc_buf.push_back(((uint8_t *) &hdr.cons_subhdr)[i]);
     }
     copy(data.begin(), data.end(), back_inserter(crc_buf));
-    ct.compute((void *) crc_buf.data(), crc_buf.size(), &crc);
-    return crc & 0x000000FF;
+    ct.compute(static_cast<void *>(crc_buf.data()), crc_buf.size(), &crc);
+    constexpr uint32_t LOWEST_BYTE_MASK = 0x000000FFU;
+    return crc & LOWEST_BYTE_MASK;
 }
 
 auto Frame::calcUniqueCRC() -> uint32_t {
@@ -220,7 +223,7 @@ void Frame::createFromKISS(DataMsg &data_msg) {
 }
 
 
-size_t Frame::getKISSMaxSize(void) {
+auto Frame::getKISSMaxSize() -> size_t {
     return radio_cb.net_cfg.pld_len-sizeof(kiss_subhdr);
 }
 
@@ -349,9 +352,9 @@ auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> 
 static Mutex frame_map_mtx;
 extern EventQueue background_queue;
 using frag_info_t = struct {
-    uint8_t tot_frames;
-    uint8_t stream_id;
-    int tag;
+    uint8_t tot_frames{};
+    uint8_t stream_id{};
+    int tag{};
     vector<shared_ptr<DataMsg>> frags;
 };
 using frag_map_t = map<uint8_t, frag_info_t>; 

@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <typeinfo>
 #include "golay.h"
 
+constexpr int BITS_IN_BYTE = 8;
 
 // Convolutional Codes
 
@@ -59,7 +60,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Performs some testing of the different Forward Error Correction algorithms.
  */
-void testFEC(void);
+void testFEC();
 
 /**
  * Base class for Forward Error Correction. Provides some generically-useful functions,
@@ -129,7 +130,7 @@ public:
 
 /**
  * Derived class that just applies/removes the interleaving from the data.
- */
+ */ 
 class FECInterleave : public FEC {
 protected:
     struct {
@@ -141,16 +142,16 @@ protected:
     void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint);
 
     static auto getBit(const vector<uint8_t> &bytes, const int32_t pos) -> bool {
-        uint8_t byte = bytes[pos/8];
-        size_t byte_pos = pos % 8;
-        return (((1 << byte_pos) & byte) != 0);
+        uint8_t byte = bytes[pos/BITS_IN_BYTE];
+        size_t byte_pos = pos % BITS_IN_BYTE;
+        return (((1U << byte_pos) & byte) != 0);
     }
 
     static void setBit(const bool bit, const int32_t pos, vector<uint8_t> &bytes) {
-		size_t byte_pos = pos % 8;
-        bytes[pos/8] &= ~(1 << byte_pos);
+		size_t byte_pos = pos % BITS_IN_BYTE;
+        bytes[pos/BITS_IN_BYTE] &= ~(1U << byte_pos);
         uint8_t my_bit = (bit == false) ? 0 : 1;
-        bytes[pos/8] |= (my_bit << byte_pos);
+        bytes[pos/BITS_IN_BYTE] |= (my_bit << byte_pos);
     }
 
 
@@ -269,7 +270,7 @@ public:
     auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
 
     auto encSize() -> int override {
-        return enc_size+3;
+        return static_cast<int>(enc_size+3);
     }
 };
 
