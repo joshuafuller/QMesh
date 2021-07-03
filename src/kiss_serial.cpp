@@ -288,6 +288,8 @@ static constexpr uint32_t SER_BAUD_RATE = 230400;
 static constexpr uint32_t BT_BAUD_RATE = 38400;
 KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name, 
                         const ser_port_type_t ser_port_type) {
+    en_pin = nullptr;
+    state_pin = nullptr;
     past_log_msg = ser_msg_zero;
     tx_port = tx;
     rx_port = rx;

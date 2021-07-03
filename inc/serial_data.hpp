@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mbed.h"
 #include <string>
+#include <utility>
 #include "params.hpp"
 #include "nv_settings.hpp"
 #include "kiss_serial.hpp"
@@ -69,9 +70,13 @@ using pkt_status_enum = enum PKT_STATUS_ENUM {
     PKT_UNITIALIZED,
 };
 
-#define BEACON_FRAME 0
-#define PAYLOAD_FRAME 1
-#define KISS_FRAME 2
+
+using frame_types = enum frame_types {
+    BEACON_FRAME = 0,
+    PAYLOAD_FRAME = 1,
+    KISS_FRAME = 2,
+};
+
 /**
  * This class implements the QMesh Frame. It provides both the storage
  * of Frame data fields as well as various methods for performing
@@ -83,8 +88,8 @@ using pkt_status_enum = enum PKT_STATUS_ENUM {
  */
 class Frame {
 public:
-    typedef uint8_t crc8_t;
-    typedef struct {
+    using crc8_t = uint8_t;
+    typedef struct { //NOLINT
         union {
             struct __attribute__((__packed__)) {
                 uint32_t ttl : 3;
@@ -101,7 +106,7 @@ public:
             uint8_t b;
         } cons_subhdr;
     } frame_hdr;
-    typedef union {
+    typedef union { //NOLINT
         struct __attribute__((__packed__)) {
             uint32_t size : 8;
             uint32_t cur_frame : 4;
@@ -110,16 +115,16 @@ public:
         uint8_t b[2];
     } kiss_subhdr;
     shared_ptr<FEC> fec;
-	bool tx_frame;
+	bool tx_frame{};
 private:
-    frame_hdr hdr;
+    frame_hdr hdr{};
     vector<uint8_t> data;
-    crc8_t crc;
+    crc8_t crc{};
 protected:
     // receive stats
-    int16_t rssi;
-    int8_t snr;
-    uint16_t rx_size;
+    int16_t rssi{};
+    int8_t snr{};
+    uint16_t rx_size{};
     PKT_STATUS_ENUM pkt_status;
 
 public:
@@ -157,7 +162,8 @@ public:
     * Constructor that loads a specific FEC.
     * @param my_fec shared_ptr to the FEC object.
     */
-    Frame(shared_ptr<FEC> my_fec) {
+    explicit Frame(const shared_ptr<FEC>& my_fec) {
+        pkt_status = PKT_UNITIALIZED;
         fec = my_fec;
     }
 
@@ -223,14 +229,14 @@ public:
         return data.size();
     }
 
-    void whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed);
+    static void whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, uint16_t seed);
 
     /**
     * FEC-encode the Frame, and provide the encoded bytes. Returns size in
     * bytes of the FEC-encoded Frame.
     * @param buf The vector that will hold the encoded Frame.
     */
-    size_t serializeCoded(vector<uint8_t> &buf);
+    auto serializeCoded(vector<uint8_t> &buf) -> size_t;
 
     /**
     * Calculate the CRC of the payload.
@@ -430,7 +436,7 @@ public:
     shared_ptr<Frame> frame;
     string pocsag_msg;
 
-    RadioEvent(radio_evt_enum_t my_evt_enum);
+    explicit RadioEvent(radio_evt_enum_t my_evt_enum);
 
     RadioEvent(radio_evt_enum_t my_evt_enum, string &pocsag_msg);
 
@@ -492,8 +498,8 @@ auto dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) -> T {
     for(;;) {
         osEvent evt = mail_queue.get();
         if(evt.status == osEventMail) {
-            mail_item = *((T *) evt.value.p);
-            mail_queue.free((T *) evt.value.p);
+            mail_item = *(static_cast<T *>(evt.value.p));
+            mail_queue.free(static_cast<T *>(evt.value.p));
             break;
         }
         MBED_ASSERT(false);
@@ -507,7 +513,7 @@ auto dequeue_mail_timeout(Mail<T, QUEUE_DEPTH> &mail_queue, const uint32_t timeo
     timed_out = false;
     osEvent evt = mail_queue.get(timeout_ms);
     if(evt.status == osEventMail) {
-        mail_item = *((T *) evt.value.p);
+        mail_item = *(static_cast<T *>(evt.value.p));
         mail_queue.free(static_cast<T *>(evt.value.p));
     }
     else if(evt.status == osEventTimeout) {
