@@ -30,7 +30,7 @@ void reboot_system();
  * pushbuttons.
  */
 class PushButton {
-protected:
+private:
     bool was_pressed;
     InterruptIn *btn;
 public:
@@ -38,7 +38,16 @@ public:
      * Constructor.
      * @param button The pin controlled by the pushbutton.
      */
-    PushButton(PinName button);
+    explicit PushButton(PinName button);
+
+        /// Since you can't really share pins, the copy constructor and
+    /// copy assignment operators don't make any sense.
+    PushButton(const PushButton &old) = delete;
+    auto operator= (const PushButton &) -> PushButton & = delete;
+
+    /// Move constructor and move assignment operators do make sense, however.
+    auto operator= (PushButton &&) -> PushButton & = default;	
+    PushButton(PushButton&& other) = default;
 
     /**
      * Set the event queue to be used.

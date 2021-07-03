@@ -27,6 +27,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <random>
 #include "mem_trace.hpp"
 
+// Polynomials
+// These have been determined via find_conv_libfec_poly.c
+// We could just make up new ones, but we use libfec's here so that
+//   codes encoded by this library can be decoded by the original libfec
+//   and vice-versa
+constexpr uint16_t V27POLYA = 0155;
+constexpr uint16_t V27POLYB = 0117;
+
+constexpr uint16_t V29POLYA = 0657;
+constexpr uint16_t V29POLYB = 0435;
+
+constexpr uint16_t V39POLYA = 0755;
+constexpr uint16_t V39POLYB = 0633;
+constexpr uint16_t V39POLYC = 0447;
+
+constexpr uint16_t V615POLYA = 042631;
+constexpr uint16_t V615POLYB = 047245;
+constexpr uint16_t V615POLYC = 056507;
+constexpr uint16_t V615POLYD = 073363;
+constexpr uint16_t V615POLYE = 077267;
+constexpr uint16_t V615POLYF = 064537;
+
 static correct_convolutional_polynomial_t libfec_r12_7_polynomial[] = {V27POLYA, V27POLYB}; //NOLINT
 static correct_convolutional_polynomial_t libfec_r13_9_polynomial[] = {V39POLYA, V39POLYB, V39POLYC}; //NOLINT
 static correct_convolutional_polynomial_t libfec_r16_15_polynomial[] = {V615POLYA, V615POLYB, V615POLYC, //NOLINT
@@ -162,7 +184,7 @@ auto FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_
 
 
 // Using a technique similar to the AO-40 OSCAR interleaving setup
-void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) {
+void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) const {
     MBED_ASSERT(bytes.size() == int_params.pre_bytes);
     vector<uint8_t> new_bytes_preint(int_params.pre_bytes, 0x00);
     vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
@@ -180,7 +202,7 @@ void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t>
 }
 
 
-void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) {
+void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) const {
     MBED_ASSERT(bytes_int.size() == int_params.bytes);
     vector<uint8_t> new_bytes_deint(bytes_int.size(), 0x00);
     uint32_t bit_idx = 0;

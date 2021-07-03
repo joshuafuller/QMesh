@@ -47,27 +47,27 @@ enum DBG_TYPES {
  * @param dbg_type Debug type.
  * @fmt The printf()-formatted string to be printed..
  */
-int debug_printf(const enum DBG_TYPES, const char *fmt, ...);
+auto debug_printf(enum DBG_TYPES, const char *fmt, ...) -> int;
 
 /**
  * Pretty-print a message to the debug output.
  * @param dbg_type Debug type.
  * @fmt The printf()-formatted string to be printed..
  */
-int debug_printf_clean(const enum DBG_TYPES, const char *fmt, ...);
+auto debug_printf_clean(enum DBG_TYPES, const char *fmt, ...) -> int;
 
 /**
  * Outputs received frames over the UART.
  */
-void rx_frame_ser_thread_fn(void);
+void rx_frame_ser_thread_fn();
 
-typedef enum {
+using pkt_status_enum = enum PKT_STATUS_ENUM {
     PKT_OK = 0,
     PKT_FEC_FAIL,
     PKT_BAD_CRC,
     PKT_BAD_SIZE,
     PKT_UNITIALIZED,
-} PKT_STATUS_ENUM;
+};
 
 #define BEACON_FRAME 0
 #define PAYLOAD_FRAME 1
@@ -126,9 +126,9 @@ public:
     /**
     * Get the combined, un-FEC'd size of the Frame.
     */
-    static size_t size(void);
+    static auto size() -> size_t;
 
-    DataMsg_Type getDataMsgType(void) {
+    auto getDataMsgType() const -> DataMsg_Type {
         switch(hdr.cons_subhdr.fields.type) {
             case 0: return DataMsg_Type_TX; 
             case 1: return DataMsg_Type_RX;
@@ -169,15 +169,16 @@ public:
 
     void createFromKISS(DataMsg &data_msg);
 
-    static size_t getKISSMaxSize(void);
+    static auto getKISSMaxSize() -> size_t;
 
     /// Equality operator for Frames
-    bool operator == (const Frame &L) {
+    auto operator == (const Frame &L) -> bool {
         auto L_cpy = make_shared<Frame>(L);
         auto R_cpy = make_shared<Frame>(*this);
         //debug_printf(DBG_INFO, "Setting up the comparison\r\n");
         //ThisThread::sleep_for(1000); 
-        vector<uint8_t> l_ser_data, r_ser_data;
+        vector<uint8_t> l_ser_data;
+        vector<uint8_t> r_ser_data;
         L_cpy->serialize(l_ser_data);
         R_cpy->serialize(r_ser_data);
         //debug_printf(DBG_INFO, "Getting serialized data\r\n");
@@ -186,7 +187,7 @@ public:
     }
 
     /// Inequality operator for Frames
-    bool operator != (const Frame &L) {
+    auto operator != (const Frame &L) -> bool {
         return !(*this == L);
     }
 
@@ -200,7 +201,7 @@ public:
     * Get the payload. Returns the number of bytes in the payload.
     * @param buf Where the payload bytes are put.
     */
-    size_t getPayload(vector<uint8_t> &buf) {
+    auto getPayload(vector<uint8_t> &buf) -> size_t {
         buf = data;
         return buf.size();
     }
@@ -209,7 +210,7 @@ public:
     * Set the beacon string. Returns the size of the beacon string.
     * @param beacon_str The beacon string.
     */
-    size_t setBeaconPayload(string &beacon_str) {
+    auto setBeaconPayload(const string &beacon_str) -> size_t {
         data.resize(radio_cb.net_cfg.pld_len);
         size_t len = beacon_str.size() < data.size() ? beacon_str.size() : data.size();
         memcpy(data.data(), beacon_str.c_str(), len);        
@@ -234,7 +235,7 @@ public:
     /**
     * Calculate the CRC of the payload.
     */
-    uint8_t calcCRC(void);
+    auto calcCRC() -> uint8_t;
 
     /**
     * Calculate the CRC for the "unique" information.
@@ -242,12 +243,12 @@ public:
     * This method is primarily used to provide a unique "hash" for Frames
     * in order to determine whether the QMesh node has seen them before.
     */
-    uint32_t calcUniqueCRC(void);
+    auto calcUniqueCRC() -> uint32_t;
 
     /**
      * Check the payload CRC, returning True if a match, False if not.
      */
-    bool checkCRC(void) {
+    auto checkCRC() -> bool {
         return (crc == calcCRC());
     }
 
@@ -255,7 +256,7 @@ public:
      * Sets the payload CRC by computing it based on the curent payload data.
      * Also returns the computed CRC.
      */
-    uint8_t setCRC(void) {
+    auto setCRC() -> uint8_t {
         uint8_t calc_crc = calcCRC();
         crc = calc_crc;
         return calc_crc;
@@ -264,7 +265,7 @@ public:
     /**
      * Sets the sender's address based on the value passed in.
      */
-    void setSender(uint8_t sender_addr) {
+    void setSender(const uint8_t sender_addr) {
         hdr.var_subhdr.fields.sender = sender_addr;
         setCRC();
     }
@@ -272,14 +273,14 @@ public:
     /**
      * Gets the sender's address.
      */
-    uint32_t getSender(void) {
+    auto getSender() const -> uint32_t {
         return hdr.var_subhdr.fields.sender;
     }
 
     /**
      * Sets the Stream ID
      */
-    void setStreamID(uint8_t id) {
+    void setStreamID(const uint8_t id) {
         hdr.cons_subhdr.fields.stream_id = id;
         setCRC();
     }
@@ -287,7 +288,7 @@ public:
     /**
      * Returns the Stream ID
      */
-    uint32_t getStreamID(void) {
+    auto getStreamID() const -> uint32_t {
         return hdr.cons_subhdr.fields.stream_id;
     }
 
@@ -351,7 +352,7 @@ public:
      * @param nsym_offset Number of symbol-length offsets
      * @param sym_offset Intra-symbol offset.
      */
-    void setOffsets(const uint8_t pre_offset, const uint8_t nsym_offset, const uint8_t sym_offset) {
+    void setOffsets(const uint8_t  /*pre_offset*/, const uint8_t  /*nsym_offset*/, const uint8_t sym_offset) {
         hdr.var_subhdr.fields.sym_offset = sym_offset;
         setCRC();
     }
@@ -362,7 +363,7 @@ public:
      * @param snr Full-packet SNR
      * @param rx_size Number of bytes received
      */
-    void getRxStats(int16_t &rssi, int8_t &snr, uint16_t &rx_size) {
+    void getRxStats(int16_t &rssi, int8_t &snr, uint16_t &rx_size) const {
         rssi = this->rssi;
         snr = this->snr;
         rx_size = this->rx_size;
@@ -407,7 +408,7 @@ public:
 };
 
 
-typedef enum {
+using radio_evt_enum_t = enum radio_evt_enum {
     TX_FRAME_EVT,
     TX_DONE_EVT,
     TX_POCSAG_DONE_EVT,
@@ -416,7 +417,7 @@ typedef enum {
     RX_TIMEOUT_EVT,
     RX_ERROR_EVT,
     TX_POCSAG_EVT,
-} radio_evt_enum_t;
+};
 
 class RadioEvent {
 public:
@@ -495,7 +496,7 @@ auto dequeue_mail(Mail<T, QUEUE_DEPTH> &mail_queue) -> T {
             mail_queue.free((T *) evt.value.p);
             break;
         }
-        else { MBED_ASSERT(false); }
+        MBED_ASSERT(false);
     } 
     return mail_item;
 }
@@ -507,7 +508,7 @@ auto dequeue_mail_timeout(Mail<T, QUEUE_DEPTH> &mail_queue, const uint32_t timeo
     osEvent evt = mail_queue.get(timeout_ms);
     if(evt.status == osEventMail) {
         mail_item = *((T *) evt.value.p);
-        mail_queue.free((T *) evt.value.p);
+        mail_queue.free(static_cast<T *>(evt.value.p));
     }
     else if(evt.status == osEventTimeout) {
         timed_out = true;

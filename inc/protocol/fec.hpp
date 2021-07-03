@@ -32,30 +32,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "golay.h"
 
 constexpr int BITS_IN_BYTE = 8;
+constexpr int DEFAULT_CONV_CONS_LEN = 7;
+constexpr int DEFAULT_CONV_ORDER = 2;
+constexpr int DEFAULT_RS_BYTES = 8;
 
 // Convolutional Codes
-
-// Polynomials
-// These have been determined via find_conv_libfec_poly.c
-// We could just make up new ones, but we use libfec's here so that
-//   codes encoded by this library can be decoded by the original libfec
-//   and vice-versa
-#define V27POLYA 0155
-#define V27POLYB 0117
-
-#define V29POLYA 0657
-#define V29POLYB 0435
-
-#define V39POLYA 0755
-#define V39POLYB 0633
-#define V39POLYC 0447
-
-#define V615POLYA 042631
-#define V615POLYB 047245
-#define V615POLYC 056507
-#define V615POLYD 073363
-#define V615POLYE 077267
-#define V615POLYF 064537
 
 /**
  * Performs some testing of the different Forward Error Correction algorithms.
@@ -138,8 +119,8 @@ protected:
         uint32_t bits, bytes, row, col;   
         uint32_t pre_bytes;
     } int_params;
-    void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int);
-    void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint);
+    void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) const;
+    void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) const;
 
     static auto getBit(const vector<uint8_t> &bytes, const int32_t pos) -> bool {
         uint8_t byte = bytes[pos/BITS_IN_BYTE];
@@ -151,12 +132,12 @@ protected:
 		size_t byte_pos = pos % BITS_IN_BYTE;
         bytes[pos/BITS_IN_BYTE] &= ~(1U << byte_pos);
         uint8_t my_bit = (bit == false) ? 0 : 1;
-        bytes[pos/BITS_IN_BYTE] |= (my_bit << byte_pos);
+        bytes[pos/BITS_IN_BYTE] |= static_cast<uint8_t>(my_bit << static_cast<uint8_t>(byte_pos));
     }
 
 
 public:
-    FECInterleave(int32_t my_msg_len);
+    explicit FECInterleave(int32_t my_msg_len);
 
     auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
 
@@ -180,9 +161,9 @@ protected:
 
 public:    
     /** 
-     * Default constructor. Creates an FECConv object with 1/2 rate and n=9.
+     * Default constructor. Creates an FECConv object with 1/2 rate and n=7.
      */
-    FECConv(const int32_t my_msg_len) : FECConv(my_msg_len, 2, 9) { }
+    FECConv(const int32_t my_msg_len) : FECConv(my_msg_len, DEFAULT_CONV_ORDER, DEFAULT_CONV_ORDER) { }
 
     /**
      * Constructor parameterizable with coding rate and order.
@@ -227,7 +208,8 @@ public:
      * Default constructor. Initializes with a convolutional coding rate of 2,
      * n=9, and 32 Reed-Solomon correction bytes.
      */
-    explicit FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, 2, 9, 8) { };
+    explicit FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, DEFAULT_CONV_ORDER, DEFAULT_CONV_CONS_LEN, 
+                                                    DEFAULT_RS_BYTES) { };
 
     /// Destructor.
     ~FECRSV() {
@@ -258,7 +240,8 @@ public:
      * Default constructor. Initializes with a convolutional coding rate of 2,
      * n=9, and 32 Reed-Solomon correction bytes.
      */
-    FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, 2, 9, 8) { };
+    FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, DEFAULT_CONV_ORDER, 
+                                                DEFAULT_CONV_CONS_LEN, DEFAULT_RS_BYTES) { };
 
     /// Destructor.
     ~FECRSVGolay() {

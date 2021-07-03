@@ -39,7 +39,6 @@ private:
     EventQueue *evt_queue;
 
 public:
-
     /// Function resonsible for blinking the LED.
     void blinkFn();
     /**
@@ -47,6 +46,16 @@ public:
      * @param led_pin_name Pin that controls the LED.
      */
     explicit IndicatorLED(PinName led_pin_name);
+
+    /// Since you can't really share pins, the copy constructor and
+    /// copy assignment operators don't make any sense.
+    IndicatorLED(const IndicatorLED &old) = delete;
+    auto operator= (const IndicatorLED &) -> IndicatorLED & = delete;
+
+    /// Move constructor and move assignment operators do make sense, however.
+    auto operator= (IndicatorLED &&) -> IndicatorLED & = default;	
+    IndicatorLED(IndicatorLED&& other) = default;
+
     /// Set the event queue
     void setEvtQueue(EventQueue *q) {
         evt_queue = q;
