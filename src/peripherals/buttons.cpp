@@ -61,12 +61,14 @@ void button_fn() {
     }
     else {
         FILE *f = fopen("/fs/low_power.mode", "w");
-        fprintf(f, "In low power mode\r\n");
-        fclose(f);
-        mbed_file_handle(STDIN_FILENO)->enable_input(false);   
-        //rx_serial_thread.terminate();
-        //gps_serial.enable_input(false);
-        oled->displayOff();
+        if(f != nullptr) {
+            fprintf(f, "In low power mode\r\n");
+            fclose(f);
+            mbed_file_handle(STDIN_FILENO)->enable_input(false);   
+            //rx_serial_thread.terminate();
+            //gps_serial.enable_input(false);
+            oled->displayOff();
+        }
     }
 } 
 
