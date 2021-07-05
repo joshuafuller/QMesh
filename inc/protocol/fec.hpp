@@ -195,7 +195,7 @@ public:
         return *this;
     }
     
-    FECConv(FECConv&& other) noexcept : FECInterleave(msg_len){
+    FECConv(FECConv&& other) noexcept : FECInterleave(msg_len) {
         *this = std::move(other);
     }
 
@@ -238,6 +238,25 @@ public:
     explicit FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, DEFAULT_CONV_ORDER, DEFAULT_CONV_CONS_LEN, 
                                                     DEFAULT_RS_BYTES) { };
 
+    FECRSV(const FECRSV &old) : FECRSV(old.msg_len, old.inv_rate, old.order, old.rs_corr_bytes) { };
+
+    auto operator= (const FECRSV &rhs) -> FECRSV & {
+        if(this == &rhs) {
+            return *this;
+        }
+        correct_convolutional_destroy(corr_con);
+        correct_reed_solomon_destroy(rs_con);
+        *this = FECRSV(rhs.msg_len, rhs.inv_rate, rhs.order, rhs.rs_corr_bytes);
+        return *this;
+    }
+
+    auto operator= (FECRSV &&rhs) noexcept -> FECRSV & {
+        rs_corr_bytes = rhs.rs_corr_bytes;
+        return *this;
+    }
+    
+    FECRSV(FECRSV&& other) = default;
+
     /// Destructor.
     ~FECRSV() {
         correct_reed_solomon_destroy(rs_con);
@@ -267,7 +286,7 @@ public:
      * Default constructor. Initializes with a convolutional coding rate of 2,
      * n=9, and 32 Reed-Solomon correction bytes.
      */
-    FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, DEFAULT_CONV_ORDER, 
+    explicit FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, DEFAULT_CONV_ORDER, 
                                                 DEFAULT_CONV_CONS_LEN, DEFAULT_RS_BYTES) { };
 
     /// Destructor.
