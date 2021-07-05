@@ -151,19 +151,19 @@ public:
 class FECConv: public FECInterleave {
 protected:
     // Convolutional coding parameters
-    int32_t inv_rate;
-    int32_t order;
-    correct_convolutional *corr_con;  
+    int32_t inv_rate{};
+    int32_t order{};
+    correct_convolutional *corr_con{};  
     struct {
         int32_t bits;
         int32_t bytes;
-    } conv_params;  
+    } conv_params{};  
 
 public:    
     /** 
      * Default constructor. Creates an FECConv object with 1/2 rate and n=7.
      */
-    FECConv(const int32_t my_msg_len) : FECConv(my_msg_len, DEFAULT_CONV_ORDER, DEFAULT_CONV_ORDER) { }
+    explicit FECConv(const int32_t my_msg_len) : FECConv(my_msg_len, DEFAULT_CONV_ORDER, DEFAULT_CONV_ORDER) { }
 
     /**
      * Constructor parameterizable with coding rate and order.
@@ -171,6 +171,33 @@ public:
      * @param order Order of the coder. Values supported are 6, 7, 8, and 9.
      */
     FECConv(int32_t my_msg_len, int32_t inv_rate, int32_t order);
+
+    FECConv(const FECConv &old) : FECConv(old.msg_len, old.inv_rate, old.order) { };
+
+    auto operator= (const FECConv &rhs) -> FECConv & {
+        if(this == &rhs) {
+            return *this;
+        }
+        correct_convolutional_destroy(corr_con);
+        *this = FECConv(rhs.msg_len, rhs.inv_rate, rhs.order);
+        return *this;
+    }
+
+    auto operator= (FECConv &&rhs) noexcept -> FECConv & {
+        conv_params = rhs.conv_params;
+        corr_con = rhs.corr_con;
+        inv_rate = rhs.inv_rate;
+        order = rhs.order;
+        enc_size = rhs.enc_size;
+        int_params = rhs.int_params;
+        msg_len = rhs.msg_len;
+        name = rhs.name;
+        return *this;
+    }
+    
+    FECConv(FECConv&& other) noexcept : FECInterleave(msg_len){
+        *this = std::move(other);
+    }
 
     /// Destructor.
     ~FECConv() {

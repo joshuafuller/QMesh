@@ -25,7 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "leds.hpp"
 #include "buttons.hpp"
 #include "stm32_watchdog.h"
-#include "DRA818.hpp"
 #include "cal_timer.hpp"
 
 #endif /* PERIPHERALS_HPP */
