@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "math.h"
 #include "mbed.h"
 #include "serial_data.hpp"
 #include "radio_timing.hpp"
@@ -29,7 +30,8 @@ static constexpr float MS_IN_S = 1e3F;
 static constexpr float US_IN_S = 1e6F;
 void RadioTiming::computeTimes(const uint32_t bw, const uint8_t sf, const uint8_t cr, 
         const uint32_t n_pre_sym, const uint8_t n_pld_bytes) {
-    float bw_f = lora_bw.at(bw);
+    float bw_f = NAN;
+    bw_f = lora_bw.at(bw);
     float sf_f = sf;
     float cr_f = cr;
     float n_pre_sym_f = n_pre_sym;
@@ -106,6 +108,8 @@ void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction,
 
 auto RadioTiming::getWaitNoWarn() -> int32_t {
     int elapsed_us = tmr_sptr->read_us();
+    MBED_ASSERT(wait_duration_us < INT32_MAX);
+    MBED_ASSERT(wait_duration_us-elapsed_us < INT32_MAX);
     if(wait_duration_us-elapsed_us < 0) {
         return 0;
     }
