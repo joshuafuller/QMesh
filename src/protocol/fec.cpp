@@ -35,8 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 constexpr uint16_t V27POLYA = 0155;
 constexpr uint16_t V27POLYB = 0117;
 
-constexpr uint16_t V29POLYA = 0657;
-constexpr uint16_t V29POLYB = 0435;
+constexpr uint16_t V29POLYA = 0657; //NOLINT
+constexpr uint16_t V29POLYB = 0435; //NOLINT
 
 constexpr uint16_t V39POLYA = 0755;
 constexpr uint16_t V39POLYB = 0633;
@@ -224,8 +224,11 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
     this->inv_rate = inv_rate;
     this->order = order;
     correct_convolutional_polynomial_t *poly = nullptr;
+    constexpr int32_t INV_RATE_2 = 2;
+    constexpr int32_t INV_RATE_3 = 3;
+    constexpr int32_t INV_RATE_6 = 6;
     switch(inv_rate) {
-        case 2: // 1/2
+        case INV_RATE_2: // 1/2
             switch(order) {
                 case ORDER_6: poly = conv_r12_6_polynomial; break;
                 case ORDER_7: poly = libfec_r12_7_polynomial; break;
@@ -236,7 +239,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
                 break;
             }
         break;
-        case 3: // 1/3
+        case INV_RATE_3: // 1/3
             switch(order) {
                 case ORDER_6: poly = conv_r13_6_polynomial; break;
                 case ORDER_7: poly = conv_r13_7_polynomial; break;
@@ -247,7 +250,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
                 break;
             }
         break;
-        case 6: // 1/6
+        case INV_RATE_6: // 1/6
             if(order == ORDER_15) {
                 poly = libfec_r16_15_polynomial;
             }
@@ -266,11 +269,11 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
 
     // Get the post-convolutional encoding length
     conv_params.bits = correct_convolutional_encode_len(corr_con, msg_len);
-    conv_params.bytes = ceilf(static_cast<float>(conv_params.bits)/8.0f);
+    conv_params.bytes = ceilf(static_cast<float>(conv_params.bits)/static_cast<float>(BITS_IN_BYTE));
     int_params.pre_bytes = conv_params.bytes;
 
     // Set up the interleaving parameters
-    int_params.bits_f = static_cast<float>(conv_params.bytes)*8;
+    int_params.bits_f = static_cast<float>(conv_params.bytes)*BITS_IN_BYTE;
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
     debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
@@ -482,6 +485,14 @@ auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) ->
 FECInterleave::FECInterleave(const int32_t my_msg_len) : 
     FEC(my_msg_len) {
     name = "Dummy Interleaver";
+    int_params.bits_f = NAN;
+    int_params.row_f = NAN;
+    int_params.col_f = NAN;
+    int_params.bits = 0;
+    int_params.bytes = 0;
+    int_params.row = 0;
+    int_params.col = 0;
+    int_params.pre_bytes = 0;
     msg_len = my_msg_len;
     int_params.pre_bytes = my_msg_len;
     int_params.bits_f = msg_len*BITS_IN_BYTE_F;
@@ -495,31 +506,27 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
 }
 
 
+static constexpr uint32_t SHIFT_ONE_BYTE = 8U;
+static constexpr uint32_t SHIFT_TWO_BYTES = 16U; 
+static constexpr uint32_t BYTE_MASK = 0x000000FF;
 auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
     if(name == "RSVGolay") {
         lock.lock();
     }
-    union {
-        uint16_t u;
-        uint8_t b[2];
-    } golay_msg;
-    golay_msg.u = 0x0000;
-    golay_msg.b[0] = msg[0];
-    golay_msg.b[1] = msg[1];
-    union {
-        uint32_t u;
-        uint8_t b[4];
-    } golay_enc_msg;
-    golay_enc_msg.u = golay_encode(golay_msg.u);
+    uint16_t golay_msg = 0x0000;
+    golay_msg |= (msg[1] & BYTE_MASK) << SHIFT_ONE_BYTE;
+    golay_msg |= (msg[0] & BYTE_MASK);
+    uint32_t golay_enc_msg = 0;
+    golay_enc_msg = golay_encode(golay_msg);
     vector<uint8_t> rsv_msg(msg.size()-2);
     copy(msg.begin()+2, msg.end(), rsv_msg.begin());
     vector<uint8_t> rsv_enc_msg;
     FECRSV::encode(rsv_msg, rsv_enc_msg);
     vector<uint8_t> golay_rsv_enc_msg(3+rsv_enc_msg.size());
     copy(rsv_enc_msg.begin(), rsv_enc_msg.end(), golay_rsv_enc_msg.begin()+3);
-    golay_rsv_enc_msg[0] = golay_enc_msg.b[0];
-    golay_rsv_enc_msg[1] = golay_enc_msg.b[1];
-    golay_rsv_enc_msg[2] = golay_enc_msg.b[2];
+    golay_rsv_enc_msg[0] = golay_enc_msg & BYTE_MASK;
+    golay_rsv_enc_msg[1] = (golay_enc_msg >> SHIFT_ONE_BYTE) & BYTE_MASK;
+    golay_rsv_enc_msg[2] = (golay_enc_msg >> SHIFT_TWO_BYTES) & BYTE_MASK;
     enc_msg = golay_rsv_enc_msg;
     if(name == "RSVGolay") {
         lock.unlock();
@@ -533,27 +540,21 @@ auto FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_ms
     if(name == "RSVGolay") {
         lock.lock();
     }
-    union {
-        uint32_t u;
-        uint8_t b[4];
-    } golay_enc_msg;
-    golay_enc_msg.u = 0x00000000;
-    golay_enc_msg.b[0] = enc_msg[0];
-    golay_enc_msg.b[1] = enc_msg[1];
-    golay_enc_msg.b[2] = enc_msg[2];
-    union {
-        uint16_t u;
-        uint8_t b[2];
-    } golay_msg;
-    golay_msg.u = golay_decode(golay_enc_msg.u);
+    uint32_t golay_enc_msg = 0;
+    golay_enc_msg = 0x00000000;
+    golay_enc_msg |= (enc_msg[0] & BYTE_MASK);
+    golay_enc_msg |= (enc_msg[1] & BYTE_MASK) << SHIFT_ONE_BYTE;
+    golay_enc_msg |= (enc_msg[2] & BYTE_MASK) << SHIFT_TWO_BYTES;
+    uint16_t golay_msg = 0x0000;
+    golay_msg = golay_decode(golay_enc_msg);
     vector<uint8_t> rsv_enc_msg(enc_msg.size()-3);
     copy(enc_msg.begin()+3, enc_msg.end(), rsv_enc_msg.begin());
     vector<uint8_t> rsv_dec_msg;
     FECRSV::decode(rsv_enc_msg, rsv_dec_msg);
     dec_msg.resize(2+rsv_dec_msg.size());
     copy(rsv_dec_msg.begin(), rsv_dec_msg.end(), dec_msg.begin()+2);
-    dec_msg[0] = golay_msg.b[0];
-    dec_msg[1] = golay_msg.b[1];
+    dec_msg[0] = (golay_msg & BYTE_MASK);
+    dec_msg[1] = (golay_msg & BYTE_MASK) << SHIFT_ONE_BYTE;
     if(name == "RSVGolay") {
         lock.unlock();
     }

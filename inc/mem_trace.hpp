@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MEM_TRACE_HPP
 #define MEM_TRACE_HPP
 
-void print_memory_info(void); /// Print memory usage statistics
+void print_memory_info(); /// Print memory usage statistics
 
 #endif /* MEM_TRACE_HPP */

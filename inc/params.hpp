@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -115,10 +115,11 @@ public:
 class FECInterleave : public FEC {
 protected:
     struct {
-        float bits_f, row_f, col_f;
-        uint32_t bits, bytes, row, col;   
-        uint32_t pre_bytes;
+        float bits_f{}, row_f{}, col_f{};
+        uint32_t bits{}, bytes{}, row{}, col{};   
+        uint32_t pre_bytes{};
     } int_params;
+    
     void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) const;
     void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) const;
 
