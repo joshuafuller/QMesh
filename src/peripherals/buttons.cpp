@@ -30,7 +30,7 @@ extern Thread oled_mon_thread;
 extern rtos::Thread *lora_irq_thread;
 extern Thread btn_evt_thread;
 
-extern Adafruit_SSD1306_I2c *oled;
+extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 //extern UARTSerial gps_serial;
 
 volatile bool rebooting = false;

@@ -89,11 +89,11 @@ static enum {
 
 RadioTiming radio_timing;
 
-static atomic<int> total_rx_pkt(0);
-static atomic<int> total_rx_corr_pkt(0);
-static atomic<int> total_tx_pkt(0);
-static atomic<int> last_rx_rssi(0.0);
-static atomic<int> last_rx_snr(0.0);
+atomic<int> total_rx_pkt(0);
+atomic<int> total_rx_corr_pkt(0);
+atomic<int> total_tx_pkt(0);
+atomic<int> last_rx_rssi(0.0);
+atomic<int> last_rx_snr(0.0);
 
 /**
  * Main function handling the mesh protocol.
@@ -381,7 +381,7 @@ void beacon_pocsag_fn() {
 }
 
 
-extern Adafruit_SSD1306_I2c *oled;
+extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 /**
  * Function called by the OLED display monitor thread. Every second, it 
  *  updates the OLED display with new packet status information.

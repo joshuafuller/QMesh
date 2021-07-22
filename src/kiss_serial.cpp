@@ -550,6 +550,11 @@ void KISSSerial::tx_serial_thread_fn() {
 /**
  * Sends the current status.
  */
+extern atomic<int> total_rx_pkt;
+extern atomic<int> total_rx_corr_pkt;
+extern atomic<int> total_tx_pkt;
+extern atomic<int> last_rx_rssi;
+extern atomic<int> last_rx_snr;
 void KISSSerial::send_status() {
     auto ser_msg = make_shared<SerialMsg>();
     *ser_msg = ser_msg_zero;
@@ -566,7 +571,18 @@ void KISSSerial::send_status() {
     }
     ser_msg->status.tx_full = tx_frame_mail.full();
     ser_msg->status.time = time(nullptr);
-    //auto ser_msg_sptr = make_shared<SerialMsg>(*);
+    auto *display_file = fopen("/fs/display.on", "r");
+    if(display_file == nullptr) {
+        ser_msg->status.oled_on = false;
+    } else {
+        fclose(display_file);
+        ser_msg->status.oled_on = true;
+    }
+    ser_msg->status.total_rx_pkt = total_rx_pkt;
+    ser_msg->status.total_rx_corr_pkt = total_rx_corr_pkt;
+    ser_msg->status.total_tx_pkt = total_tx_pkt;
+    ser_msg->status.last_rx_rssi = last_rx_rssi;
+    ser_msg->status.last_rx_snr = last_rx_snr;
     enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg);
 }  
 
@@ -631,6 +647,7 @@ static auto getFlashCompileString() -> string {
 }
 
 
+extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 void KISSSerial::rx_serial_thread_fn() {
     int upd_pkt_cnt = -1;
 	FILE *f = nullptr;
@@ -665,6 +682,20 @@ void KISSSerial::rx_serial_thread_fn() {
             }
             continue;
         }
+        if(ser_msg->type == SerialMsg_Type_TURN_OLED_ON) {
+            debug_printf(DBG_INFO, "Received a request to turn ON the OLED display\r\n");
+            auto *disp_file = fopen("/fs/display.on", "w");
+            MBED_ASSERT(disp_file != nullptr);
+            fclose(disp_file);
+            oled->displayOn();
+        }
+        if(ser_msg->type == SerialMsg_Type_TURN_OLED_OFF) {
+            debug_printf(DBG_INFO, "Received a request to turn OFF the OLED display\r\n");
+            fs.remove("display.on");
+            auto *disp_file = fopen("/fs/display.on", "r");
+            MBED_ASSERT(disp_file == nullptr);
+            oled->displayOff();
+        }        
         if(ser_msg->type == SerialMsg_Type_VERSION) {
             debug_printf(DBG_INFO, "Received a FW version request message\r\n");
             auto reply_msg = make_shared<SerialMsg>();

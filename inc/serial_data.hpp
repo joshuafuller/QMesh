@@ -96,7 +96,7 @@ public:
                 uint32_t sender : 6;    
                 uint32_t sym_offset : 3;
             } fields;
-            uint8_t b[2]; 
+            uint8_t b[2]; //NOLINT
         } var_subhdr;
         union {
             struct __attribute__((__packed__)) {
@@ -112,7 +112,7 @@ public:
             uint32_t cur_frame : 4;
             uint32_t tot_frames: 4;
         } fields;
-        uint8_t b[2];
+        uint8_t b[2]; //NOLINT
     } kiss_subhdr;
     shared_ptr<FEC> fec;
 	bool tx_frame{};

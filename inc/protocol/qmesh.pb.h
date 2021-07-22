@@ -69,7 +69,9 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_BOOT_LOG = 25,
     SerialMsg_Type_LOG = 26,
     SerialMsg_Type_UPDATE = 27,
-    SerialMsg_Type_VERSION = 28
+    SerialMsg_Type_VERSION = 28,
+    SerialMsg_Type_TURN_OLED_ON = 29,
+    SerialMsg_Type_TURN_OLED_OFF = 30
 } SerialMsg_Type;
 
 typedef enum _ErrorMsg_Type {
@@ -170,6 +172,12 @@ typedef struct _StatusMsg {
     StatusMsg_Status status;
     bool tx_full;
     uint32_t time;
+    bool oled_on;
+    uint32_t total_rx_pkt;
+    uint32_t total_rx_corr_pkt;
+    uint32_t total_tx_pkt;
+    uint32_t last_rx_rssi;
+    uint32_t last_rx_snr;
 } StatusMsg;
 
 typedef struct _TestCfg {
@@ -291,8 +299,8 @@ typedef struct _SerialMsg {
 #define _StatusMsg_Status_ARRAYSIZE ((StatusMsg_Status)(StatusMsg_Status_RUNNING+1))
 
 #define _SerialMsg_Type_MIN SerialMsg_Type_GET_CONFIG
-#define _SerialMsg_Type_MAX SerialMsg_Type_VERSION
-#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_VERSION+1))
+#define _SerialMsg_Type_MAX SerialMsg_Type_TURN_OLED_OFF
+#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_TURN_OLED_OFF+1))
 
 #define _ErrorMsg_Type_MIN ErrorMsg_Type_CRC_ERR
 #define _ErrorMsg_Type_MAX ErrorMsg_Type_OTHER_ERR
@@ -316,7 +324,7 @@ typedef struct _SerialMsg {
 #define POCSAGCfg_init_default                   {0, 0, 0}
 #define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, POCSAGCfg_init_default, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
-#define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0}
+#define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_default                      {""}
 #define SerialCRCMsg_init_default                {0}
 #define BootLogMsg_init_default                  {0, 0, 0}
@@ -336,7 +344,7 @@ typedef struct _SerialMsg {
 #define POCSAGCfg_init_zero                      {0, 0, 0}
 #define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, POCSAGCfg_init_zero, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
-#define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0}
+#define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_zero                         {""}
 #define SerialCRCMsg_init_zero                   {0}
 #define BootLogMsg_init_zero                     {0, 0, 0}
@@ -392,6 +400,12 @@ typedef struct _SerialMsg {
 #define StatusMsg_status_tag                     1
 #define StatusMsg_tx_full_tag                    2
 #define StatusMsg_time_tag                       3
+#define StatusMsg_oled_on_tag                    4
+#define StatusMsg_total_rx_pkt_tag               5
+#define StatusMsg_total_rx_corr_pkt_tag          6
+#define StatusMsg_total_tx_pkt_tag               7
+#define StatusMsg_last_rx_rssi_tag               8
+#define StatusMsg_last_rx_snr_tag                9
 #define TestCfg_cw_test_mode_tag                 1
 #define TestCfg_preamble_test_mode_tag           2
 #define TestCfg_test_fec_tag                     3
@@ -526,7 +540,13 @@ X(a, STATIC,   SINGULAR, UINT32,   time,              1)
 #define StatusMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    status,            1) \
 X(a, STATIC,   SINGULAR, BOOL,     tx_full,           2) \
-X(a, STATIC,   SINGULAR, UINT32,   time,              3)
+X(a, STATIC,   SINGULAR, UINT32,   time,              3) \
+X(a, STATIC,   SINGULAR, BOOL,     oled_on,           4) \
+X(a, STATIC,   SINGULAR, UINT32,   total_rx_pkt,      5) \
+X(a, STATIC,   SINGULAR, UINT32,   total_rx_corr_pkt,   6) \
+X(a, STATIC,   SINGULAR, UINT32,   total_tx_pkt,      7) \
+X(a, STATIC,   SINGULAR, UINT32,   last_rx_rssi,      8) \
+X(a, STATIC,   SINGULAR, UINT32,   last_rx_snr,       9)
 #define StatusMsg_CALLBACK NULL
 #define StatusMsg_DEFAULT NULL
 
@@ -694,14 +714,14 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 #define POCSAGCfg_size                           14
 #define SysCfgMsg_size                           597
 #define ClockSetMsg_size                         6
-#define StatusMsg_size                           10
+#define StatusMsg_size                           42
 #define DbgMsg_size                              258
 #define SerialCRCMsg_size                        6
 #define BootLogMsg_size                          14
 #define GPSMsg_size                              12
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
-#define SerialMsg_size                           6212
+#define SerialMsg_size                           6244
 #define VersionMsg_size                          33
 #define ErrorMsg_size                            260
 #define DataMsg_size                             567

@@ -191,7 +191,7 @@ def input_thread_fn():
                 # Retransmit the last message
                 #ser_mutex.acquire()
                 #sock.send(bytearray(frame))
-                #ser_mutex.release()
+                # ser_mutex.release()
 
 
 if __name__ == "__main__":

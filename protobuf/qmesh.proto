@@ -89,6 +89,12 @@ message StatusMsg {
   Status status = 1;
   bool tx_full = 2;
   uint32 time = 3;
+  bool oled_on = 4;
+  uint32 total_rx_pkt = 5;
+  uint32 total_rx_corr_pkt = 6;
+  uint32 total_tx_pkt = 7;
+  uint32 last_rx_rssi = 8;
+  uint32 last_rx_snr = 9;
 }
 
 message DbgMsg {
@@ -162,6 +168,8 @@ message SerialMsg {
     LOG = 26;
     UPDATE = 27;
     VERSION = 28;
+    TURN_OLED_ON = 29;
+    TURN_OLED_OFF = 30;
   }
   Type type = 1;
   bool retry = 2;

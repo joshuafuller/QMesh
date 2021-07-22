@@ -62,7 +62,7 @@ void send_status();
 DigitalIn user_button(USER_BUTTON);
 
 SoftI2C oled_i2c(PB_8, PB_9);
-Adafruit_SSD1306_I2c *oled;
+shared_ptr<Adafruit_SSD1306_I2c> oled;
 
 void print_stats()
 {
@@ -95,8 +95,6 @@ void print_stats()
 
 
 // main() runs in its own thread in the OS
-
-static int dummy = printf("Starting all the things\r\n"); /// Strawman call to see if object initialization occurred.
 auto main() -> int
 {
     start_cal();
@@ -113,11 +111,18 @@ auto main() -> int
 
     oled_i2c.frequency(I2C_FREQ);
     oled_i2c.start();
+    auto *disp_file = fopen("/fs/display.on", "r");
+    if(disp_file == nullptr) {
+        oled->displayOff();
+    } else {
+        oled->displayOn();
+        fclose(disp_file);
+    }
     
     constexpr int OLED_NUM_LINES = 32;
     constexpr int OLED_NUM_COLS = 128;
     constexpr int OLED_CONST = 0x78;
-    oled = new Adafruit_SSD1306_I2c(oled_i2c, PD_13, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
+    oled = make_shared<Adafruit_SSD1306_I2c>(oled_i2c, PD_13, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
@@ -141,26 +146,22 @@ auto main() -> int
     ThisThread::sleep_for(ONE_SECOND);
 
     // Mount the filesystem, load the configuration, log the bootup
-    print_memory_info();
     init_filesystem();
-    print_memory_info();
     load_settings_from_flash();
     log_boot();
 
     stream_id_rng.seed(radio_cb.address);
     // Start the serial handler threads
-    printf("Starting first serial port\r\n");
     ThisThread::sleep_for(HALF_SECOND);
-    auto *bt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX, 
-                                        MBED_CONF_APP_KISS_UART_RX, 
-                                        string("BT"), DEBUG_PORT);
-    printf("Starting second serial port\r\n");
+    auto bt_ser = make_shared<KISSSerial>(MBED_CONF_APP_KISS_UART_TX, 
+                                            MBED_CONF_APP_KISS_UART_RX, 
+                                            string("BT"), DEBUG_PORT);
     ThisThread::sleep_for(HALF_SECOND);
-    auto *bt_alt_ser = new KISSSerial(MBED_CONF_APP_KISS_UART_TX_ALT, 
-                                        MBED_CONF_APP_KISS_UART_RX_ALT,
-                                        MBED_CONF_APP_KISS_UART_EN_ALT,
-                                        MBED_CONF_APP_KISS_UART_ST_ALT, 
-                                        string("BT-ALT"), DEBUG_PORT);
+    auto bt_alt_ser = make_shared<KISSSerial>(MBED_CONF_APP_KISS_UART_TX_ALT, 
+                                                MBED_CONF_APP_KISS_UART_RX_ALT,
+                                                MBED_CONF_APP_KISS_UART_EN_ALT,
+                                                MBED_CONF_APP_KISS_UART_ST_ALT, 
+                                                string("BT-ALT"), DEBUG_PORT);
     MBED_ASSERT(bt_ser);
     MBED_ASSERT(bt_alt_ser);
     debug_printf(DBG_INFO, "Serial threads started");
@@ -230,16 +231,6 @@ ThisThread::sleep_for(500);
     debug_printf(DBG_INFO, "Initializing the Radio\r\n");
     init_radio();
     ThisThread::sleep_for(QUARTER_SECOND);
-
-#if 0
-    // Send out a POCSAG message
-    debug_printf(DBG_INFO, "Sending a POCSAG pager message\r\n");
-    string pocsag_msg = "KG5VBY Testing is here";
-    while(1) {
-        send_pocsag_msg(pocsag_msg);
-        ThisThread::sleep_for(FIVE_SECONDS);
-    }
-#endif
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");

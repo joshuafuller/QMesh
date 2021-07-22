@@ -47,7 +47,7 @@ QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
                     0, FREQ_40_MHZ);
 LittleFileSystem fs("fs");
 //extern UARTSerial gps_serial;
-extern Adafruit_SSD1306_I2c *oled;
+extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 
 static SerialMsg ser_msg_zero = SerialMsg_init_zero;
 
