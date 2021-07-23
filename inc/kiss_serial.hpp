@@ -40,6 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "serial_msg.hpp"
 
 using crc_t = uint16_t;
 using entry_size_t = uint16_t;
@@ -63,8 +64,8 @@ using write_ser_msg_err_t = enum write_ser_msg_err_enum {
     WRITE_SER_MSG_ERR
 };
 
-auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, bool kiss_data_msg = false) -> write_ser_msg_err_t;
-auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
+auto save_SerMsg(SerMsg &ser_msg, FILE *f, bool kiss_data_msg = false) -> write_ser_msg_err_t;
+auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
 
 using ser_port_type_t = enum ser_port_type_enum {
     DEBUG_PORT, // both types of traffic
@@ -83,9 +84,9 @@ private:
     DigitalIn *state_pin;
     Thread *rx_ser_thread, *tx_ser_thread;
     ser_port_type_t port_type;
-    Mail<std::shared_ptr<SerialMsg>, QUEUE_DEPTH> tx_ser_queue;
+    Mail<std::shared_ptr<SerMsg>, QUEUE_DEPTH> tx_ser_queue;
     vector<string> logfile_names;
-    SerialMsg past_log_msg;
+    SerMsg past_log_msg;
     atomic<bool> kiss_extended;
 
     void configure_hc05();
@@ -95,8 +96,8 @@ private:
     void rx_serial_thread_fn();
     /// Produces an MbedJSONValue with the current status and queues it for transmission.
     void tx_serial_thread_fn();
-    auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, bool kiss_data_msg) -> write_ser_msg_err_t;
-    auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
+    auto save_SerMsg(SerMsg &ser_msg, FILE *f, bool kiss_data_msg) -> write_ser_msg_err_t;
+    auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
 
 public:
     void send_status();
@@ -105,7 +106,7 @@ public:
     KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
                 const string &my_port_name, ser_port_type_t ser_port_type);
     ~KISSSerial();
-    void enqueue_msg(shared_ptr<SerialMsg> ser_msg_sptr);
+    void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
     void sleep();
     void wake();
     auto isKISSExtended() -> bool {

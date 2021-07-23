@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "serial_msg.hpp"
 
 
 static constexpr int SIX_SECONDS = 6;
@@ -177,12 +178,10 @@ static void write_default_cfg() {
 
     radio_cb.watchdog_timer_en = false;
 
-    auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = ser_msg_zero;
-    ser_msg->type = SerialMsg_Type_CONFIG;
-    ser_msg->has_sys_cfg = true;
-    ser_msg->sys_cfg = radio_cb;
-    MBED_ASSERT(save_SerialMsg(*ser_msg, f) == WRITE_SUCCESS);
+    auto ser_msg = make_shared<SerMsg>();
+    ser_msg->type(SerialMsg_Type_CONFIG);
+    ser_msg->sys_cfg() = radio_cb;
+    MBED_ASSERT(save_SerMsg(*ser_msg, f) == WRITE_SUCCESS);
     fflush(f);
     fclose(f); 
     f = fopen("/fs/settings.bin", "r");
@@ -205,18 +204,17 @@ void load_settings_from_flash() {
     stat("/fs/settings.bin", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
-    auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = ser_msg_zero;
-    if(load_SerialMsg(*ser_msg, f) != READ_SUCCESS) {
+    auto ser_msg = make_shared<SerMsg>();
+    if(load_SerMsg(*ser_msg, f) != READ_SUCCESS) {
         fclose(f);
         debug_printf(DBG_WARN, "Invalid settings.bin. Creating new file with default settings\r\n");
         write_default_cfg();
         f = fopen("/fs/settings.bin", "r");
         MBED_ASSERT(f);
     }
-    MBED_ASSERT(ser_msg->type == SerialMsg_Type_CONFIG);
-    MBED_ASSERT(ser_msg->has_sys_cfg);
-    radio_cb = ser_msg->sys_cfg;
+    MBED_ASSERT(ser_msg->type() == SerialMsg_Type_CONFIG);
+    MBED_ASSERT(ser_msg->has_sys_cfg());
+    radio_cb = ser_msg->sys_cfg();
 
     debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
     debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
@@ -260,29 +258,25 @@ void save_settings_to_flash() {
     debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
     auto *f = fopen("/fs/settings.bin", "w"); 
     MBED_ASSERT(f);
-    auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = ser_msg_zero;
-    ser_msg->type = SerialMsg_Type_CONFIG;
-    ser_msg->has_sys_cfg = true;
-    ser_msg->sys_cfg = radio_cb;
-    MBED_ASSERT(!save_SerialMsg(*ser_msg, f));
+    auto ser_msg = make_shared<SerMsg>();
+    ser_msg->type(SerialMsg_Type_CONFIG);
+    ser_msg->sys_cfg() = radio_cb;
+    MBED_ASSERT(!save_SerMsg(*ser_msg, f));
     fclose(f);  
 }
 
 
 void log_boot() {
-    auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = ser_msg_zero;
-    ser_msg->type = SerialMsg_Type_BOOT_LOG;
-    ser_msg->has_boot_log_msg = true;
+    auto ser_msg = make_shared<SerMsg>();
+    ser_msg->type(SerialMsg_Type_BOOT_LOG);
     time_t my_time = time(nullptr);
-    ser_msg->boot_log_msg.boot_time = my_time;
-    ser_msg->boot_log_msg.count = 0;
-    ser_msg->boot_log_msg.valid = true;
+    ser_msg->boot_log_msg().boot_time = my_time;
+    ser_msg->boot_log_msg().count = 0;
+    ser_msg->boot_log_msg().valid = true;
 
     auto *f = fopen("/fs/boot_log.bin", "a+");
     MBED_ASSERT(f);
-    save_SerialMsg(*ser_msg, f);
+    save_SerMsg(*ser_msg, f);
     fclose(f);      
 }
 
@@ -376,12 +370,10 @@ void nv_log_fn() {
         time_t uptime = cur_time - boot_timestamp;
         log_msg.uptime = uptime;
 
-        auto ser_msg = make_shared<SerialMsg>();
-        *ser_msg = ser_msg_zero;
-        ser_msg->type = SerialMsg_Type_LOG;
-        ser_msg->has_log_msg = true;
-        ser_msg->log_msg = log_msg;
-        MBED_ASSERT(!save_SerialMsg(*ser_msg, f));
+        auto ser_msg = make_shared<SerMsg>();
+        ser_msg->type(SerialMsg_Type_LOG);
+        ser_msg->log_msg() = log_msg;
+        MBED_ASSERT(!save_SerMsg(*ser_msg, f));
         fclose(f);
         f = open_logfile();
     }

@@ -166,6 +166,7 @@ message SerialMsg {
   }
   Type type = 1;
   bool retry = 2;
+
   SysCfgMsg sys_cfg = 3;
   ClockSetMsg clock_set = 4; 
   StatusMsg status = 5;  

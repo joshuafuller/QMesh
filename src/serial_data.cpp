@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "qmesh.pb.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "serial_data.hpp"
 
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
@@ -283,15 +284,13 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     else {
         MBED_ASSERT(false);
     }
-    auto ser_msg_sptr = make_shared<SerialMsg>();
-    *ser_msg_sptr = ser_msg_zero;
-    ser_msg_sptr->type = SerialMsg_Type_DEBUG_MSG;
-    ser_msg_sptr->has_dbg_msg = true;
-    snprintf(ser_msg_sptr->dbg_msg.msg, sizeof(ser_msg_sptr->dbg_msg.msg), 
+    auto ser_msg_sptr = make_shared<SerMsg>();
+    ser_msg_sptr->type(SerialMsg_Type_DEBUG_MSG);
+    snprintf(ser_msg_sptr->dbg_msg().msg, sizeof(ser_msg_sptr->dbg_msg().msg), 
                 "[+] %s -- %s", msg_type.c_str(), tmp_str.data());   
     kiss_sers_mtx.lock();
     for(auto & kiss_ser : kiss_sers) {
-        auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
+        auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
         kiss_ser->enqueue_msg(ser_msg_sptr_en);
     }
     kiss_sers_mtx.unlock();
@@ -333,13 +332,11 @@ auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> 
     else {
         MBED_ASSERT(false);
     }
-    auto ser_msg_sptr = shared_ptr<SerialMsg>();
-    *ser_msg_sptr = ser_msg_zero;
-    ser_msg_sptr->has_dbg_msg = true;
-    strncpy(ser_msg_sptr->dbg_msg.msg, tmp_str.data(), sizeof(ser_msg_sptr->dbg_msg.msg));
+    auto ser_msg_sptr = shared_ptr<SerMsg>();
+    strncpy(ser_msg_sptr->dbg_msg().msg, tmp_str.data(), sizeof(ser_msg_sptr->dbg_msg().msg));
     kiss_sers_mtx.lock();
     for(auto & kiss_ser : kiss_sers) {
-        auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
+        auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
         kiss_ser->enqueue_msg(ser_msg_sptr_en);
     }
     kiss_sers_mtx.unlock();
@@ -432,29 +429,25 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
 void rx_frame_ser_thread_fn() {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
-        auto ser_msg_sptr = make_shared<SerialMsg>();
-        *ser_msg_sptr = ser_msg_zero;
-        ser_msg_sptr->type = SerialMsg_Type_DATA;
-        ser_msg_sptr->has_data_msg = false;
-        rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg);
+        auto ser_msg_sptr = make_shared<SerMsg>();
+        ser_msg_sptr->type(SerialMsg_Type_DATA);
+        rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg());
         // Handle KISS frames vs. "regular" QMesh frames
-        if(ser_msg_sptr->data_msg.type == DataMsg_Type_KISSRX || 
-            ser_msg_sptr->data_msg.type == DataMsg_Type_KISSTX) {
-            ser_msg_sptr->data_msg.type = DataMsg_Type_KISSRX;
-            auto frag = make_shared<DataMsg>(ser_msg_sptr->data_msg);
+        if(ser_msg_sptr->data_msg().type == DataMsg_Type_KISSRX || 
+            ser_msg_sptr->data_msg().type == DataMsg_Type_KISSTX) {
+            ser_msg_sptr->data_msg().type = DataMsg_Type_KISSRX;
+            auto frag = make_shared<DataMsg>(ser_msg_sptr->data_msg());
             auto pkt = handle_incoming_frag(frag);
             if(pkt != nullptr) {
-                ser_msg_sptr->has_data_msg = true;
-                ser_msg_sptr->data_msg = *pkt;
+                ser_msg_sptr->data_msg() = *pkt;
             }
         } else {
-            ser_msg_sptr->data_msg.type = DataMsg_Type_RX;
-            ser_msg_sptr->has_data_msg = true;
+            ser_msg_sptr->data_msg().type = DataMsg_Type_RX;
         }
-        if(ser_msg_sptr->has_data_msg) { // Send it out over the serial ports
+        if(ser_msg_sptr->has_data_msg()) { // Send it out over the serial ports
             kiss_sers_mtx.lock();
             for(auto & kiss_ser : kiss_sers) {
-                auto ser_msg_sptr_en = make_shared<SerialMsg>(*ser_msg_sptr);
+                auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
                 kiss_ser->enqueue_msg(ser_msg_sptr_en);
             }
             kiss_sers_mtx.unlock();

@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "serial_msg.hpp"
 #include <cstring>
 #include "USBSerial.h"
 #include "sha256.h"
@@ -64,7 +65,7 @@ static Mutex shared_mtx;
 static SerialMsg ser_msg_zero = SerialMsg_init_zero;
 static DataMsg data_msg_zero = DataMsg_init_zero;
 
-auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
+auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
     bool kiss_extended = false;
     // Get past the first delimiter(s)
@@ -89,7 +90,7 @@ auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
             } 
             if(cur_byte_u32 == EXITKISS) {
                 ser_msg = ser_msg_zero;
-                ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
+                ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
                 return READ_SUCCESS;
             }  
             return READ_INVALID_KISS_ID;  
@@ -130,17 +131,16 @@ auto load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
         }
     } else {
         ser_msg = ser_msg_zero;
-        ser_msg.type = SerialMsg_Type_DATA;
-        ser_msg.has_data_msg = true;
-        ser_msg.data_msg.type = DataMsg_Type_KISSTX;
-        ser_msg.data_msg.payload.size = buf.size();
-        memcpy(ser_msg.data_msg.payload.bytes, buf.data(), buf.size());
+        ser_msg.type(SerialMsg_Type_DATA);
+        ser_msg.data_msg().type = DataMsg_Type_KISSTX;
+        ser_msg.data_msg().payload.size = buf.size();
+        memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());
     }
     return READ_SUCCESS;
 }
 
 
-auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
+auto save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
     vector<uint8_t> comb_buf; //NOTE: we can probably just have a buf, not a buf and comb_buf
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
@@ -155,8 +155,8 @@ auto save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg)
         crc_t crc = compute_frame_crc(vector<uint8_t>(comb_buf.begin(), comb_buf.begin()+stream.bytes_written));
         memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t));
     } else {
-        comb_buf.resize(ser_msg.data_msg.payload.size);
-        memcpy(comb_buf.data(), ser_msg.data_msg.payload.bytes, ser_msg.data_msg.payload.size);
+        comb_buf.resize(ser_msg.data_msg().payload.size);
+        memcpy(comb_buf.data(), ser_msg.data_msg().payload.bytes, ser_msg.data_msg().payload.size);
     }
 
     // Make it into a KISS frame and write it out
@@ -213,7 +213,7 @@ void send_status() {
 }
 
 
-auto KISSSerial::save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
+auto KISSSerial::save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
     vector<uint8_t> comb_buf;
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
@@ -231,8 +231,8 @@ auto KISSSerial::save_SerialMsg(const SerialMsg &ser_msg, FILE *f, const bool ki
         comb_buf.push_back(crc & LOWER_BYTE);
         comb_buf.push_back((static_cast<uint32_t>(crc) >> SHIFT_BYTE) & LOWER_BYTE);
     } else {
-        comb_buf.resize(ser_msg.data_msg.payload.size);
-        memcpy(comb_buf.data(), ser_msg.data_msg.payload.bytes, comb_buf.size());
+        comb_buf.resize(ser_msg.data_msg().payload.size);
+        memcpy(comb_buf.data(), ser_msg.data_msg().payload.bytes, comb_buf.size());
     }
 
     // Make it into a KISS frame and write it out
@@ -424,34 +424,33 @@ KISSSerial::~KISSSerial() {
 }
 
 
-void KISSSerial::enqueue_msg(shared_ptr<SerialMsg> ser_msg_sptr) { //NOLINT
-    if(ser_msg_sptr->type == SerialMsg_Type_DATA) {
-        MBED_ASSERT(ser_msg_sptr->has_data_msg);
-        auto out_ser_msg = make_shared<SerialMsg>();
-        *out_ser_msg = ser_msg_zero;
+void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
+    if(ser_msg_sptr->type() == SerialMsg_Type_DATA) {
+        MBED_ASSERT(ser_msg_sptr->has_data_msg());
+        auto out_ser_msg = make_shared<SerMsg>();
         *out_ser_msg = *ser_msg_sptr;
         if(!kiss_extended) {
-            if(out_ser_msg->data_msg.type == DataMsg_Type_TX) {
-                out_ser_msg->data_msg.type = DataMsg_Type_KISSTX;
+            if(out_ser_msg->data_msg().type == DataMsg_Type_TX) {
+                out_ser_msg->data_msg().type = DataMsg_Type_KISSTX;
             }
-            if(out_ser_msg->data_msg.type == DataMsg_Type_RX) {
-                out_ser_msg->data_msg.type = DataMsg_Type_KISSRX;
+            if(out_ser_msg->data_msg().type == DataMsg_Type_RX) {
+                out_ser_msg->data_msg().type = DataMsg_Type_KISSRX;
             }
         }
-        if(ser_msg_sptr->data_msg.voice && 
+        if(ser_msg_sptr->data_msg().voice && 
             (port_type == DEBUG_PORT || port_type == VOICE_PORT)) {
-            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);  
-        } else if (!ser_msg_sptr->data_msg.voice && 
+            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);  
+        } else if (!ser_msg_sptr->data_msg().voice && 
             (port_type == DEBUG_PORT || port_type == APRS_PORT)) {
-            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);  
+            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);  
         }
     } else if(kiss_extended) {
-        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);
+        enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);
     }
 }
 
 
-auto KISSSerial::load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
+auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
     // Get past the first delimiter(s)
     for(;;) {
@@ -472,7 +471,7 @@ auto KISSSerial::load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err
             } 
             if(cur_byte == EXITKISS) {
                 ser_msg = ser_msg_zero;
-                ser_msg.type = SerialMsg_Type_EXIT_KISS_MODE;
+                ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
                 return READ_SUCCESS;
             }  
             return READ_INVALID_KISS_ID;
@@ -513,11 +512,10 @@ auto KISSSerial::load_SerialMsg(SerialMsg &ser_msg, FILE *f) -> read_ser_msg_err
         }
     } else {
         ser_msg = ser_msg_zero;
-        ser_msg.type = SerialMsg_Type_DATA;
-        ser_msg.has_data_msg = true;
-        ser_msg.data_msg.type = DataMsg_Type_KISSTX;
-        ser_msg.data_msg.payload.size = buf.size();
-        memcpy(ser_msg.data_msg.payload.bytes, buf.data(), buf.size());
+        ser_msg.type(SerialMsg_Type_DATA);
+        ser_msg.data_msg().type = DataMsg_Type_KISSTX;
+        ser_msg.data_msg().payload.size = buf.size();
+        memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());
     }
     return READ_SUCCESS;
 }
@@ -531,18 +529,18 @@ void KISSSerial::tx_serial_thread_fn() {
         kiss_ser = fdopen(ser, "w");
     }
     for(;;) {
-        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerialMsg>>(tx_ser_queue);
+        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerMsg>>(tx_ser_queue);
         // In KISS mode, we only send out data packets in KISS format.
         if(!kiss_extended) {
             // Silently drop anything that isn't a KISSRX frame when we're in KISS mode
-            if(ser_msg_sptr->type == SerialMsg_Type_DATA && ser_msg_sptr->has_data_msg && 
-                ser_msg_sptr->data_msg.type == DataMsg_Type_KISSRX) {
-                save_SerialMsg(*ser_msg_sptr, kiss_ser, true);
+            if(ser_msg_sptr->type() == SerialMsg_Type_DATA && ser_msg_sptr->has_data_msg() && 
+                ser_msg_sptr->data_msg().type == DataMsg_Type_KISSRX) {
+                save_SerMsg(*ser_msg_sptr, kiss_ser, true);
             } else {
                 continue;
             }           
         } else {
-            save_SerialMsg(*ser_msg_sptr, kiss_ser, false);  
+            save_SerMsg(*ser_msg_sptr, kiss_ser, false);  
         }
     }
 }
@@ -556,53 +554,49 @@ extern atomic<int> total_tx_pkt;
 extern atomic<int> last_rx_rssi;
 extern atomic<int> last_rx_snr;
 void KISSSerial::send_status() {
-    auto ser_msg = make_shared<SerialMsg>();
-    *ser_msg = ser_msg_zero;
-    ser_msg->type = SerialMsg_Type_STATUS;
-    ser_msg->has_status = true;
+    auto ser_msg = make_shared<SerMsg>();
+    ser_msg->type(SerialMsg_Type_STATUS);
+    ser_msg->status();
     if(current_mode == system_state_t::BOOTING) {
-        ser_msg->status.status = StatusMsg_Status_BOOTING;      
+        ser_msg->status().status = StatusMsg_Status_BOOTING;      
     } else if(current_mode == system_state_t::MANAGEMENT) {
-        ser_msg->status.status = StatusMsg_Status_MANAGEMENT;     
+        ser_msg->status().status = StatusMsg_Status_MANAGEMENT;     
     } else if(current_mode == system_state_t::RUNNING) {
-        ser_msg->status.status = StatusMsg_Status_RUNNING;
+        ser_msg->status().status = StatusMsg_Status_RUNNING;
     } else {
         MBED_ASSERT(false);
     }
-    ser_msg->status.tx_full = tx_frame_mail.full();
-    ser_msg->status.time = time(nullptr);
+    ser_msg->status().tx_full = tx_frame_mail.full();
+    ser_msg->status().time = time(nullptr);
     auto *display_file = fopen("/fs/display.off", "r");
     if(display_file == nullptr) {
-        ser_msg->status.oled_on = true;
+        ser_msg->status().oled_on = true;
     } else {
         fclose(display_file);
-        ser_msg->status.oled_on = false;
+        ser_msg->status().oled_on = false;
     }
-    ser_msg->status.total_rx_pkt = total_rx_pkt;
-    ser_msg->status.total_rx_corr_pkt = total_rx_corr_pkt;
-    ser_msg->status.total_tx_pkt = total_tx_pkt;
-    ser_msg->status.last_rx_rssi = last_rx_rssi;
-    ser_msg->status.last_rx_snr = last_rx_snr;
-    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg);
+    ser_msg->status().total_rx_pkt = total_rx_pkt;
+    ser_msg->status().total_rx_corr_pkt = total_rx_corr_pkt;
+    ser_msg->status().total_tx_pkt = total_tx_pkt;
+    ser_msg->status().last_rx_rssi = last_rx_rssi;
+    ser_msg->status().last_rx_snr = last_rx_snr;
+    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg);
 }  
 
 
 void KISSSerial::send_ack() {
-    auto ser_msg_sptr = make_shared<SerialMsg>();
-    *ser_msg_sptr = ser_msg_zero;
-    ser_msg_sptr->type = SerialMsg_Type_ACK;
-    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);    
+    auto ser_msg_sptr = make_shared<SerMsg>();
+    ser_msg_sptr->type(SerialMsg_Type_ACK);
+    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);    
 }  
 
 
 void KISSSerial::send_error(const string &err_str) {
-    auto ser_msg_sptr = make_shared<SerialMsg>();
-    *ser_msg_sptr = ser_msg_zero;
-    ser_msg_sptr->type = SerialMsg_Type_ERR;
-    ser_msg_sptr->has_error_msg = true;
-    strncpy(ser_msg_sptr->error_msg.msg, err_str.c_str(), sizeof(ser_msg_sptr->error_msg.msg));
+    auto ser_msg_sptr = make_shared<SerMsg>();
+    ser_msg_sptr->type(SerialMsg_Type_ERR);
+    strncpy(ser_msg_sptr->error_msg().msg, err_str.c_str(), sizeof(ser_msg_sptr->error_msg().msg));
     debug_printf(DBG_WARN, "%s", err_str.c_str());
-    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, ser_msg_sptr);   
+    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);   
 }  
 
 
@@ -663,246 +657,238 @@ void KISSSerial::rx_serial_thread_fn() {
     } else {
         kiss_ser = fdopen(ser, "r");
     }
-    auto ser_msg = make_shared<SerialMsg>();
+    auto ser_msg = make_shared<SerMsg>();
     int err = 0;
     for(;;) {
         *ser_msg = ser_msg_zero;
-        err = load_SerialMsg(*ser_msg, kiss_ser);
+        err = load_SerMsg(*ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
             if(err == CRC_ERR) {
-                auto reply_msg = make_shared<SerialMsg>();
-                *reply_msg = ser_msg_zero;
-                reply_msg->type = SerialMsg_Type_ERR;
-                reply_msg->has_error_msg = true;
-                reply_msg->error_msg.type = ErrorMsg_Type_CRC_ERR;
+                auto reply_msg = make_shared<SerMsg>();
+                reply_msg->type(SerialMsg_Type_ERR);
+                reply_msg->error_msg().type = ErrorMsg_Type_CRC_ERR;
                 string err_reason("CRC Error");
-                strncpy(reply_msg->error_msg.msg, err_reason.c_str(), sizeof(reply_msg->error_msg.msg));
-                enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
+                strncpy(reply_msg->error_msg().msg, err_reason.c_str(), sizeof(reply_msg->error_msg().msg));
+                enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
             }
             continue;
         }
-        if(ser_msg->type == SerialMsg_Type_TURN_OLED_OFF) {
+        if(ser_msg->type() == SerialMsg_Type_TURN_OLED_OFF) {
             debug_printf(DBG_INFO, "Received a request to turn OFF the OLED display\r\n");
             auto *disp_file = fopen("/fs/display.off", "w");
             MBED_ASSERT(disp_file != nullptr);
             fclose(disp_file);
             oled->displayOff();
         }
-        if(ser_msg->type == SerialMsg_Type_TURN_OLED_ON) {
+        if(ser_msg->type() == SerialMsg_Type_TURN_OLED_ON) {
             debug_printf(DBG_INFO, "Received a request to turn ON the OLED display\r\n");
             fs.remove("display.off");
             auto *disp_file = fopen("/fs/display.off", "r");
             MBED_ASSERT(disp_file == nullptr);
             oled->displayOn();
         }        
-        if(ser_msg->type == SerialMsg_Type_VERSION) {
+        if(ser_msg->type() == SerialMsg_Type_VERSION) {
             debug_printf(DBG_INFO, "Received a FW version request message\r\n");
-            auto reply_msg = make_shared<SerialMsg>();
-            *reply_msg = ser_msg_zero;
-            reply_msg->type = SerialMsg_Type_VERSION;
-            reply_msg->has_ver_msg = true;
+            auto reply_msg = make_shared<SerMsg>();
+            reply_msg->type(SerialMsg_Type_VERSION);
             string compile_str = getFlashCompileString();
             debug_printf(DBG_INFO, "Sending %s\r\n", compile_str.c_str());
-            strncpy(reply_msg->ver_msg.msg, compile_str.c_str(), sizeof(reply_msg->ver_msg.msg));
-            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
+            strncpy(reply_msg->ver_msg().msg, compile_str.c_str(), sizeof(reply_msg->ver_msg().msg));
+            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
         }
-        if(ser_msg->type == SerialMsg_Type_UPDATE) {
+        if(ser_msg->type() == SerialMsg_Type_UPDATE) {
             debug_printf(DBG_INFO, "Received an update message\r\n");
-            auto reply_msg = make_shared<SerialMsg>();
-            *reply_msg = ser_msg_zero;
-            reply_msg->type = SerialMsg_Type_UPDATE;
-            reply_msg->has_update_msg = true;
-            reply_msg->update_msg.type = UpdateMsg_Type_ACK;
-            if(ser_msg->update_msg.type == UpdateMsg_Type_ACK || 
-                ser_msg->update_msg.type == UpdateMsg_Type_ACKERR) {
-                reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
-            } else if(ser_msg->update_msg.type == UpdateMsg_Type_FIRST) {
+            auto reply_msg = make_shared<SerMsg>();
+            reply_msg->type(SerialMsg_Type_UPDATE);
+            reply_msg->update_msg().type = UpdateMsg_Type_ACK;
+            if(ser_msg->update_msg().type == UpdateMsg_Type_ACK || 
+                ser_msg->update_msg().type == UpdateMsg_Type_ACKERR) {
+                reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
+            } else if(ser_msg->update_msg().type == UpdateMsg_Type_FIRST) {
                 upd_pkt_cnt = -1;
                 if(upd_file != nullptr) {
                     fclose(upd_file);
                 }
-                string upd_fname(ser_msg->update_msg.path); 
+                string upd_fname(ser_msg->update_msg().path); 
                 upd_fname.append(".tmp");
                 upd_file = fopen(upd_fname.c_str(), "w");
                 mbedtls_sha256_init(&sha256_cxt);
                 mbedtls_sha256_starts(&sha256_cxt, 0);
                 if(upd_file == nullptr) {
-                    reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+                    reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
                     string err_reason("No Update File");
-                    strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                            sizeof(reply_msg->update_msg.err_reason)); 
+                    strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                            sizeof(reply_msg->update_msg().err_reason)); 
                 } else {
-                    if(check_upd_pkt_sha256(ser_msg->update_msg)) {
-                        fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file); 
-                        mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
-                                            ser_msg->update_msg.pld.size);
+                    if(check_upd_pkt_sha256(ser_msg->update_msg())) {
+                        fwrite(ser_msg->update_msg().pld.bytes, 1, ser_msg->update_msg().pld.size, upd_file); 
+                        mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg().pld.bytes, 
+                                            ser_msg->update_msg().pld.size);
                         upd_pkt_cnt += 1;
                     } else {
-                        reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+                        reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
                         string err_reason("SHA256 packet checksum failed");
-                        strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                    sizeof(reply_msg->update_msg.err_reason)); 
+                        strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                    sizeof(reply_msg->update_msg().err_reason)); 
                     }
                 }
-			} else if(ser_msg->update_msg.type == UpdateMsg_Type_MIDDLE) {
+			} else if(ser_msg->update_msg().type == UpdateMsg_Type_MIDDLE) {
 				if(upd_file == nullptr) {
-					ser_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+					ser_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 					string err_reason("No Update File");
-					strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                sizeof(reply_msg->update_msg.err_reason)); 
+					strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                sizeof(reply_msg->update_msg().err_reason)); 
 				} else {
-					if(check_upd_pkt_sha256(ser_msg->update_msg)) {
-						fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file);
-						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes,
-												ser_msg->update_msg.pld.size);
+					if(check_upd_pkt_sha256(ser_msg->update_msg())) {
+						fwrite(ser_msg->update_msg().pld.bytes, 1, ser_msg->update_msg().pld.size, upd_file);
+						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg().pld.bytes,
+												ser_msg->update_msg().pld.size);
 						upd_pkt_cnt += 1;
 					} else {
-						reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+						reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 						string err_reason("SHA256 packet checksum failed");
-						strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                    sizeof(reply_msg->update_msg.err_reason)); 
+						strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                    sizeof(reply_msg->update_msg().err_reason)); 
 					}
 				}
-			} else if(ser_msg->update_msg.type == UpdateMsg_Type_LAST) {
+			} else if(ser_msg->update_msg().type == UpdateMsg_Type_LAST) {
                 debug_printf(DBG_INFO, "Received the last message\r\n");
 				if(upd_file == nullptr) {
-					reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+					reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 					string err_reason("No Update File");
-					strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                sizeof(reply_msg->update_msg.err_reason)); 
+					strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                sizeof(reply_msg->update_msg().err_reason)); 
 				} else {
-					if(check_upd_pkt_sha256(ser_msg->update_msg)) {
+					if(check_upd_pkt_sha256(ser_msg->update_msg())) {
                         debug_printf(DBG_INFO, "Update's SHA256 checkum passes!\r\n");
-						fwrite(ser_msg->update_msg.pld.bytes, 1, ser_msg->update_msg.pld.size, upd_file); 
+						fwrite(ser_msg->update_msg().pld.bytes, 1, ser_msg->update_msg().pld.size, upd_file); 
 						fclose(upd_file);
-						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg.pld.bytes, 
-												ser_msg->update_msg.pld.size);
-						reply_msg->update_msg.sha256_pkt.size = SHA256_SIZE;
-						mbedtls_sha256_finish(&sha256_cxt, reply_msg->update_msg.sha256_upd.bytes); 
-						if(ser_msg->update_msg.sha256_upd.size == 0) {
-							reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+						mbedtls_sha256_update(&sha256_cxt, ser_msg->update_msg().pld.bytes, 
+												ser_msg->update_msg().pld.size);
+						reply_msg->update_msg().sha256_pkt.size = SHA256_SIZE;
+						mbedtls_sha256_finish(&sha256_cxt, reply_msg->update_msg().sha256_upd.bytes); 
+						if(ser_msg->update_msg().sha256_upd.size == 0) {
+							reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 							string err_reason("No SHA256 checksum");
-							strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                        sizeof(reply_msg->update_msg.err_reason));
-							string upd_fname(ser_msg->update_msg.path); 
+							strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                        sizeof(reply_msg->update_msg().err_reason));
+							string upd_fname(ser_msg->update_msg().path); 
 							upd_fname.append(".tmp");
                             upd_fname.erase(0, 4);
 							fs.remove(upd_fname.c_str());
-						} else if(memcmp(ser_msg->update_msg.sha256_upd.bytes, 
-                                        reply_msg->update_msg.sha256_upd.bytes, ERR_MSG_SIZE) != 0) { 
-							reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+						} else if(memcmp(ser_msg->update_msg().sha256_upd.bytes, 
+                                        reply_msg->update_msg().sha256_upd.bytes, ERR_MSG_SIZE) != 0) { 
+							reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 							string err_reason("SHA256 checksum failed");
-							strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                        sizeof(reply_msg->update_msg.err_reason)); 
-							string upd_fname(ser_msg->update_msg.path); 
+							strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                        sizeof(reply_msg->update_msg().err_reason)); 
+							string upd_fname(ser_msg->update_msg().path); 
 							upd_fname.append(".tmp");
                             upd_fname.erase(0, 4);
 							fs.remove(upd_fname.c_str());
 						} else {
-							string upd_fname_tmp(ser_msg->update_msg.path); 
+							string upd_fname_tmp(ser_msg->update_msg().path); 
 							upd_fname_tmp.append(".tmp");
                             upd_fname_tmp.erase(0, 4);
-                            string upd_fname(ser_msg->update_msg.path); 
+                            string upd_fname(ser_msg->update_msg().path); 
                             upd_fname.erase(0, 4);
                             fs.remove(upd_fname.c_str());
 							fs.rename(upd_fname_tmp.c_str(), upd_fname.c_str());
-							string upd_fname_sha256(ser_msg->update_msg.path); 
+							string upd_fname_sha256(ser_msg->update_msg().path); 
 							upd_fname_sha256.append(".sha256");
 							FILE *upd_file_sha256 = fopen(upd_fname_sha256.c_str(), "w");
 							if(upd_file_sha256 != nullptr) {
-								fwrite(ser_msg->update_msg.sha256_upd.bytes, 1, SHA256_SIZE, upd_file_sha256); 
+								fwrite(ser_msg->update_msg().sha256_upd.bytes, 1, SHA256_SIZE, upd_file_sha256); 
 								fclose(upd_file_sha256);
 								upd_pkt_cnt += 1;
                                 debug_printf(DBG_INFO, "Successfully finished writing update.\r\n");
 							} else {
-								reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+								reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 								string err_reason("SHA256 open failed");
-								strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                            sizeof(reply_msg->update_msg.err_reason));   
+								strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                            sizeof(reply_msg->update_msg().err_reason));   
 							}
 						}
 					} else {
-						reply_msg->update_msg.type = UpdateMsg_Type_ACKERR;
+						reply_msg->update_msg().type = UpdateMsg_Type_ACKERR;
 						string err_reason("SHA256 packet checksum failed");
-						strncpy(reply_msg->update_msg.err_reason, err_reason.c_str(), 
-                                    sizeof(reply_msg->update_msg.err_reason)); 
+						strncpy(reply_msg->update_msg().err_reason, err_reason.c_str(), 
+                                    sizeof(reply_msg->update_msg().err_reason)); 
 					}
 				}
 			} else {
 				MBED_ASSERT(false);
 			}
-            reply_msg->update_msg.pkt_cnt = upd_pkt_cnt;
-            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg);
-        } else if(ser_msg->type == SerialMsg_Type_EXIT_KISS_MODE) {
+            reply_msg->update_msg().pkt_cnt = upd_pkt_cnt;
+            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
+        } else if(ser_msg->type() == SerialMsg_Type_EXIT_KISS_MODE) {
             shared_mtx.lock();
             kiss_extended = true;
             background_queue.call(oled_mon_fn);
             shared_mtx.unlock();
-        } else if(ser_msg->type == SerialMsg_Type_ENTER_KISS_MODE) {
+        } else if(ser_msg->type() == SerialMsg_Type_ENTER_KISS_MODE) {
             shared_mtx.lock();
             kiss_extended = false;
             background_queue.call(oled_mon_fn);
             shared_mtx.unlock();
-        } else if(ser_msg->type == SerialMsg_Type_GET_CONFIG) {
-            auto out_msg_sptr = make_shared<SerialMsg>();
-            *out_msg_sptr = ser_msg_zero;
-            out_msg_sptr->type = SerialMsg_Type_CONFIG;
-            out_msg_sptr->has_sys_cfg = true;
-            out_msg_sptr->sys_cfg = radio_cb;
-            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, out_msg_sptr);
+        } else if(ser_msg->type() == SerialMsg_Type_GET_CONFIG) {
+            auto out_msg_sptr = make_shared<SerMsg>();
+            out_msg_sptr->type(SerialMsg_Type_CONFIG);
+            out_msg_sptr->sys_cfg() = radio_cb;
+            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, out_msg_sptr);
             send_ack();
             reboot_system();
-        } else if(ser_msg->type == SerialMsg_Type_SET_CONFIG) {
+        } else if(ser_msg->type() == SerialMsg_Type_SET_CONFIG) {
             debug_printf(DBG_INFO, "Serial config received\r\n");
-            if(!ser_msg->has_sys_cfg) {
+            if(!ser_msg->has_sys_cfg()) {
                 send_error(string("No Configuration Sent!\r\n"));
             } else {
                 shared_mtx.lock();
-                radio_cb = ser_msg->sys_cfg;
+                radio_cb = ser_msg->sys_cfg();
                 save_settings_to_flash();
                 shared_mtx.unlock();
 			    send_ack();
             }
         }
-        else if(ser_msg->type == SerialMsg_Type_GET_STATUS) {
+        else if(ser_msg->type() == SerialMsg_Type_GET_STATUS) {
             send_status();      
         }
-        else if(ser_msg->type == SerialMsg_Type_CLOCK_SET) {
-            MBED_ASSERT(ser_msg->has_clock_set);
+        else if(ser_msg->type() == SerialMsg_Type_CLOCK_SET) {
+            MBED_ASSERT(ser_msg->has_clock_set());
             shared_mtx.lock();
-            set_time(ser_msg->clock_set.time);
+            set_time(ser_msg->clock_set().time);
             shared_mtx.unlock();
             send_ack();
         }
-        else if(ser_msg->type == SerialMsg_Type_STAY_IN_MGT) {
+        else if(ser_msg->type() == SerialMsg_Type_STAY_IN_MGT) {
             stay_in_management = true;           
             send_ack();
         }
-        else if(ser_msg->type == SerialMsg_Type_DEBUG_MSG) {
+        else if(ser_msg->type() == SerialMsg_Type_DEBUG_MSG) {
             send_ack();
         }
-        else if(ser_msg->type == SerialMsg_Type_DATA) {
-            if(ser_msg->data_msg.type == DataMsg_Type_TX) {
+        else if(ser_msg->type() == SerialMsg_Type_DATA) {
+            if(ser_msg->data_msg().type == DataMsg_Type_TX) {
                 auto frame = make_shared<Frame>();
-                frame->loadFromPB(ser_msg->data_msg);
+                frame->loadFromPB(ser_msg->data_msg());
                 frame->setSender(radio_cb.address);
                 frame->setStreamID(get_stream_id());
                 auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
                 enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
                 send_ack();
-            } else if(ser_msg->data_msg.type == DataMsg_Type_KISSTX) {
+            } else if(ser_msg->data_msg().type == DataMsg_Type_KISSTX) {
                 debug_printf(DBG_INFO, "Received a KISS frame on port %s of size %d\r\n",
-                            port_name.c_str(), ser_msg->data_msg.payload.size); 
+                            port_name.c_str(), ser_msg->data_msg().payload.size); 
                 //size_t tot_bytes = ser_msg->data_msg.payload.size;
                 size_t max_pld_size = Frame::getKISSMaxSize();
                 //size_t cur_bytes = 0;
                 size_t frame_num = 0;
-                size_t tot_frames = ceilf(static_cast<float>(ser_msg->data_msg.payload.size)/
+                size_t tot_frames = ceilf(static_cast<float>(ser_msg->data_msg().payload.size)/
                                             static_cast<float>(max_pld_size));
                 uint8_t stream_id = get_stream_id();
-                vector<uint8_t> frags(ser_msg->data_msg.payload.size);
-                memcpy(frags.data(), ser_msg->data_msg.payload.bytes, frags.size());
+                vector<uint8_t> frags(ser_msg->data_msg().payload.size);
+                memcpy(frags.data(), ser_msg->data_msg().payload.bytes, frags.size());
                 // KEEP CHECKING THIS
                 while(!frags.empty()) {
                     auto frag_end_iter = frags.size() < max_pld_size ? frags.begin()+frags.size() : 
@@ -954,16 +940,16 @@ void KISSSerial::rx_serial_thread_fn() {
                 }
 #endif
             } else {
-                printf("Packet type is %d\r\n", ser_msg->data_msg.type);
+                printf("Packet type is %d\r\n", ser_msg->data_msg().type);
                 MBED_ASSERT(false);
             }      
         }
-        else if(ser_msg->type == SerialMsg_Type_REBOOT) {
+        else if(ser_msg->type() == SerialMsg_Type_REBOOT) {
             debug_printf(DBG_INFO, "Received reboot command\r\n");
             send_ack();
             reboot_system();
         }
-        else if(ser_msg->type == SerialMsg_Type_ERASE_LOGS) {
+        else if(ser_msg->type() == SerialMsg_Type_ERASE_LOGS) {
             shared_mtx.lock();
             stay_in_management = true;
             while(current_mode == system_state_t::BOOTING) { };
@@ -989,7 +975,7 @@ void KISSSerial::rx_serial_thread_fn() {
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(ser_msg->type == SerialMsg_Type_ERASE_BOOT_LOGS) {
+        else if(ser_msg->type() == SerialMsg_Type_ERASE_BOOT_LOGS) {
             stay_in_management = true;
             while(current_mode == system_state_t::BOOTING) { };
             if(current_mode == system_state_t::MANAGEMENT) {
@@ -1001,7 +987,7 @@ void KISSSerial::rx_serial_thread_fn() {
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(ser_msg->type == SerialMsg_Type_ERASE_CFG) {
+        else if(ser_msg->type() == SerialMsg_Type_ERASE_CFG) {
             stay_in_management = true;
             while(current_mode == system_state_t::BOOTING) { };
             if(current_mode == system_state_t::MANAGEMENT) {
@@ -1013,7 +999,7 @@ void KISSSerial::rx_serial_thread_fn() {
             debug_printf(DBG_WARN, "Now rebooting...\r\n");
             reboot_system();
         }
-        else if(ser_msg->type == SerialMsg_Type_READ_LOG) {
+        else if(ser_msg->type() == SerialMsg_Type_READ_LOG) {
             debug_printf(DBG_INFO, "Read log found\r\n");
             stay_in_management = true;
             while(current_mode == system_state_t::BOOTING) { };
@@ -1044,19 +1030,16 @@ void KISSSerial::rx_serial_thread_fn() {
                         logfile_names.erase(logfile_names.begin());
                     }
 				}
-				auto cur_log_msg = make_shared<SerialMsg>();
-                *cur_log_msg = ser_msg_zero;
+				auto cur_log_msg = make_shared<SerMsg>();
                 // Need to have an actually-open filehandle here
-                int err_ser = load_SerialMsg(*cur_log_msg, f); 
+                int err_ser = load_SerMsg(*cur_log_msg, f); 
                 debug_printf(DBG_INFO, "Serial Error is %d\r\n", err_ser);
                 if(err_ser != 0) { // Go to the next file if it exists
                     if(logfile_names.empty()) {
-                        auto reply_msg_sptr = make_shared<SerialMsg>(); 
-                        *reply_msg_sptr = ser_msg_zero;
-                        reply_msg_sptr->type = SerialMsg_Type_REPLY_LOG;
-                        reply_msg_sptr->has_log_msg = true;
-                        reply_msg_sptr->log_msg.valid = false;
-                        enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);   
+                        auto reply_msg_sptr = make_shared<SerMsg>(); 
+                        reply_msg_sptr->type(SerialMsg_Type_REPLY_LOG);
+                        reply_msg_sptr->log_msg().valid = false;
+                        enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr);   
                         debug_printf(DBG_WARN, "Finished reading logs. Now rebooting...\r\n");
 					    reboot_system();	 	
                     } else {
@@ -1064,41 +1047,36 @@ void KISSSerial::rx_serial_thread_fn() {
                         MBED_ASSERT(f);
                         logfile_names.erase(logfile_names.begin());   
                         string cur_line;
-                        if(load_SerialMsg(*cur_log_msg, f) == 0) {
-                            auto reply_msg_sptr = make_shared<SerialMsg>();
-                            *reply_msg_sptr = ser_msg_zero;
-                            reply_msg_sptr->type = SerialMsg_Type_REPLY_LOG;
-                            reply_msg_sptr->has_log_msg = true;
-                            reply_msg_sptr->log_msg.valid = true;
-                            reply_msg_sptr->log_msg.count = line_count++;	
-                            if(!cur_log_msg->has_log_msg) {
+                        if(load_SerMsg(*cur_log_msg, f) == 0) {
+                            auto reply_msg_sptr = make_shared<SerMsg>();
+                            reply_msg_sptr->type(SerialMsg_Type_REPLY_LOG);
+                            reply_msg_sptr->log_msg().valid = true;
+                            reply_msg_sptr->log_msg().count = line_count++;	
+                            if(!cur_log_msg->has_log_msg()) {
                                 send_error("Logfile entry has no log message\r\n");
                             }
-                            reply_msg_sptr->log_msg = cur_log_msg->log_msg;
-                            enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);   
+                            reply_msg_sptr->log_msg() = cur_log_msg->log_msg();
+                            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr);   
                         } else {
                             send_error("Logfile read error\r\n");
                         }		
                     }
 				} else {
-                    auto reply_msg_sptr = make_shared<SerialMsg>();
-                    *reply_msg_sptr = ser_msg_zero;
-                    reply_msg_sptr->type = SerialMsg_Type_REPLY_LOG;
-                    reply_msg_sptr->has_log_msg = true;
-                    reply_msg_sptr->log_msg.valid = true;
-                    reply_msg_sptr->log_msg.count = line_count++;	
-                    if(!cur_log_msg->has_log_msg) {
+                    auto reply_msg_sptr = make_shared<SerMsg>();
+                    reply_msg_sptr->type(SerialMsg_Type_REPLY_LOG);
+                    reply_msg_sptr->log_msg().valid = true;
+                    reply_msg_sptr->log_msg().count = line_count++;	
+                    if(!cur_log_msg->has_log_msg()) {
                         send_error("Logfile entry has no log message\r\n");
                     }
-                    reply_msg_sptr->log_msg = cur_log_msg->log_msg;
-                    reply_msg_sptr->has_log_msg = true;
-                    reply_msg_sptr->log_msg.valid = true;
-                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
+                    reply_msg_sptr->log_msg() = cur_log_msg->log_msg();
+                    reply_msg_sptr->log_msg().valid = true;
+                    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr); 
 				}
                 shared_mtx.unlock();
             }
         }
-        else if(ser_msg->type == SerialMsg_Type_READ_BOOT_LOG) {
+        else if(ser_msg->type() == SerialMsg_Type_READ_BOOT_LOG) {
             stay_in_management = true;
             while(current_mode == system_state_t::BOOTING) { };
             if(current_mode == system_state_t::MANAGEMENT) {
@@ -1108,24 +1086,21 @@ void KISSSerial::rx_serial_thread_fn() {
 					f = fopen("/fs/boot_log.bin", "r");
 					MBED_ASSERT(f);
 				}
-                auto cur_log_msg = make_shared<SerialMsg>();
-                *cur_log_msg = ser_msg_zero;
-                int err_ser = load_SerialMsg(*cur_log_msg, f);
+                auto cur_log_msg = make_shared<SerMsg>();
+                int err_ser = load_SerMsg(*cur_log_msg, f);
                 if(err_ser != 0) {
-                    auto reply_msg = make_shared<SerialMsg>();
-                    *reply_msg = ser_msg_zero;
-                    reply_msg->type = SerialMsg_Type_REPLY_BOOT_LOG;
-                    reply_msg->has_boot_log_msg = true;
-                    reply_msg->boot_log_msg.valid = false;
-                    auto reply_msg_sptr = make_shared<SerialMsg>(*reply_msg);
-                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr); 
+                    auto reply_msg = make_shared<SerMsg>();
+                    reply_msg->type(SerialMsg_Type_REPLY_BOOT_LOG);
+                    reply_msg->boot_log_msg().valid = false;
+                    auto reply_msg_sptr = make_shared<SerMsg>(*reply_msg);
+                    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr); 
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
 					reboot_system();	    
 				} else {
-                    cur_log_msg->type = SerialMsg_Type_REPLY_BOOT_LOG;
-                    cur_log_msg->boot_log_msg.count = line_count++;
-                    auto reply_msg_sptr = make_shared<SerialMsg>(*cur_log_msg);
-                    enqueue_mail<shared_ptr<SerialMsg>>(tx_ser_queue, reply_msg_sptr);                               						
+                    cur_log_msg->type(SerialMsg_Type_REPLY_BOOT_LOG);
+                    cur_log_msg->boot_log_msg().count = line_count++;
+                    auto reply_msg_sptr = make_shared<SerMsg>(*cur_log_msg);
+                    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr);                               						
 				}
                 shared_mtx.unlock();
             }
