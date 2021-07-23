@@ -25,9 +25,5 @@ fec_test_mode: false
 gps_en: false
 log_boot: true
 log_packets: false
-# POCSAG output, which is probably broken
-pocsag_beacon_interval: 120
-pocsag_enabled: false
-pocsag_freq: 439987500
 # Watchgod
 watchdog_timer_en: true

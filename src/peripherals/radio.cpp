@@ -25,7 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "radio.hpp"
 #include "radio_timing.hpp"
 #include "correct.h"
-#include "pocsag.h"
 #include "mem_trace.hpp"
 #include "qmesh.pb.h"
 #include "pb_common.h"
@@ -71,21 +70,6 @@ static void fhss_change_channel_cb(uint8_t current_channel);
 
 shared_ptr<FEC> frame_fec;  
 
-void send_pocsag_msg(const string &msg) {
-    vector<char> data(msg.length()+1);
-    memcpy(data.data(), msg.c_str(), msg.length());
-    data[msg.length()] = '\0';
-    debug_printf(DBG_INFO, "orig size is %d\r\n", msg.length());
-    Pocsag my_pocsag;
-    if(my_pocsag.CreatePocsag(10, 1, data.data(), 1, 1) == 0) {
-        debug_printf(DBG_INFO, "Error is %d\r\n", my_pocsag.GetError());
-        MBED_ASSERT(false);
-    }
-    radio.set_tx_config_pocsag(radio_cb.radio_cfg.tx_power);
-    debug_printf(DBG_INFO, "POCSAG size is %d\r\n", my_pocsag.GetSize());
-    radio.send(static_cast<uint8_t *>(my_pocsag.GetMsgPointer()), my_pocsag.GetSize());
-}
-
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
 static constexpr int QUARTER_SECOND = 250;
@@ -119,8 +103,6 @@ void init_radio() {
         debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb.radio_cfg.frequencies[i]);
     }
     radio.configure_freq_hop(radio_cb.address, freqs);
-    debug_printf(DBG_INFO, "POCSAG Frequency is %d\r\n", radio_cb.pocsag_cfg.frequency); 
-    debug_printf(DBG_INFO, "POCSAG Beacon Interval is %d\r\n", radio_cb.pocsag_cfg.beacon_interval);
     switch(radio_cb.fec_cfg.type) {
         case FECCfg_Type_NONE:
             debug_printf(DBG_INFO, "FEC algorithm is NONE\r\n");
@@ -247,19 +229,8 @@ void reinit_radio() {
     radio.set_public_network(false);
 }
 
-
-void reinit_radio_pocsag() {
-    radio.set_tx_config_pocsag(radio_cb.radio_cfg.tx_power);
-    radio.rx_hop_frequency();
-}
-
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {
     evt_enum = my_evt_enum;
-}
-
-RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, string &my_pocsag_msg) {
-    evt_enum = my_evt_enum;
-    pocsag_msg = my_pocsag_msg;
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr_sptr) {

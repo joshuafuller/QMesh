@@ -123,82 +123,83 @@ void init_filesystem() {
     fs.remove("boot.fail");
 }
 
+
+static void write_default_cfg();
+static void write_default_cfg() {
+    auto *f = fopen("/fs/settings.bin", "w");
+    MBED_ASSERT(f);
+    SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
+    radio_cb = sys_cfg_msg_zero;
+    radio_cb.mode = SysCfgMsg_Mode_NORMAL;
+    radio_cb.address = DEFAULT_ADDRESS;
+
+    radio_cb.has_radio_cfg = true;
+    RadioCfg radio_cfg_zero = RadioCfg_init_zero;
+    radio_cb.radio_cfg = radio_cfg_zero;
+    radio_cb.radio_cfg.type = RadioCfg_Type_LORA;
+    radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+    radio_cb.radio_cfg.frequencies_count = 1;
+    radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+    radio_cb.radio_cfg.tx_power = RADIO_POWER;
+
+    radio_cb.radio_cfg.has_lora_cfg = true;
+    LoraCfg lora_cfg_zero = LoraCfg_init_zero;
+    radio_cb.radio_cfg.lora_cfg = lora_cfg_zero;
+    radio_cb.radio_cfg.lora_cfg.bw = RADIO_BANDWIDTH;
+    radio_cb.radio_cfg.lora_cfg.cr = RADIO_CODERATE;
+    radio_cb.radio_cfg.lora_cfg.sf = RADIO_SF;
+    radio_cb.radio_cfg.lora_cfg.preamble_length = RADIO_PREAMBLE_LEN;
+
+    radio_cb.has_net_cfg = true;
+    NetCfg net_cfg_zero = NetCfg_init_zero;
+    radio_cb.net_cfg = net_cfg_zero;
+    string def_msg = "KG5VBY Default Message";
+    memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
+    radio_cb.net_cfg.beacon_interval = SIX_SECONDS;
+    radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
+
+    radio_cb.has_fec_cfg = true;
+    FECCfg FECCfg_zero = FECCfg_init_zero;
+    radio_cb.fec_cfg = FECCfg_zero;
+    radio_cb.fec_cfg.type = FECCfg_Type_RSVGOLAY;
+    radio_cb.fec_cfg.conv_order = FEC_CONV_ORDER;
+    radio_cb.fec_cfg.conv_rate = FEC_CONV_RATE;
+    radio_cb.fec_cfg.rs_num_roots = FEC_RS_NUM_ROOTS;
+
+    radio_cb.has_test_cfg = true;
+    TestCfg test_cfg_zero = TestCfg_init_zero;
+    radio_cb.test_cfg = test_cfg_zero;
+    radio_cb.test_cfg.cw_test_mode = false;
+    radio_cb.test_cfg.preamble_test_mode = false;
+    radio_cb.test_cfg.test_fec = false;
+
+    radio_cb.gps_en = false;
+
+    radio_cb.watchdog_timer_en = false;
+
+    auto ser_msg = make_shared<SerialMsg>();
+    *ser_msg = ser_msg_zero;
+    ser_msg->type = SerialMsg_Type_CONFIG;
+    ser_msg->has_sys_cfg = true;
+    ser_msg->sys_cfg = radio_cb;
+    MBED_ASSERT(save_SerialMsg(*ser_msg, f) == WRITE_SUCCESS);
+    fflush(f);
+    fclose(f); 
+    f = fopen("/fs/settings.bin", "r");
+    MBED_ASSERT(f);
+    fclose(f);
+}
+
+
 //extern Thread rx_serial_thread;
 void load_settings_from_flash() {
-    debug_printf(DBG_INFO, "Stats on settings.bin\r\n");
-    FILE *f = nullptr;    
-    f = fopen("/fs/settings.bin", "r");
+    debug_printf(DBG_INFO, "Stats on settings.bin\r\n");  
+    auto *f = fopen("/fs/settings.bin", "r");
     if(f == nullptr) {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
-        f = fopen("/fs/settings.bin", "w");
-        SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
-        radio_cb = sys_cfg_msg_zero;
-        radio_cb.mode = SysCfgMsg_Mode_NORMAL;
-        radio_cb.address = DEFAULT_ADDRESS;
-
-        radio_cb.has_radio_cfg = true;
-        RadioCfg radio_cfg_zero = RadioCfg_init_zero;
-        radio_cb.radio_cfg = radio_cfg_zero;
-        radio_cb.radio_cfg.type = RadioCfg_Type_LORA;
-        radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
-        radio_cb.radio_cfg.frequencies_count = 1;
-        radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
-        radio_cb.radio_cfg.tx_power = RADIO_POWER;
-
-        radio_cb.radio_cfg.has_lora_cfg = true;
-        LoraCfg lora_cfg_zero = LoraCfg_init_zero;
-        radio_cb.radio_cfg.lora_cfg = lora_cfg_zero;
-        radio_cb.radio_cfg.lora_cfg.bw = RADIO_BANDWIDTH;
-        radio_cb.radio_cfg.lora_cfg.cr = RADIO_CODERATE;
-        radio_cb.radio_cfg.lora_cfg.sf = RADIO_SF;
-        radio_cb.radio_cfg.lora_cfg.preamble_length = RADIO_PREAMBLE_LEN;
-
-        radio_cb.has_net_cfg = true;
-        NetCfg net_cfg_zero = NetCfg_init_zero;
-        radio_cb.net_cfg = net_cfg_zero;
-        string def_msg = "KG5VBY Default Message";
-        memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
-        radio_cb.net_cfg.beacon_interval = SIX_SECONDS;
-        radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
-
-        radio_cb.has_fec_cfg = true;
-        FECCfg FECCfg_zero = FECCfg_init_zero;
-        radio_cb.fec_cfg = FECCfg_zero;
-        radio_cb.fec_cfg.type = FECCfg_Type_RSVGOLAY;
-        radio_cb.fec_cfg.conv_order = FEC_CONV_ORDER;
-        radio_cb.fec_cfg.conv_rate = FEC_CONV_RATE;
-        radio_cb.fec_cfg.rs_num_roots = FEC_RS_NUM_ROOTS;
-
-        radio_cb.has_pocsag_cfg = true;
-        POCSAGCfg pocsag_cfg_zero = POCSAGCfg_init_zero;
-        radio_cb.pocsag_cfg = pocsag_cfg_zero;
-        radio_cb.pocsag_cfg.enabled = true;
-        constexpr int POCSAG_FREQ = 439987500;
-        constexpr int TEN_MINUTES = 600;
-        radio_cb.pocsag_cfg.frequency = POCSAG_FREQ;
-        radio_cb.pocsag_cfg.beacon_interval = TEN_MINUTES;
-
-        radio_cb.has_test_cfg = true;
-        TestCfg test_cfg_zero = TestCfg_init_zero;
-        radio_cb.test_cfg = test_cfg_zero;
-        radio_cb.test_cfg.cw_test_mode = false;
-        radio_cb.test_cfg.preamble_test_mode = false;
-        radio_cb.test_cfg.test_fec = false;
-
-        radio_cb.gps_en = false;
-
-        radio_cb.watchdog_timer_en = false;
-
-        auto ser_msg = make_shared<SerialMsg>();
-        *ser_msg = ser_msg_zero;
-        ser_msg->type = SerialMsg_Type_CONFIG;
-        ser_msg->has_sys_cfg = true;
-        ser_msg->sys_cfg = radio_cb;
-        MBED_ASSERT(save_SerialMsg(*ser_msg, f) == WRITE_SUCCESS);
-        fflush(f);
-        fclose(f); 
+        write_default_cfg();
         f = fopen("/fs/settings.bin", "r");
-        MBED_ASSERT(f);
+        MBED_ASSERT(f);     
     }
     struct stat file_stat{};
     stat("/fs/settings.bin", &file_stat);
@@ -206,7 +207,13 @@ void load_settings_from_flash() {
     MBED_ASSERT(file_stat.st_size < 1024);
     auto ser_msg = make_shared<SerialMsg>();
     *ser_msg = ser_msg_zero;
-    MBED_ASSERT(load_SerialMsg(*ser_msg, f) == READ_SUCCESS);
+    if(load_SerialMsg(*ser_msg, f) != READ_SUCCESS) {
+        fclose(f);
+        debug_printf(DBG_WARN, "Invalid settings.bin. Creating new file with default settings\r\n");
+        write_default_cfg();
+        f = fopen("/fs/settings.bin", "r");
+        MBED_ASSERT(f);
+    }
     MBED_ASSERT(ser_msg->type == SerialMsg_Type_CONFIG);
     MBED_ASSERT(ser_msg->has_sys_cfg);
     radio_cb = ser_msg->sys_cfg;
@@ -229,9 +236,6 @@ void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
                 radio_cb.net_cfg.num_offsets);
     debug_printf(DBG_INFO, "Has a GPS: %d\r\n", static_cast<int>(radio_cb.gps_en));
-    MBED_ASSERT(radio_cb.has_pocsag_cfg);
-    debug_printf(DBG_INFO, "POCSAG frequency %d\r\n", radio_cb.pocsag_cfg.frequency);
-    debug_printf(DBG_INFO, "POCSAG Beacon Interval %d\r\n", radio_cb.pocsag_cfg.beacon_interval);
     // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
     //  anything else from occurring and leading to weird crashes
     MBED_ASSERT(radio_cb.has_fec_cfg);
@@ -254,7 +258,7 @@ void load_settings_from_flash() {
 
 void save_settings_to_flash() {
     debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
-    FILE *f = fopen("/fs/settings.bin", "w"); 
+    auto *f = fopen("/fs/settings.bin", "w"); 
     MBED_ASSERT(f);
     auto ser_msg = make_shared<SerialMsg>();
     *ser_msg = ser_msg_zero;
@@ -276,7 +280,7 @@ void log_boot() {
     ser_msg->boot_log_msg.count = 0;
     ser_msg->boot_log_msg.valid = true;
 
-    FILE *f = fopen("/fs/boot_log.bin", "a+");
+    auto *f = fopen("/fs/boot_log.bin", "a+");
     MBED_ASSERT(f);
     save_SerialMsg(*ser_msg, f);
     fclose(f);      
@@ -286,7 +290,7 @@ void log_boot() {
 auto open_logfile() -> FILE * {
     // Step one: get the size of the current logfile. If current logfile is too big,
     //  move it down the "logfile stack".
-    FILE *f = fopen("/fs/log/logfile.bin", "r");
+    auto *f = fopen("/fs/log/logfile.bin", "r");
     if(f == nullptr) {
         debug_printf(DBG_INFO, "Need to create the logfile\r\n");
         f = fopen("/fs/log/logfile.bin", "w");
@@ -314,7 +318,7 @@ auto open_logfile() -> FILE * {
 
 extern time_t boot_timestamp;
 void nv_log_fn() {
-    DIR *log_dir = opendir("/fs/log");
+    auto *log_dir = opendir("/fs/log");
     if((log_dir == nullptr) && errno == ENOENT) {
         debug_printf(DBG_INFO, "Log directory does not exist. Creating...\r\n");
         constexpr int UGO_RWX = 777;
@@ -338,7 +342,7 @@ void nv_log_fn() {
     }
     debug_printf(DBG_INFO, "Now opening the logfile\r\n");
     debug_printf(DBG_INFO, "First set\r\n");
-    FILE *f = open_logfile();
+    auto *f = open_logfile();
     for(;;) {
         // Write the latest frame to disk
         auto log_frame = dequeue_mail(nv_logger_mail);  

@@ -21,9 +21,6 @@ PB_BIND(RadioCfg, RadioCfg, AUTO)
 PB_BIND(NetCfg, NetCfg, 2)
 
 
-PB_BIND(POCSAGCfg, POCSAGCfg, AUTO)
-
-
 PB_BIND(SysCfgMsg, SysCfgMsg, 2)
 
 

@@ -34,9 +34,6 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['beacon_msg'] = ser_msg.sys_cfg.net_cfg.beacon_msg
     cfg_dict['num_offsets'] = ser_msg.sys_cfg.net_cfg.num_offsets
     cfg_dict['payload_length'] = ser_msg.sys_cfg.net_cfg.pld_len
-    cfg_dict['pocsag_enabled'] = ser_msg.sys_cfg.pocsag_cfg.enabled
-    cfg_dict['pocsag_freq'] = ser_msg.sys_cfg.pocsag_cfg.frequency
-    cfg_dict['pocsag_beacon_interval'] = ser_msg.sys_cfg.pocsag_cfg.beacon_interval
     cfg_dict['gps_en'] = ser_msg.sys_cfg.gps_en
     cfg_dict['log_packets'] = ser_msg.sys_cfg.log_packets_en
     cfg_dict['log_boot'] = ser_msg.sys_cfg.boot_log_en
@@ -90,11 +87,6 @@ def print_cfg_msg(ser_msg):
     print("\t\tNumber of Offsets: %s" % (net_cfg.num_offsets))
     print("\t\tPayload Length: %s" % (net_cfg.pld_len))
     print("\t\tFull Packet Length: %s" % (net_cfg.full_pkt_len))
-    print("\tPOCSAG CONFIG:")
-    pocsag_cfg = sys_cfg.pocsag_cfg
-    print("\t\tEnabled: %s" % (pocsag_cfg.enabled))
-    print("\t\tFrequency: %s" % (pocsag_cfg.frequency))
-    print("\t\tBeacon Interval: %s" % (pocsag_cfg.beacon_interval))
     print("\tGPS Enabled: %s" % (sys_cfg.gps_en))
     print("\tLog Packets Enabled: %s" % (sys_cfg.log_packets_en))
     print("\tBoot Log Enabled: %s" % (sys_cfg.boot_log_en))

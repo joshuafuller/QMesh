@@ -50,12 +50,6 @@ message NetCfg {
   uint32 full_pkt_len = 5;
 }
 
-message POCSAGCfg {
-  bool enabled = 1;
-  uint32 frequency = 2;
-  uint32 beacon_interval = 3;
-}
-
 message SysCfgMsg {
   enum Mode {
     NORMAL = 0;
@@ -69,11 +63,10 @@ message SysCfgMsg {
   TestCfg test_cfg = 4;
   FECCfg fec_cfg = 5;
   NetCfg net_cfg = 6;
-  POCSAGCfg pocsag_cfg = 7;
-  bool gps_en = 8;
-  bool log_packets_en = 9;
-  bool boot_log_en = 10;
-  bool watchdog_timer_en = 11;
+  bool gps_en = 7;
+  bool log_packets_en = 8;
+  bool boot_log_en = 9;
+  bool watchdog_timer_en = 10;
 }
 
 message ClockSetMsg {

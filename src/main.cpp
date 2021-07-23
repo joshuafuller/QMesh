@@ -99,25 +99,19 @@ auto main() -> int
 {
     start_cal();
     time(&boot_timestamp);
-    background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
 
     // Reset the watchdog timer
     wdt_pet();
 
     // Set up the LEDs
+    ThisThread::sleep_for(HALF_SECOND);
+    background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
     led1.setEvtQueue(&background_queue);
     led2.setEvtQueue(&background_queue);
     led3.setEvtQueue(&background_queue);  
 
     oled_i2c.frequency(I2C_FREQ);
     oled_i2c.start();
-    auto *disp_file = fopen("/fs/display.on", "r");
-    if(disp_file == nullptr) {
-        oled->displayOff();
-    } else {
-        oled->displayOn();
-        fclose(disp_file);
-    }
     
     constexpr int OLED_NUM_LINES = 32;
     constexpr int OLED_NUM_COLS = 128;
@@ -149,6 +143,14 @@ auto main() -> int
     init_filesystem();
     load_settings_from_flash();
     log_boot();
+
+    auto *disp_file = fopen("/fs/display.off", "r");
+    if(disp_file == nullptr) {
+        oled->displayOn();
+        fclose(disp_file);
+    } else {
+        oled->displayOff();
+    }
 
     stream_id_rng.seed(radio_cb.address);
     // Start the serial handler threads
@@ -243,12 +245,6 @@ ThisThread::sleep_for(500);
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
     background_queue.call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
                             beacon_fn);
-
-    debug_printf(DBG_INFO, "Starting the POCSAG beacon\r\n");
-    if(radio_cb.pocsag_cfg.enabled) {
-        background_queue.call_every(static_cast<int>(radio_cb.pocsag_cfg.beacon_interval*ONE_SECOND), 
-                            beacon_pocsag_fn);
-    }
     ThisThread::sleep_for(QUARTER_SECOND);
  
     // Start the OLED monitoring

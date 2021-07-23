@@ -47,13 +47,9 @@ using nv_settings_t = struct {
 // Main thread for working with the LoRa radio
 extern Thread radio_thread;
 
-// Send out a POCSAG pager message
-void send_pocsag_msg(const string &msg);
-
 // Initialize the radio
 void init_radio();
 void reinit_radio();
-void reinit_radio_pocsag();
 
 // Test functions, one for transmitting and one for receiving
 constexpr int RX_DONE_SIGNAL = 0xAB;

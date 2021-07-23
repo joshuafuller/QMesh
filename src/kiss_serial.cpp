@@ -571,12 +571,12 @@ void KISSSerial::send_status() {
     }
     ser_msg->status.tx_full = tx_frame_mail.full();
     ser_msg->status.time = time(nullptr);
-    auto *display_file = fopen("/fs/display.on", "r");
+    auto *display_file = fopen("/fs/display.off", "r");
     if(display_file == nullptr) {
-        ser_msg->status.oled_on = false;
+        ser_msg->status.oled_on = true;
     } else {
         fclose(display_file);
-        ser_msg->status.oled_on = true;
+        ser_msg->status.oled_on = false;
     }
     ser_msg->status.total_rx_pkt = total_rx_pkt;
     ser_msg->status.total_rx_corr_pkt = total_rx_corr_pkt;
@@ -682,19 +682,19 @@ void KISSSerial::rx_serial_thread_fn() {
             }
             continue;
         }
-        if(ser_msg->type == SerialMsg_Type_TURN_OLED_ON) {
-            debug_printf(DBG_INFO, "Received a request to turn ON the OLED display\r\n");
-            auto *disp_file = fopen("/fs/display.on", "w");
-            MBED_ASSERT(disp_file != nullptr);
-            fclose(disp_file);
-            oled->displayOn();
-        }
         if(ser_msg->type == SerialMsg_Type_TURN_OLED_OFF) {
             debug_printf(DBG_INFO, "Received a request to turn OFF the OLED display\r\n");
-            fs.remove("display.on");
-            auto *disp_file = fopen("/fs/display.on", "r");
-            MBED_ASSERT(disp_file == nullptr);
+            auto *disp_file = fopen("/fs/display.off", "w");
+            MBED_ASSERT(disp_file != nullptr);
+            fclose(disp_file);
             oled->displayOff();
+        }
+        if(ser_msg->type == SerialMsg_Type_TURN_OLED_ON) {
+            debug_printf(DBG_INFO, "Received a request to turn ON the OLED display\r\n");
+            fs.remove("display.off");
+            auto *disp_file = fopen("/fs/display.off", "r");
+            MBED_ASSERT(disp_file == nullptr);
+            oled->displayOn();
         }        
         if(ser_msg->type == SerialMsg_Type_VERSION) {
             debug_printf(DBG_INFO, "Received a FW version request message\r\n");

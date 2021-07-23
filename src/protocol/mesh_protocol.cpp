@@ -83,8 +83,7 @@ static auto checkRedundantPkt(const shared_ptr<Frame> &rx_frame) -> bool {
 static enum {
     WAIT_FOR_EVENT,
     TX_PACKET,
-    RETRANSMIT_PACKET,
-    TX_POCSAG
+    RETRANSMIT_PACKET
 } state = WAIT_FOR_EVENT;
 
 RadioTiming radio_timing;
@@ -157,22 +156,7 @@ void mesh_protocol_fsm() {
                 while(radio.cad_pending.load() == true) { };
                 radio.stop_cad.store(false);
                 debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
-                if(radio_event->evt_enum == TX_POCSAG_EVT) {
-                    debug_printf(DBG_INFO, "Now transmitting a POCSAG page\r\n");
-                    radio.lock();
-                    radio.standby();
-                    led2.LEDFastBlink();
-                    radio.set_channel(radio_cb.pocsag_cfg.frequency);
-                    radio.unlock();
-                    send_pocsag_msg(radio_event->pocsag_msg);
-                    tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
-                    radio.lock();
-                    reinit_radio();
-                    radio.unlock();
-                    led2.LEDOff();
-                    state = WAIT_FOR_EVENT;
-                }
-                else if(radio_event->evt_enum == TX_FRAME_EVT) {
+                if(radio_event->evt_enum == TX_FRAME_EVT) {
                     tx_frame_sptr = radio_event->frame;
                     tx_frame_sptr->fec = fec;
                     radio.lock();
@@ -332,52 +316,6 @@ void beacon_fn() {
     beacon_frame_sptr->setStreamID(stream_id++);
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
-}
-
-/**
- * Periodically queues up for transmission a beacon message.
- */
-static constexpr int MSG_BUF_SIZE = 128;
-void beacon_pocsag_fn() {
-    static bool status = false;
-    status = !status;
-    if(status) {
-        debug_printf(DBG_INFO, "POCSAG beacon set\r\n");
-        vector<char> msg(MSG_BUF_SIZE);
-        snprintf(msg.data(), MSG_BUF_SIZE, "KG5VBY:SF%d,BW%d,F%d\r\n", 
-                    static_cast<int>(radio_cb.radio_cfg.lora_cfg.sf), 
-                    static_cast<int>(radio_cb.radio_cfg.lora_cfg.bw), 
-                    static_cast<int>(radio_cb.radio_cfg.frequency));
-        string pocsag_msg(msg.data());
-        auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
-        enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
-        int pocsag_beacon_interval = radio_cb.pocsag_cfg.beacon_interval;
-        constexpr int ONE_MINUTE = 60000;
-        if(pocsag_beacon_interval == -1) {
-            pocsag_beacon_interval = ONE_MINUTE;
-        }
-    } else { 
-        time_t cur_time = 0;
-        time(&cur_time);
-        constexpr int SECS_PER_DAY = 86400;
-        constexpr int SECS_PER_HOUR = 3600;
-        constexpr int SECS_PER_MIN = 60;
-        time_t uptime = cur_time - boot_timestamp;
-        int uptime_rem = uptime;
-        int uptime_d = uptime_rem / SECS_PER_DAY;
-        uptime_rem %= SECS_PER_DAY;
-        int uptime_h = uptime_rem / SECS_PER_HOUR;
-        uptime_rem %= SECS_PER_HOUR;
-        int uptime_m = uptime_rem / SECS_PER_MIN;
-        uptime_rem %= SECS_PER_MIN;
-        int uptime_s = uptime_rem;
-        vector<char> msg(MSG_BUF_SIZE);
-        snprintf(msg.data(), MSG_BUF_SIZE, "KG5VBY:Uptime:%dd:%dh:%dm:%ds\r\n", 
-                    uptime_d, uptime_h, uptime_m, uptime_s);
-        string pocsag_msg(msg.data());
-        auto radio_evt = make_shared<RadioEvent>(TX_POCSAG_EVT, pocsag_msg);
-        enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
-    }
 }
 
 

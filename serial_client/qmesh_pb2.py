@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0bqmesh.proto\x1a\x0cnanopb.proto\"\\\n\x07LoraCfg\x12\n\n\x02\x62w\x18\x01 \x01(\r\x12\n\n\x02\x63r\x18\x02 \x01(\r\x12\n\n\x02sf\x18\x03 \x01(\r\x12\x17\n\x0fpreamble_length\x18\x04 \x01(\r\x12\x14\n\x0c\x66hss_pre_len\x18\x05 \x01(\r\"M\n\x07TestCfg\x12\x14\n\x0c\x63w_test_mode\x18\x01 \x01(\x08\x12\x1a\n\x12preamble_test_mode\x18\x02 \x01(\x08\x12\x10\n\x08test_fec\x18\x03 \x01(\x08\"\xa4\x01\n\x06\x46\x45\x43\x43\x66g\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.FECCfg.Type\x12\x11\n\tconv_rate\x18\x02 \x01(\x05\x12\x12\n\nconv_order\x18\x03 \x01(\x05\x12\x14\n\x0crs_num_roots\x18\x04 \x01(\x05\"A\n\x04Type\x12\x08\n\x04NONE\x10\x00\x12\x0e\n\nINTERLEAVE\x10\x01\x12\x08\n\x04\x43ONV\x10\x02\x12\x07\n\x03RSV\x10\x03\x12\x0c\n\x08RSVGOLAY\x10\x04\"\xa0\x01\n\x08RadioCfg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.RadioCfg.Type\x12\x11\n\tfrequency\x18\x02 \x01(\x05\x12\x1a\n\x0b\x66requencies\x18\x03 \x03(\x05\x42\x05\x92?\x02\x10\x10\x12\x10\n\x08tx_power\x18\x04 \x01(\x05\x12\x1a\n\x08lora_cfg\x18\x05 \x01(\x0b\x32\x08.LoraCfg\"\x19\n\x04Type\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\"y\n\x06NetCfg\x12\x1a\n\nbeacon_msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x02 \x01(\r\x12\x13\n\x0bnum_offsets\x18\x03 \x01(\r\x12\x0f\n\x07pld_len\x18\x04 \x01(\r\x12\x14\n\x0c\x66ull_pkt_len\x18\x05 \x01(\r\"H\n\tPOCSAGCfg\x12\x0f\n\x07\x65nabled\x18\x01 \x01(\x08\x12\x11\n\tfrequency\x18\x02 \x01(\r\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x03 \x01(\r\"\xe3\x02\n\tSysCfgMsg\x12\x1d\n\x04mode\x18\x01 \x01(\x0e\x32\x0f.SysCfgMsg.Mode\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\r\x12\x1c\n\tradio_cfg\x18\x03 \x01(\x0b\x32\t.RadioCfg\x12\x1a\n\x08test_cfg\x18\x04 \x01(\x0b\x32\x08.TestCfg\x12\x18\n\x07\x66\x65\x63_cfg\x18\x05 \x01(\x0b\x32\x07.FECCfg\x12\x18\n\x07net_cfg\x18\x06 \x01(\x0b\x32\x07.NetCfg\x12\x1e\n\npocsag_cfg\x18\x07 \x01(\x0b\x32\n.POCSAGCfg\x12\x0e\n\x06gps_en\x18\x08 \x01(\x08\x12\x16\n\x0elog_packets_en\x18\t \x01(\x08\x12\x13\n\x0b\x62oot_log_en\x18\n \x01(\x08\x12\x19\n\x11watchdog_timer_en\x18\x0b \x01(\x08\"@\n\x04Mode\x12\n\n\x06NORMAL\x10\x00\x12\x0e\n\nMODE_RESET\x10\x01\x12\x0f\n\x0bMODE_SILENT\x10\x02\x12\x0b\n\x07TESTING\x10\x03\"\x1b\n\x0b\x43lockSetMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\x84\x02\n\tStatusMsg\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.StatusMsg.Status\x12\x0f\n\x07tx_full\x18\x02 \x01(\x08\x12\x0c\n\x04time\x18\x03 \x01(\r\x12\x0f\n\x07oled_on\x18\x04 \x01(\x08\x12\x14\n\x0ctotal_rx_pkt\x18\x05 \x01(\r\x12\x19\n\x11total_rx_corr_pkt\x18\x06 \x01(\r\x12\x14\n\x0ctotal_tx_pkt\x18\x07 \x01(\r\x12\x14\n\x0clast_rx_rssi\x18\x08 \x01(\r\x12\x13\n\x0blast_rx_snr\x18\t \x01(\r\"2\n\x06Status\x12\x0b\n\x07\x42OOTING\x10\x00\x12\x0e\n\nMANAGEMENT\x10\x01\x12\x0b\n\x07RUNNING\x10\x02\"\x1d\n\x06\x44\x62gMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\x1d\n\x0cSerialCRCMsg\x12\r\n\x05\x63rc32\x18\x01 \x01(\r\"=\n\nBootLogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x11\n\tboot_time\x18\x02 \x01(\r\x12\r\n\x05\x63ount\x18\x03 \x01(\r\"1\n\x06GPSMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0b\n\x03lat\x18\x02 \x01(\x02\x12\x0b\n\x03lon\x18\x03 \x01(\x02\"\xde\x01\n\x06LogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x11\n\ttimestamp\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x0b\n\x03ttl\x18\x05 \x01(\r\x12\x11\n\tstream_id\x18\x06 \x01(\r\x12\x0c\n\x04rssi\x18\x07 \x01(\x11\x12\x0b\n\x03snr\x18\x08 \x01(\x11\x12\x0f\n\x07rx_size\x18\t \x01(\x05\x12\x10\n\x08\x63omp_crc\x18\n \x01(\r\x12\x0b\n\x03\x63rc\x18\x0b \x01(\r\x12\x0e\n\x06uptime\x18\x0c \x01(\r\x12\x18\n\x07gps_msg\x18\r \x01(\x0b\x32\x07.GPSMsg\"\x17\n\x07TimeMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\xe4\x06\n\tSerialMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.SerialMsg.Type\x12\r\n\x05retry\x18\x02 \x01(\x08\x12\x1b\n\x07sys_cfg\x18\x03 \x01(\x0b\x32\n.SysCfgMsg\x12\x1f\n\tclock_set\x18\x04 \x01(\x0b\x32\x0c.ClockSetMsg\x12\x1a\n\x06status\x18\x05 \x01(\x0b\x32\n.StatusMsg\x12\x18\n\x07\x64\x62g_msg\x18\x06 \x01(\x0b\x32\x07.DbgMsg\x12\x18\n\x07log_msg\x18\x07 \x01(\x0b\x32\x07.LogMsg\x12!\n\x0c\x62oot_log_msg\x18\x08 \x01(\x0b\x32\x0b.BootLogMsg\x12\x1a\n\x08\x64\x61ta_msg\x18\t \x01(\x0b\x32\x08.DataMsg\x12\x1c\n\terror_msg\x18\n \x01(\x0b\x32\t.ErrorMsg\x12\x1a\n\x08time_msg\x18\x0b \x01(\x0b\x32\x08.TimeMsg\x12\x1e\n\nupdate_msg\x18\x0c \x01(\x0b\x32\n.UpdateMsg\x12\x1c\n\x07ver_msg\x18\r \x01(\x0b\x32\x0b.VersionMsg\"\xe3\x03\n\x04Type\x12\x0e\n\nGET_CONFIG\x10\x00\x12\x0e\n\nSET_CONFIG\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\r\n\tCLOCK_SET\x10\x04\x12\n\n\x06STATUS\x10\x05\x12\x0e\n\nGET_STATUS\x10\x06\x12\x0f\n\x0bSTAY_IN_MGT\x10\x07\x12\r\n\tDEBUG_MSG\x10\x08\x12\n\n\x06REBOOT\x10\t\x12\x0e\n\nERASE_LOGS\x10\n\x12\x13\n\x0f\x45RASE_BOOT_LOGS\x10\x0b\x12\r\n\tERASE_CFG\x10\x0c\x12\x0c\n\x08READ_LOG\x10\r\x12\x12\n\x0eREAD_LOG_RETRY\x10\x0e\x12\r\n\tREPLY_LOG\x10\x0f\x12\x11\n\rREAD_BOOT_LOG\x10\x10\x12\x17\n\x13READ_BOOT_LOG_RETRY\x10\x11\x12\x12\n\x0eREPLY_BOOT_LOG\x10\x12\x12\x0b\n\x07\x43RC_ERR\x10\x13\x12\x0c\n\x08SET_TIME\x10\x14\x12\x07\n\x03\x41\x43K\x10\x15\x12\x07\n\x03\x45RR\x10\x16\x12\x13\n\x0f\x45NTER_KISS_MODE\x10\x17\x12\x12\n\x0e\x45XIT_KISS_MODE\x10\x18\x12\x0c\n\x08\x42OOT_LOG\x10\x19\x12\x07\n\x03LOG\x10\x1a\x12\n\n\x06UPDATE\x10\x1b\x12\x0b\n\x07VERSION\x10\x1c\x12\x10\n\x0cTURN_OLED_ON\x10\x1d\x12\x11\n\rTURN_OLED_OFF\x10\x1e\" \n\nVersionMsg\x12\x12\n\x03msg\x18\x01 \x01(\tB\x05\x92?\x02\x08 \"a\n\x08\x45rrorMsg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.ErrorMsg.Type\x12\x13\n\x03msg\x18\x02 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\"\n\x04Type\x12\x0b\n\x07\x43RC_ERR\x10\x00\x12\r\n\tOTHER_ERR\x10\x01\"\x98\x02\n\x07\x44\x61taMsg\x12\x1b\n\x04type\x18\x01 \x01(\x0e\x32\r.DataMsg.Type\x12\x11\n\tstream_id\x18\x02 \x01(\r\x12\x0b\n\x03ttl\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x12\n\nsym_offset\x18\x05 \x01(\r\x12\x17\n\x07payload\x18\x06 \x01(\x0c\x42\x06\x92?\x03\x08\x80\x04\x12\x0b\n\x03\x63rc\x18\x07 \x01(\r\x12\r\n\x05voice\x18\x08 \x01(\x08\x12\x16\n\x0ekiss_cur_frame\x18\t \x01(\r\x12\x17\n\x0fkiss_tot_frames\x18\n \x01(\r\x12\x16\n\x0ekiss_stream_id\x18\x0b \x01(\r\".\n\x04Type\x12\x06\n\x02TX\x10\x00\x12\x06\n\x02RX\x10\x01\x12\n\n\x06KISSTX\x10\x02\x12\n\n\x06KISSRX\x10\x03\"\xf5\x01\n\tUpdateMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.UpdateMsg.Type\x12\x0f\n\x07pkt_cnt\x18\x02 \x01(\x05\x12\x14\n\x04path\x18\x03 \x01(\tB\x06\x92?\x03\x08\x80\x01\x12\x13\n\x03pld\x18\x04 \x01(\x0c\x42\x06\x92?\x03\x08\x80 \x12\x19\n\nsha256_pkt\x18\x05 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nsha256_upd\x18\x06 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nerr_reason\x18\x07 \x01(\tB\x05\x92?\x02\x08 \"<\n\x04Type\x12\t\n\x05\x46IRST\x10\x00\x12\x08\n\x04LAST\x10\x01\x12\n\n\x06MIDDLE\x10\x02\x12\x07\n\x03\x41\x43K\x10\x03\x12\n\n\x06\x41\x43KERR\x10\x04\x62\x06proto3')
+  serialized_pb=_b('\n\x0bqmesh.proto\x1a\x0cnanopb.proto\"\\\n\x07LoraCfg\x12\n\n\x02\x62w\x18\x01 \x01(\r\x12\n\n\x02\x63r\x18\x02 \x01(\r\x12\n\n\x02sf\x18\x03 \x01(\r\x12\x17\n\x0fpreamble_length\x18\x04 \x01(\r\x12\x14\n\x0c\x66hss_pre_len\x18\x05 \x01(\r\"M\n\x07TestCfg\x12\x14\n\x0c\x63w_test_mode\x18\x01 \x01(\x08\x12\x1a\n\x12preamble_test_mode\x18\x02 \x01(\x08\x12\x10\n\x08test_fec\x18\x03 \x01(\x08\"\xa4\x01\n\x06\x46\x45\x43\x43\x66g\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.FECCfg.Type\x12\x11\n\tconv_rate\x18\x02 \x01(\x05\x12\x12\n\nconv_order\x18\x03 \x01(\x05\x12\x14\n\x0crs_num_roots\x18\x04 \x01(\x05\"A\n\x04Type\x12\x08\n\x04NONE\x10\x00\x12\x0e\n\nINTERLEAVE\x10\x01\x12\x08\n\x04\x43ONV\x10\x02\x12\x07\n\x03RSV\x10\x03\x12\x0c\n\x08RSVGOLAY\x10\x04\"\xa0\x01\n\x08RadioCfg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.RadioCfg.Type\x12\x11\n\tfrequency\x18\x02 \x01(\x05\x12\x1a\n\x0b\x66requencies\x18\x03 \x03(\x05\x42\x05\x92?\x02\x10\x10\x12\x10\n\x08tx_power\x18\x04 \x01(\x05\x12\x1a\n\x08lora_cfg\x18\x05 \x01(\x0b\x32\x08.LoraCfg\"\x19\n\x04Type\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\"y\n\x06NetCfg\x12\x1a\n\nbeacon_msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x02 \x01(\r\x12\x13\n\x0bnum_offsets\x18\x03 \x01(\r\x12\x0f\n\x07pld_len\x18\x04 \x01(\r\x12\x14\n\x0c\x66ull_pkt_len\x18\x05 \x01(\r\"\xc3\x02\n\tSysCfgMsg\x12\x1d\n\x04mode\x18\x01 \x01(\x0e\x32\x0f.SysCfgMsg.Mode\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\r\x12\x1c\n\tradio_cfg\x18\x03 \x01(\x0b\x32\t.RadioCfg\x12\x1a\n\x08test_cfg\x18\x04 \x01(\x0b\x32\x08.TestCfg\x12\x18\n\x07\x66\x65\x63_cfg\x18\x05 \x01(\x0b\x32\x07.FECCfg\x12\x18\n\x07net_cfg\x18\x06 \x01(\x0b\x32\x07.NetCfg\x12\x0e\n\x06gps_en\x18\x07 \x01(\x08\x12\x16\n\x0elog_packets_en\x18\x08 \x01(\x08\x12\x13\n\x0b\x62oot_log_en\x18\t \x01(\x08\x12\x19\n\x11watchdog_timer_en\x18\n \x01(\x08\"@\n\x04Mode\x12\n\n\x06NORMAL\x10\x00\x12\x0e\n\nMODE_RESET\x10\x01\x12\x0f\n\x0bMODE_SILENT\x10\x02\x12\x0b\n\x07TESTING\x10\x03\"\x1b\n\x0b\x43lockSetMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\x84\x02\n\tStatusMsg\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.StatusMsg.Status\x12\x0f\n\x07tx_full\x18\x02 \x01(\x08\x12\x0c\n\x04time\x18\x03 \x01(\r\x12\x0f\n\x07oled_on\x18\x04 \x01(\x08\x12\x14\n\x0ctotal_rx_pkt\x18\x05 \x01(\r\x12\x19\n\x11total_rx_corr_pkt\x18\x06 \x01(\r\x12\x14\n\x0ctotal_tx_pkt\x18\x07 \x01(\r\x12\x14\n\x0clast_rx_rssi\x18\x08 \x01(\r\x12\x13\n\x0blast_rx_snr\x18\t \x01(\r\"2\n\x06Status\x12\x0b\n\x07\x42OOTING\x10\x00\x12\x0e\n\nMANAGEMENT\x10\x01\x12\x0b\n\x07RUNNING\x10\x02\"\x1d\n\x06\x44\x62gMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\x1d\n\x0cSerialCRCMsg\x12\r\n\x05\x63rc32\x18\x01 \x01(\r\"=\n\nBootLogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x11\n\tboot_time\x18\x02 \x01(\r\x12\r\n\x05\x63ount\x18\x03 \x01(\r\"1\n\x06GPSMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0b\n\x03lat\x18\x02 \x01(\x02\x12\x0b\n\x03lon\x18\x03 \x01(\x02\"\xde\x01\n\x06LogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x11\n\ttimestamp\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x0b\n\x03ttl\x18\x05 \x01(\r\x12\x11\n\tstream_id\x18\x06 \x01(\r\x12\x0c\n\x04rssi\x18\x07 \x01(\x11\x12\x0b\n\x03snr\x18\x08 \x01(\x11\x12\x0f\n\x07rx_size\x18\t \x01(\x05\x12\x10\n\x08\x63omp_crc\x18\n \x01(\r\x12\x0b\n\x03\x63rc\x18\x0b \x01(\r\x12\x0e\n\x06uptime\x18\x0c \x01(\r\x12\x18\n\x07gps_msg\x18\r \x01(\x0b\x32\x07.GPSMsg\"\x17\n\x07TimeMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\xe4\x06\n\tSerialMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.SerialMsg.Type\x12\r\n\x05retry\x18\x02 \x01(\x08\x12\x1b\n\x07sys_cfg\x18\x03 \x01(\x0b\x32\n.SysCfgMsg\x12\x1f\n\tclock_set\x18\x04 \x01(\x0b\x32\x0c.ClockSetMsg\x12\x1a\n\x06status\x18\x05 \x01(\x0b\x32\n.StatusMsg\x12\x18\n\x07\x64\x62g_msg\x18\x06 \x01(\x0b\x32\x07.DbgMsg\x12\x18\n\x07log_msg\x18\x07 \x01(\x0b\x32\x07.LogMsg\x12!\n\x0c\x62oot_log_msg\x18\x08 \x01(\x0b\x32\x0b.BootLogMsg\x12\x1a\n\x08\x64\x61ta_msg\x18\t \x01(\x0b\x32\x08.DataMsg\x12\x1c\n\terror_msg\x18\n \x01(\x0b\x32\t.ErrorMsg\x12\x1a\n\x08time_msg\x18\x0b \x01(\x0b\x32\x08.TimeMsg\x12\x1e\n\nupdate_msg\x18\x0c \x01(\x0b\x32\n.UpdateMsg\x12\x1c\n\x07ver_msg\x18\r \x01(\x0b\x32\x0b.VersionMsg\"\xe3\x03\n\x04Type\x12\x0e\n\nGET_CONFIG\x10\x00\x12\x0e\n\nSET_CONFIG\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\r\n\tCLOCK_SET\x10\x04\x12\n\n\x06STATUS\x10\x05\x12\x0e\n\nGET_STATUS\x10\x06\x12\x0f\n\x0bSTAY_IN_MGT\x10\x07\x12\r\n\tDEBUG_MSG\x10\x08\x12\n\n\x06REBOOT\x10\t\x12\x0e\n\nERASE_LOGS\x10\n\x12\x13\n\x0f\x45RASE_BOOT_LOGS\x10\x0b\x12\r\n\tERASE_CFG\x10\x0c\x12\x0c\n\x08READ_LOG\x10\r\x12\x12\n\x0eREAD_LOG_RETRY\x10\x0e\x12\r\n\tREPLY_LOG\x10\x0f\x12\x11\n\rREAD_BOOT_LOG\x10\x10\x12\x17\n\x13READ_BOOT_LOG_RETRY\x10\x11\x12\x12\n\x0eREPLY_BOOT_LOG\x10\x12\x12\x0b\n\x07\x43RC_ERR\x10\x13\x12\x0c\n\x08SET_TIME\x10\x14\x12\x07\n\x03\x41\x43K\x10\x15\x12\x07\n\x03\x45RR\x10\x16\x12\x13\n\x0f\x45NTER_KISS_MODE\x10\x17\x12\x12\n\x0e\x45XIT_KISS_MODE\x10\x18\x12\x0c\n\x08\x42OOT_LOG\x10\x19\x12\x07\n\x03LOG\x10\x1a\x12\n\n\x06UPDATE\x10\x1b\x12\x0b\n\x07VERSION\x10\x1c\x12\x10\n\x0cTURN_OLED_ON\x10\x1d\x12\x11\n\rTURN_OLED_OFF\x10\x1e\" \n\nVersionMsg\x12\x12\n\x03msg\x18\x01 \x01(\tB\x05\x92?\x02\x08 \"a\n\x08\x45rrorMsg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.ErrorMsg.Type\x12\x13\n\x03msg\x18\x02 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\"\n\x04Type\x12\x0b\n\x07\x43RC_ERR\x10\x00\x12\r\n\tOTHER_ERR\x10\x01\"\x98\x02\n\x07\x44\x61taMsg\x12\x1b\n\x04type\x18\x01 \x01(\x0e\x32\r.DataMsg.Type\x12\x11\n\tstream_id\x18\x02 \x01(\r\x12\x0b\n\x03ttl\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x12\n\nsym_offset\x18\x05 \x01(\r\x12\x17\n\x07payload\x18\x06 \x01(\x0c\x42\x06\x92?\x03\x08\x80\x04\x12\x0b\n\x03\x63rc\x18\x07 \x01(\r\x12\r\n\x05voice\x18\x08 \x01(\x08\x12\x16\n\x0ekiss_cur_frame\x18\t \x01(\r\x12\x17\n\x0fkiss_tot_frames\x18\n \x01(\r\x12\x16\n\x0ekiss_stream_id\x18\x0b \x01(\r\".\n\x04Type\x12\x06\n\x02TX\x10\x00\x12\x06\n\x02RX\x10\x01\x12\n\n\x06KISSTX\x10\x02\x12\n\n\x06KISSRX\x10\x03\"\xf5\x01\n\tUpdateMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.UpdateMsg.Type\x12\x0f\n\x07pkt_cnt\x18\x02 \x01(\x05\x12\x14\n\x04path\x18\x03 \x01(\tB\x06\x92?\x03\x08\x80\x01\x12\x13\n\x03pld\x18\x04 \x01(\x0c\x42\x06\x92?\x03\x08\x80 \x12\x19\n\nsha256_pkt\x18\x05 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nsha256_upd\x18\x06 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nerr_reason\x18\x07 \x01(\tB\x05\x92?\x02\x08 \"<\n\x04Type\x12\t\n\x05\x46IRST\x10\x00\x12\x08\n\x04LAST\x10\x01\x12\n\n\x06MIDDLE\x10\x02\x12\x07\n\x03\x41\x43K\x10\x03\x12\n\n\x06\x41\x43KERR\x10\x04\x62\x06proto3')
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,])
 
@@ -107,8 +107,8 @@ _SYSCFGMSG_MODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1021,
-  serialized_end=1085,
+  serialized_start=915,
+  serialized_end=979,
 )
 _sym_db.RegisterEnumDescriptor(_SYSCFGMSG_MODE)
 
@@ -133,8 +133,8 @@ _STATUSMSG_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1327,
-  serialized_end=1377,
+  serialized_start=1221,
+  serialized_end=1271,
 )
 _sym_db.RegisterEnumDescriptor(_STATUSMSG_STATUS)
 
@@ -271,8 +271,8 @@ _SERIALMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2191,
-  serialized_end=2674,
+  serialized_start=2085,
+  serialized_end=2568,
 )
 _sym_db.RegisterEnumDescriptor(_SERIALMSG_TYPE)
 
@@ -293,8 +293,8 @@ _ERRORMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2773,
-  serialized_end=2807,
+  serialized_start=2667,
+  serialized_end=2701,
 )
 _sym_db.RegisterEnumDescriptor(_ERRORMSG_TYPE)
 
@@ -323,8 +323,8 @@ _DATAMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3044,
-  serialized_end=3090,
+  serialized_start=2938,
+  serialized_end=2984,
 )
 _sym_db.RegisterEnumDescriptor(_DATAMSG_TYPE)
 
@@ -357,8 +357,8 @@ _UPDATEMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3278,
-  serialized_end=3338,
+  serialized_start=3172,
+  serialized_end=3232,
 )
 _sym_db.RegisterEnumDescriptor(_UPDATEMSG_TYPE)
 
@@ -639,51 +639,6 @@ _NETCFG = _descriptor.Descriptor(
 )
 
 
-_POCSAGCFG = _descriptor.Descriptor(
-  name='POCSAGCfg',
-  full_name='POCSAGCfg',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='enabled', full_name='POCSAGCfg.enabled', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='frequency', full_name='POCSAGCfg.frequency', index=1,
-      number=2, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='beacon_interval', full_name='POCSAGCfg.beacon_interval', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=655,
-  serialized_end=727,
-)
-
-
 _SYSCFGMSG = _descriptor.Descriptor(
   name='SysCfgMsg',
   full_name='SysCfgMsg',
@@ -734,36 +689,29 @@ _SYSCFGMSG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pocsag_cfg', full_name='SysCfgMsg.pocsag_cfg', index=6,
-      number=7, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='gps_en', full_name='SysCfgMsg.gps_en', index=6,
+      number=7, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='gps_en', full_name='SysCfgMsg.gps_en', index=7,
+      name='log_packets_en', full_name='SysCfgMsg.log_packets_en', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='log_packets_en', full_name='SysCfgMsg.log_packets_en', index=8,
+      name='boot_log_en', full_name='SysCfgMsg.boot_log_en', index=8,
       number=9, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='boot_log_en', full_name='SysCfgMsg.boot_log_en', index=9,
+      name='watchdog_timer_en', full_name='SysCfgMsg.watchdog_timer_en', index=9,
       number=10, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='watchdog_timer_en', full_name='SysCfgMsg.watchdog_timer_en', index=10,
-      number=11, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -781,8 +729,8 @@ _SYSCFGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=730,
-  serialized_end=1085,
+  serialized_start=656,
+  serialized_end=979,
 )
 
 
@@ -812,8 +760,8 @@ _CLOCKSETMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1087,
-  serialized_end=1114,
+  serialized_start=981,
+  serialized_end=1008,
 )
 
 
@@ -900,8 +848,8 @@ _STATUSMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1117,
-  serialized_end=1377,
+  serialized_start=1011,
+  serialized_end=1271,
 )
 
 
@@ -931,8 +879,8 @@ _DBGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1379,
-  serialized_end=1408,
+  serialized_start=1273,
+  serialized_end=1302,
 )
 
 
@@ -962,8 +910,8 @@ _SERIALCRCMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1410,
-  serialized_end=1439,
+  serialized_start=1304,
+  serialized_end=1333,
 )
 
 
@@ -1007,8 +955,8 @@ _BOOTLOGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1441,
-  serialized_end=1502,
+  serialized_start=1335,
+  serialized_end=1396,
 )
 
 
@@ -1052,8 +1000,8 @@ _GPSMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1504,
-  serialized_end=1553,
+  serialized_start=1398,
+  serialized_end=1447,
 )
 
 
@@ -1167,8 +1115,8 @@ _LOGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1556,
-  serialized_end=1778,
+  serialized_start=1450,
+  serialized_end=1672,
 )
 
 
@@ -1198,8 +1146,8 @@ _TIMEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1780,
-  serialized_end=1803,
+  serialized_start=1674,
+  serialized_end=1697,
 )
 
 
@@ -1314,8 +1262,8 @@ _SERIALMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1806,
-  serialized_end=2674,
+  serialized_start=1700,
+  serialized_end=2568,
 )
 
 
@@ -1345,8 +1293,8 @@ _VERSIONMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2676,
-  serialized_end=2708,
+  serialized_start=2570,
+  serialized_end=2602,
 )
 
 
@@ -1384,8 +1332,8 @@ _ERRORMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2710,
-  serialized_end=2807,
+  serialized_start=2604,
+  serialized_end=2701,
 )
 
 
@@ -1486,8 +1434,8 @@ _DATAMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2810,
-  serialized_end=3090,
+  serialized_start=2704,
+  serialized_end=2984,
 )
 
 
@@ -1560,8 +1508,8 @@ _UPDATEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3093,
-  serialized_end=3338,
+  serialized_start=2987,
+  serialized_end=3232,
 )
 
 _FECCFG.fields_by_name['type'].enum_type = _FECCFG_TYPE
@@ -1574,7 +1522,6 @@ _SYSCFGMSG.fields_by_name['radio_cfg'].message_type = _RADIOCFG
 _SYSCFGMSG.fields_by_name['test_cfg'].message_type = _TESTCFG
 _SYSCFGMSG.fields_by_name['fec_cfg'].message_type = _FECCFG
 _SYSCFGMSG.fields_by_name['net_cfg'].message_type = _NETCFG
-_SYSCFGMSG.fields_by_name['pocsag_cfg'].message_type = _POCSAGCFG
 _SYSCFGMSG_MODE.containing_type = _SYSCFGMSG
 _STATUSMSG.fields_by_name['status'].enum_type = _STATUSMSG_STATUS
 _STATUSMSG_STATUS.containing_type = _STATUSMSG
@@ -1603,7 +1550,6 @@ DESCRIPTOR.message_types_by_name['TestCfg'] = _TESTCFG
 DESCRIPTOR.message_types_by_name['FECCfg'] = _FECCFG
 DESCRIPTOR.message_types_by_name['RadioCfg'] = _RADIOCFG
 DESCRIPTOR.message_types_by_name['NetCfg'] = _NETCFG
-DESCRIPTOR.message_types_by_name['POCSAGCfg'] = _POCSAGCFG
 DESCRIPTOR.message_types_by_name['SysCfgMsg'] = _SYSCFGMSG
 DESCRIPTOR.message_types_by_name['ClockSetMsg'] = _CLOCKSETMSG
 DESCRIPTOR.message_types_by_name['StatusMsg'] = _STATUSMSG
@@ -1654,13 +1600,6 @@ NetCfg = _reflection.GeneratedProtocolMessageType('NetCfg', (_message.Message,),
   # @@protoc_insertion_point(class_scope:NetCfg)
   ))
 _sym_db.RegisterMessage(NetCfg)
-
-POCSAGCfg = _reflection.GeneratedProtocolMessageType('POCSAGCfg', (_message.Message,), dict(
-  DESCRIPTOR = _POCSAGCFG,
-  __module__ = 'qmesh_pb2'
-  # @@protoc_insertion_point(class_scope:POCSAGCfg)
-  ))
-_sym_db.RegisterMessage(POCSAGCfg)
 
 SysCfgMsg = _reflection.GeneratedProtocolMessageType('SysCfgMsg', (_message.Message,), dict(
   DESCRIPTOR = _SYSCFGMSG,

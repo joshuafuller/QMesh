@@ -417,12 +417,10 @@ public:
 using radio_evt_enum_t = enum radio_evt_enum {
     TX_FRAME_EVT,
     TX_DONE_EVT,
-    TX_POCSAG_DONE_EVT,
     RX_DONE_EVT,
     TX_TIMEOUT_EVT,
     RX_TIMEOUT_EVT,
     RX_ERROR_EVT,
-    TX_POCSAG_EVT,
 };
 
 class RadioEvent {
@@ -434,11 +432,8 @@ public:
     shared_ptr<vector<uint8_t>> buf;
     shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
     shared_ptr<Frame> frame;
-    string pocsag_msg;
 
     explicit RadioEvent(radio_evt_enum_t my_evt_enum);
-
-    RadioEvent(radio_evt_enum_t my_evt_enum, string &pocsag_msg);
 
     RadioEvent(radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr);
 
