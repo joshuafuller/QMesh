@@ -131,6 +131,7 @@ message TimeMsg {
 }
 
 message SerialMsg {
+  option (nanopb_msgopt).descriptorsize = DS_8;
   enum Type {
     GET_CONFIG = 0;
     SET_CONFIG = 1;
@@ -167,17 +168,17 @@ message SerialMsg {
   Type type = 1;
   bool retry = 2;
 
-  SysCfgMsg sys_cfg = 3;
-  ClockSetMsg clock_set = 4; 
-  StatusMsg status = 5;  
-  DbgMsg dbg_msg = 6;
-  LogMsg log_msg = 7;
-  BootLogMsg boot_log_msg = 8;
-  DataMsg data_msg = 9;
-  ErrorMsg error_msg = 10;
-  TimeMsg time_msg = 11;
-  UpdateMsg update_msg = 12;
-  VersionMsg ver_msg = 13;
+  SysCfgMsg sys_cfg = 3 [(nanopb).type = FT_POINTER];
+  ClockSetMsg clock_set = 4 [(nanopb).type = FT_POINTER]; 
+  StatusMsg status = 5 [(nanopb).type = FT_POINTER];  
+  DbgMsg dbg_msg = 6 [(nanopb).type = FT_POINTER];
+  LogMsg log_msg = 7 [(nanopb).type = FT_POINTER];
+  BootLogMsg boot_log_msg = 8 [(nanopb).type = FT_POINTER];
+  DataMsg data_msg = 9 [(nanopb).type = FT_POINTER];
+  ErrorMsg error_msg = 10 [(nanopb).type = FT_POINTER];
+  TimeMsg time_msg = 11 [(nanopb).type = FT_POINTER];
+  UpdateMsg update_msg = 12 [(nanopb).type = FT_POINTER, (nanopb).descriptorsize = DS_4];
+  VersionMsg ver_msg = 13 [(nanopb).type = FT_POINTER];
 }
 
 message VersionMsg {
@@ -214,6 +215,7 @@ message DataMsg {
 }
 
 message UpdateMsg {
+  option (nanopb_msgopt).descriptorsize = DS_8;
   enum Type {
     FIRST = 0;
     LAST = 1;

@@ -4,13 +4,34 @@
 #include "qmesh.pb.h"
 #include <memory>
 
+template <typename T> 
+void check_and_init_assign(T **mine, T *theirs) {
+    free(*mine);
+    if(theirs) {
+        *mine = (T *) malloc(sizeof(T));
+        **mine = *theirs;
+    } 
+}
+
+template <typename T> 
+void check_and_init(T **mine, const T &zero_val) {
+    if(*mine == nullptr) {
+        *mine = (T *) malloc(sizeof(T));
+        **mine = zero_val;
+    } 
+}
+
 class SerMsg {
 private:
     SerialMsg serial_msg;
-
 public:
     SerMsg();
+    SerMsg(const SerMsg &serialmsg);
+    
     auto operator=(const SerialMsg &serialmsg) -> SerMsg&;
+    ~SerMsg();
+    auto size() -> size_t;
+    static auto maxSize() -> size_t;
     auto type() const -> SerialMsg_Type;
     void type(SerialMsg_Type my_type);
     auto get_ser_msg() -> SerialMsg&;

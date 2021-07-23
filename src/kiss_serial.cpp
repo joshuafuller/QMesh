@@ -55,7 +55,7 @@ static constexpr uint8_t TFESC = 0xDD;
 static constexpr uint8_t SETHW = 0x06;
 static constexpr uint8_t DATAPKT = 0x00;
 static constexpr uint8_t EXITKISS = 0xFF;
-static constexpr size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
+//static constexpr size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
 
 static auto compare_frame_crc(const vector<uint8_t> &buf) -> bool;
 static auto compute_frame_crc(const vector<uint8_t> &buf) -> crc_t; 
@@ -71,10 +71,10 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     // Get past the first delimiter(s)
     for(;;) {
         int cur_byte = fgetc(f);
-        if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
             cur_byte = fgetc(f);
-            if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+            if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
             printf("KISS Packet sent\r\n");
@@ -100,13 +100,13 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     vector<uint8_t> buf;
     for(;;) {
         int cur_byte = fgetc(f);
-        if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         if(cur_byte == FEND) {
             break;
         } 
         if(cur_byte == FESC) {
             cur_byte = fgetc(f);
-            if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+            if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
             if(cur_byte == TFESC) {
                 buf.push_back(FESC);
             } else if(cur_byte == TFEND) {
@@ -145,7 +145,7 @@ auto save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_se
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
     if(!kiss_data_msg) {
-        vector<uint8_t> buf(SerialMsg_size);
+        vector<uint8_t> buf(SerMsg::maxSize()+sizeof(crc_t));
         pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
         if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
             return ENCODE_SER_MSG_ERR;
@@ -218,7 +218,7 @@ auto KISSSerial::save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg)
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
     if(!kiss_data_msg) {
-        vector<uint8_t> buf(SerialMsg_size);
+        vector<uint8_t> buf(SerMsg::maxSize()+sizeof(crc_t));
         pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
         if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
             return ENCODE_SER_MSG_ERR;
@@ -455,10 +455,10 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     // Get past the first delimiter(s)
     for(;;) {
         int cur_byte = fgetc(f);
-        if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
             cur_byte = fgetc(f);
-            if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+            if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
             if(cur_byte == SETHW) {
@@ -481,13 +481,13 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     vector<uint8_t> buf;
     for(;;) {
         int cur_byte = fgetc(f);
-        if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+        if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         if(cur_byte == FEND) {
             break;
         } 
         if(cur_byte == FESC) {
             cur_byte = fgetc(f);
-            if(++byte_read_count > MAX_MSG_SIZE) { return READ_MSG_OVERRUN_ERR; }
+            if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
             if(cur_byte == TFESC) {
                 buf.push_back(FESC);
             } else if(cur_byte == TFEND) {

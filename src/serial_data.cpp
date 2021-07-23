@@ -258,7 +258,7 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
 static Mutex dbg_printf_mutex;
 auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     dbg_printf_mutex.lock();
-    vector<char> tmp_str((sizeof(ser_msg_zero.dbg_msg.msg)));
+    vector<char> tmp_str(DbgMsg_size);
     va_list args;
     va_start(args, fmt);
     vsnprintf(tmp_str.data(), tmp_str.size(), fmt, args);
@@ -307,7 +307,7 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
 
 auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     va_list args;
-    vector<char> tmp_str((sizeof(ser_msg_zero.dbg_msg.msg)));
+    vector<char> tmp_str(DbgMsg_size);
     va_start(args, fmt);
     vsnprintf(tmp_str.data(), tmp_str.size(), fmt, args);
     string msg_type;
