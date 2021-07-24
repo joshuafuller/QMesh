@@ -106,6 +106,11 @@ public:
     KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
                 const string &my_port_name, ser_port_type_t ser_port_type);
     ~KISSSerial();
+    KISSSerial(const KISSSerial &) = delete;
+    auto operator=(const KISSSerial &) -> KISSSerial& = delete;
+    KISSSerial(KISSSerial &&) = delete;
+    auto operator=(KISSSerial &&) -> KISSSerial& = delete;
+
     void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
     void sleep();
     void wake();

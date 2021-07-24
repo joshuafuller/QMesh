@@ -93,8 +93,9 @@ void init_radio() {
     debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_cb.radio_cfg.tx_power);    
     debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", 
                 radio_cb.radio_cfg.lora_cfg.preamble_length); 
+    constexpr int MAGIC_SEVEN = 7;
     radio_cb.radio_cfg.lora_cfg.fhss_pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length + 
-            7*(radio_cb.radio_cfg.frequencies_count+2); 
+            MAGIC_SEVEN*(radio_cb.radio_cfg.frequencies_count+2); 
     debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", 
             radio_cb.radio_cfg.lora_cfg.fhss_pre_len); 
     vector<uint32_t> freqs;
@@ -230,10 +231,14 @@ void reinit_radio() {
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {
+    rssi = 0;
+    snr = 0;
     evt_enum = my_evt_enum;
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr_sptr) {
+    rssi = 0;
+    snr = 0;
     tmr_sptr = std::move(my_tmr_sptr);
     evt_enum = my_evt_enum;
 }
@@ -253,6 +258,8 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> 
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &my_frame) {
+    rssi = 0;
+    snr = 0;
     evt_enum = my_evt_enum;
     frame = my_frame;
 }

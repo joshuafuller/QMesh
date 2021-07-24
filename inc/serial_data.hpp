@@ -169,7 +169,7 @@ public:
 
     void serialize(vector<uint8_t> &ser_frame);
 
-    void serialize_pb(vector<uint8_t> &data_msg);
+    void serialize_pb(vector<uint8_t> &buf);
 
     void deserialize_pb(const vector<uint8_t> &buf);
 

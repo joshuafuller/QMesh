@@ -50,35 +50,35 @@ auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
 }
 
 void SerMsg::clear() {
-    free(serial_msg.sys_cfg);
-    free(serial_msg.dbg_msg);
-    free(serial_msg.error_msg);
-    free(serial_msg.update_msg);
-    free(serial_msg.ver_msg);
-    free(serial_msg.clock_set);
-    free(serial_msg.status);
-    free(serial_msg.log_msg);
-    free(serial_msg.boot_log_msg);
-    free(serial_msg.data_msg);
-    free(serial_msg.time_msg);
+    delete serial_msg.sys_cfg;
+    delete serial_msg.dbg_msg;
+    delete serial_msg.error_msg;
+    delete serial_msg.update_msg;
+    delete serial_msg.ver_msg;
+    delete serial_msg.clock_set;
+    delete serial_msg.status;
+    delete serial_msg.log_msg;
+    delete serial_msg.boot_log_msg;
+    delete serial_msg.data_msg;
+    delete serial_msg.time_msg;
     serial_msg = serialmsg_init_zero;
 }
 
 SerMsg::~SerMsg() {
-    free(serial_msg.sys_cfg);
-    free(serial_msg.dbg_msg);
-    free(serial_msg.error_msg);
-    free(serial_msg.update_msg);
-    free(serial_msg.ver_msg);
-    free(serial_msg.clock_set);
-    free(serial_msg.status);
-    free(serial_msg.log_msg);
-    free(serial_msg.boot_log_msg);
-    free(serial_msg.data_msg);
-    free(serial_msg.time_msg);
+    delete serial_msg.sys_cfg;
+    delete serial_msg.dbg_msg;
+    delete serial_msg.error_msg;
+    delete serial_msg.update_msg;
+    delete serial_msg.ver_msg;
+    delete serial_msg.clock_set;
+    delete serial_msg.status;
+    delete serial_msg.log_msg;
+    delete serial_msg.boot_log_msg;
+    delete serial_msg.data_msg;
+    delete serial_msg.time_msg;
 }
 
-auto SerMsg::size() -> size_t {
+auto SerMsg::size() const -> size_t {
     size_t acc = 0;
     acc += sizeof(SerialMsg);
     if(serial_msg.sys_cfg != nullptr) {

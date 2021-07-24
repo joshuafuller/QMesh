@@ -6,9 +6,9 @@
 
 template <typename T> 
 void check_and_init_assign(T **mine, T *theirs) {
-    free(*mine);
-    if(theirs) {
-        *mine = (T *) malloc(sizeof(T));
+    delete *mine;
+    if(theirs != nullptr) {
+        *mine = new T();
         **mine = *theirs;
     } 
 }
@@ -16,7 +16,7 @@ void check_and_init_assign(T **mine, T *theirs) {
 template <typename T> 
 void check_and_init(T **mine, const T &zero_val) {
     if(*mine == nullptr) {
-        *mine = (T *) malloc(sizeof(T));
+        *mine = new T();
         **mine = zero_val;
     } 
 }
@@ -32,7 +32,7 @@ public:
     SerMsg(SerMsg &&) = delete;
     auto operator=(SerMsg &&) -> SerMsg& = delete;
 
-    auto size() -> size_t;
+    auto size() const -> size_t;
     void clear();
     static auto maxSize() -> size_t;
     auto type() const -> SerialMsg_Type;

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "math.h"
+#include <cmath>
 #include "mbed.h"
 #include "serial_data.hpp"
 #include "radio_timing.hpp"

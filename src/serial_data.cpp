@@ -32,8 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 
-static const SerialMsg ser_msg_zero = SerialMsg_init_zero;
-
 auto Frame::size() -> size_t {
     return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
 }
