@@ -27,12 +27,16 @@ private:
 public:
     SerMsg();
     SerMsg(const SerMsg &serialmsg);
-    
-    auto operator=(const SerialMsg &serialmsg) -> SerMsg&;
+    auto operator=(const SerMsg &serialmsg) -> SerMsg&;
     ~SerMsg();
+    SerMsg(SerMsg &&) = delete;
+    auto operator=(SerMsg &&) -> SerMsg& = delete;
+
     auto size() -> size_t;
+    void clear();
     static auto maxSize() -> size_t;
     auto type() const -> SerialMsg_Type;
+    auto retry() const -> bool;
     void type(SerialMsg_Type my_type);
     auto get_ser_msg() -> SerialMsg&;
     auto has_sys_cfg() const -> bool;

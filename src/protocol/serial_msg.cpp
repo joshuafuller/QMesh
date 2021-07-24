@@ -15,6 +15,8 @@ static constexpr TimeMsg timemsg_init_zero = TimeMsg_init_zero;
 SerMsg::SerMsg() : serial_msg(serialmsg_init_zero) { }
 
 SerMsg::SerMsg(const SerMsg &serialmsg) : serial_msg(serialmsg_init_zero) {
+    serial_msg.type = serialmsg.type();
+    serial_msg.retry = serialmsg.retry();
     check_and_init_assign(&(serial_msg.boot_log_msg), serialmsg.serial_msg.boot_log_msg);
     check_and_init_assign(&(serial_msg.clock_set), serialmsg.serial_msg.clock_set);
     check_and_init_assign(&(serial_msg.sys_cfg), serialmsg.serial_msg.sys_cfg);
@@ -28,19 +30,38 @@ SerMsg::SerMsg(const SerMsg &serialmsg) : serial_msg(serialmsg_init_zero) {
     check_and_init_assign(&(serial_msg.time_msg), serialmsg.serial_msg.time_msg);
 }
 
-auto SerMsg::operator=(const SerialMsg &serialmsg) -> SerMsg& {
-    check_and_init_assign(&(serial_msg.boot_log_msg), serialmsg.boot_log_msg);
-    check_and_init_assign(&(serial_msg.clock_set), serialmsg.clock_set);
-    check_and_init_assign(&(serial_msg.sys_cfg), serialmsg.sys_cfg);
-    check_and_init_assign(&(serial_msg.dbg_msg), serialmsg.dbg_msg);
-    check_and_init_assign(&(serial_msg.error_msg), serialmsg.error_msg);
-    check_and_init_assign(&(serial_msg.update_msg), serialmsg.update_msg);
-    check_and_init_assign(&(serial_msg.ver_msg), serialmsg.ver_msg);
-    check_and_init_assign(&(serial_msg.status), serialmsg.status);
-    check_and_init_assign(&(serial_msg.log_msg), serialmsg.log_msg);
-    check_and_init_assign(&(serial_msg.data_msg), serialmsg.data_msg);
-    check_and_init_assign(&(serial_msg.time_msg), serialmsg.time_msg);
-    return *this;
+auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
+    if(this != &serialmsg) {
+        serial_msg.type = serialmsg.type();
+        serial_msg.retry = serialmsg.retry();
+        check_and_init_assign(&(serial_msg.boot_log_msg), serialmsg.serial_msg.boot_log_msg);
+        check_and_init_assign(&(serial_msg.clock_set), serialmsg.serial_msg.clock_set);
+        check_and_init_assign(&(serial_msg.sys_cfg), serialmsg.serial_msg.sys_cfg);
+        check_and_init_assign(&(serial_msg.dbg_msg), serialmsg.serial_msg.dbg_msg);
+        check_and_init_assign(&(serial_msg.error_msg), serialmsg.serial_msg.error_msg);
+        check_and_init_assign(&(serial_msg.update_msg), serialmsg.serial_msg.update_msg);
+        check_and_init_assign(&(serial_msg.ver_msg), serialmsg.serial_msg.ver_msg);
+        check_and_init_assign(&(serial_msg.status), serialmsg.serial_msg.status);
+        check_and_init_assign(&(serial_msg.log_msg), serialmsg.serial_msg.log_msg);
+        check_and_init_assign(&(serial_msg.data_msg), serialmsg.serial_msg.data_msg);
+        check_and_init_assign(&(serial_msg.time_msg), serialmsg.serial_msg.time_msg);
+    }
+    return *this; 
+}
+
+void SerMsg::clear() {
+    free(serial_msg.sys_cfg);
+    free(serial_msg.dbg_msg);
+    free(serial_msg.error_msg);
+    free(serial_msg.update_msg);
+    free(serial_msg.ver_msg);
+    free(serial_msg.clock_set);
+    free(serial_msg.status);
+    free(serial_msg.log_msg);
+    free(serial_msg.boot_log_msg);
+    free(serial_msg.data_msg);
+    free(serial_msg.time_msg);
+    serial_msg = serialmsg_init_zero;
 }
 
 SerMsg::~SerMsg() {
@@ -115,6 +136,10 @@ auto SerMsg::maxSize() -> size_t {
 
 auto SerMsg::type() const -> SerialMsg_Type {
     return serial_msg.type;
+}
+
+auto SerMsg::retry() const -> bool {
+    return serial_msg.retry;
 }
 
 void SerMsg::type(const SerialMsg_Type my_type) {

@@ -50,8 +50,6 @@ LittleFileSystem fs("fs");
 //extern UARTSerial gps_serial;
 extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 
-static SerialMsg ser_msg_zero = SerialMsg_init_zero;
-
 
 void rescue_filesystem() {
     bd.init();

@@ -62,7 +62,6 @@ static auto compute_frame_crc(const vector<uint8_t> &buf) -> crc_t;
 
 static Mutex shared_mtx;
 
-static SerialMsg ser_msg_zero = SerialMsg_init_zero;
 static DataMsg data_msg_zero = DataMsg_init_zero;
 
 auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
@@ -77,7 +76,6 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
-            printf("KISS Packet sent\r\n");
             constexpr uint32_t LOWER_NIBBLE = 0x0F;
             uint32_t cur_byte_u32 = static_cast<uint32_t>(cur_byte) & LOWER_NIBBLE;
             if(cur_byte_u32 == SETHW) {
@@ -89,7 +87,7 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
                 break;
             } 
             if(cur_byte_u32 == EXITKISS) {
-                ser_msg = ser_msg_zero;
+                ser_msg.clear();
                 ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
                 return READ_SUCCESS;
             }  
@@ -124,13 +122,13 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
             return CRC_ERR;
         }
         // Deserialize it
-        ser_msg = ser_msg_zero;
+        ser_msg.clear();
         pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
             return DECODE_SER_MSG_ERR;
         }
     } else {
-        ser_msg = ser_msg_zero;
+        ser_msg.clear();;
         ser_msg.type(SerialMsg_Type_DATA);
         ser_msg.data_msg().type = DataMsg_Type_KISSTX;
         ser_msg.data_msg().payload.size = buf.size();
@@ -260,7 +258,7 @@ auto KISSSerial::save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg)
 
 static constexpr int SER_THREAD_STACK_SIZE = 8192;
 KISSSerial::KISSSerial(const string &my_port_name, const ser_port_type_t ser_port_type) {
-    past_log_msg = ser_msg_zero;
+    past_log_msg.clear();
     using_stdio = true;
     kiss_extended = true;
     port_type = ser_port_type;
@@ -289,7 +287,7 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name,
                         const ser_port_type_t ser_port_type) {
     en_pin = nullptr;
     state_pin = nullptr;
-    past_log_msg = ser_msg_zero;
+    past_log_msg.clear();
     tx_port = tx;
     rx_port = rx;
     kiss_extended = true;
@@ -362,7 +360,7 @@ void KISSSerial::configure_hc05() {
 
 KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
             const string &my_port_name, const ser_port_type_t ser_port_type) {
-    past_log_msg = ser_msg_zero;
+    past_log_msg.clear();
     kiss_extended = true;
     port_name = my_port_name;
     hc05 = true;
@@ -470,7 +468,7 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
                 break;
             } 
             if(cur_byte == EXITKISS) {
-                ser_msg = ser_msg_zero;
+                ser_msg.clear();
                 ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
                 return READ_SUCCESS;
             }  
@@ -505,13 +503,13 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
             return CRC_ERR;
         }
         // Deserialize it
-        ser_msg = ser_msg_zero;
+        ser_msg.clear();
         pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size()-sizeof(crc_t));
         if(!pb_decode(&stream, SerialMsg_fields, &ser_msg)) {
             return DECODE_SER_MSG_ERR;
         }
     } else {
-        ser_msg = ser_msg_zero;
+        ser_msg.clear();
         ser_msg.type(SerialMsg_Type_DATA);
         ser_msg.data_msg().type = DataMsg_Type_KISSTX;
         ser_msg.data_msg().payload.size = buf.size();
@@ -650,7 +648,7 @@ void KISSSerial::rx_serial_thread_fn() {
 	int line_count = 0;
 	bool reading_log = false;
 	bool reading_bootlog = false;
-    past_log_msg = ser_msg_zero;
+    past_log_msg.clear();
     FILE *kiss_ser = nullptr;
     if(using_stdio) {
         kiss_ser = stdin;
@@ -660,7 +658,7 @@ void KISSSerial::rx_serial_thread_fn() {
     auto ser_msg = make_shared<SerMsg>();
     int err = 0;
     for(;;) {
-        *ser_msg = ser_msg_zero;
+        ser_msg->clear();
         err = load_SerMsg(*ser_msg, kiss_ser);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
