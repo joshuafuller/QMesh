@@ -182,7 +182,7 @@ message SerialMsg {
 }
 
 message VersionMsg {
-    string msg = 1 [(nanopb).max_size = 32];
+    string msg = 1 [(nanopb).max_size = 128];
 }
 
 message ErrorMsg {

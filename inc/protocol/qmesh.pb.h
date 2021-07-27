@@ -214,7 +214,7 @@ typedef struct _UpdateMsg {
 } UpdateMsg;
 
 typedef struct _VersionMsg {
-    char msg[32];
+    char msg[128];
 } VersionMsg;
 
 typedef struct _LogMsg {
@@ -685,7 +685,7 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
 /* SerialMsg_size depends on runtime parameters */
-#define VersionMsg_size                          33
+#define VersionMsg_size                          130
 #define ErrorMsg_size                            260
 #define DataMsg_size                             567
 #define UpdateMsg_size                           4343

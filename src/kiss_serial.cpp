@@ -693,6 +693,7 @@ void KISSSerial::rx_serial_thread_fn() {
             string compile_str = getFlashCompileString();
             debug_printf(DBG_INFO, "Sending %s\r\n", compile_str.c_str());
             strncpy(reply_msg->ver_msg().msg, compile_str.c_str(), sizeof(reply_msg->ver_msg().msg));
+            ThisThread::sleep_for(HALF_SECOND);
             enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
         }
         if(ser_msg->type() == SerialMsg_Type_UPDATE) {
