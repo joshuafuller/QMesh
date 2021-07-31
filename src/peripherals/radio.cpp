@@ -103,7 +103,7 @@ void init_radio() {
         freqs.push_back(radio_cb.radio_cfg.frequencies[i]); 
         debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb.radio_cfg.frequencies[i]);
     }
-    radio.configure_freq_hop(radio_cb.address, freqs);
+    radio.configure_freq_hop_freqs(freqs);
     switch(radio_cb.fec_cfg.type) {
         case FECCfg_Type_NONE:
             debug_printf(DBG_INFO, "FEC algorithm is NONE\r\n");

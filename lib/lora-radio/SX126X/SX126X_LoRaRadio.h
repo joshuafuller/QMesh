@@ -48,6 +48,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include <list>
 #include <map>
 #include <random>
+#include "anti_interference.hpp"
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
 #define MAX_DATA_BUFFER_SIZE_SX126X                        MBED_CONF_SX126X_LORA_DRIVER_BUFFER_SIZE
@@ -79,22 +80,22 @@ public:
      *
      *  @param events Structure containing the driver callback functions
      */
-    virtual void init_radio(radio_events_t *events, const bool locking = false);
+     void init_radio(radio_events_t *events, bool locking = false) override;
 
     /**
      * Resets the radio module
      */
-    virtual void radio_reset(const bool locking = false);
+     void radio_reset(bool locking = false) override;
 
     /**
      *  Put the RF module in sleep mode
      */
-    virtual void sleep(const bool locking = false);
+     void sleep(bool locking = false) override;
 
     /**
      *  Sets the radio in standby mode
      */
-    virtual void standby(const bool locking = false);
+     void standby(bool locking = false) override;
 
     /**
      *  Sets the reception parameters
@@ -131,14 +132,14 @@ public:
      *  @param rx_continuous Sets the reception in continuous mode
      *                          [false: single mode, true: continuous mode]
      */
-    virtual void set_rx_config (const radio_modems_t modem, const uint32_t bandwidth,
-                               const uint32_t datarate, const uint8_t coderate,
-                               const uint32_t bandwidth_afc, const uint16_t preamble_len,
-                               const uint16_t symb_timeout, const bool fix_len,
-                               const uint8_t payload_len,
-                               const bool crc_on, const bool freq_hop_on, const uint8_t hop_period,
-                               const bool iq_inverted, const bool rx_continuous,
-                               bool locking = false);
+     void set_rx_config (radio_modems_t modem, uint32_t bandwidth,
+                               uint32_t datarate, uint8_t coderate,
+                               uint32_t bandwidth_afc, uint16_t preamble_len,
+                               uint16_t symb_timeout, bool fix_len,
+                               uint8_t payload_len,
+                               bool crc_on, bool freq_hop_on, uint8_t hop_period,
+                               bool iq_inverted, bool rx_continuous,
+                               bool locking = false) override;
 
     /**
      *  Sets the transmission parameters
@@ -169,26 +170,26 @@ public:
      *                          LoRa: [0: not inverted, 1: inverted]
      *  @param timeout       Transmission timeout [ms]
      */
-    virtual void set_tx_config(const radio_modems_t modem, 
-                                const int8_t power, 
-                                const uint32_t fdev,
-                                const uint32_t bandwidth, 
-                                const uint32_t datarate,
-                                const uint8_t coderate, 
-                                const uint16_t preamble_len,
-                                const bool fix_len, 
-                                const bool crc_on, 
-                                const bool freq_hop_on,
-                                const uint8_t hop_period, 
-                                const bool iq_inverted, 
-                                const uint32_t timeout,
-                                const bool locking = false);
+     void set_tx_config(radio_modems_t modem, 
+                            int8_t power, 
+                            uint32_t fdev,
+                            uint32_t bandwidth, 
+                            uint32_t datarate,
+                            uint8_t coderate, 
+                            uint16_t preamble_len,
+                            bool fix_len, 
+                            bool crc_on, 
+                            bool freq_hop_on,
+                            uint8_t hop_period, 
+                            bool iq_inverted, 
+                            uint32_t timeout,
+                            bool locking = false) override;
     
     /*
      * Sets the transmission parameters for 1200bps POCSAG transmissions.
      * @param power transmit power, in dBm.
      */
-    virtual void set_tx_config_pocsag(const int8_t power, const bool locking = false);
+    virtual void set_tx_config_pocsag(int8_t power, bool locking = false);
 
     /**
      *  Sends the buffer of size
@@ -198,10 +199,10 @@ public:
      *  @param buffer        Buffer pointer
      *  @param size          Buffer size
      */
-    virtual void send(const uint8_t *const buffer, uint8_t size, const bool locking = false);
-    virtual void send_with_delay(const uint8_t *const buffer, const uint8_t size, 
+    void send(const uint8_t *buffer, uint8_t size, bool locking = false);
+    virtual void send_with_delay(const uint8_t *buffer, uint8_t size, 
                                     RadioTiming &radio_timing,
-                                    const bool locking = false);
+                                    bool locking = false);
 
     /**
      * Sets the radio to receive
@@ -209,14 +210,14 @@ public:
      * All necessary configuration options for reception are set in
      * 'set_rx_config(parameters)' API.
      */
-    virtual void receive(const bool locking = false);
+     void receive(bool locking = false) override;
 
     /**
      *  Sets the carrier frequency
      *
      *  @param freq          Channel RF frequency
      */
-    virtual void set_channel(const uint32_t freq, const bool locking = false);
+     void set_channel(uint32_t freq, bool locking = false) override;
 
     /**
      *  Generates a 32 bits random value based on the RSSI readings
@@ -228,7 +229,7 @@ public:
      *
      *  @return             32 bits random value
      */
-    virtual uint32_t random(const bool locking = false);
+     auto random(bool locking = false) -> uint32_t override;
 
     /**
      *  Get radio status
@@ -236,7 +237,7 @@ public:
      *  @param status        Radio status [RF_IDLE, RF_RX_RUNNING, RF_TX_RUNNING]
      *  @return              Return current radio status
      */
-    virtual uint8_t get_status(const bool locking = false);
+     auto get_status(bool locking = false) -> uint8_t override;
 
     /**
      *  Sets the maximum payload length
@@ -244,8 +245,7 @@ public:
      *  @param modem         Radio modem to be used [0: FSK, 1: LoRa]
      *  @param max           Maximum payload length in bytes
      */
-    virtual void set_max_payload_length(const radio_modems_t modem, const uint8_t max, 
-                                        const bool locking = false);
+     void set_max_payload_length(radio_modems_t modem, uint8_t max, bool locking = false) override;
 
     /**
      *  Sets the network to public or private
@@ -254,7 +254,7 @@ public:
      *
      *  @param enable        if true, it enables a public network
      */
-    virtual void set_public_network(const bool enable, const bool locking = false);
+     void set_public_network(bool enable, bool locking = false) override;
 
     /**
      *  Computes the packet time on air for the given payload
@@ -265,7 +265,7 @@ public:
      *  @param pkt_len       Packet payload length
      *  @return              Computed airTime for the given packet payload length
      */
-    virtual uint32_t time_on_air(radio_modems_t modem, uint8_t pkt_len);
+     auto time_on_air(radio_modems_t modem, uint8_t pkt_len) -> uint32_t override;
 
     /**
      * Perform carrier sensing
@@ -282,20 +282,23 @@ public:
      * @return                          true if there is no active transmission
      *                                  in the channel, false otherwise
      */
-    virtual bool perform_carrier_sense(const radio_modems_t modem,
-                                       const uint32_t freq,
-                                       const int16_t rssi_threshold,
-                                       const uint32_t max_carrier_sense_time,
-                                       const bool locking = false);
+     auto perform_carrier_sense(radio_modems_t modem,
+                                    uint32_t freq,
+                                    int16_t rssi_threshold,
+                                    uint32_t max_carrier_sense_time,
+                                    bool locking = false) -> bool override;
 
     /**
      *  Sets the radio in CAD mode
      *
      */
-    virtual void start_cad(const bool locking = false);
+    void start_cad(bool locking = false) override;
 
 
-    void configure_freq_hop(const uint32_t addr, const vector<uint32_t> my_hop_freqs);
+    void configure_freq_hop(AntiInterference *my_anti_inter);
+
+
+    void configure_freq_hop_freqs(vector<uint32_t>& my_hop_freqs);
 
 
     /**
@@ -303,7 +306,7 @@ public:
      *
      *  @param frequency       frequency needed to be checked
      */
-    virtual bool check_rf_frequency(const uint32_t frequency);
+     auto check_rf_frequency(uint32_t frequency) -> bool override;
 
     /** Sets the radio in continuous wave transmission mode
      *
@@ -311,31 +314,30 @@ public:
      *  @param power         Sets the output power [dBm]
      *  @param time          Transmission mode timeout [s]
      */
-    virtual void set_tx_continuous_wave(const uint32_t freq, const int8_t power, const uint16_t time,
-                                        const bool locking = false);
+     void set_tx_continuous_wave(uint32_t freq, int8_t power, uint16_t time, bool locking = false) override;
 
     /** Sets the radio in continuous preamble transmission mode */
-    virtual void set_tx_continuous_preamble(const bool locking = false);
+    virtual void set_tx_continuous_preamble(bool locking = false);
 
     /**
      * Acquire exclusive access
      */
-    virtual void lock(void);
+     void lock() override;
 
     /**
      * Release exclusive access
      */
-    virtual void unlock(void);
+     void unlock() override;
 
-    void set_tx_power(const int8_t power, const bool locking = false);
+    void set_tx_power(int8_t power, bool locking = false);
 
-    void receive_cad(const bool locking = false);
-    void receive_cad_rx(const bool locking = false);
-    void receive_sel(const bool locking = false);
+    void receive_cad(bool locking = false);
+    void receive_cad_rx(bool locking = false);
+    void receive_sel(bool locking = false);
 
-    void tx_hop_frequency(const uint32_t freq_offset, const bool locking = false);
+    void tx_hop_frequency(bool locking = false);
 
-    void rx_hop_frequency(void);
+    void rx_hop_frequency();
 
     /**
      * Timers for tracking when the Rx interrupt was thrown
@@ -385,7 +387,7 @@ private:
     PlatformMutex mutex;
 
     // helper functions
-    void wakeup(const bool locking = false);
+    void wakeup(bool locking = false);
     void read_opmode_command(uint8_t cmd, uint8_t *buffer, uint16_t size);
     /**
      * Write out a command to the SX126X.
@@ -411,32 +413,32 @@ private:
      *  function because the SPI lock/unlock functions cannot be called from and ISR
      *  context.
      */
-    void write_opmode_command_finish(void);
+    void write_opmode_command_finish();
     /**
      * Interrupt handler to raise the SPI select select line once the Timeout is 
      *  triggered.
      */
-    void dangle_timeout_handler(void);
-    void set_dio2_as_rfswitch_ctrl(const uint8_t enable, const bool locking = false);
-    void set_dio3_as_tcxo_ctrl(const radio_TCXO_ctrl_voltage_t voltage, const uint32_t timeout,
-                                const bool locking = false);
-    uint8_t get_device_variant(void);
-    void set_device_ready(void);
-    int8_t get_rssi(const bool locking = false);
-    uint8_t get_fsk_bw_reg_val(const uint32_t bandwidth, const bool locking = false);
+    void dangle_timeout_handler();
+    void set_dio2_as_rfswitch_ctrl(uint8_t enable, bool locking = false);
+    void set_dio3_as_tcxo_ctrl(radio_TCXO_ctrl_voltage_t voltage, uint32_t timeout,
+                                bool locking = false);
+    auto get_device_variant() -> uint8_t;
+    void set_device_ready();
+    auto get_rssi(bool locking = false) -> int8_t;
+    auto get_fsk_bw_reg_val(uint32_t bandwidth, bool locking = false) -> uint8_t;
     void write_to_register(uint16_t addr, uint8_t data);
     void write_to_register(uint16_t addr, uint8_t *data, uint8_t size);
-    uint8_t read_register(uint16_t addr);
+    auto read_register(uint16_t addr) -> uint8_t;
     void read_register(uint16_t addr, uint8_t *buffer, uint8_t size);
-    void write_fifo(const uint8_t *const buffer, const uint8_t size, const bool locking = false);
+    void write_fifo(const uint8_t * buffer, uint8_t size, bool locking = false);
     void read_fifo(uint8_t *buffer, uint8_t size, uint8_t offset);
-    void rf_irq_task(void);
-    void set_modem(const uint8_t modem, const bool locking = false);
-    uint8_t get_modem();
-    uint16_t get_irq_status(void);
-    uint8_t get_frequency_support(void);
-    void start_read_rssi(void);
-    void stop_read_rssi(void);
+    void rf_irq_task();
+    void set_modem(uint8_t modem, bool locking = false);
+    auto get_modem() -> uint8_t;
+    auto get_irq_status() -> uint16_t;
+    auto get_frequency_support() -> uint8_t;
+    void start_read_rssi();
+    void stop_read_rssi();
 
     // ISR
     void dio1_irq_isr();
@@ -444,31 +446,29 @@ private:
     // Handler called by thread in response to signal
     void handle_dio1_irq();
 
-    void set_modulation_params(const modulation_params_t *const modulationParams, const bool locking = false);
-    void set_packet_params(const packet_params_t *packet_params, const bool locking = false);
-    void set_cad_params(const lora_cad_symbols_t nb_symbols, const uint8_t det_peak,
-                        const uint8_t det_min, const cad_exit_modes_t exit_mode,
-                        const uint32_t timeout, const bool locking = false);
-    void set_buffer_base_addr(const uint8_t tx_base_addr, const uint8_t rx_base_addr, 
-                            const bool locking = false);
-    void get_rx_buffer_status(uint8_t *payload_len, uint8_t *rx_buffer_ptr, const bool locking = false);
-    void get_packet_status(packet_status_t *pkt_status, const bool locking = false);
-    radio_error_t get_device_errors(const bool locking = false);
-    void clear_device_errors(const bool locking = false);
+    void set_modulation_params(const modulation_params_t *const modulationParams, bool locking = false);
+    void set_packet_params(const packet_params_t *packet_params, bool locking = false);
+    void set_cad_params(lora_cad_symbols_t nb_symbols, uint8_t det_peak,
+                        uint8_t det_min, cad_exit_modes_t exit_mode,
+                        uint32_t timeout, bool locking = false);
+    void set_buffer_base_addr(uint8_t tx_base_addr, uint8_t rx_base_addr, bool locking = false);
+    void get_rx_buffer_status(uint8_t *payload_len, uint8_t *rx_buffer_ptr, bool locking = false);
+    void get_packet_status(packet_status_t *pkt_status, bool locking = false);
+    auto get_device_errors(bool locking = false) -> radio_error_t;
+    void clear_device_errors(bool locking = false);
     void clear_irq_status(uint16_t irq);
-    void set_crc_seed(const uint16_t seed, const bool locking = false);
-    void set_crc_polynomial(const uint16_t polynomial, const bool locking = false);
-    void set_whitening_seed(const uint16_t seed, const bool locking = false);
-    void set_pa_config( const uint8_t pa_DC, const uint8_t hp_max, const uint8_t device_type,
-                        const uint8_t pa_LUT, const bool locking = false );
-    void calibrate_image(const uint32_t freq, const bool locking = false);
-    void configure_dio_irq(const uint16_t irq_mask, const uint16_t dio1_mask,
-                           const uint16_t dio2_mask, const uint16_t dio3_mask,
-                           const bool locking = false);
-    void cold_start_wakeup(const bool locking = false);
-    void read_rssi_thread_fn(void);
+    void set_crc_seed(uint16_t seed, bool locking = false);
+    void set_crc_polynomial(uint16_t polynomial, bool locking = false);
+    void set_whitening_seed(uint16_t seed, bool locking = false);
+    void set_pa_config( uint8_t pa_DC, uint8_t hp_max, uint8_t device_type,
+                        uint8_t pa_LUT, bool locking = false );
+    void calibrate_image(uint32_t freq, bool locking = false);
+    void configure_dio_irq(uint16_t irq_mask, uint16_t dio1_mask,
+                           uint16_t dio2_mask, uint16_t dio3_mask,
+                           bool locking = false);
+    void cold_start_wakeup(bool locking = false);
+    void read_rssi_thread_fn();
 
-private:
     uint8_t _active_modem;
     uint8_t _standby_mode;
     uint8_t _operation_mode;
@@ -496,7 +496,7 @@ private:
     map<uint32_t, list<int>> cad_det_succ;
     map<uint32_t, list<int>> cad_rx_succ;
 
-    void cad_process_detect(const bool is_false_det, const uint32_t freq); 
+    void cad_process_detect(bool is_false_det, uint32_t freq); 
 
     // Components to poll the RSSI to implement soft decoding
     atomic<bool> collect_rssi;
@@ -504,14 +504,14 @@ private:
     shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
 
     // Components to implement frequency hopping
-    shared_ptr<mt19937> rand_gen_hop_chan_sptr;
-    shared_ptr<uniform_int_distribution<uint32_t>> hop_chan_dist_sptr;
+    AntiInterference *anti_inter;
+    
     vector<uint32_t> hop_freqs;
     vector<uint32_t>::iterator cur_hop_freq;
 
     // Timeout function to reset modem if it hangs on a transmit
     Timeout tx_timeout;
-    void tx_timeout_handler(void);
+    void tx_timeout_handler();
 };
 
 #endif /* MBED_LORA_RADIO_DRV_SX126X_LORARADIO_H_ */

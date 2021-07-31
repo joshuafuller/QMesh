@@ -266,42 +266,43 @@ bool SX126X_LoRaRadio::perform_carrier_sense(const radio_modems_t modem,
 
 void SX126X_LoRaRadio::start_cad(const bool locking)
 {
-    // TODO: CAD is more advanced in SX126X. We will need API change in LoRaRadio
+    // TODO(unknown): CAD is more advanced in SX126X. We will need API change in LoRaRadio
     //       for this to act properly
-    write_opmode_command((uint8_t) RADIO_SET_CAD, NULL, 0);
+    write_opmode_command(static_cast<uint8_t>(RADIO_SET_CAD), nullptr, 0);
 }
 
 
-void SX126X_LoRaRadio::configure_freq_hop(const uint32_t addr, const vector<uint32_t> my_hop_freqs) 
+void SX126X_LoRaRadio::configure_freq_hop(AntiInterference *my_anti_inter) 
 {
-    rand_gen_hop_chan_sptr = make_shared<mt19937>(addr);
+    anti_inter = my_anti_inter;
+}
+
+
+void SX126X_LoRaRadio::configure_freq_hop_freqs(vector<uint32_t>& my_hop_freqs) 
+{
     hop_freqs = my_hop_freqs;
     cur_hop_freq = hop_freqs.begin();
-    hop_chan_dist_sptr = make_shared<uniform_int_distribution<uint32_t> >(0, hop_freqs.size()-1);
-    //debug_printf(DBG_INFO, "Now configuring the frequency hopping with %d channels\r\n", hop_freqs.size());
 }
 
 
 // Sequentially scan through the hop frequencies
-void SX126X_LoRaRadio::rx_hop_frequency(void)
+void SX126X_LoRaRadio::rx_hop_frequency()
 {
     if(radio_cb.radio_cfg.frequencies_count > 1) {
         set_channel(*cur_hop_freq);
         if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
             cur_hop_freq = hop_freqs.begin();
-            fhss_mon_sig = !fhss_mon_sig;
+            fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0);
         }
     }
 }
 
 
 // Randomly select a hop frequency
-void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset, const bool locking)
+void SX126X_LoRaRadio::tx_hop_frequency(const bool locking)
 {
     if(locking) { lock(); }
-    if(radio_cb.radio_cfg.frequencies_count > 1) {
-        set_channel(*(hop_freqs.begin()+(*hop_chan_dist_sptr)(*rand_gen_hop_chan_sptr)) + freq_offset);
-    }
+    set_channel(*(hop_freqs.begin()+anti_inter->nextChannel()) + anti_inter->freqOffset());
     if(locking) { unlock(); }
 }
 
@@ -310,11 +311,12 @@ void SX126X_LoRaRadio::tx_hop_frequency(const uint32_t freq_offset, const bool l
  * TODO: The purpose of this API is unclear.
  *       Need to start an internal discussion.
  */
-bool SX126X_LoRaRadio::check_rf_frequency(const uint32_t frequency)
+auto SX126X_LoRaRadio::check_rf_frequency(const uint32_t  /*frequency*/) -> bool
 {
     // Implement check. Currently all frequencies are supported ? What band ?
     return true;
 }
+
 
 void SX126X_LoRaRadio::set_tx_continuous_wave(const uint32_t freq, const int8_t power, 
                                                 const uint16_t time, const bool locking)

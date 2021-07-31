@@ -127,10 +127,18 @@ void mesh_protocol_fsm() {
     static vector<uint8_t> rx_frame_buf(FRAME_BUF_SIZE);
     static constexpr int MAX_PWR_DIFF = 6;
     int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*FREQ_WOBBLE_PROPORTION);
-    auto anti_inter = make_shared<AntiInterferenceRand>(pair<int32_t, int32_t>(-freq_bound, freq_bound),
+    AntiInterference *anti_inter = nullptr;
+    if(radio_cb.net_cfg.walsh_codes) {
+        anti_inter = new AntiInterferenceWalsh(pair<int32_t, int32_t>(-freq_bound, freq_bound),
                         radio_cb.net_cfg.num_offsets, radio_cb.address, 
                         MAX_PWR_DIFF, radio_cb.radio_cfg.frequencies_count);
-    auto next_sym_off = anti_inter->timingOffset();
+    } else {
+        anti_inter = new AntiInterferenceRand(pair<int32_t, int32_t>(-freq_bound, freq_bound),
+                        radio_cb.net_cfg.num_offsets, radio_cb.address, 
+                        MAX_PWR_DIFF, radio_cb.radio_cfg.frequencies_count);        
+    }
+    radio.configure_freq_hop(anti_inter);
+    auto next_sym_off = 0;
 
     // Set up an initial timer
     auto initial_timer = make_shared<Timer>();
@@ -159,7 +167,7 @@ void mesh_protocol_fsm() {
                     tx_frame_sptr->fec = fec;
                     radio.lock();
                     radio.standby();
-                    radio.tx_hop_frequency(anti_inter->freqOffset());
+                    radio.tx_hop_frequency();
                     radio.unlock();
                     state = TX_PACKET;
                 }
@@ -191,7 +199,7 @@ void mesh_protocol_fsm() {
                             radio.standby();
                             radio_timing.setTimer(radio_event->tmr_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
-                            radio.tx_hop_frequency(anti_inter->freqOffset());
+                            radio.tx_hop_frequency();
                             retransmit_disable_out_n.write(0);
                             constexpr int TWO_SECONDS = 2000;
                             ThisThread::sleep_for(radio_timing.getWaitNoWarn()/TWO_SECONDS);

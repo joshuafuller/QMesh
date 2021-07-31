@@ -48,6 +48,7 @@ message NetCfg {
   uint32 num_offsets = 3;
   uint32 pld_len = 4;
   uint32 full_pkt_len = 5;
+  bool walsh_codes = 6;
 }
 
 message SysCfgMsg {
