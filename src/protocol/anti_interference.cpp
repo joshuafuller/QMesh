@@ -22,16 +22,10 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
     uint32_t walsh_iters = BITS_PER_ELEM + static_cast<int>(ceil(log2(SEQUENCE_LEN)));
     MBED_ASSERT(walsh_iters > 1);
     // First pair of bits
-    if((cur_seed_u32 & 0x1U) == 0) {
-        walsh_code.push_back(false);
-        walsh_code.push_back(false);
-    } else {
-        walsh_code.push_back(false);
-        walsh_code.push_back(true);            
-    }
-    for(uint32_t i = 0; i < walsh_iters-1; i++) {
+    walsh_code.push_back(false);
+    for(uint32_t i = 0; i < walsh_iters; i++) {
         vector<bool> walsh_code_tmp = walsh_code;
-        if(((cur_seed_u32 >> (walsh_iters+1)) & 0x1U) == 0) {
+        if(((cur_seed_u32 >> walsh_iters) & 0x1U) == 0) {
             for(bool && it : walsh_code_tmp) {
                 walsh_code.push_back(it);
             }
@@ -43,7 +37,9 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
     }
     for(int i = 0; i < SEQUENCE_LEN; i++) {
         list<bool> slice(BITS_PER_ELEM);
-        copy(walsh_code.begin()+BITS_PER_ELEM*i, walsh_code.begin()+BITS_PER_ELEM*(i+1), slice.end());
+        MBED_ASSERT(walsh_code.begin()+BITS_PER_ELEM*i < walsh_code.end());
+        MBED_ASSERT(walsh_code.begin()+BITS_PER_ELEM*(i+1) < walsh_code.end());
+        copy(walsh_code.begin()+BITS_PER_ELEM*i, walsh_code.begin()+BITS_PER_ELEM*(i+1), slice.begin());
         // Break up the slice into fields
         walsh_fields fields{};
         load_field(slice, fields.freq_off, num_freq_range_bits);
