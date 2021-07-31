@@ -20,7 +20,7 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
     vector<bool> walsh_code;
     constexpr int BITS_PER_ELEM = 32;
     uint32_t walsh_iters = BITS_PER_ELEM + static_cast<int>(ceil(log2(SEQUENCE_LEN)));
-    MBED_ASSERT(walsh_iters < 2);
+    MBED_ASSERT(walsh_iters > 1);
     // First pair of bits
     if((cur_seed_u32 & 0x1U) == 0) {
         walsh_code.push_back(false);
