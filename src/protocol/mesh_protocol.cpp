@@ -234,6 +234,8 @@ void mesh_protocol_fsm() {
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 radio.lock();
                 radio.standby();
+                anti_inter->pwrDiff(); // Need to "use" this value
+                next_sym_off = anti_inter->timingOffset(); // Also need to "use" this value
                 radio.set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
                 led2.LEDOff();

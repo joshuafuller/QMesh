@@ -65,6 +65,8 @@ void AntiInterferenceWalsh::load_field(list<bool> &slice, uint32_t &field, const
 }
 
 void AntiInterferenceWalsh::refresh() {
+    // For the Walsh codes to be properly orthogonal, it's imporant that they're all "used"
+    //  before being refreshed with the next sequence element
     MBED_ASSERT(!walsh_fresh.freq);
     MBED_ASSERT(!walsh_fresh.channel);
     MBED_ASSERT(!walsh_fresh.pwr);
