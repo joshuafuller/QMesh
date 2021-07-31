@@ -120,6 +120,7 @@ private:
     frame_hdr hdr{};
     vector<uint8_t> data;
     crc8_t crc{};
+    bool redundant;
 protected:
     // receive stats
     int16_t rssi{};
@@ -165,6 +166,7 @@ public:
     explicit Frame(const shared_ptr<FEC>& my_fec) {
         pkt_status = PKT_UNITIALIZED;
         fec = my_fec;
+        redundant = false;
     }
 
     void serialize(vector<uint8_t> &ser_frame);
@@ -319,6 +321,14 @@ public:
     void incrementTTL() {
         hdr.var_subhdr.fields.ttl += 1;
         setCRC();
+    }
+
+    void setRedundant() {
+        redundant = true;
+    }
+
+    auto isRedundant() const -> bool {
+        return redundant;
     }
 
     /**

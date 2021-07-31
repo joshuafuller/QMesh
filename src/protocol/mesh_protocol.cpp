@@ -34,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "qmesh.pb.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "anti_interference.hpp"
 
 extern EventQueue background_queue;
 
@@ -124,15 +125,12 @@ void mesh_protocol_fsm() {
     std::shared_ptr<Frame> rx_frame_sptr;
     static vector<uint8_t> tx_frame_buf(FRAME_BUF_SIZE);
     static vector<uint8_t> rx_frame_buf(FRAME_BUF_SIZE);
-    static mt19937 rand_gen(radio_cb.address);
-    int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*FREQ_WOBBLE_PROPORTION);
-    static uniform_int_distribution<int32_t> freq_dist(-freq_bound, freq_bound);  
-    static mt19937 timing_rand_gen(radio_cb.address);
-    uniform_int_distribution<uint8_t> timing_off_dist(0, radio_cb.net_cfg.num_offsets-1);  
-    uint8_t next_sym_off = timing_off_dist(timing_rand_gen);
-    static mt19937 pwr_diff_rand_gen(radio_cb.address);
     static constexpr int MAX_PWR_DIFF = 6;
-    static uniform_int_distribution<int8_t> pwr_diff_dist(0, MAX_PWR_DIFF);
+    int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*FREQ_WOBBLE_PROPORTION);
+    auto anti_inter = make_shared<AntiInterferenceRand>(pair<int32_t, int32_t>(-freq_bound, freq_bound),
+                        radio_cb.net_cfg.num_offsets, radio_cb.address, 
+                        MAX_PWR_DIFF, radio_cb.radio_cfg.frequencies_count);
+    auto next_sym_off = anti_inter->timingOffset();
 
     // Set up an initial timer
     auto initial_timer = make_shared<Timer>();
@@ -161,7 +159,7 @@ void mesh_protocol_fsm() {
                     tx_frame_sptr->fec = fec;
                     radio.lock();
                     radio.standby();
-                    radio.tx_hop_frequency(freq_dist(rand_gen));
+                    radio.tx_hop_frequency(anti_inter->freqOffset());
                     radio.unlock();
                     state = TX_PACKET;
                 }
@@ -185,13 +183,15 @@ void mesh_protocol_fsm() {
                         if(checkRedundantPkt(rx_frame_sptr)) {
                             radio.standby();
                             debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
+                            rx_frame_sptr->setRedundant();
+                            enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                             state = WAIT_FOR_EVENT;
                         }
                         else {
                             radio.standby();
                             radio_timing.setTimer(radio_event->tmr_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
-                            radio.tx_hop_frequency(freq_dist(rand_gen));
+                            radio.tx_hop_frequency(anti_inter->freqOffset());
                             retransmit_disable_out_n.write(0);
                             constexpr int TWO_SECONDS = 2000;
                             ThisThread::sleep_for(radio_timing.getWaitNoWarn()/TWO_SECONDS);
@@ -200,6 +200,8 @@ void mesh_protocol_fsm() {
                             }
                             else {
                                 debug_printf(DBG_WARN, "Retransmit blocked by diversity I/O signal\r\n");
+                                rx_frame_sptr->setRedundant();
+                                enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                                 state = WAIT_FOR_EVENT;
                             }
                         }
@@ -251,7 +253,7 @@ void mesh_protocol_fsm() {
                 uint8_t nsym_off = 0;
                 uint8_t sym_off = 0;
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                next_sym_off = timing_off_dist(timing_rand_gen);
+                next_sym_off = anti_inter->timingOffset();
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
                 radio_timing.waitSymOffset(next_sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
                 state = WAIT_FOR_EVENT;
@@ -262,7 +264,7 @@ void mesh_protocol_fsm() {
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 {
                 radio.lock();
-                radio.set_tx_power(radio_cb.radio_cfg.tx_power-pwr_diff_dist(pwr_diff_rand_gen)); 
+                radio.set_tx_power(radio_cb.radio_cfg.tx_power-anti_inter->pwrDiff()); 
                 led3.LEDSolid();
                 size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 MBED_ASSERT(rx_frame_size < 256);
@@ -277,7 +279,7 @@ void mesh_protocol_fsm() {
                 uint8_t sym_off = 0;
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 radio_timing.waitSymOffset(sym_off, -1.0F, radio_cb.net_cfg.num_offsets);
-                rx_frame_sptr->setOffsets(0, 0, timing_off_dist(timing_rand_gen));
+                rx_frame_sptr->setOffsets(0, 0, anti_inter->timingOffset());
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", sym_off);
                 radio_timing.waitSymOffset(sym_off, 1.0F, radio_cb.net_cfg.num_offsets);

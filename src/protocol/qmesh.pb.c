@@ -63,6 +63,9 @@ PB_BIND(DataMsg, DataMsg, 2)
 PB_BIND(UpdateMsg, UpdateMsg, 8)
 
 
+PB_BIND(IntParamsMsg, IntParamsMsg, AUTO)
+
+
 
 
 

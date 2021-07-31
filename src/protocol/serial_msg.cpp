@@ -12,6 +12,7 @@ static constexpr LogMsg logmsg_init_zero = LogMsg_init_zero;
 static constexpr BootLogMsg bootlogmsg_init_zero = BootLogMsg_init_zero;
 static constexpr DataMsg datamsg_init_zero = DataMsg_init_zero;
 static constexpr TimeMsg timemsg_init_zero = TimeMsg_init_zero;
+static constexpr IntParamsMsg intparamsmsg_init_zero = IntParamsMsg_init_zero;
 SerMsg::SerMsg() : serial_msg(serialmsg_init_zero) { }
 
 SerMsg::SerMsg(const SerMsg &serialmsg) : serial_msg(serialmsg_init_zero) {
@@ -28,6 +29,7 @@ SerMsg::SerMsg(const SerMsg &serialmsg) : serial_msg(serialmsg_init_zero) {
     check_and_init_assign(&(serial_msg.log_msg), serialmsg.serial_msg.log_msg);
     check_and_init_assign(&(serial_msg.data_msg), serialmsg.serial_msg.data_msg);
     check_and_init_assign(&(serial_msg.time_msg), serialmsg.serial_msg.time_msg);
+    check_and_init_assign(&(serial_msg.int_params_msg), serialmsg.serial_msg.int_params_msg);    
 }
 
 auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
@@ -45,6 +47,7 @@ auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
         check_and_init_assign(&(serial_msg.log_msg), serialmsg.serial_msg.log_msg);
         check_and_init_assign(&(serial_msg.data_msg), serialmsg.serial_msg.data_msg);
         check_and_init_assign(&(serial_msg.time_msg), serialmsg.serial_msg.time_msg);
+        check_and_init_assign(&(serial_msg.int_params_msg), serialmsg.serial_msg.int_params_msg);
     }
     return *this; 
 }
@@ -61,6 +64,7 @@ void SerMsg::clear() {
     delete serial_msg.boot_log_msg;
     delete serial_msg.data_msg;
     delete serial_msg.time_msg;
+    delete serial_msg.int_params_msg;
     serial_msg = serialmsg_init_zero;
 }
 
@@ -76,6 +80,7 @@ SerMsg::~SerMsg() {
     delete serial_msg.boot_log_msg;
     delete serial_msg.data_msg;
     delete serial_msg.time_msg;
+    delete serial_msg.int_params_msg;
 }
 
 auto SerMsg::size() const -> size_t {
@@ -114,6 +119,9 @@ auto SerMsg::size() const -> size_t {
     if(serial_msg.time_msg != nullptr) {
         acc += TimeMsg_size;
     }
+    if(serial_msg.int_params_msg != nullptr) {
+        acc += IntParamsMsg_size;
+    }
     return acc;
 }
 
@@ -131,6 +139,7 @@ auto SerMsg::maxSize() -> size_t {
     acc += BootLogMsg_size;
     acc += DataMsg_size;
     acc += TimeMsg_size;
+    acc += IntParamsMsg_size;
     return acc;
 }
 
@@ -247,4 +256,13 @@ auto SerMsg::has_ver_msg() const -> bool {
 auto SerMsg::ver_msg() -> VersionMsg& {
     check_and_init(&(serial_msg.ver_msg), versionmsg_init_zero);
     return *(serial_msg.ver_msg);
+}
+
+auto SerMsg::has_int_params_msg() const -> bool {
+    return !(serial_msg.int_params_msg == nullptr);
+}
+
+auto SerMsg::int_params_msg() -> IntParamsMsg& {
+    check_and_init(&(serial_msg.int_params_msg), intparamsmsg_init_zero);
+    return *(serial_msg.int_params_msg);
 }

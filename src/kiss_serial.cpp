@@ -530,9 +530,11 @@ void KISSSerial::tx_serial_thread_fn() {
         auto ser_msg_sptr = dequeue_mail<shared_ptr<SerMsg>>(tx_ser_queue);
         // In KISS mode, we only send out data packets in KISS format.
         if(!kiss_extended) {
-            // Silently drop anything that isn't a KISSRX frame when we're in KISS mode
+            // Silently drop anything that isn't a KISSRX frame when we're in KISS mode.
+            //  Also, we don't want to send out redundant packets that we use for testing/debugging.
             if(ser_msg_sptr->type() == SerialMsg_Type_DATA && ser_msg_sptr->has_data_msg() && 
-                ser_msg_sptr->data_msg().type == DataMsg_Type_KISSRX) {
+                ser_msg_sptr->data_msg().type == DataMsg_Type_KISSRX && 
+                !ser_msg_sptr->data_msg().redundant) {
                 save_SerMsg(*ser_msg_sptr, kiss_ser, true);
             } else {
                 continue;
@@ -578,6 +580,10 @@ void KISSSerial::send_status() {
     ser_msg->status().total_tx_pkt = total_tx_pkt;
     ser_msg->status().last_rx_rssi = last_rx_rssi;
     ser_msg->status().last_rx_snr = last_rx_snr;
+    // Heap size for tracking whether we have memory leak(s)
+    mbed_stats_heap_t heap_stats;
+    mbed_stats_heap_get(&heap_stats);
+    ser_msg->status().heap_size = heap_stats.current_size;
     enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg);
 }  
 

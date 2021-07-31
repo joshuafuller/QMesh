@@ -189,6 +189,7 @@ void Frame::saveToPB(DataMsg &data_msg) {
     data_msg.sender = hdr.var_subhdr.fields.sender; //NOLINT
     data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset; //NOLINT
     data_msg.crc = crc;
+    data_msg.redundant = redundant;
     if(data_msg.type == DataMsg_Type_KISSRX || data_msg.type == DataMsg_Type_KISSTX) {
         kiss_subhdr k_sub;
         memcpy(&k_sub, data.data(), sizeof(k_sub));

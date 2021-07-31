@@ -61,6 +61,8 @@ public:
     auto update_msg() -> UpdateMsg&;
     auto has_ver_msg() const -> bool;
     auto ver_msg() -> VersionMsg&;
+    auto has_int_params_msg() const -> bool;
+    auto int_params_msg() -> IntParamsMsg&;
 };
 
 #endif /* SERIAL_MSG_HPP */

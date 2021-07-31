@@ -19,6 +19,7 @@
 import sys, os
 import pika
 import yaml
+sys.path.insert(0, os.getcwd())
 import qmesh_pb2
 import qmesh_common
 

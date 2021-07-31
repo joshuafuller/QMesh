@@ -50,6 +50,7 @@ def run_test(test_name, timeout=30):
 # Start unit testing
 print('Starting unit testing...')
 print('--------------------------------------------------------------------------------')
+run_test('stay_in_management')
 run_test('set_time')
 run_test('reboot')
 run_test('fw_version')
@@ -57,7 +58,7 @@ run_test('oled_on')
 run_test('oled_off')
 run_test('get_status')
 run_test('get_config_basic')
-#run_test('stay_in_management')
+
 
 
 
