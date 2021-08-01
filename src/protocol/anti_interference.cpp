@@ -7,28 +7,28 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
                             const int max_pwr_diff, 
                             const int num_channels) :
     AntiInterference(freq_range, num_timing_offsets, cur_seed, max_pwr_diff, num_channels) {
-    num_freq_range_bits = ceil(log2(std::abs(freq_range.first-freq_range.second)));
-    freq_range_adj = freq_range.second;
-    num_timing_offset_bits = ceil(log2(num_timing_offsets));
-    num_pwr_diff_bits = ceil(log2(max_pwr_diff));
-    num_channels_bits = ceil(log2(num_channels));
-    total_bits = num_freq_range_bits+num_timing_offset_bits+num_pwr_diff_bits+num_channels_bits;
-    printf("diff bits %d %d %d %d\r\n", num_freq_range_bits, num_timing_offset_bits, num_pwr_diff_bits, num_channels_bits);
+    pwr_rand.seed(cur_seed);
+    pwr_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, max_pwr_diff);
+    freq_rand.seed(cur_seed);
+    constexpr int32_t FREQ_ERR = (3.0*433e6) / 1e6;
+    freq_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int32_t>>(-FREQ_ERR, FREQ_ERR);
+    freq_range_noerr = freq_range;
+    freq_range_noerr.first += FREQ_ERR;
+    freq_range_noerr.second -= FREQ_ERR;
+    int num_freq_range_bits = ceil(log2(std::abs(freq_range_noerr.first-freq_range_noerr.second)));
+    freq_range_adj = freq_range_noerr.second;
+    int num_timing_offset_bits = ceil(log2(num_timing_offsets));
+    int num_channels_bits = ceil(log2(num_channels));
+    int total_bits = num_freq_range_bits+num_timing_offset_bits+num_channels_bits;
     walsh_seq_idx = 0;
-    walsh_fresh.freq = true;
-    walsh_fresh.channel = true;
-    walsh_fresh.pwr = true;
-    walsh_fresh.timing = true;
-    MBED_ASSERT(total_bits <= 32);
+    constexpr int BITS_PER_ELEM = 32;
+    MBED_ASSERT(total_bits <= BITS_PER_ELEM);
 
     auto cur_seed_u32 = static_cast<uint32_t>(cur_seed);
-    printf("seed %8x\r\n", cur_seed_u32);
     vector<bool> walsh_code;
-    constexpr int BITS_PER_ELEM = 32;
-    uint32_t walsh_iters = static_cast<int>(ceil(log2(BITS_PER_ELEM * SEQUENCE_LEN)));
-    printf("walsh iters %d\r\n", walsh_iters);
+    uint32_t walsh_iters = static_cast<int>(ceil(log2(BITS_PER_ELEM * seqLen())));
     MBED_ASSERT(walsh_iters > 1);
-    MBED_ASSERT(walsh_iters <= 32);
+    MBED_ASSERT(walsh_iters <= BITS_PER_ELEM);
     // First pair of bits
     walsh_code.push_back(false);
     for(uint32_t i = 0; i < walsh_iters; i++) {
@@ -43,9 +43,8 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
             }
         }
     }
-    MBED_ASSERT(walsh_code.size() == BITS_PER_ELEM*SEQUENCE_LEN);
-    printf("num bits %d\r\n", walsh_code.size());
-    for(int i = 0; i < SEQUENCE_LEN; i++) {
+    MBED_ASSERT(walsh_code.size() == static_cast<size_t>(BITS_PER_ELEM*seqLen()));
+    for(int i = 0; i < seqLen(); i++) {
         list<bool> slice(BITS_PER_ELEM);
         MBED_ASSERT(walsh_code.begin()+BITS_PER_ELEM*i < walsh_code.end());
         copy(walsh_code.begin()+BITS_PER_ELEM*i, walsh_code.begin()+BITS_PER_ELEM*(i+1), slice.begin());
@@ -54,7 +53,6 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
         load_field(slice, fields.channel, num_channels_bits);
         load_field(slice, fields.freq_off, num_freq_range_bits);
         load_field(slice, fields.timing_off, num_timing_offset_bits);
-        load_field(slice, fields.pwr_off, num_pwr_diff_bits);
         walsh_sequence.push_back(fields);
     }
 }
@@ -80,23 +78,18 @@ auto AntiInterferenceWalsh::timingOffset() -> uint8_t {
 
 auto AntiInterferenceWalsh::freqOffset() -> int32_t {
     int32_t ret_val = static_cast<int32_t>(walsh_sequence[getTTL()].freq_off) - freq_range_adj;
-    if(ret_val < freqRange().first) {
-        ret_val = freqRange().first;
+    if(ret_val < freq_range_noerr.first) {
+        ret_val = freq_range_noerr.first;
     }
-    if(ret_val > freqRange().second) {
-        ret_val = freqRange().second;
+    if(ret_val > freq_range_noerr.second) {
+        ret_val = freq_range_noerr.second;
     }
+    ret_val += (*freq_off_dist_sptr)(freq_rand);
     return ret_val; 
 }
 
 auto AntiInterferenceWalsh::pwrDiff() -> int8_t {
-    int8_t ret_val = walsh_sequence[getTTL()].pwr_off;
-    if(maxPwrDiff() == 0) {
-        ret_val = 0;
-    } else if(ret_val > maxPwrDiff()-1) {
-        ret_val = maxPwrDiff()-1;
-    }
-    return ret_val;     
+    return (*pwr_off_dist_sptr)(pwr_rand);        
 }
 
 auto AntiInterferenceWalsh::nextChannel() -> int8_t {
@@ -113,8 +106,9 @@ auto AntiInterferenceWalsh::nextChannel() -> int8_t {
 #ifdef TEST_HARNESS
 int main(int argc, char **argv) {
     AntiInterferenceWalsh anti_intr(pair<int32_t, int32_t>(-90000, 90000), 8,
-                            atoi(argv[1]), 0, 1);
-    for(int i = 0; i < 128; i++) {
+                            atoi(argv[1]), 3, 2);
+    for(int i = 0; i < 32; i++) {
+        anti_intr.setTTL(i);
         printf("freq %d\n", anti_intr.freqOffset());
         printf("chan %d\n", anti_intr.nextChannel());
         printf("pwr %d\n", anti_intr.pwrDiff());

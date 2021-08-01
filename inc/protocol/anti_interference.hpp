@@ -24,6 +24,7 @@ private:
     int max_pwr_diff;
     int num_channels;
     uint8_t ttl;
+    static constexpr int SEQUENCE_LEN = 32;
 public:
     AntiInterference(const std::pair<int32_t, int32_t> my_freq_range, const int my_num_timing_offsets,
                         const int my_cur_seed, const int my_max_pwr_diff, const int my_num_channels) {
@@ -35,6 +36,10 @@ public:
         ttl = 0;
         MBED_ASSERT(freq_range.first < freq_range.second);
         MBED_ASSERT(abs(freq_range.first-freq_range.second) > 0);
+    }
+
+    static auto seqLen() -> int {
+        return SEQUENCE_LEN;
     }
 
     auto freqRange() -> std::pair<int32_t, int32_t> {
@@ -54,7 +59,7 @@ public:
     }
 
     void setTTL(const uint8_t ttl_val) {
-        ttl = ttl_val;
+        ttl = ttl_val % SEQUENCE_LEN;
     }
 
     auto getTTL() const -> uint8_t {
@@ -92,7 +97,7 @@ public:
         freq_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int32_t>>(my_freq_range.first, my_freq_range.second);
         timing_off_dist_sptr = std::make_shared<std::uniform_int_distribution<uint8_t>>(0, my_num_timing_offsets-1);
         pwr_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, my_max_pwr_diff);
-        pwr_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, my_num_channels-1);
+        chan_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, my_num_channels-1);
     }
 
     auto timingOffset() -> uint8_t override {
@@ -116,27 +121,19 @@ public:
 
 class AntiInterferenceWalsh : public AntiInterference {
 private:
-    int num_freq_range_bits;
-    int num_timing_offset_bits;
-    int num_pwr_diff_bits;
-    int num_channels_bits;
-    int total_bits;
-    struct fields_fresh {
-        bool freq;
-        bool timing;
-        bool pwr;
-        bool channel;
-    } walsh_fresh{};
     struct walsh_fields {
         uint32_t freq_off;
         uint32_t timing_off;
-        uint32_t pwr_off;
         uint32_t channel;
     };
     std::vector<walsh_fields> walsh_sequence;
     int walsh_seq_idx;
-    static constexpr int SEQUENCE_LEN = 128;
     int freq_range_adj;
+    std::mt19937 pwr_rand;
+    std::shared_ptr<std::uniform_int_distribution<int8_t>> pwr_off_dist_sptr;
+    std::mt19937 freq_rand;
+    std::shared_ptr<std::uniform_int_distribution<int32_t>> freq_off_dist_sptr;
+    std::pair<int32_t, int32_t> freq_range_noerr;
 
     static void load_field(std::list<bool> &slice, uint32_t &field, int num_bits);
 public:

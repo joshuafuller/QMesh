@@ -184,7 +184,6 @@ void mesh_protocol_fsm() {
                     led2.LEDSolid();
                     rx_frame_sptr = make_shared<Frame>(fec);
                     PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(radio_event->buf);
-                    radio.tx_hop_frequency();
                     if(pkt_status == PKT_OK) {
                         total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
                         background_queue.call(oled_mon_fn);
@@ -192,6 +191,7 @@ void mesh_protocol_fsm() {
                         rx_frame_sptr->setSender(radio_cb.address);
                         rx_frame_sptr->incrementTTL();
                         anti_inter->setTTL(rx_frame_sptr->getTTL());
+                        radio.tx_hop_frequency();
 						rx_frame_sptr->tx_frame = false;
                         if(checkRedundantPkt(rx_frame_sptr)) {
                             radio.standby();
