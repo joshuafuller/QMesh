@@ -70,6 +70,7 @@ public:
     virtual auto freqOffset() -> int32_t = 0;
     virtual auto pwrDiff() -> int8_t = 0;
     virtual auto nextChannel() -> int8_t = 0;
+    virtual auto invertBits() -> bool = 0;
 };
 
 
@@ -83,6 +84,8 @@ private:
     std::shared_ptr<std::uniform_int_distribution<int8_t>> pwr_off_dist_sptr;
     std::mt19937 chan_rand;
     std::shared_ptr<std::uniform_int_distribution<int8_t>> chan_dist_sptr;
+    std::mt19937 inv_rand;
+    std::shared_ptr<std::uniform_int_distribution<uint8_t>> inv_dist_sptr;
 
 public:
     AntiInterferenceRand(const std::pair<int32_t, int32_t> my_freq_range, const int my_num_timing_offsets, //NOLINT
@@ -93,11 +96,13 @@ public:
         freq_rand.seed(my_cur_seed);
         pwr_rand.seed(my_cur_seed);
         chan_rand.seed(my_cur_seed);
+        inv_rand.seed(my_cur_seed);
 
         freq_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int32_t>>(my_freq_range.first, my_freq_range.second);
         timing_off_dist_sptr = std::make_shared<std::uniform_int_distribution<uint8_t>>(0, my_num_timing_offsets-1);
         pwr_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, my_max_pwr_diff);
         chan_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, my_num_channels-1);
+        inv_dist_sptr = std::make_shared<std::uniform_int_distribution<uint8_t>>(0, 1);
     }
 
     auto timingOffset() -> uint8_t override {
@@ -116,6 +121,10 @@ public:
         return (*chan_dist_sptr)(chan_rand);  
     }
 
+    auto invertBits() -> bool override {
+        return (*chan_dist_sptr)(chan_rand) != 0;
+    }
+
 };
 
 
@@ -125,6 +134,7 @@ private:
         uint32_t freq_off;
         uint32_t timing_off;
         uint32_t channel;
+        uint32_t inv_bits;
     };
     std::vector<walsh_fields> walsh_sequence;
     int walsh_seq_idx;
@@ -143,6 +153,7 @@ public:
     auto freqOffset() -> int32_t override;
     auto pwrDiff() -> int8_t override;
     auto nextChannel() -> int8_t override;
+    auto invertBits() -> bool override;
 };
 
 

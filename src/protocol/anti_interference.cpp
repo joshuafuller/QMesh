@@ -19,7 +19,8 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
     freq_range_adj = freq_range_noerr.second;
     int num_timing_offset_bits = ceil(log2(num_timing_offsets));
     int num_channels_bits = ceil(log2(num_channels));
-    int total_bits = num_freq_range_bits+num_timing_offset_bits+num_channels_bits;
+    int num_inv_bits = 1;
+    int total_bits = num_freq_range_bits+num_timing_offset_bits+num_channels_bits+num_inv_bits;
     walsh_seq_idx = 0;
     constexpr int BITS_PER_ELEM = 32;
     MBED_ASSERT(total_bits <= BITS_PER_ELEM);
@@ -51,6 +52,7 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
         // Break up the slice into fields
         walsh_fields fields{};
         load_field(slice, fields.channel, num_channels_bits);
+        load_field(slice, fields.inv_bits, num_inv_bits);
         load_field(slice, fields.freq_off, num_freq_range_bits);
         load_field(slice, fields.timing_off, num_timing_offset_bits);
         walsh_sequence.push_back(fields);
@@ -102,6 +104,11 @@ auto AntiInterferenceWalsh::nextChannel() -> int8_t {
     return ret_val;
 }
 
+auto AntiInterferenceWalsh::invertBits() -> bool {
+    int8_t ret_val = walsh_sequence[getTTL()].inv_bits;
+    return ret_val != 0;
+}
+
 
 #ifdef TEST_HARNESS
 int main(int argc, char **argv) {
@@ -113,6 +120,7 @@ int main(int argc, char **argv) {
         printf("chan %d\n", anti_intr.nextChannel());
         printf("pwr %d\n", anti_intr.pwrDiff());
         printf("tmng %d\n", anti_intr.timingOffset()); 
+        printf("inv %d\n", anti_intr.invertBits());         
     }   
 }
 #endif

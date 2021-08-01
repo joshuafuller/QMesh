@@ -182,8 +182,16 @@ void mesh_protocol_fsm() {
                     background_queue.call(oled_mon_fn);
                     // Load up the frame
                     led2.LEDSolid();
-                    rx_frame_sptr = make_shared<Frame>(fec);
-                    PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(radio_event->buf);
+                    auto rx_frame_noninv_sptr = make_shared<Frame>(fec);
+                    auto rx_frame_inv_sptr = make_shared<Frame>(fec);
+                    auto pkt_status_noninv = rx_frame_noninv_sptr->deserializeCoded(radio_event->buf);
+                    auto pkt_status_inv = rx_frame_inv_sptr->deserializeCodedInv(radio_event->buf);
+                    auto pkt_status = pkt_status_noninv;
+                    rx_frame_sptr = rx_frame_noninv_sptr;
+                    if(pkt_status != PKT_OK) {
+                        pkt_status = pkt_status_inv;
+                        rx_frame_sptr = rx_frame_inv_sptr;
+                    }
                     if(pkt_status == PKT_OK) {
                         total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
                         background_queue.call(oled_mon_fn);
@@ -244,7 +252,12 @@ void mesh_protocol_fsm() {
                 led2.LEDOff();
                 //led3.LEDSolid();
                 tx_frame_sptr->setOffsets(0, 0, next_sym_off);
-                size_t tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
+                size_t tx_frame_size = 0;
+                if(anti_inter->invertBits()) {
+                    tx_frame_size = tx_frame_sptr->serializeCodedInv(tx_frame_buf);
+                } else {
+                    tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
+                }
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
                 radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing, true);
@@ -278,7 +291,12 @@ void mesh_protocol_fsm() {
                 radio.lock();
                 radio.set_tx_power(radio_cb.radio_cfg.tx_power-anti_inter->pwrDiff()); 
                 led3.LEDSolid();
-                size_t rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
+                size_t rx_frame_size = 0;
+                if(anti_inter->invertBits()) {
+                    rx_frame_size = rx_frame_sptr->serializeCodedInv(rx_frame_buf);
+                } else {
+                    rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
+                }
                 MBED_ASSERT(rx_frame_size < 256);
                 // Perform the timing offset work:
                 //  1. Start by waiting one full slot

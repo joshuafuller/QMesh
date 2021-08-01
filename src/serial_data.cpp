@@ -95,7 +95,7 @@ void Frame::deserialize_pb(const vector<uint8_t> &buf) {
 
 void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed) {
     mt19937 rand_gen(seed);
-    for(unsigned char iter : buf) {
+    for(uint8_t iter : buf) {
         uint8_t rand_byte = rand_gen();
         wht_buf.push_back(iter ^ rand_byte);
     }
@@ -107,6 +107,15 @@ auto Frame::serializeCoded(vector<uint8_t> &buf) -> size_t {
     serialize(ser_buf);
 	//debug_printf(DBG_WARN, "Serialized frame size is now %d\r\n", ser_buf.size());
     return fec->encode(ser_buf, buf);
+}
+
+auto Frame::serializeCodedInv(vector<uint8_t> &buf) -> size_t {
+    size_t ret_val = serializeCoded(buf);
+    constexpr uint8_t ALL_ONES = 0xFF;
+    for(uint8_t & it : buf) {
+        it = it ^ ALL_ONES;
+    }
+    return ret_val;
 }
 
 auto Frame::calcCRC() -> uint8_t {
@@ -167,6 +176,17 @@ auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STAT
     // Size checked out, CRCs checked out, so return OK
     pkt_status = PKT_OK;
     return pkt_status;
+}
+
+
+auto Frame::deserializeCodedInv(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
+    auto buf_inv = make_shared<vector<uint8_t>>(*buf);
+    // invert the encoded bits
+    constexpr uint8_t ALL_ONES = 0xFF;
+    for(uint8_t & it : *buf_inv) {
+        it = it ^ ALL_ONES;
+    }
+    return deserializeCoded(buf_inv);
 }
 
 

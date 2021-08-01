@@ -239,6 +239,7 @@ public:
     * @param buf The vector that will hold the encoded Frame.
     */
     auto serializeCoded(vector<uint8_t> &buf) -> size_t;
+    auto serializeCodedInv(vector<uint8_t> &buf) -> size_t;
 
     /**
     * Calculate the CRC of the payload.
@@ -314,6 +315,7 @@ public:
     * @param buf shared_ptr to a vector of received, encoded bytes to decode
     */
     auto deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM;
+    auto deserializeCodedInv(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM;
 
     /**
      * Increment the TTL, updating the header CRC in the process.
