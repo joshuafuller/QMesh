@@ -1,12 +1,19 @@
 #ifndef ANTI_INTERFERENCE_HPP
 #define ANTI_INTERFERENCE_HPP
 
+//#define TEST_HARNESS
+
 #include <random>
 #include <memory>
 #include <vector>
 #include <list>
 #include <algorithm>
+#ifndef TEST_HARNESS
 #include "mbed.h"
+#else
+using namespace std;
+#define MBED_ASSERT
+#endif
 
 
 class AntiInterference {
@@ -16,6 +23,7 @@ private:
     int cur_seed;
     int max_pwr_diff;
     int num_channels;
+    uint8_t ttl;
 public:
     AntiInterference(const std::pair<int32_t, int32_t> my_freq_range, const int my_num_timing_offsets,
                         const int my_cur_seed, const int my_max_pwr_diff, const int my_num_channels) {
@@ -24,14 +32,38 @@ public:
         cur_seed = my_cur_seed;
         max_pwr_diff = my_max_pwr_diff;
         num_channels = my_num_channels;
+        ttl = 0;
+        MBED_ASSERT(freq_range.first < freq_range.second);
+        MBED_ASSERT(abs(freq_range.first-freq_range.second) > 0);
+    }
+
+    auto freqRange() -> std::pair<int32_t, int32_t> {
+        return freq_range;
+    }
+
+    auto numTimingOffsets() const -> int {
+        return num_timing_offsets;
+    }
+
+    auto maxPwrDiff() const -> int {
+        return max_pwr_diff;
+    } 
+
+    auto numChannels() const -> int {
+        return num_channels;
+    }
+
+    void setTTL(const uint8_t ttl_val) {
+        ttl = ttl_val;
+    }
+
+    auto getTTL() const -> uint8_t {
+        return ttl; 
     }
 
     virtual auto timingOffset() -> uint8_t = 0;
-
     virtual auto freqOffset() -> int32_t = 0;
-
     virtual auto pwrDiff() -> int8_t = 0;
-
     virtual auto nextChannel() -> int8_t = 0;
 };
 
@@ -101,15 +133,14 @@ private:
         uint32_t pwr_off;
         uint32_t channel;
     };
-    vector<walsh_fields> walsh_sequence;
+    std::vector<walsh_fields> walsh_sequence;
     int walsh_seq_idx;
     static constexpr int SEQUENCE_LEN = 128;
     int freq_range_adj;
 
-    static void load_field(list<bool> &slice, uint32_t &field, int num_bits);
-    void refresh();
+    static void load_field(std::list<bool> &slice, uint32_t &field, int num_bits);
 public:
-    AntiInterferenceWalsh(pair<int32_t, int32_t> freq_range, int num_timing_offsets,
+    AntiInterferenceWalsh(std::pair<int32_t, int32_t> freq_range, int num_timing_offsets,
                         int cur_seed, int max_pwr_diff, int num_channels);
     auto timingOffset() -> uint8_t override;
     auto freqOffset() -> int32_t override;

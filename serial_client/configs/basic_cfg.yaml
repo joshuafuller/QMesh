@@ -25,5 +25,7 @@ fec_test_mode: false
 gps_en: false
 log_boot: true
 log_packets: false
-# Watchgod
+# Watchdog
 watchdog_timer_en: true
+# Whether to use random or Walsh codes
+walsh_codes: false 

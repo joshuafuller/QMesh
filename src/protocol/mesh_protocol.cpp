@@ -129,10 +129,12 @@ void mesh_protocol_fsm() {
     int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*FREQ_WOBBLE_PROPORTION);
     AntiInterference *anti_inter = nullptr;
     if(radio_cb.net_cfg.walsh_codes) {
+        debug_printf(DBG_INFO, "Anti-Interference Walsh codes chosen\r\n");
         anti_inter = new AntiInterferenceWalsh(pair<int32_t, int32_t>(-freq_bound, freq_bound),
                         radio_cb.net_cfg.num_offsets, radio_cb.address, 
                         MAX_PWR_DIFF, radio_cb.radio_cfg.frequencies_count);
     } else {
+        debug_printf(DBG_INFO, "Anti-Interference random codes chosen\r\n");
         anti_inter = new AntiInterferenceRand(pair<int32_t, int32_t>(-freq_bound, freq_bound),
                         radio_cb.net_cfg.num_offsets, radio_cb.address, 
                         MAX_PWR_DIFF, radio_cb.radio_cfg.frequencies_count);        
@@ -167,6 +169,7 @@ void mesh_protocol_fsm() {
                     tx_frame_sptr->fec = fec;
                     radio.lock();
                     radio.standby();
+                    anti_inter->setTTL(0);
                     radio.tx_hop_frequency();
                     radio.unlock();
                     state = TX_PACKET;
@@ -181,12 +184,14 @@ void mesh_protocol_fsm() {
                     led2.LEDSolid();
                     rx_frame_sptr = make_shared<Frame>(fec);
                     PKT_STATUS_ENUM pkt_status = rx_frame_sptr->deserializeCoded(radio_event->buf);
+                    radio.tx_hop_frequency();
                     if(pkt_status == PKT_OK) {
                         total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
                         background_queue.call(oled_mon_fn);
                         auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
                         rx_frame_sptr->setSender(radio_cb.address);
                         rx_frame_sptr->incrementTTL();
+                        anti_inter->setTTL(rx_frame_sptr->getTTL());
 						rx_frame_sptr->tx_frame = false;
                         if(checkRedundantPkt(rx_frame_sptr)) {
                             radio.standby();
@@ -199,7 +204,6 @@ void mesh_protocol_fsm() {
                             radio.standby();
                             radio_timing.setTimer(radio_event->tmr_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
-                            radio.tx_hop_frequency();
                             retransmit_disable_out_n.write(0);
                             constexpr int TWO_SECONDS = 2000;
                             ThisThread::sleep_for(radio_timing.getWaitNoWarn()/TWO_SECONDS);
@@ -234,7 +238,6 @@ void mesh_protocol_fsm() {
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 radio.lock();
                 radio.standby();
-                anti_inter->pwrDiff(); // Need to "use" this value
                 next_sym_off = anti_inter->timingOffset(); // Also need to "use" this value
                 radio.set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
@@ -263,7 +266,6 @@ void mesh_protocol_fsm() {
                 uint8_t nsym_off = 0;
                 uint8_t sym_off = 0;
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                next_sym_off = anti_inter->timingOffset();
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
                 radio_timing.waitSymOffset(next_sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
                 state = WAIT_FOR_EVENT;
