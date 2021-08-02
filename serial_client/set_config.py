@@ -84,6 +84,7 @@ ser_msg.sys_cfg.gps_en = cfg_dict['gps_en']
 ser_msg.sys_cfg.boot_log_en = cfg_dict['log_boot']
 ser_msg.sys_cfg.watchdog_timer_en = cfg_dict['watchdog_timer_en']
 ser_msg.sys_cfg.net_cfg.walsh_codes = cfg_dict['walsh_codes']
+ser_msg.sys_cfg.net_cfg.invert_bits = cfg_dict['invert_bits']
 
 qmesh_common.publish_msg(ser_msg)
 qmesh_common.channel.start_consuming()

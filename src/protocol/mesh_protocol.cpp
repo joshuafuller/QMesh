@@ -253,7 +253,7 @@ void mesh_protocol_fsm() {
                 //led3.LEDSolid();
                 tx_frame_sptr->setOffsets(0, 0, next_sym_off);
                 size_t tx_frame_size = 0;
-                if(anti_inter->invertBits()) {
+                if(anti_inter->invertBits() && radio_cb.net_cfg.invert_bits) {
                     tx_frame_size = tx_frame_sptr->serializeCodedInv(tx_frame_buf);
                 } else {
                     tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
@@ -292,7 +292,7 @@ void mesh_protocol_fsm() {
                 radio.set_tx_power(radio_cb.radio_cfg.tx_power-anti_inter->pwrDiff()); 
                 led3.LEDSolid();
                 size_t rx_frame_size = 0;
-                if(anti_inter->invertBits()) {
+                if(anti_inter->invertBits() && radio_cb.net_cfg.invert_bits) {
                     rx_frame_size = rx_frame_sptr->serializeCodedInv(rx_frame_buf);
                 } else {
                     rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);

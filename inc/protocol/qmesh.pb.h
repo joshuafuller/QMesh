@@ -166,6 +166,7 @@ typedef struct _NetCfg {
     uint32_t pld_len;
     uint32_t full_pkt_len;
     bool walsh_codes;
+    bool invert_bits;
 } NetCfg;
 
 typedef struct _SerialCRCMsg {
@@ -313,7 +314,7 @@ typedef struct _SysCfgMsg {
 #define TestCfg_init_default                     {0, 0, 0}
 #define FECCfg_init_default                      {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default}
-#define NetCfg_init_default                      {"", 0, 0, 0, 0, 0}
+#define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0}
 #define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
 #define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -333,7 +334,7 @@ typedef struct _SysCfgMsg {
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero}
-#define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0}
+#define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0}
 #define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
 #define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -392,6 +393,7 @@ typedef struct _SysCfgMsg {
 #define NetCfg_pld_len_tag                       4
 #define NetCfg_full_pkt_len_tag                  5
 #define NetCfg_walsh_codes_tag                   6
+#define NetCfg_invert_bits_tag                   7
 #define SerialCRCMsg_crc32_tag                   1
 #define SerialMsg_type_tag                       1
 #define SerialMsg_retry_tag                      2
@@ -499,7 +501,8 @@ X(a, STATIC,   SINGULAR, UINT32,   beacon_interval,   2) \
 X(a, STATIC,   SINGULAR, UINT32,   num_offsets,       3) \
 X(a, STATIC,   SINGULAR, UINT32,   pld_len,           4) \
 X(a, STATIC,   SINGULAR, UINT32,   full_pkt_len,      5) \
-X(a, STATIC,   SINGULAR, BOOL,     walsh_codes,       6)
+X(a, STATIC,   SINGULAR, BOOL,     walsh_codes,       6) \
+X(a, STATIC,   SINGULAR, BOOL,     invert_bits,       7)
 #define NetCfg_CALLBACK NULL
 #define NetCfg_DEFAULT NULL
 
@@ -711,8 +714,8 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define TestCfg_size                             6
 #define FECCfg_size                              35
 #define RadioCfg_size                            232
-#define NetCfg_size                              284
-#define SysCfgMsg_size                           583
+#define NetCfg_size                              286
+#define SysCfgMsg_size                           585
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           48
 #define DbgMsg_size                              258

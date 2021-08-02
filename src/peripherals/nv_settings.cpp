@@ -156,6 +156,8 @@ static void write_default_cfg() {
     memcpy(radio_cb.net_cfg.beacon_msg, def_msg.c_str(), def_msg.size());
     radio_cb.net_cfg.beacon_interval = SIX_SECONDS;
     radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
+    radio_cb.net_cfg.walsh_codes = false;
+    radio_cb.net_cfg.invert_bits = false;
 
     radio_cb.has_fec_cfg = true;
     FECCfg FECCfg_zero = FECCfg_init_zero;

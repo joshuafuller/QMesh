@@ -29,3 +29,5 @@ log_packets: false
 watchdog_timer_en: true
 # Whether to use random or Walsh codes
 walsh_codes: false 
+# Invert bits before transmission as an anti-interference thing
+invert_bits: false

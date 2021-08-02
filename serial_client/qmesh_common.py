@@ -92,6 +92,7 @@ def print_cfg_msg(ser_msg):
     print("\tBoot Log Enabled: %s" % (sys_cfg.boot_log_en))
     print("\tWatchdog Timer Enabled: %s" % (sys_cfg.watchdog_timer_en))
     print("\tWalsh Codes Enabled: %s" % (sys_cfg.net_cfg.walsh_codes))
+    print("\tInvert Bits: %s" % (sys_cfg.net_cfg.invert_bits))
 
 
 def publish_msg(ser_msg):

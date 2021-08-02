@@ -49,6 +49,7 @@ message NetCfg {
   uint32 pld_len = 4;
   uint32 full_pkt_len = 5;
   bool walsh_codes = 6;
+  bool invert_bits = 7;
 }
 
 message SysCfgMsg {
