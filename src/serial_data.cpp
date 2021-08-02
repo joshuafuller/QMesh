@@ -120,7 +120,9 @@ auto Frame::serializeCodedInv(vector<uint8_t> &buf) -> size_t {
 
 auto Frame::calcCRC() -> uint8_t {
     constexpr int CRC_SIZE = 8;
-    MbedCRC<POLY_8BIT_CCITT, CRC_SIZE> ct;
+    constexpr uint8_t POLY_8BIT_CDMA2000 = 0x9B;
+    constexpr uint8_t INIT_8BIT_CDMA2000 = 0xFF;
+    MbedCRC<POLY_8BIT_CDMA2000, CRC_SIZE> ct(INIT_8BIT_CDMA2000, 0x00, false, false);
     uint32_t crc = 0;
     vector<uint8_t> crc_buf;
     for(size_t i = 0; i < sizeof(hdr.cons_subhdr); i++) {
