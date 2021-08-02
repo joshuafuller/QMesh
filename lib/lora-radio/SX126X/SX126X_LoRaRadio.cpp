@@ -1443,38 +1443,33 @@ void SX126X_LoRaRadio::receive(const bool locking)
         write_opmode_command(RADIO_SET_LORASYMBTIMEOUT, &_rx_timeout_in_symbols, 1);
     }
 
-    if(_txen.is_connected()) {
+    if(_txen.is_connected() != 0) {
         _txen = 0;
     }
-    if(_rxen.is_connected()) {
+    if(_rxen.is_connected() != 0) {
         _rxen = 1;
     }
 
     if (_reception_mode != RECEPTION_MODE_OTHER) {
-#if 0
-        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_PREAMBLE_DETECTED ,
-                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_PREAMBLE_DETECTED ,
+        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR, //NOLINT
+                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR, //NOLINT
                           IRQ_RADIO_NONE,
                           IRQ_RADIO_NONE);
-#else
-        configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR,
-                          IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR,
-                          IRQ_RADIO_NONE,
-                          IRQ_RADIO_NONE);
-#endif
         set_modulation_params(&_mod_params);
         set_packet_params(&_packet_params);
     }
 
-    uint8_t buf[3];
+    vector<uint8_t> buf(3);
+    constexpr uint32_t DEFAULT_RX_GAIN_VALUE = 0x96;
+    write_to_register(REG_RX_GAIN, DEFAULT_RX_GAIN_VALUE);
+    constexpr uint8_t LOWER_BYTE = 0xFF;
+    constexpr uint32_t SHIFT_TWO_BYTES = 16;
+    constexpr uint32_t SHIFT_ONE_BYTE = 8;
+    buf[0] = static_cast<uint8_t>((_rx_timeout >> SHIFT_TWO_BYTES) & LOWER_BYTE);
+    buf[1] = static_cast<uint8_t>((_rx_timeout >> SHIFT_ONE_BYTE) & LOWER_BYTE);
+    buf[2] = static_cast<uint8_t>(_rx_timeout & LOWER_BYTE);
 
-    write_to_register(REG_RX_GAIN, 0x96);
-
-    buf[0] = (uint8_t) ((_rx_timeout >> 16) & 0xFF);
-    buf[1] = (uint8_t) ((_rx_timeout >> 8) & 0xFF);
-    buf[2] = (uint8_t) (_rx_timeout & 0xFF);
-
-    write_opmode_command(RADIO_SET_RX, buf, 3);
+    write_opmode_command(RADIO_SET_RX, buf.data(), 3);
     rx_int_mon = 1;
     tx_int_mon = 0;
 
