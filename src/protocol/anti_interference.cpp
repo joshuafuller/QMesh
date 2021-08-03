@@ -69,7 +69,8 @@ void AntiInterferenceWalsh::load_field(list<bool> &slice, uint32_t &field, const
 }
 
 auto AntiInterferenceWalsh::timingOffset() -> uint8_t {
-    uint8_t ret_val = walsh_sequence[getTTL()].timing_off;
+    uint8_t ret_val = 0;
+    ret_val = walsh_sequence[getTTL()].timing_off;
     if(ret_val == 0) {
         ret_val = 0;
     } else if(ret_val > numTimingOffsets()-1) {
@@ -95,7 +96,8 @@ auto AntiInterferenceWalsh::pwrDiff() -> int8_t {
 }
 
 auto AntiInterferenceWalsh::nextChannel() -> int8_t {
-    int8_t ret_val = walsh_sequence[getTTL()].channel;
+    int8_t ret_val = 0;
+    ret_val = walsh_sequence[getTTL()].channel;
     if(numChannels() == 0) {
         ret_val = 0;
     } else if(ret_val > numChannels()-1) {
@@ -105,7 +107,8 @@ auto AntiInterferenceWalsh::nextChannel() -> int8_t {
 }
 
 auto AntiInterferenceWalsh::invertBits() -> bool {
-    int8_t ret_val = walsh_sequence[getTTL()].inv_bits;
+    int8_t ret_val = 0;
+    ret_val = walsh_sequence[getTTL()].inv_bits;
     return ret_val != 0;
 }
 

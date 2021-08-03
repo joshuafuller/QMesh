@@ -110,7 +110,8 @@ auto Frame::serializeCoded(vector<uint8_t> &buf) -> size_t {
 }
 
 auto Frame::serializeCodedInv(vector<uint8_t> &buf) -> size_t {
-    size_t ret_val = serializeCoded(buf);
+    size_t ret_val = 0;
+    ret_val = serializeCoded(buf);
     constexpr uint8_t ALL_ONES = 0xFF;
     for(uint8_t & it : buf) {
         it = it ^ ALL_ONES;
@@ -150,7 +151,8 @@ auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STAT
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
     //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
-    ssize_t bytes_dec = fec->decode(*buf, dec_buf);
+    ssize_t bytes_dec = 0;
+    bytes_dec = fec->decode(*buf, dec_buf);
     //debug_printf(DBG_WARN, "Decoded into %d bytes\r\n", bytes_dec);
     if(bytes_dec == -1) {
         //debug_printf(DBG_INFO, "FEC Failed\r\n");
