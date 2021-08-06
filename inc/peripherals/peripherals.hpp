@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "radio.hpp"
 #include "leds.hpp"
 #include "buttons.hpp"
-#include "stm32_watchdog.h"
 #include "cal_timer.hpp"
 
 #endif /* PERIPHERALS_HPP */

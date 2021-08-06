@@ -27,6 +27,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
 #include "USBSerial.h"
+#if MBED_CONF_APP_HAS_BLE == 1
+#include "ble/BLE.h"
+#endif /* MBED_CONF_APP_HAS_BLE == 1 */
+
 
 
 constexpr int THREAD_STACK_SIZE = 4096;
@@ -58,10 +62,13 @@ static constexpr int I2C_FREQ = 400000;
 
 
 void send_status();
-
+#ifdef USER_BUTTON
 DigitalIn user_button(USER_BUTTON);
-
-SoftI2C oled_i2c(PB_8, PB_9);
+#else // for the nRF52 board
+DigitalIn user_button(BUTTON1);
+#endif
+//MBED_CONF_APP_QSPI_FLASH_IO0
+SoftI2C oled_i2c(MBED_CONF_APP_OLED_SDA, MBED_CONF_APP_OLED_SCL);  // SDA, SCL
 shared_ptr<Adafruit_SSD1306_I2c> oled;
 
 void print_stats()
@@ -93,15 +100,25 @@ void print_stats()
 #endif
 }
 
+#if MBED_CONF_APP_HAS_WATCHDOG == 1
+constexpr uint32_t WDT_TIMEOUT_MS = 60000;
+static void wdt_pet() { // pet the watchdog
+    Watchdog::get_instance().kick();
+    background_queue.call_in(WDT_TIMEOUT_MS/2, wdt_pet);
+}
+#endif
+
 
 // main() runs in its own thread in the OS
 auto main() -> int
 {
     start_cal();
     time(&boot_timestamp);
-
-    // Reset the watchdog timer
+#if MBED_CONF_APP_HAS_WATCHDOG == 1
+    Watchdog &wdt = Watchdog::get_instance();
+    wdt.start(WDT_TIMEOUT_MS);
     wdt_pet();
+#endif
 
     // Set up the LEDs
     ThisThread::sleep_for(HALF_SECOND);
@@ -116,7 +133,7 @@ auto main() -> int
     constexpr int OLED_NUM_LINES = 32;
     constexpr int OLED_NUM_COLS = 128;
     constexpr int OLED_CONST = 0x78;
-    oled = make_shared<Adafruit_SSD1306_I2c>(oled_i2c, PD_13, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
+    oled = make_shared<Adafruit_SSD1306_I2c>(oled_i2c, MBED_CONF_APP_FHSS_MON, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
@@ -152,20 +169,30 @@ auto main() -> int
         oled->displayOff();
     }
 
+#if MBED_CONF_APP_HAS_BLE == 1
+    // Set up BLE, if we have it
+    BLE &ble = BLE::Instance();
+#endif /* MBED_CONF_APP_HAS_BLE */
+
+
     stream_id_rng.seed(radio_cb.address);
     // Start the serial handler threads
+#ifdef MBED_CONF_APP_KISS_UART_TX
     ThisThread::sleep_for(HALF_SECOND);
     auto bt_ser = make_shared<KISSSerial>(MBED_CONF_APP_KISS_UART_TX, 
                                             MBED_CONF_APP_KISS_UART_RX, 
                                             string("BT"), DEBUG_PORT);
+    MBED_ASSERT(bt_ser);
+#endif
+#ifdef MBED_CONF_APP_KISS_UART_TX_ALT
     ThisThread::sleep_for(HALF_SECOND);
     auto bt_alt_ser = make_shared<KISSSerial>(MBED_CONF_APP_KISS_UART_TX_ALT, 
                                                 MBED_CONF_APP_KISS_UART_RX_ALT,
                                                 MBED_CONF_APP_KISS_UART_EN_ALT,
                                                 MBED_CONF_APP_KISS_UART_ST_ALT, 
                                                 string("BT-ALT"), DEBUG_PORT);
-    MBED_ASSERT(bt_ser);
     MBED_ASSERT(bt_alt_ser);
+#endif
     debug_printf(DBG_INFO, "Serial threads started");
     ThisThread::sleep_for(HALF_SECOND);
     send_status();

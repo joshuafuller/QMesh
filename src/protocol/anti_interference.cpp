@@ -116,7 +116,7 @@ auto AntiInterferenceWalsh::invertBits() -> bool {
 #ifdef TEST_HARNESS
 int main(int argc, char **argv) {
     AntiInterferenceWalsh anti_intr(pair<int32_t, int32_t>(-90000, 90000), 8,
-                            atoi(argv[1]), 3, 2);
+                            atoi(argv[1]), 3, 4);
     for(int i = 0; i < 32; i++) {
         anti_intr.setTTL(i);
         printf("freq %d\n", anti_intr.freqOffset());
