@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "serial_msg.hpp"
+#include "pseudo_serial.hpp"
 
 
 static constexpr int SIX_SECONDS = 6;
@@ -181,7 +182,8 @@ static void write_default_cfg() {
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_CONFIG);
     ser_msg->sys_cfg() = radio_cb;
-    MBED_ASSERT(save_SerMsg(*ser_msg, f) == WRITE_SUCCESS);
+    FilePseudoSerial f_ps(f);
+    MBED_ASSERT(save_SerMsg(*ser_msg, f_ps) == WRITE_SUCCESS);
     fflush(f);
     fclose(f); 
     f = fopen("/fs/settings.bin", "r");
@@ -205,7 +207,8 @@ void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
     MBED_ASSERT(file_stat.st_size < 1024);
     auto ser_msg = make_shared<SerMsg>();
-    if(load_SerMsg(*ser_msg, f) != READ_SUCCESS) {
+    FilePseudoSerial f_ps(f);
+    if(load_SerMsg(*ser_msg, f_ps) != READ_SUCCESS) {
         fclose(f);
         debug_printf(DBG_WARN, "Invalid settings.bin. Creating new file with default settings\r\n");
         write_default_cfg();
@@ -261,7 +264,8 @@ void save_settings_to_flash() {
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_CONFIG);
     ser_msg->sys_cfg() = radio_cb;
-    MBED_ASSERT(!save_SerMsg(*ser_msg, f));
+    FilePseudoSerial f_ps(f);
+    MBED_ASSERT(!save_SerMsg(*ser_msg, f_ps));
     fclose(f);  
 }
 
@@ -276,7 +280,8 @@ void log_boot() {
 
     auto *f = fopen("/fs/boot_log.bin", "a+");
     MBED_ASSERT(f);
-    save_SerMsg(*ser_msg, f);
+    FilePseudoSerial f_ps(f);
+    save_SerMsg(*ser_msg, f_ps);
     fclose(f);      
 }
 
@@ -373,7 +378,8 @@ void nv_log_fn() {
         auto ser_msg = make_shared<SerMsg>();
         ser_msg->type(SerialMsg_Type_LOG);
         ser_msg->log_msg() = log_msg;
-        MBED_ASSERT(!save_SerMsg(*ser_msg, f));
+        FilePseudoSerial f_ps(f);
+        MBED_ASSERT(!save_SerMsg(*ser_msg, f_ps));
         fclose(f);
         f = open_logfile();
     }

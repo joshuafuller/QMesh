@@ -34,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "peripherals.hpp"
 #include "serial_data.hpp"
 #include <string>
+#include <utility>
 #include "Adafruit_SSD1306.h"
 #include "mesh_protocol.hpp"
 #include "qmesh.pb.h"
@@ -41,6 +42,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "serial_msg.hpp"
+#include "pseudo_serial.hpp"
+#if MBED_CONF_APP_HAS_BLE == 1
+#include "ble/BLE.h"
+#endif /* MBED_CONF_APP_HAS_BLE == 1 */
+
 
 using crc_t = uint16_t;
 using entry_size_t = uint16_t;
@@ -64,8 +70,8 @@ using write_ser_msg_err_t = enum write_ser_msg_err_enum {
     WRITE_SER_MSG_ERR
 };
 
-auto save_SerMsg(SerMsg &ser_msg, FILE *f, bool kiss_data_msg = false) -> write_ser_msg_err_t;
-auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
+auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, bool kiss_data_msg = false) -> write_ser_msg_err_t;
+auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t;
 
 using ser_port_type_t = enum ser_port_type_enum {
     DEBUG_PORT, // both types of traffic
@@ -73,56 +79,114 @@ using ser_port_type_t = enum ser_port_type_enum {
     APRS_PORT   // data/telemetry only  
 };
 
-class KISSSerial { 
+
+class KISSSerial {
 private:
-    PinName tx_port, rx_port;
-    UARTSerial *ser;
-    bool hc05;
-    bool using_stdio;
-    string port_name;
-    DigitalOut *en_pin;
-    DigitalIn *state_pin;
-    Thread *rx_ser_thread, *tx_ser_thread;
-    ser_port_type_t port_type;
     Mail<std::shared_ptr<SerMsg>, QUEUE_DEPTH> tx_ser_queue;
     vector<string> logfile_names;
     SerMsg past_log_msg;
-    atomic<bool> kiss_extended;
-
-    void configure_hc05();
-    void send_ack();
-    void send_error(const string &err_str);
+    Thread *rx_ser_thread{}, *tx_ser_thread{};
+    ser_port_type_t port_type;
+    string port_name;
+    atomic<bool> kiss_extended{};
+    static constexpr int SER_THREAD_STACK_SIZE = 8192;
     /// Serial thread function that receives serial data, and processes it accordingly.
     void rx_serial_thread_fn();
     /// Produces an MbedJSONValue with the current status and queues it for transmission.
     void tx_serial_thread_fn();
-    auto save_SerMsg(SerMsg &ser_msg, FILE *f, bool kiss_data_msg) -> write_ser_msg_err_t;
-    auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t;
+    PseudoSerial *pser_rd, *pser_wr;
+    auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, bool kiss_data_msg) -> write_ser_msg_err_t;
+    auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t;
 
 public:
-    void send_status();
-    KISSSerial(const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerial(PinName tx, PinName Rx, const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerial(PinName tx, PinName Rx, PinName En, PinName State,
-                const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerial(string my_port_name, ser_port_type_t ser_port_type);
     ~KISSSerial();
     KISSSerial(const KISSSerial &) = delete;
     auto operator=(const KISSSerial &) -> KISSSerial& = delete;
     KISSSerial(KISSSerial &&) = delete;
     auto operator=(KISSSerial &&) -> KISSSerial& = delete;
 
-    void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
-    void sleep();
-    void wake();
-    auto isKISSExtended() -> bool {
-        return kiss_extended;
+    void send_status();
+    void send_ack();
+    void send_error(const string &err_str);
+    auto isKISSExtended() -> bool { return kiss_extended; }
+    auto portName() -> string { return port_name; }
+    auto rxSerThread() -> Thread ** { return &rx_ser_thread; }
+    auto txSerThread() -> Thread ** { return &tx_ser_thread; }
+    void kissExtended(const bool val) { kiss_extended = val; }
+    void startThreads() {
+        tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
+        rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
     }
+    auto pserRd() -> PseudoSerial ** {
+        return &pser_rd;
+    }
+    auto pserWr() -> PseudoSerial ** {
+        return &pser_wr;
+    }
+
+    void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
+    virtual void sleep() = 0;
+    virtual void wake() = 0;
 };
+
+
+class KISSSerialUART : public KISSSerial { 
+private:
+    PinName tx_port, rx_port;
+    UARTSerial *ser;
+    bool hc05;
+    bool using_stdio;
+    DigitalOut *en_pin;
+    DigitalIn *state_pin;
+
+    void configure_hc05();
+
+public:
+    KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName Rx, const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName Rx, PinName En, PinName State,
+                const string &my_port_name, ser_port_type_t ser_port_type);
+    ~KISSSerialUART();
+    KISSSerialUART(const KISSSerialUART &) = delete;
+    auto operator=(const KISSSerialUART &) -> KISSSerialUART& = delete;
+    KISSSerialUART(KISSSerialUART &&) = delete;
+    auto operator=(KISSSerialUART &&) -> KISSSerialUART& = delete;
+
+    void sleep() override;
+    void wake() override;
+};
+
+
+#if MBED_CONF_APP_HAS_BLE == 1
+class KISSSerialBLE : public KISSSerial { 
+private:
+    // Set up BLE, if we have it
+    BLE &ble; /* = BLE::Instance(); */
+    auto save_SerMsg(SerMsg &ser_msg, bool kiss_data_msg) -> write_ser_msg_err_t;
+    auto load_SerMsg(SerMsg &ser_msg) -> read_ser_msg_err_t;
+
+public:
+    KISSSerialBLE(const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerialBLE(PinName tx, PinName Rx, const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerialBLE(PinName tx, PinName Rx, PinName En, PinName State,
+                const string &my_port_name, ser_port_type_t ser_port_type);
+    ~KISSSerialBLE();
+    KISSSerialBLE(const KISSSerialBLE &) = delete;
+    auto operator=(const KISSSerialBLE &) -> KISSSerialBLE& = delete;
+    KISSSerialBLE(KISSSerialBLE &&) = delete;
+    auto operator=(KISSSerialBLE &&) -> KISSSerialBLE& = delete;
+
+    void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
+    void sleep() { };
+    void wake() { };
+};
+#endif /* MBED_CONF_APP_HAS_BLE == 1 */
+
 
 // debug_printf() uses this vector to determine which serial ports to send out
 extern Mutex kiss_sers_mtx;
 extern vector<KISSSerial *> kiss_sers;
-//extern UARTSerial kiss_ser_fh;
 
 
 #endif /* JSON_SERIAL_HPP */

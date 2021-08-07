@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include "USBSerial.h"
 #include "sha256.h"
+#include "pseudo_serial.hpp"
 
 extern EventQueue background_queue;
 
@@ -64,15 +65,15 @@ static Mutex shared_mtx;
 
 static DataMsg data_msg_zero = DataMsg_init_zero;
 
-auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
+auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
     bool kiss_extended = false;
     // Get past the first delimiter(s)
     for(;;) {
-        int cur_byte = fgetc(f);
+        int cur_byte = ps.getc();
         if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
-            cur_byte = fgetc(f);
+            cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
@@ -97,13 +98,13 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     // Pull in the main frame
     vector<uint8_t> buf;
     for(;;) {
-        int cur_byte = fgetc(f);
+        int cur_byte = ps.getc();
         if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         if(cur_byte == FEND) {
             break;
         } 
         if(cur_byte == FESC) {
-            cur_byte = fgetc(f);
+            cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
             if(cur_byte == TFESC) {
                 buf.push_back(FESC);
@@ -138,7 +139,7 @@ auto load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
 }
 
 
-auto save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
+auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_data_msg) -> write_ser_msg_err_t {
     vector<uint8_t> comb_buf; //NOTE: we can probably just have a buf, not a buf and comb_buf
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
@@ -158,24 +159,24 @@ auto save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_se
     }
 
     // Make it into a KISS frame and write it out
-    if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
+    if(ps.putc(FEND) == EOF) { return WRITE_SER_MSG_ERR; }
     if(!kiss_data_msg) {
-        if(fputc(SETHW, f) == EOF) { return WRITE_SER_MSG_ERR; }
+        if(ps.putc(SETHW) == EOF) { return WRITE_SER_MSG_ERR; }
     } else {
-        if(fputc(DATAPKT, f) == EOF) { return WRITE_SER_MSG_ERR; }  
+        if(ps.putc(DATAPKT) == EOF) { return WRITE_SER_MSG_ERR; }  
     }
     for(uint8_t i : comb_buf) {
         if(i == FEND) {
-            if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
-            if(fputc(TFEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(ps.putc(FESC) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(ps.putc(TFEND) == EOF) { return WRITE_SER_MSG_ERR; }
         } else if(i == FESC) {
-            if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
-            if(fputc(TFESC, f) == EOF) { return WRITE_SER_MSG_ERR; }            
+            if(ps.putc(FESC) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(ps.putc(TFESC) == EOF) { return WRITE_SER_MSG_ERR; }            
         } else {
-            if(fputc(i, f) == EOF) { return WRITE_SER_MSG_ERR; } 
+            if(ps.putc(i) == EOF) { return WRITE_SER_MSG_ERR; } 
         }
     }
-    if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; } 
+    if(ps.putc(FEND) == EOF) { return WRITE_SER_MSG_ERR; } 
     return WRITE_SUCCESS;
 }
 
@@ -211,7 +212,7 @@ void send_status() {
 }
 
 
-auto KISSSerial::save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg) -> write_ser_msg_err_t {
+auto KISSSerial::save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_data_msg) -> write_ser_msg_err_t {
     vector<uint8_t> comb_buf;
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
@@ -234,90 +235,89 @@ auto KISSSerial::save_SerMsg(SerMsg &ser_msg, FILE *f, const bool kiss_data_msg)
     }
 
     // Make it into a KISS frame and write it out
-    if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
+    if(ps.putc(FEND) == EOF) { return WRITE_SER_MSG_ERR; }
     if(!kiss_data_msg) {
-        if(fputc(SETHW, f) == EOF) { return WRITE_SER_MSG_ERR; }
+        if(ps.putc(SETHW) == EOF) { return WRITE_SER_MSG_ERR; }
     } else {
-        if(fputc(DATAPKT, f) == EOF) { return WRITE_SER_MSG_ERR; }  
+        if(ps.putc(DATAPKT) == EOF) { return WRITE_SER_MSG_ERR; }  
     }
     for(uint8_t i : comb_buf) {
         if(i == FEND) {
-            if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
-            if(fputc(TFEND, f) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(ps.putc(FESC) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(ps.putc(TFEND) == EOF) { return WRITE_SER_MSG_ERR; }
         } else if(i == FESC) {
-            if(fputc(FESC, f) == EOF) { return WRITE_SER_MSG_ERR; }
-            if(fputc(TFESC, f) == EOF) { return WRITE_SER_MSG_ERR; }            
+            if(ps.putc(FESC) == EOF) { return WRITE_SER_MSG_ERR; }
+            if(ps.putc(TFESC) == EOF) { return WRITE_SER_MSG_ERR; }            
         } else {
-            if(fputc(i, f) == EOF) { return WRITE_SER_MSG_ERR; } 
+            if(ps.putc(i) == EOF) { return WRITE_SER_MSG_ERR; } 
         }
     }
-    if(fputc(FEND, f) == EOF) { return WRITE_SER_MSG_ERR; } 
+    if(ps.putc(FEND) == EOF) { return WRITE_SER_MSG_ERR; } 
     return WRITE_SUCCESS;
 }
 
 
-static constexpr int SER_THREAD_STACK_SIZE = 8192;
-KISSSerial::KISSSerial(const string &my_port_name, const ser_port_type_t ser_port_type) {
+KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
+    port_name(std::move(my_port_name)),
+    port_type(ser_port_type) {
+    pser_rd = nullptr;
+    pser_wr = nullptr;
     past_log_msg.clear();
-    using_stdio = true;
     kiss_extended = true;
     port_type = ser_port_type;
-    hc05 = false;
     port_name = my_port_name;
-
-    string rx_ser_name("RX-SERIAL-");
-    rx_ser_name.append(port_name);
+        
+    string rx_ser_name("RX-");
+    rx_ser_name.append(portName());
     rx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
-    string tx_ser_name("TX-SERIAL-");
-    tx_ser_name.append(port_name);
+    string tx_ser_name("TX-");
+    tx_ser_name.append(portName());
     tx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
 
     kiss_sers_mtx.lock();
     kiss_sers.push_back(this);
     kiss_sers_mtx.unlock();
+}
 
-    tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
-    rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+
+KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t ser_port_type) :
+    KISSSerial(my_port_name, ser_port_type) {
+    tx_port = NC;
+    rx_port = NC;
+    en_pin = nullptr;
+    ser = nullptr;
+    state_pin = nullptr;
+    using_stdio = true;
+    hc05 = false;
+
+    startThreads();
 }
 
 
 static constexpr uint32_t SER_BAUD_RATE = 230400;
 static constexpr uint32_t BT_BAUD_RATE = 38400;
-KISSSerial::KISSSerial(PinName tx, PinName rx, const string &my_port_name, 
-                        const ser_port_type_t ser_port_type) {
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_name, 
+                        const ser_port_type_t ser_port_type) :
+    KISSSerial(my_port_name, ser_port_type) {
     en_pin = nullptr;
     state_pin = nullptr;
-    past_log_msg.clear();
     tx_port = tx;
     rx_port = rx;
-    kiss_extended = true;
     ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
     MBED_ASSERT(ser);
+    *pserRd() = new UARTPseudoSerial(*ser, true);
+    *pserWr() = new UARTPseudoSerial(*ser, false);
     using_stdio = false;
-    port_type = ser_port_type;
-    port_name = my_port_name;
     hc05 = false;
 
-    string rx_ser_name("RX-SERIAL-");
-    rx_ser_name.append(port_name);
-    rx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
-    string tx_ser_name("TX-SERIAL-");
-    tx_ser_name.append(port_name);
-    tx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
-
-    kiss_sers_mtx.lock();
-    kiss_sers.push_back(this);
-    kiss_sers_mtx.unlock();
-
-    tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
-    rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+    startThreads();
 }
 
 
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int HALF_SECOND = 500;
 static constexpr int REPLY_STR_SIZE = 64;
-void KISSSerial::configure_hc05() {
+void KISSSerialUART::configure_hc05() {
     vector<char> reply_str(REPLY_STR_SIZE);
     *en_pin = 1;
     while(true) { };
@@ -335,7 +335,7 @@ void KISSSerial::configure_hc05() {
     ThisThread::sleep_for(HALF_SECOND);
     // Change the name
     string bt_name_cmd("AT+NAME=");
-    bt_name_cmd.append(port_name);
+    bt_name_cmd.append(portName());
     bt_name_cmd.append("\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
     printf("%s", bt_name_cmd.c_str());
@@ -354,15 +354,12 @@ void KISSSerial::configure_hc05() {
     ThisThread::sleep_for(QUARTER_SECOND);
     *en_pin = 0;
     printf("Done with configuration\r\n");
-
 }
 
 
-KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
-            const string &my_port_name, const ser_port_type_t ser_port_type) {
-    past_log_msg.clear();
-    kiss_extended = true;
-    port_name = my_port_name;
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State,
+            const string &my_port_name, const ser_port_type_t ser_port_type) :
+    KISSSerial(my_port_name, ser_port_type) {
     hc05 = true;
     en_pin = new DigitalOut(En);
     *en_pin = 1;
@@ -372,32 +369,19 @@ KISSSerial::KISSSerial(PinName tx, PinName rx, PinName En, PinName State,
     ser = new UARTSerial(tx_port, rx_port, BT_BAUD_RATE);
     MBED_ASSERT(ser);
     using_stdio = false;
-    port_type = ser_port_type;
 
     //configure_hc05();
 
-    string rx_ser_name("RX-SERIAL-");
-    rx_ser_name.append(port_name);
-    rx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
-    string tx_ser_name("TX-SERIAL-");
-    tx_ser_name.append(port_name);
-    tx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
-
-    kiss_sers_mtx.lock();
-    kiss_sers.push_back(this);
-    kiss_sers_mtx.unlock();
-
-    tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
-    rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+    startThreads();
 }
 
 
-void KISSSerial::sleep() {
+void KISSSerialUART::sleep() {
     delete ser;
 }
 
 
-void KISSSerial::wake() {
+void KISSSerialUART::wake() {
     if(ser == nullptr) {
         ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
         MBED_ASSERT(ser);
@@ -416,6 +400,10 @@ KISSSerial::~KISSSerial() {
     delete rx_ser_thread;
     tx_ser_thread->join();
     delete tx_ser_thread;
+}
+
+
+KISSSerialUART::~KISSSerialUART() {
     delete ser;
     delete en_pin;
     delete state_pin;
@@ -448,23 +436,23 @@ void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
 }
 
 
-auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
+auto KISSSerial::load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
     // Get past the first delimiter(s)
     for(;;) {
-        int cur_byte = fgetc(f);
+        int cur_byte = ps.getc();
         if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
-            cur_byte = fgetc(f);
+            cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
             if(cur_byte == SETHW) {
-                kiss_extended = true;
+                kissExtended(true);
                 break;
             } 
             if(cur_byte == DATAPKT) {
-                kiss_extended = false;
+                kissExtended(false);
                 break;
             } 
             if(cur_byte == EXITKISS) {
@@ -478,13 +466,13 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
     // Pull in the main frame
     vector<uint8_t> buf;
     for(;;) {
-        int cur_byte = fgetc(f);
+        int cur_byte = ps.getc();
         if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         if(cur_byte == FEND) {
             break;
         } 
         if(cur_byte == FESC) {
-            cur_byte = fgetc(f);
+            cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
             if(cur_byte == TFESC) {
                 buf.push_back(FESC);
@@ -497,7 +485,7 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
             buf.push_back(static_cast<uint8_t>(cur_byte));
         }
     }
-    if(kiss_extended) {
+    if(isKISSExtended()) {
         // Check the CRC
         if(!compare_frame_crc(buf)) {
             return CRC_ERR;
@@ -520,12 +508,6 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, FILE *f) -> read_ser_msg_err_t {
 
 
 void KISSSerial::tx_serial_thread_fn() {
-    FILE *kiss_ser = nullptr;
-    if(using_stdio) {
-        kiss_ser = stdout;
-    } else {
-        kiss_ser = fdopen(ser, "w");
-    }
     for(;;) {
         auto ser_msg_sptr = dequeue_mail<shared_ptr<SerMsg>>(tx_ser_queue);
         // In KISS mode, we only send out data packets in KISS format.
@@ -535,12 +517,12 @@ void KISSSerial::tx_serial_thread_fn() {
             if(ser_msg_sptr->type() == SerialMsg_Type_DATA && ser_msg_sptr->has_data_msg() && 
                 ser_msg_sptr->data_msg().type == DataMsg_Type_KISSRX && 
                 !ser_msg_sptr->data_msg().redundant) {
-                save_SerMsg(*ser_msg_sptr, kiss_ser, true);
+                save_SerMsg(*ser_msg_sptr, *pser_wr, true);
             } else {
                 continue;
             }           
         } else {
-            save_SerMsg(*ser_msg_sptr, kiss_ser, false);  
+            save_SerMsg(*ser_msg_sptr, *pser_wr, false);  
         }
     }
 }
@@ -655,17 +637,11 @@ void KISSSerial::rx_serial_thread_fn() {
 	bool reading_log = false;
 	bool reading_bootlog = false;
     past_log_msg.clear();
-    FILE *kiss_ser = nullptr;
-    if(using_stdio) {
-        kiss_ser = stdin;
-    } else {
-        kiss_ser = fdopen(ser, "r");
-    }
     auto ser_msg = make_shared<SerMsg>();
     int err = 0;
     for(;;) {
         ser_msg->clear();
-        err = load_SerMsg(*ser_msg, kiss_ser);
+        err = load_SerMsg(*ser_msg, *pser_rd);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
             if(err == CRC_ERR) {
@@ -1037,7 +1013,7 @@ void KISSSerial::rx_serial_thread_fn() {
 				}
 				auto cur_log_msg = make_shared<SerMsg>();
                 // Need to have an actually-open filehandle here
-                int err_ser = load_SerMsg(*cur_log_msg, f); 
+                int err_ser = load_SerMsg(*cur_log_msg, *pser_rd); 
                 debug_printf(DBG_INFO, "Serial Error is %d\r\n", err_ser);
                 if(err_ser != 0) { // Go to the next file if it exists
                     if(logfile_names.empty()) {
@@ -1052,7 +1028,7 @@ void KISSSerial::rx_serial_thread_fn() {
                         MBED_ASSERT(f);
                         logfile_names.erase(logfile_names.begin());   
                         string cur_line;
-                        if(load_SerMsg(*cur_log_msg, f) == 0) {
+                        if(load_SerMsg(*cur_log_msg, *pser_rd) == 0) {
                             auto reply_msg_sptr = make_shared<SerMsg>();
                             reply_msg_sptr->type(SerialMsg_Type_REPLY_LOG);
                             reply_msg_sptr->log_msg().valid = true;
@@ -1092,7 +1068,7 @@ void KISSSerial::rx_serial_thread_fn() {
 					MBED_ASSERT(f);
 				}
                 auto cur_log_msg = make_shared<SerMsg>();
-                int err_ser = load_SerMsg(*cur_log_msg, f);
+                int err_ser = load_SerMsg(*cur_log_msg, *pser_rd);
                 if(err_ser != 0) {
                     auto reply_msg = make_shared<SerMsg>();
                     reply_msg->type(SerialMsg_Type_REPLY_BOOT_LOG);
