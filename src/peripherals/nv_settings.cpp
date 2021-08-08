@@ -34,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_decode.h"
 #include "serial_msg.hpp"
 #include "pseudo_serial.hpp"
+#include "Adafruit_SSD1306.h"
 
 
 static constexpr int SIX_SECONDS = 6;

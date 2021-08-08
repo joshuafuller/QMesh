@@ -37,6 +37,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "USBSerial.h"
 #include "sha256.h"
 #include "pseudo_serial.hpp"
+#include "serial_data.hpp"
+#include "peripherals.hpp"
+#include "Adafruit_SSD1306.h"
 
 extern EventQueue background_queue;
 

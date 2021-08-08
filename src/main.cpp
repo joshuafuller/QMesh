@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "SoftI2C.h"
 #include "USBSerial.h"
+#include "ble_serial.hpp"
 
 
 
@@ -174,7 +175,7 @@ auto main() -> int
                                             MBED_CONF_APP_KISS_UART_RX, 
                                             string("BT"), DEBUG_PORT);
     MBED_ASSERT(bt_ser);
-#endif
+#endif /* MBED_CONF_APP_KISS_UART_TX */
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
     ThisThread::sleep_for(HALF_SECOND);
     auto bt_alt_ser = make_shared<KISSSerialUART>(MBED_CONF_APP_KISS_UART_TX_ALT, 
@@ -183,7 +184,14 @@ auto main() -> int
                                                 MBED_CONF_APP_KISS_UART_ST_ALT, 
                                                 string("BT-ALT"), DEBUG_PORT);
     MBED_ASSERT(bt_alt_ser);
-#endif
+#endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
+#if MBED_CONF_APP_HAS_BLE == 1
+    ThisThread::sleep_for(HALF_SECOND);
+    auto ble_ser = make_shared<BLESerial>();
+    auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
+    auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
+    auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
+#endif /* MBED_CONF_APP_HAS_BLE */
     debug_printf(DBG_INFO, "Serial threads started");
     ThisThread::sleep_for(HALF_SECOND);
     send_status();

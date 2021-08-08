@@ -31,20 +31,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mbed.h"
-#include "peripherals.hpp"
-#include "serial_data.hpp"
 #include <string>
 #include <utility>
-#include "Adafruit_SSD1306.h"
-#include "mesh_protocol.hpp"
+#include <atomic>
 #include "qmesh.pb.h"
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "serial_msg.hpp"
 #include "pseudo_serial.hpp"
+#include "params.hpp"
 #if MBED_CONF_APP_HAS_BLE == 1
 #include "ble/BLE.h"
+#include "ble_serial.hpp"
 #endif /* MBED_CONF_APP_HAS_BLE == 1 */
 
 
@@ -72,13 +71,6 @@ using write_ser_msg_err_t = enum write_ser_msg_err_enum {
 
 auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, bool kiss_data_msg = false) -> write_ser_msg_err_t;
 auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t;
-
-using ser_port_type_t = enum ser_port_type_enum {
-    DEBUG_PORT, // both types of traffic
-    VOICE_PORT, // voice/streaming only
-    APRS_PORT   // data/telemetry only  
-};
-
 
 class KISSSerial {
 private:
@@ -160,26 +152,21 @@ public:
 
 #if MBED_CONF_APP_HAS_BLE == 1
 class KISSSerialBLE : public KISSSerial { 
-private:
-    // Set up BLE, if we have it
-    BLE &ble; /* = BLE::Instance(); */
-    auto save_SerMsg(SerMsg &ser_msg, bool kiss_data_msg) -> write_ser_msg_err_t;
-    auto load_SerMsg(SerMsg &ser_msg) -> read_ser_msg_err_t;
-
 public:
-    KISSSerialBLE(const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerialBLE(PinName tx, PinName Rx, const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerialBLE(PinName tx, PinName Rx, PinName En, PinName State,
-                const string &my_port_name, ser_port_type_t ser_port_type);
-    ~KISSSerialBLE();
+    explicit KISSSerialBLE(ser_port_type_t ser_port_type);
+    KISSSerialBLE(const string &my_port_name, ser_port_type_t ser_port_type) : 
+            KISSSerial(my_port_name, ser_port_type) {
+        *pserRd() = new BLEPseudoSerial(ser_port_type);
+        *pserWr() = new BLEPseudoSerial(ser_port_type);
+    }
     KISSSerialBLE(const KISSSerialBLE &) = delete;
     auto operator=(const KISSSerialBLE &) -> KISSSerialBLE& = delete;
     KISSSerialBLE(KISSSerialBLE &&) = delete;
     auto operator=(KISSSerialBLE &&) -> KISSSerialBLE& = delete;
 
     void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
-    void sleep() { };
-    void wake() { };
+    void sleep() override { };
+    void wake() override { };
 };
 #endif /* MBED_CONF_APP_HAS_BLE == 1 */
 

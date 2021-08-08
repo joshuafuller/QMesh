@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "anti_interference.hpp"
+#include "peripherals.hpp"
 
 extern EventQueue background_queue;
 

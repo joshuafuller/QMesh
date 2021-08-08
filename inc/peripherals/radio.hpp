@@ -15,21 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-
 #ifndef RADIO_HPP
 #define RADIO_HPP
 
 #include "mbed.h"
 #include <cstdint>
-#include <memory>
-#include <vector>
 #include "SX126X_LoRaRadio.h"
-#include "serial_data.hpp"
-#include "qmesh.pb.h"
-#include "pb_common.h"
-#include "pb_encode.h"
-#include "pb_decode.h"
 
 extern SX126X_LoRaRadio radio;
 
