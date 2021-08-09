@@ -148,7 +148,11 @@ auto main() -> int
 		}
 	}
 	led1.LEDSolid();
+#if MBED_CONF_APP_HAS_BLE == 1
+    auto *push_button = new PushButton(BUTTON1);
+#else
     auto *push_button = new PushButton(USER_BUTTON);
+#endif
     push_button->SetQueue(background_queue);
     ThisThread::sleep_for(ONE_SECOND);
 

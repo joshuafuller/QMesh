@@ -86,13 +86,13 @@
             "qspi-flash-io2":      "P0_22",
             "qspi-flash-io3":      "P0_23",
 
-            "rx_int_mon":          "P0_11",
-            "tx_int_mon":          "P0_12",
-            "int_trig_mon":        "P0_13",
-            "retransmit_dis_in":   "P0_14",
-            "retransmit_dis_out":  "P0_15",
-            "rssi_mon":            "P0_16",
-            "fhss_mon":            "P0_17"   
+            "rx_int_mon":          "P0_17",
+            "tx_int_mon":          "P0_18",
+            "int_trig_mon":        "P0_19",
+            "retransmit_dis_in":   "P0_20",
+            "retransmit_dis_out":  "P0_21",
+            "rssi_mon":            "P0_22",
+            "fhss_mon":            "P0_23"   
         },
 
         "NUCLEO_F746ZG" : {

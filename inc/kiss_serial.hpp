@@ -156,8 +156,8 @@ public:
     explicit KISSSerialBLE(ser_port_type_t ser_port_type);
     KISSSerialBLE(const string &my_port_name, ser_port_type_t ser_port_type) : 
             KISSSerial(my_port_name, ser_port_type) {
-        *pserRd() = new BLEPseudoSerial(ser_port_type);
-        *pserWr() = new BLEPseudoSerial(ser_port_type);
+        *pserRd() = make_shared<BLEPseudoSerial>(ser_port_type);
+        *pserWr() = make_shared<BLEPseudoSerial>(ser_port_type);
     }
     KISSSerialBLE(const KISSSerialBLE &) = delete;
     auto operator=(const KISSSerialBLE &) -> KISSSerialBLE& = delete;
