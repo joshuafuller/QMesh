@@ -36,8 +36,8 @@
         "has_watchdog":        { "value": "1"},
         "has_ble":             { "value": "0"},
 
-        "oled-sda":            { "value": "A5"},
-        "oled-scl":            { "value": "A4"},
+        "oled-sda":            { "value": "NC"},
+        "oled-scl":            { "value": "NC"},
 
         "rx_int_mon":          { "value": "PD_0"},
         "tx_int_mon":          { "value": "PD_1"},
@@ -102,6 +102,9 @@
 
         "NUCLEO_H743ZI2" : {
             "target.bootloader_img": "bootloader/bootloader_h743.bin",
+
+            "oled-sda":            "PB_8",
+            "oled-scl":            "PB_9",
 
             "kiss_uart_tx":        "PF_7",
             "kiss_uart_rx":        "PF_6",

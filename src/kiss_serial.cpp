@@ -306,10 +306,10 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
     state_pin = nullptr;
     tx_port = tx;
     rx_port = rx;
-    ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
+    ser = make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE);
     MBED_ASSERT(ser);
-    *pserRd() = new UARTPseudoSerial(*ser, true);
-    *pserWr() = new UARTPseudoSerial(*ser, false);
+    *pserRd() = make_shared<UARTPseudoSerial>(*ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(*ser, false);
     using_stdio = false;
     hc05 = false;
 
@@ -327,7 +327,7 @@ void KISSSerialUART::configure_hc05() {
     ThisThread::sleep_for(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
     ThisThread::sleep_for(QUARTER_SECOND);
-    FILE *ser_fh = fdopen(ser, "rw");
+    FILE *ser_fh = fdopen(&*ser, "rw");
     printf("testing\r\n");
     // Reset the module's configuration
     string reset_cmd("AT+ORGL\r\n");
@@ -369,7 +369,9 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State
     state_pin = new DigitalIn(State);                
     tx_port = tx;
     rx_port = rx;
-    ser = new UARTSerial(tx_port, rx_port, BT_BAUD_RATE);
+    ser = make_shared<UARTSerial>(tx_port, rx_port, BT_BAUD_RATE);
+    *pserRd() = make_shared<UARTPseudoSerial>(*ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(*ser, false);
     MBED_ASSERT(ser);
     using_stdio = false;
 
@@ -380,11 +382,12 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State
 
 
 void KISSSerialUART::sleep() {
-    delete ser;
+//    delete ser;
 }
 
 
 void KISSSerialUART::wake() {
+#if 0
     if(ser == nullptr) {
         ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
         MBED_ASSERT(ser);
@@ -392,6 +395,7 @@ void KISSSerialUART::wake() {
     if(hc05) {
         configure_hc05();
     }
+#endif
 }
 
 
@@ -407,7 +411,6 @@ KISSSerial::~KISSSerial() {
 
 
 KISSSerialUART::~KISSSerialUART() {
-    delete ser;
     delete en_pin;
     delete state_pin;
 }

@@ -99,7 +99,7 @@ void print_stats()
 }
 
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
-constexpr uint32_t WDT_TIMEOUT_MS = 60000;
+constexpr uint32_t WDT_TIMEOUT_MS = 6000;
 static void wdt_pet() { // pet the watchdog
     Watchdog::get_instance().kick();
     background_queue.call_in(WDT_TIMEOUT_MS/2, wdt_pet);
@@ -114,7 +114,7 @@ auto main() -> int
     time(&boot_timestamp);
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
     Watchdog &wdt = Watchdog::get_instance();
-    wdt.start(WDT_TIMEOUT_MS);
+    wdt.start();
     wdt_pet();
 #endif
 
@@ -148,10 +148,8 @@ auto main() -> int
 		}
 	}
 	led1.LEDSolid();
-#if 0
-    auto push_button = new PushButton(USER_BUTTON);
+    auto *push_button = new PushButton(USER_BUTTON);
     push_button->SetQueue(background_queue);
-#endif
     ThisThread::sleep_for(ONE_SECOND);
 
     // Mount the filesystem, load the configuration, log the bootup

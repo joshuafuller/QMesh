@@ -22,13 +22,20 @@ private:
     FILE *f_rd, *f_wr;
 public:
 
+    ~UARTPseudoSerial() {
+        fclose(f_rd);
+        fclose(f_wr);
+    }
+
     explicit UARTPseudoSerial(UARTSerial &ser, const bool read) {
         f_rd = nullptr;
         f_wr = nullptr;
         if(read) {
             f_rd = fdopen(&ser, "r");
+            MBED_ASSERT(f_rd != nullptr);
         } else {
             f_wr = fdopen(&ser, "w");
+            MBED_ASSERT(f_wr != nullptr);
         }
     }
 

@@ -86,7 +86,7 @@ private:
     void rx_serial_thread_fn();
     /// Produces an MbedJSONValue with the current status and queues it for transmission.
     void tx_serial_thread_fn();
-    PseudoSerial *pser_rd, *pser_wr;
+    shared_ptr<PseudoSerial> pser_rd, pser_wr;
     auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, bool kiss_data_msg) -> write_ser_msg_err_t;
     auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t;
 
@@ -103,17 +103,17 @@ public:
     void send_error(const string &err_str);
     auto isKISSExtended() -> bool { return kiss_extended; }
     auto portName() -> string { return port_name; }
-    auto rxSerThread() -> Thread ** { return &rx_ser_thread; }
-    auto txSerThread() -> Thread ** { return &tx_ser_thread; }
+    //auto rxSerThread() -> Thread ** { return &rx_ser_thread; }
+    //auto txSerThread() -> Thread ** { return &tx_ser_thread; }
     void kissExtended(const bool val) { kiss_extended = val; }
     void startThreads() {
         tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
         rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
     }
-    auto pserRd() -> PseudoSerial ** {
+    auto pserRd() -> shared_ptr<PseudoSerial> * {
         return &pser_rd;
     }
-    auto pserWr() -> PseudoSerial ** {
+    auto pserWr() -> shared_ptr<PseudoSerial> * {
         return &pser_wr;
     }
 
@@ -126,7 +126,7 @@ public:
 class KISSSerialUART : public KISSSerial { 
 private:
     PinName tx_port, rx_port;
-    UARTSerial *ser;
+    shared_ptr<UARTSerial> ser;
     bool hc05;
     bool using_stdio;
     DigitalOut *en_pin;
