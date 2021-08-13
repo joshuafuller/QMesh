@@ -2,5 +2,6 @@
 nanopb_generator.py -I . -D . qmesh.proto
 mv qmesh.pb.c ../src/protocol/
 mv qmesh.pb.h ../inc/protocol/
-protoc qmesh.proto --python_out=./
+protoc qmesh.proto --python_out=./ --java_out=./
 mv qmesh_pb2.py ../serial_client/
+mv Qmesh.java ../android/
