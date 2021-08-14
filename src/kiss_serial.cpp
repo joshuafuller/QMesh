@@ -822,10 +822,11 @@ void KISSSerial::rx_serial_thread_fn() {
         } else if(ser_msg->type() == SerialMsg_Type_GET_CONFIG) {
             auto out_msg_sptr = make_shared<SerMsg>();
             out_msg_sptr->type(SerialMsg_Type_CONFIG);
+            shared_mtx.lock();
             out_msg_sptr->sys_cfg() = radio_cb;
+            shared_mtx.unlock();
             enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, out_msg_sptr);
             send_ack();
-            reboot_system();
         } else if(ser_msg->type() == SerialMsg_Type_SET_CONFIG) {
             debug_printf(DBG_INFO, "Serial config received\r\n");
             if(!ser_msg->has_sys_cfg()) {
