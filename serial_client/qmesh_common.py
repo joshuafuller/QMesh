@@ -16,7 +16,7 @@ tag_name = sys.argv[1]
 
 def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict = {}
-    cfg_dict['frequency'] = ser_msg.sys_cfg.radio_cfg.frequency
+#    cfg_dict['frequency'] = ser_msg.sys_cfg.radio_cfg.frequency
     cfg_dict['frequencies'] = []
     for freq in ser_msg.sys_cfg.radio_cfg.frequencies:
         cfg_dict['frequencies'].append(freq) 
@@ -57,7 +57,7 @@ def print_cfg_msg(ser_msg):
     print("\tRADIO CONFIGURATION:")
     radio_cfg = sys_cfg.radio_cfg
     print("\t\tType: %s" % (radio_cfg.type))
-    print("\t\tFrequency: %s" % (radio_cfg.frequency))
+#    print("\t\tFrequency: %s" % (radio_cfg.frequency))
     print("\t\tHOPPING FREQUENCIES:")
     for freq in radio_cfg.frequencies:
         print("\t\t\t %s" % (freq))

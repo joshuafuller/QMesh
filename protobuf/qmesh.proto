@@ -36,10 +36,9 @@ message RadioCfg {
     FSK = 1;
   };
   Type type = 1;
-  int32 frequency = 2;
-  repeated int32 frequencies = 3 [(nanopb).max_count = 16];
-  int32 tx_power = 4;
-  LoraCfg lora_cfg = 5;
+  repeated int32 frequencies = 2 [(nanopb).max_count = 16];
+  int32 tx_power = 3;
+  LoraCfg lora_cfg = 4;
 }
 
 message NetCfg {

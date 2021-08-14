@@ -2180,38 +2180,33 @@ public final class Qmesh {
     Qmesh.RadioCfg.Type getType();
 
     /**
-     * <code>int32 frequency = 2;</code>
-     */
-    int getFrequency();
-
-    /**
-     * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+     * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
      */
     java.util.List<java.lang.Integer> getFrequenciesList();
     /**
-     * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+     * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
      */
     int getFrequenciesCount();
     /**
-     * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+     * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
      */
     int getFrequencies(int index);
 
     /**
-     * <code>int32 tx_power = 4;</code>
+     * <code>int32 tx_power = 3;</code>
      */
     int getTxPower();
 
     /**
-     * <code>.LoraCfg lora_cfg = 5;</code>
+     * <code>.LoraCfg lora_cfg = 4;</code>
      */
     boolean hasLoraCfg();
     /**
-     * <code>.LoraCfg lora_cfg = 5;</code>
+     * <code>.LoraCfg lora_cfg = 4;</code>
      */
     Qmesh.LoraCfg getLoraCfg();
     /**
-     * <code>.LoraCfg lora_cfg = 5;</code>
+     * <code>.LoraCfg lora_cfg = 4;</code>
      */
     Qmesh.LoraCfgOrBuilder getLoraCfgOrBuilder();
   }
@@ -2229,7 +2224,6 @@ public final class Qmesh {
     }
     private RadioCfg() {
       type_ = 0;
-      frequency_ = 0;
       frequencies_ = java.util.Collections.emptyList();
       txPower_ = 0;
     }
@@ -2265,24 +2259,19 @@ public final class Qmesh {
               break;
             }
             case 16: {
-
-              frequency_ = input.readInt32();
-              break;
-            }
-            case 24: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 frequencies_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000002;
               }
               frequencies_.add(input.readInt32());
               break;
             }
-            case 26: {
+            case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
                 frequencies_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
                 frequencies_.add(input.readInt32());
@@ -2290,12 +2279,12 @@ public final class Qmesh {
               input.popLimit(limit);
               break;
             }
-            case 32: {
+            case 24: {
 
               txPower_ = input.readInt32();
               break;
             }
-            case 42: {
+            case 34: {
               Qmesh.LoraCfg.Builder subBuilder = null;
               if (loraCfg_ != null) {
                 subBuilder = loraCfg_.toBuilder();
@@ -2323,7 +2312,7 @@ public final class Qmesh {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           frequencies_ = java.util.Collections.unmodifiableList(frequencies_);
         }
         this.unknownFields = unknownFields.build();
@@ -2459,63 +2448,54 @@ public final class Qmesh {
       return result == null ? Qmesh.RadioCfg.Type.UNRECOGNIZED : result;
     }
 
-    public static final int FREQUENCY_FIELD_NUMBER = 2;
-    private int frequency_;
-    /**
-     * <code>int32 frequency = 2;</code>
-     */
-    public int getFrequency() {
-      return frequency_;
-    }
-
-    public static final int FREQUENCIES_FIELD_NUMBER = 3;
+    public static final int FREQUENCIES_FIELD_NUMBER = 2;
     private java.util.List<java.lang.Integer> frequencies_;
     /**
-     * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+     * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
      */
     public java.util.List<java.lang.Integer>
         getFrequenciesList() {
       return frequencies_;
     }
     /**
-     * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+     * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
      */
     public int getFrequenciesCount() {
       return frequencies_.size();
     }
     /**
-     * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+     * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
      */
     public int getFrequencies(int index) {
       return frequencies_.get(index);
     }
     private int frequenciesMemoizedSerializedSize = -1;
 
-    public static final int TX_POWER_FIELD_NUMBER = 4;
+    public static final int TX_POWER_FIELD_NUMBER = 3;
     private int txPower_;
     /**
-     * <code>int32 tx_power = 4;</code>
+     * <code>int32 tx_power = 3;</code>
      */
     public int getTxPower() {
       return txPower_;
     }
 
-    public static final int LORA_CFG_FIELD_NUMBER = 5;
+    public static final int LORA_CFG_FIELD_NUMBER = 4;
     private Qmesh.LoraCfg loraCfg_;
     /**
-     * <code>.LoraCfg lora_cfg = 5;</code>
+     * <code>.LoraCfg lora_cfg = 4;</code>
      */
     public boolean hasLoraCfg() {
       return loraCfg_ != null;
     }
     /**
-     * <code>.LoraCfg lora_cfg = 5;</code>
+     * <code>.LoraCfg lora_cfg = 4;</code>
      */
     public Qmesh.LoraCfg getLoraCfg() {
       return loraCfg_ == null ? Qmesh.LoraCfg.getDefaultInstance() : loraCfg_;
     }
     /**
-     * <code>.LoraCfg lora_cfg = 5;</code>
+     * <code>.LoraCfg lora_cfg = 4;</code>
      */
     public Qmesh.LoraCfgOrBuilder getLoraCfgOrBuilder() {
       return getLoraCfg();
@@ -2539,21 +2519,18 @@ public final class Qmesh {
       if (type_ != Qmesh.RadioCfg.Type.LORA.getNumber()) {
         output.writeEnum(1, type_);
       }
-      if (frequency_ != 0) {
-        output.writeInt32(2, frequency_);
-      }
       if (getFrequenciesList().size() > 0) {
-        output.writeUInt32NoTag(26);
+        output.writeUInt32NoTag(18);
         output.writeUInt32NoTag(frequenciesMemoizedSerializedSize);
       }
       for (int i = 0; i < frequencies_.size(); i++) {
         output.writeInt32NoTag(frequencies_.get(i));
       }
       if (txPower_ != 0) {
-        output.writeInt32(4, txPower_);
+        output.writeInt32(3, txPower_);
       }
       if (loraCfg_ != null) {
-        output.writeMessage(5, getLoraCfg());
+        output.writeMessage(4, getLoraCfg());
       }
       unknownFields.writeTo(output);
     }
@@ -2567,10 +2544,6 @@ public final class Qmesh {
       if (type_ != Qmesh.RadioCfg.Type.LORA.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, type_);
-      }
-      if (frequency_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, frequency_);
       }
       {
         int dataSize = 0;
@@ -2588,11 +2561,11 @@ public final class Qmesh {
       }
       if (txPower_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(4, txPower_);
+          .computeInt32Size(3, txPower_);
       }
       if (loraCfg_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, getLoraCfg());
+          .computeMessageSize(4, getLoraCfg());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2611,8 +2584,6 @@ public final class Qmesh {
 
       boolean result = true;
       result = result && type_ == other.type_;
-      result = result && (getFrequency()
-          == other.getFrequency());
       result = result && getFrequenciesList()
           .equals(other.getFrequenciesList());
       result = result && (getTxPower()
@@ -2635,8 +2606,6 @@ public final class Qmesh {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + TYPE_FIELD_NUMBER;
       hash = (53 * hash) + type_;
-      hash = (37 * hash) + FREQUENCY_FIELD_NUMBER;
-      hash = (53 * hash) + getFrequency();
       if (getFrequenciesCount() > 0) {
         hash = (37 * hash) + FREQUENCIES_FIELD_NUMBER;
         hash = (53 * hash) + getFrequenciesList().hashCode();
@@ -2782,10 +2751,8 @@ public final class Qmesh {
         super.clear();
         type_ = 0;
 
-        frequency_ = 0;
-
         frequencies_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         txPower_ = 0;
 
         if (loraCfgBuilder_ == null) {
@@ -2823,10 +2790,9 @@ public final class Qmesh {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.type_ = type_;
-        result.frequency_ = frequency_;
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
           frequencies_ = java.util.Collections.unmodifiableList(frequencies_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.frequencies_ = frequencies_;
         result.txPower_ = txPower_;
@@ -2887,13 +2853,10 @@ public final class Qmesh {
         if (other.type_ != 0) {
           setTypeValue(other.getTypeValue());
         }
-        if (other.getFrequency() != 0) {
-          setFrequency(other.getFrequency());
-        }
         if (!other.frequencies_.isEmpty()) {
           if (frequencies_.isEmpty()) {
             frequencies_ = other.frequencies_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureFrequenciesIsMutable();
             frequencies_.addAll(other.frequencies_);
@@ -2981,60 +2944,34 @@ public final class Qmesh {
         return this;
       }
 
-      private int frequency_ ;
-      /**
-       * <code>int32 frequency = 2;</code>
-       */
-      public int getFrequency() {
-        return frequency_;
-      }
-      /**
-       * <code>int32 frequency = 2;</code>
-       */
-      public Builder setFrequency(int value) {
-        
-        frequency_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>int32 frequency = 2;</code>
-       */
-      public Builder clearFrequency() {
-        
-        frequency_ = 0;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<java.lang.Integer> frequencies_ = java.util.Collections.emptyList();
       private void ensureFrequenciesIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           frequencies_ = new java.util.ArrayList<java.lang.Integer>(frequencies_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000002;
          }
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public java.util.List<java.lang.Integer>
           getFrequenciesList() {
         return java.util.Collections.unmodifiableList(frequencies_);
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public int getFrequenciesCount() {
         return frequencies_.size();
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public int getFrequencies(int index) {
         return frequencies_.get(index);
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public Builder setFrequencies(
           int index, int value) {
@@ -3044,7 +2981,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public Builder addFrequencies(int value) {
         ensureFrequenciesIsMutable();
@@ -3053,7 +2990,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public Builder addAllFrequencies(
           java.lang.Iterable<? extends java.lang.Integer> values) {
@@ -3064,24 +3001,24 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>repeated int32 frequencies = 3 [(.nanopb) = { ... }</code>
+       * <code>repeated int32 frequencies = 2 [(.nanopb) = { ... }</code>
        */
       public Builder clearFrequencies() {
         frequencies_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
 
       private int txPower_ ;
       /**
-       * <code>int32 tx_power = 4;</code>
+       * <code>int32 tx_power = 3;</code>
        */
       public int getTxPower() {
         return txPower_;
       }
       /**
-       * <code>int32 tx_power = 4;</code>
+       * <code>int32 tx_power = 3;</code>
        */
       public Builder setTxPower(int value) {
         
@@ -3090,7 +3027,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>int32 tx_power = 4;</code>
+       * <code>int32 tx_power = 3;</code>
        */
       public Builder clearTxPower() {
         
@@ -3103,13 +3040,13 @@ public final class Qmesh {
       private com.google.protobuf.SingleFieldBuilderV3<
           Qmesh.LoraCfg, Qmesh.LoraCfg.Builder, Qmesh.LoraCfgOrBuilder> loraCfgBuilder_;
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public boolean hasLoraCfg() {
         return loraCfgBuilder_ != null || loraCfg_ != null;
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Qmesh.LoraCfg getLoraCfg() {
         if (loraCfgBuilder_ == null) {
@@ -3119,7 +3056,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Builder setLoraCfg(Qmesh.LoraCfg value) {
         if (loraCfgBuilder_ == null) {
@@ -3135,7 +3072,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Builder setLoraCfg(
           Qmesh.LoraCfg.Builder builderForValue) {
@@ -3149,7 +3086,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Builder mergeLoraCfg(Qmesh.LoraCfg value) {
         if (loraCfgBuilder_ == null) {
@@ -3167,7 +3104,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Builder clearLoraCfg() {
         if (loraCfgBuilder_ == null) {
@@ -3181,7 +3118,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Qmesh.LoraCfg.Builder getLoraCfgBuilder() {
         
@@ -3189,7 +3126,7 @@ public final class Qmesh {
         return getLoraCfgFieldBuilder().getBuilder();
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       public Qmesh.LoraCfgOrBuilder getLoraCfgOrBuilder() {
         if (loraCfgBuilder_ != null) {
@@ -3200,7 +3137,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>.LoraCfg lora_cfg = 5;</code>
+       * <code>.LoraCfg lora_cfg = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           Qmesh.LoraCfg, Qmesh.LoraCfg.Builder, Qmesh.LoraCfgOrBuilder> 
@@ -19483,87 +19420,86 @@ public final class Qmesh {
       "\021\n\tconv_rate\030\002 \001(\005\022\022\n\nconv_order\030\003 \001(\005\022\024" +
       "\n\014rs_num_roots\030\004 \001(\005\"A\n\004Type\022\010\n\004NONE\020\000\022\016" +
       "\n\nINTERLEAVE\020\001\022\010\n\004CONV\020\002\022\007\n\003RSV\020\003\022\014\n\010RSV" +
-      "GOLAY\020\004\"\240\001\n\010RadioCfg\022\034\n\004type\030\001 \001(\0162\016.Rad" +
-      "ioCfg.Type\022\021\n\tfrequency\030\002 \001(\005\022\032\n\013frequen" +
-      "cies\030\003 \003(\005B\005\222?\002\020\020\022\020\n\010tx_power\030\004 \001(\005\022\032\n\010l" +
-      "ora_cfg\030\005 \001(\0132\010.LoraCfg\"\031\n\004Type\022\010\n\004LORA\020" +
-      "\000\022\007\n\003FSK\020\001\"\243\001\n\006NetCfg\022\032\n\nbeacon_msg\030\001 \001(" +
-      "\tB\006\222?\003\010\200\002\022\027\n\017beacon_interval\030\002 \001(\r\022\023\n\013nu" +
-      "m_offsets\030\003 \001(\r\022\017\n\007pld_len\030\004 \001(\r\022\024\n\014full" +
-      "_pkt_len\030\005 \001(\r\022\023\n\013walsh_codes\030\006 \001(\010\022\023\n\013i" +
-      "nvert_bits\030\007 \001(\010\"\303\002\n\tSysCfgMsg\022\035\n\004mode\030\001" +
-      " \001(\0162\017.SysCfgMsg.Mode\022\017\n\007address\030\002 \001(\r\022\034" +
-      "\n\tradio_cfg\030\003 \001(\0132\t.RadioCfg\022\032\n\010test_cfg" +
-      "\030\004 \001(\0132\010.TestCfg\022\030\n\007fec_cfg\030\005 \001(\0132\007.FECC" +
-      "fg\022\030\n\007net_cfg\030\006 \001(\0132\007.NetCfg\022\016\n\006gps_en\030\007" +
-      " \001(\010\022\026\n\016log_packets_en\030\010 \001(\010\022\023\n\013boot_log" +
-      "_en\030\t \001(\010\022\031\n\021watchdog_timer_en\030\n \001(\010\"@\n\004" +
-      "Mode\022\n\n\006NORMAL\020\000\022\016\n\nMODE_RESET\020\001\022\017\n\013MODE" +
-      "_SILENT\020\002\022\013\n\007TESTING\020\003\"\033\n\013ClockSetMsg\022\014\n" +
-      "\004time\030\001 \001(\r\"\227\002\n\tStatusMsg\022!\n\006status\030\001 \001(" +
-      "\0162\021.StatusMsg.Status\022\017\n\007tx_full\030\002 \001(\010\022\014\n" +
-      "\004time\030\003 \001(\r\022\017\n\007oled_on\030\004 \001(\010\022\024\n\014total_rx" +
-      "_pkt\030\005 \001(\r\022\031\n\021total_rx_corr_pkt\030\006 \001(\r\022\024\n" +
-      "\014total_tx_pkt\030\007 \001(\r\022\024\n\014last_rx_rssi\030\010 \001(" +
-      "\r\022\023\n\013last_rx_snr\030\t \001(\r\022\021\n\theap_size\030\n \001(" +
-      "\r\"2\n\006Status\022\013\n\007BOOTING\020\000\022\016\n\nMANAGEMENT\020\001" +
-      "\022\013\n\007RUNNING\020\002\"\035\n\006DbgMsg\022\023\n\003msg\030\001 \001(\tB\006\222?" +
-      "\003\010\200\002\"\035\n\014SerialCRCMsg\022\r\n\005crc32\030\001 \001(\r\"=\n\nB" +
-      "ootLogMsg\022\r\n\005valid\030\001 \001(\010\022\021\n\tboot_time\030\002 " +
-      "\001(\r\022\r\n\005count\030\003 \001(\r\"1\n\006GPSMsg\022\r\n\005valid\030\001 " +
-      "\001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003lon\030\003 \001(\002\"\336\001\n\006LogMsg" +
-      "\022\r\n\005valid\030\001 \001(\010\022\r\n\005count\030\002 \001(\r\022\021\n\ttimest" +
-      "amp\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021" +
-      "\n\tstream_id\030\006 \001(\r\022\014\n\004rssi\030\007 \001(\021\022\013\n\003snr\030\010" +
-      " \001(\021\022\017\n\007rx_size\030\t \001(\005\022\020\n\010comp_crc\030\n \001(\r\022" +
-      "\013\n\003crc\030\013 \001(\r\022\016\n\006uptime\030\014 \001(\r\022\030\n\007gps_msg\030" +
-      "\r \001(\0132\007.GPSMsg\"\027\n\007TimeMsg\022\014\n\004time\030\001 \001(\r\"" +
-      "\375\007\n\tSerialMsg\022\035\n\004type\030\001 \001(\0162\017.SerialMsg." +
-      "Type\022\r\n\005retry\030\002 \001(\010\022\"\n\007sys_cfg\030\003 \001(\0132\n.S" +
-      "ysCfgMsgB\005\222?\002\030\004\022&\n\tclock_set\030\004 \001(\0132\014.Clo" +
-      "ckSetMsgB\005\222?\002\030\004\022!\n\006status\030\005 \001(\0132\n.Status" +
-      "MsgB\005\222?\002\030\004\022\037\n\007dbg_msg\030\006 \001(\0132\007.DbgMsgB\005\222?" +
-      "\002\030\004\022\037\n\007log_msg\030\007 \001(\0132\007.LogMsgB\005\222?\002\030\004\022(\n\014" +
-      "boot_log_msg\030\010 \001(\0132\013.BootLogMsgB\005\222?\002\030\004\022!" +
-      "\n\010data_msg\030\t \001(\0132\010.DataMsgB\005\222?\002\030\004\022#\n\terr" +
-      "or_msg\030\n \001(\0132\t.ErrorMsgB\005\222?\002\030\004\022!\n\010time_m" +
-      "sg\030\013 \001(\0132\010.TimeMsgB\005\222?\002\030\004\022+\n\nupdate_msg\030" +
-      "\014 \001(\0132\n.UpdateMsgB\013\222?\002\030\004\222?\003\240\001\004\022#\n\007ver_ms" +
-      "g\030\r \001(\0132\013.VersionMsgB\005\222?\002\030\004\022,\n\016int_param" +
-      "s_msg\030\016 \001(\0132\r.IntParamsMsgB\005\222?\002\030\004\"\363\003\n\004Ty" +
-      "pe\022\016\n\nGET_CONFIG\020\000\022\016\n\nSET_CONFIG\020\001\022\n\n\006CO" +
-      "NFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOCK_SET\020\004\022\n\n\006STATU" +
-      "S\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013STAY_IN_MGT\020\007\022\r\n\t" +
-      "DEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022\016\n\nERASE_LOGS\020\n\022" +
-      "\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\tERASE_CFG\020\014\022\014\n\010R" +
-      "EAD_LOG\020\r\022\022\n\016READ_LOG_RETRY\020\016\022\r\n\tREPLY_L" +
-      "OG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022\027\n\023READ_BOOT_LOG" +
-      "_RETRY\020\021\022\022\n\016REPLY_BOOT_LOG\020\022\022\013\n\007CRC_ERR\020" +
-      "\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017ENT" +
-      "ER_KISS_MODE\020\027\022\022\n\016EXIT_KISS_MODE\020\030\022\014\n\010BO" +
-      "OT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPDATE\020\033\022\013\n\007VERSION" +
-      "\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\rTURN_OLED_OFF\020\036\022" +
-      "\016\n\nINT_PARAMS\020\037:\006\222?\003\240\001\010\"!\n\nVersionMsg\022\023\n" +
-      "\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type\030\001" +
-      " \001(\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200" +
-      "\002\"\"\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"\253\002" +
-      "\n\007DataMsg\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type\022\021" +
-      "\n\tstream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sender" +
-      "\030\004 \001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030\006 " +
-      "\001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022" +
-      "\026\n\016kiss_cur_frame\030\t \001(\r\022\027\n\017kiss_tot_fram" +
-      "es\030\n \001(\r\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tredu" +
-      "ndant\030\014 \001(\010\".\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006K" +
-      "ISSTX\020\002\022\n\n\006KISSRX\020\003\"\375\001\n\tUpdateMsg\022\035\n\004typ" +
-      "e\030\001 \001(\0162\017.UpdateMsg.Type\022\017\n\007pkt_cnt\030\002 \001(" +
-      "\005\022\024\n\004path\030\003 \001(\tB\006\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?" +
-      "\003\010\200 \022\031\n\nsha256_pkt\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsha25" +
-      "6_upd\030\006 \001(\014B\005\222?\002\010 \022\031\n\nerr_reason\030\007 \001(\tB\005" +
-      "\222?\002\010 \"<\n\004Type\022\t\n\005FIRST\020\000\022\010\n\004LAST\020\001\022\n\n\006MI" +
-      "DDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014I" +
-      "ntParamsMsg\022\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007chan" +
-      "nel\030\002 \001(\005\022\023\n\013time_offset\030\003 \001(\005\022\022\n\npwr_of" +
-      "fset\030\004 \001(\005b\006proto3"
+      "GOLAY\020\004\"\215\001\n\010RadioCfg\022\034\n\004type\030\001 \001(\0162\016.Rad" +
+      "ioCfg.Type\022\032\n\013frequencies\030\002 \003(\005B\005\222?\002\020\020\022\020" +
+      "\n\010tx_power\030\003 \001(\005\022\032\n\010lora_cfg\030\004 \001(\0132\010.Lor" +
+      "aCfg\"\031\n\004Type\022\010\n\004LORA\020\000\022\007\n\003FSK\020\001\"\243\001\n\006NetC" +
+      "fg\022\032\n\nbeacon_msg\030\001 \001(\tB\006\222?\003\010\200\002\022\027\n\017beacon" +
+      "_interval\030\002 \001(\r\022\023\n\013num_offsets\030\003 \001(\r\022\017\n\007" +
+      "pld_len\030\004 \001(\r\022\024\n\014full_pkt_len\030\005 \001(\r\022\023\n\013w" +
+      "alsh_codes\030\006 \001(\010\022\023\n\013invert_bits\030\007 \001(\010\"\303\002" +
+      "\n\tSysCfgMsg\022\035\n\004mode\030\001 \001(\0162\017.SysCfgMsg.Mo" +
+      "de\022\017\n\007address\030\002 \001(\r\022\034\n\tradio_cfg\030\003 \001(\0132\t" +
+      ".RadioCfg\022\032\n\010test_cfg\030\004 \001(\0132\010.TestCfg\022\030\n" +
+      "\007fec_cfg\030\005 \001(\0132\007.FECCfg\022\030\n\007net_cfg\030\006 \001(\013" +
+      "2\007.NetCfg\022\016\n\006gps_en\030\007 \001(\010\022\026\n\016log_packets" +
+      "_en\030\010 \001(\010\022\023\n\013boot_log_en\030\t \001(\010\022\031\n\021watchd" +
+      "og_timer_en\030\n \001(\010\"@\n\004Mode\022\n\n\006NORMAL\020\000\022\016\n" +
+      "\nMODE_RESET\020\001\022\017\n\013MODE_SILENT\020\002\022\013\n\007TESTIN" +
+      "G\020\003\"\033\n\013ClockSetMsg\022\014\n\004time\030\001 \001(\r\"\227\002\n\tSta" +
+      "tusMsg\022!\n\006status\030\001 \001(\0162\021.StatusMsg.Statu" +
+      "s\022\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030\003 \001(\r\022\017\n\007oled" +
+      "_on\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005 \001(\r\022\031\n\021total" +
+      "_rx_corr_pkt\030\006 \001(\r\022\024\n\014total_tx_pkt\030\007 \001(\r" +
+      "\022\024\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013last_rx_snr\030\t " +
+      "\001(\r\022\021\n\theap_size\030\n \001(\r\"2\n\006Status\022\013\n\007BOOT" +
+      "ING\020\000\022\016\n\nMANAGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006Db" +
+      "gMsg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMs" +
+      "g\022\r\n\005crc32\030\001 \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030" +
+      "\001 \001(\010\022\021\n\tboot_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"" +
+      "1\n\006GPSMsg\022\r\n\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n" +
+      "\003lon\030\003 \001(\002\"\336\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005" +
+      "count\030\002 \001(\r\022\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender" +
+      "\030\004 \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014" +
+      "\n\004rssi\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001" +
+      "(\005\022\020\n\010comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006upt" +
+      "ime\030\014 \001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007T" +
+      "imeMsg\022\014\n\004time\030\001 \001(\r\"\375\007\n\tSerialMsg\022\035\n\004ty" +
+      "pe\030\001 \001(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010" +
+      "\022\"\n\007sys_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\t" +
+      "clock_set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006" +
+      "status\030\005 \001(\0132\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_m" +
+      "sg\030\006 \001(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(" +
+      "\0132\007.LogMsgB\005\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132" +
+      "\013.BootLogMsgB\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010." +
+      "DataMsgB\005\222?\002\030\004\022#\n\terror_msg\030\n \001(\0132\t.Erro" +
+      "rMsgB\005\222?\002\030\004\022!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB" +
+      "\005\222?\002\030\004\022+\n\nupdate_msg\030\014 \001(\0132\n.UpdateMsgB\013" +
+      "\222?\002\030\004\222?\003\240\001\004\022#\n\007ver_msg\030\r \001(\0132\013.VersionMs" +
+      "gB\005\222?\002\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntPa" +
+      "ramsMsgB\005\222?\002\030\004\"\363\003\n\004Type\022\016\n\nGET_CONFIG\020\000\022" +
+      "\016\n\nSET_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n" +
+      "\tCLOCK_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006" +
+      "\022\017\n\013STAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBO" +
+      "OT\020\t\022\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020" +
+      "\013\022\r\n\tERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_L" +
+      "OG_RETRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_L" +
+      "OG\020\020\022\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_B" +
+      "OOT_LOG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003" +
+      "ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016E" +
+      "XIT_KISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n" +
+      "\n\006UPDATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020" +
+      "\035\022\021\n\rTURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS\020\037:\006\222?" +
+      "\003\240\001\010\"!\n\nVersionMsg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"" +
+      "a\n\010ErrorMsg\022\034\n\004type\030\001 \001(\0162\016.ErrorMsg.Typ" +
+      "e\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"\n\004Type\022\013\n\007CRC_ER" +
+      "R\020\000\022\r\n\tOTHER_ERR\020\001\"\253\002\n\007DataMsg\022\033\n\004type\030\001" +
+      " \001(\0162\r.DataMsg.Type\022\021\n\tstream_id\030\002 \001(\r\022\013" +
+      "\n\003ttl\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\022\n\nsym_offse" +
+      "t\030\005 \001(\r\022\027\n\007payload\030\006 \001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030" +
+      "\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016kiss_cur_frame\030\t" +
+      " \001(\r\022\027\n\017kiss_tot_frames\030\n \001(\r\022\026\n\016kiss_st" +
+      "ream_id\030\013 \001(\r\022\021\n\tredundant\030\014 \001(\010\".\n\004Type" +
+      "\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISSTX\020\002\022\n\n\006KISSRX\020\003" +
+      "\"\375\001\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.UpdateMsg" +
+      ".Type\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 \001(\tB\006\222?" +
+      "\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha256_pkt\030" +
+      "\005 \001(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B\005\222?\002\010 \022" +
+      "\031\n\nerr_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005FI" +
+      "RST\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006" +
+      "ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022\023\n\013freq" +
+      "_wobble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n\013time_o" +
+      "ffset\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -19601,7 +19537,7 @@ public final class Qmesh {
     internal_static_RadioCfg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RadioCfg_descriptor,
-        new java.lang.String[] { "Type", "Frequency", "Frequencies", "TxPower", "LoraCfg", });
+        new java.lang.String[] { "Type", "Frequencies", "TxPower", "LoraCfg", });
     internal_static_NetCfg_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_NetCfg_fieldAccessorTable = new

@@ -61,7 +61,7 @@ ser_msg = qmesh_pb2.SerialMsg()
 ser_msg.type = ser_msg.SET_CONFIG
 ser_msg.sys_cfg.address = node_id
 ser_msg.sys_cfg.radio_cfg.type = qmesh_pb2.RadioCfg.LORA
-ser_msg.sys_cfg.radio_cfg.frequency = cfg_dict['frequency']
+#ser_msg.sys_cfg.radio_cfg.frequency = cfg_dict['frequency']
 ser_msg.sys_cfg.radio_cfg.frequencies.extend(cfg_dict['frequencies'])
 ser_msg.sys_cfg.radio_cfg.tx_power = tx_power
 ser_msg.sys_cfg.radio_cfg.lora_cfg.bw = cfg_dict['bw']

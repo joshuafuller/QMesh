@@ -10,7 +10,10 @@ payload_length: 32
 cw_test_mode: false
 # RF Parameters
 frequencies:
+        - 424000000
+        - 425000000
         - 426000000
+        - 427000000
 frequency: 426000000
 # FEC Parameters
 fec_algo: 4

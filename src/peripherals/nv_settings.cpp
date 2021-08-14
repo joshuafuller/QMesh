@@ -138,9 +138,9 @@ static void write_default_cfg() {
     RadioCfg radio_cfg_zero = RadioCfg_init_zero;
     radio_cb.radio_cfg = radio_cfg_zero;
     radio_cb.radio_cfg.type = RadioCfg_Type_LORA;
-    radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+    //radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
     radio_cb.radio_cfg.frequencies_count = 1;
-    radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+    //radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
     radio_cb.radio_cfg.tx_power = RADIO_POWER;
 
     radio_cb.radio_cfg.has_lora_cfg = true;

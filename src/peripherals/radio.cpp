@@ -89,7 +89,7 @@ void init_radio() {
     debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
     debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
     debug_printf(DBG_INFO, "Radio CR is %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
-    debug_printf(DBG_INFO, "Radio Frequency is %d\r\n", radio_cb.radio_cfg.frequency);
+    //debug_printf(DBG_INFO, "Radio Frequency is %d\r\n", radio_cb.radio_cfg.frequency);
     debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_cb.radio_cfg.tx_power);    
     debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", 
                 radio_cb.radio_cfg.lora_cfg.preamble_length); 
@@ -98,6 +98,9 @@ void init_radio() {
             MAGIC_SEVEN*(radio_cb.radio_cfg.frequencies_count+2); 
     debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", 
             radio_cb.radio_cfg.lora_cfg.fhss_pre_len); 
+    if(radio_cb.radio_cfg.frequencies_count == 1) {
+        debug_printf(DBG_INFO, "NOTE: Only one frequency. FHSS will not be used.\r\n");
+    }
     vector<uint32_t> freqs;
     for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
         freqs.push_back(radio_cb.radio_cfg.frequencies[i]); 
