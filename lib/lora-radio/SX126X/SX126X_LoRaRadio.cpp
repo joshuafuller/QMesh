@@ -301,7 +301,9 @@ void SX126X_LoRaRadio::rx_hop_frequency()
 void SX126X_LoRaRadio::tx_hop_frequency(const bool locking)
 {
     if(locking) { lock(); }
-    set_channel(*(hop_freqs.begin()+anti_inter->nextChannel()) + anti_inter->freqOffset());
+    if(radio_cb.radio_cfg.frequencies_count > 1) {
+        set_channel(*(hop_freqs.begin()+anti_inter->nextChannel()) + anti_inter->freqOffset());
+    }
     if(locking) { unlock(); }
 }
 
