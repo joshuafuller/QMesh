@@ -2,7 +2,7 @@ beacon_msg: KG5VBY Beacon Test
 # LoRa Parameters
 preamble_length: 16
 preamble_test_mode: false
-sf: 9
+sf: 7 
 bw: 1
 cr: 0
 num_offsets: 4
