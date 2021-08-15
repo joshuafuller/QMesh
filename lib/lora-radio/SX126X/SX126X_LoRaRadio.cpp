@@ -301,9 +301,7 @@ void SX126X_LoRaRadio::rx_hop_frequency()
 void SX126X_LoRaRadio::tx_hop_frequency(const bool locking)
 {
     if(locking) { lock(); }
-    if(radio_cb.radio_cfg.frequencies_count > 1) {
-        set_channel(*(hop_freqs.begin()+anti_inter->nextChannel()) + anti_inter->freqOffset());
-    }
+    set_channel(*(hop_freqs.begin()+anti_inter->nextChannel()) + anti_inter->freqOffset());
     if(locking) { unlock(); }
 }
 
@@ -457,8 +455,12 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         //radio.sleep();
         //radio.wakeup();
         if(!stop_cad.load()) {
-            radio.rx_hop_frequency();
-            radio.receive_cad_rx();
+            if(radio_cb.radio_cfg.frequencies_count > 1) {
+                radio.rx_hop_frequency();
+                radio.receive_cad_rx();
+            } else {
+                radio.receive_sel();
+            }
         }
         else {
             radio.cad_pending.store(false);
@@ -1373,7 +1375,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
                                     RadioTiming &radio_timing, const bool locking)
 {
     if(locking) { lock(); }
-    set_tx_power(_tx_power);
+    //set_tx_power(_tx_power);
 
     if(_rxen.is_connected() != 0) {
         _rxen = 0;
@@ -1418,6 +1420,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
 
 void SX126X_LoRaRadio::receive_sel(const bool locking) {
     if(radio_cb.radio_cfg.frequencies_count == 1) {
+        radio.rx_hop_frequency(); 
         receive(locking);
     } else {
         radio.rx_hop_frequency(); 
@@ -1556,8 +1559,8 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
         case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
-    set_cad_params(num_syms, my_cad_params.det_max+15, 
-                    my_cad_params.det_min+15,
+    set_cad_params(num_syms, my_cad_params.det_max, 
+                    my_cad_params.det_min,
                     LORA_CAD_RX, cad_rx_timeout);
     rx_int_mon = 1;
     tx_int_mon = 0;

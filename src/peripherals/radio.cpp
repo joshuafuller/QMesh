@@ -170,7 +170,7 @@ void init_radio() {
     radio.set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
                             radio_cb.radio_cfg.lora_cfg.bw, 
                             radio_cb.radio_cfg.lora_cfg.sf,
-                            radio_cb.radio_cfg.lora_cfg.bw, 
+                            radio_cb.radio_cfg.lora_cfg.cr, 
                             pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
@@ -226,7 +226,7 @@ void reinit_radio() {
     radio.set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
                             radio_cb.radio_cfg.lora_cfg.bw, 
                             radio_cb.radio_cfg.lora_cfg.sf,
-                            radio_cb.radio_cfg.lora_cfg.bw, 
+                            radio_cb.radio_cfg.lora_cfg.cr, 
                             pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);

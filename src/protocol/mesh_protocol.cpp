@@ -176,6 +176,7 @@ void mesh_protocol_fsm() {
                     state = TX_PACKET;
                 }
                 else if(radio_event->evt_enum == RX_DONE_EVT) {
+                    //radio.standby();
                     //debug_printf(DBG_INFO, "Received a packet\r\n");
                     total_rx_pkt.store(total_rx_pkt.load()+1);
                     last_rx_rssi.store(radio_event->rssi);
@@ -203,14 +204,14 @@ void mesh_protocol_fsm() {
                         radio.tx_hop_frequency();
 						rx_frame_sptr->tx_frame = false;
                         if(checkRedundantPkt(rx_frame_sptr)) {
-                            radio.standby();
+                            //radio.standby();
                             debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
                             rx_frame_sptr->setRedundant();
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                             state = WAIT_FOR_EVENT;
                         }
                         else {
-                            radio.standby();
+                            //radio.standby();
                             radio_timing.setTimer(radio_event->tmr_sptr);
                             enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
                             retransmit_disable_out_n.write(0);
@@ -246,7 +247,7 @@ void mesh_protocol_fsm() {
                 background_queue.call(oled_mon_fn);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
                 radio.lock();
-                radio.standby();
+                //radio.standby();
                 next_sym_off = anti_inter->timingOffset(); // Also need to "use" this value
                 radio.set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
@@ -261,7 +262,7 @@ void mesh_protocol_fsm() {
                 }
                 MBED_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
-                radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing, true);
+                radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing);
                 radio.unlock();
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
