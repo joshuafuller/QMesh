@@ -102,12 +102,8 @@ typedef struct {
     uint8_t det_min;
     uint8_t det_max;
 } lora_cad_params_t;
-static const lora_cad_params_t cad_params[7][6] =
-                {{ {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
-                 { {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
-                 { {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
-                 { {4, 10, 20}, {4, 10, 21}, {4, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25} },
-                 { {2, 10, 22}, {2, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25}, {4, 10, 28} },  // 125KHz -- from appnote
+static const lora_cad_params_t cad_params[3][6] =
+                {{ {2, 10, 22}, {2, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25}, {4, 10, 28} },  // 125KHz -- from appnote
                  { {4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {4, 10, 28} },  // 250KHz -- interpolated
                  { {4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {8, 10, 29} }}; // 500KHz -- from appnote
 
@@ -649,7 +645,9 @@ void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
 
 #ifdef USES_TCXO
     caliberation_params_t calib_param;
-    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 128); //5 ms
+    //set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 128); //5 ms
+    #warning NOT LETTING TCXO SETTLE!!!
+    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 128); // 2 ms
     calib_param.value = 0x7F;
     write_opmode_command(RADIO_CALIBRATE, &calib_param.value, 1);
 #endif
@@ -982,7 +980,6 @@ void SX126X_LoRaRadio::set_modem(const uint8_t modem, const bool locking)
     }
 
     write_opmode_command(RADIO_SET_PACKETTYPE, &_active_modem, 1);
-
     if(locking) { unlock(); }
 }
 
@@ -1530,10 +1527,10 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
     if(locking) { lock(); }
     cad_pending.store(true);
     cad_rx_running = true;
-    if(_txen.is_connected()) {
+    if(_txen.is_connected() != 0) {
         _txen = 0;
     }
-    if(_rxen.is_connected()) {
+    if(_rxen.is_connected() != 0) {
         _rxen = 1;
     }
     configure_dio_irq(IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_CRC_ERROR | IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
@@ -1543,13 +1540,21 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
     uint8_t val = 0x01;
     write_opmode_command(RADIO_SET_STOPRXTIMERONPREAMBLE, &val, 1);
     // Data-sheet 13.4.9 SetLoRaSymbNumTimeout
-    val = 0x08;
+    constexpr uint8_t EIGHT_SYMS = 0x08;
+    val = EIGHT_SYMS;
     write_opmode_command(RADIO_SET_LORASYMBTIMEOUT, &val, 1);
     set_modulation_params(&_mod_params);
     set_packet_params(&_packet_params);
     lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
     lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
-    lora_cad_params_t my_cad_params = cad_params[bw][sf-7];
+//    debug_printf(DBG_INFO, "LoRa BW here is %d\r\n", bw);
+    lora_cad_params_t my_cad_params;
+    switch(bw) {
+        case LORA_BW_125: my_cad_params = cad_params[0][sf-7]; break;
+        case LORA_BW_250: my_cad_params = cad_params[1][sf-7]; break;
+        case LORA_BW_500: my_cad_params = cad_params[2][sf-7]; break;
+        default: MBED_ASSERT(false); break;
+    }
     lora_cad_symbols_t num_syms;
     switch(my_cad_params.num_sym) {
         case 1:  num_syms = LORA_CAD_01_SYMBOL; break;

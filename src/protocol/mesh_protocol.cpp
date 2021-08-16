@@ -126,8 +126,12 @@ void mesh_protocol_fsm() {
     std::shared_ptr<Frame> rx_frame_sptr;
     static vector<uint8_t> tx_frame_buf(FRAME_BUF_SIZE);
     static vector<uint8_t> rx_frame_buf(FRAME_BUF_SIZE);
+    static constexpr float FREQ_WOBBLE_PROP = 0.2F;
+    static constexpr float FREQ_WOBBLE_PROP_500KHZ = 0.1F;
+    float freq_wobble_proportion = radio_cb.radio_cfg.lora_cfg.bw == 2 ? FREQ_WOBBLE_PROP_500KHZ : 
+                                        FREQ_WOBBLE_PROP;
     static constexpr int MAX_PWR_DIFF = 6;
-    int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*FREQ_WOBBLE_PROPORTION);
+    int32_t freq_bound = (lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw)*freq_wobble_proportion);
     AntiInterference *anti_inter = nullptr;
     if(radio_cb.net_cfg.walsh_codes) {
         debug_printf(DBG_INFO, "Anti-Interference Walsh codes chosen\r\n");
