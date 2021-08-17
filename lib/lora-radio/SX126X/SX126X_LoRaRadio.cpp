@@ -645,10 +645,16 @@ void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
 
 #ifdef USES_TCXO
     caliberation_params_t calib_param;
-    //set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 128); //5 ms
-    #warning NOT LETTING TCXO SETTLE!!!
-    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, 128); // 2 ms
-    calib_param.value = 0x7F;
+    constexpr float US_PER_UNIT = 15.625F;
+    uint32_t tcxo_time = ceilf(radio_cb.radio_cfg.tcxo_time_us / US_PER_UNIT);
+    if(tcxo_time == 0) { // 0 just hangs the system, so make it slightly bigger
+        tcxo_time = 1;
+    }
+    debug_printf(DBG_INFO, "Setting TCXO setup time to %f us or %u units\r\n", 
+                radio_cb.radio_cfg.tcxo_time_us, tcxo_time);
+    set_dio3_as_tcxo_ctrl(TCXO_VOLTAGE, tcxo_time);
+    constexpr uint8_t CALIB_VAL = 0x7F;
+    calib_param.value = CALIB_VAL;
     write_opmode_command(RADIO_CALIBRATE, &calib_param.value, 1);
 #endif
 

@@ -20,6 +20,7 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['frequencies'] = []
     for freq in ser_msg.sys_cfg.radio_cfg.frequencies:
         cfg_dict['frequencies'].append(freq) 
+    cfg_dict['tcxo_time_us'] = ser_msg.sys_cfg.radio_cfg.tcxo_time_us
     cfg_dict['bw'] = ser_msg.sys_cfg.radio_cfg.lora_cfg.bw
     cfg_dict['sf'] = ser_msg.sys_cfg.radio_cfg.lora_cfg.sf 
     cfg_dict['cr'] = ser_msg.sys_cfg.radio_cfg.lora_cfg.cr 
@@ -62,6 +63,7 @@ def print_cfg_msg(ser_msg):
     for freq in radio_cfg.frequencies:
         print("\t\t\t %s" % (freq))
     print("\t\tTransmit Power: %s" % (radio_cfg.tx_power))
+    print("\t\tTCXO Setup Time (ms): %s" % (radio_cfg.tcxo_time_us))
     print("\t\tLORA CONFIG:")
     lora_cfg = radio_cfg.lora_cfg
     print("\t\t\tBandwidth: %s" % (lora_cfg.bw))

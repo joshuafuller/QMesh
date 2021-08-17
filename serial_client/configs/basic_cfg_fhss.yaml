@@ -9,6 +9,7 @@ num_offsets: 4
 payload_length: 32
 cw_test_mode: false
 # RF Parameters
+tcxo_time_us: 2000.0
 frequencies:
         - 424000000
         - 425000000

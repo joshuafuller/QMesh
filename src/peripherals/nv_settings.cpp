@@ -142,6 +142,8 @@ static void write_default_cfg() {
     radio_cb.radio_cfg.frequencies_count = 1;
     //radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
     radio_cb.radio_cfg.tx_power = RADIO_POWER;
+    constexpr float TWO_MS_US = 2000.F;
+    radio_cb.radio_cfg.tcxo_time_us = TWO_MS_US;
 
     radio_cb.radio_cfg.has_lora_cfg = true;
     LoraCfg lora_cfg_zero = LoraCfg_init_zero;

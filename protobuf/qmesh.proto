@@ -39,6 +39,7 @@ message RadioCfg {
   repeated int32 frequencies = 2 [(nanopb).max_count = 16];
   int32 tx_power = 3;
   LoraCfg lora_cfg = 4;
+  float tcxo_time_us = 5;
 }
 
 message NetCfg {

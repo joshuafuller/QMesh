@@ -254,6 +254,7 @@ typedef struct _RadioCfg {
     int32_t tx_power;
     bool has_lora_cfg;
     LoraCfg lora_cfg;
+    float tcxo_time_us;
 } RadioCfg;
 
 typedef struct _SysCfgMsg {
@@ -312,7 +313,7 @@ typedef struct _SysCfgMsg {
 #define LoraCfg_init_default                     {0, 0, 0, 0, 0}
 #define TestCfg_init_default                     {0, 0, 0}
 #define FECCfg_init_default                      {_FECCfg_Type_MIN, 0, 0, 0}
-#define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default}
+#define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default, 0}
 #define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0}
 #define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
@@ -332,7 +333,7 @@ typedef struct _SysCfgMsg {
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
-#define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero}
+#define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero, 0}
 #define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0}
 #define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
@@ -447,6 +448,7 @@ typedef struct _SysCfgMsg {
 #define RadioCfg_frequencies_tag                 2
 #define RadioCfg_tx_power_tag                    3
 #define RadioCfg_lora_cfg_tag                    4
+#define RadioCfg_tcxo_time_us_tag                5
 #define SysCfgMsg_mode_tag                       1
 #define SysCfgMsg_address_tag                    2
 #define SysCfgMsg_radio_cfg_tag                  3
@@ -487,7 +489,8 @@ X(a, STATIC,   SINGULAR, INT32,    rs_num_roots,      4)
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
 X(a, STATIC,   REPEATED, INT32,    frequencies,       2) \
 X(a, STATIC,   SINGULAR, INT32,    tx_power,          3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  lora_cfg,          4)
+X(a, STATIC,   OPTIONAL, MESSAGE,  lora_cfg,          4) \
+X(a, STATIC,   SINGULAR, FLOAT,    tcxo_time_us,      5)
 #define RadioCfg_CALLBACK NULL
 #define RadioCfg_DEFAULT NULL
 #define RadioCfg_lora_cfg_MSGTYPE LoraCfg
@@ -710,9 +713,9 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define LoraCfg_size                             30
 #define TestCfg_size                             6
 #define FECCfg_size                              35
-#define RadioCfg_size                            221
+#define RadioCfg_size                            226
 #define NetCfg_size                              286
-#define SysCfgMsg_size                           574
+#define SysCfgMsg_size                           579
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           48
 #define DbgMsg_size                              258

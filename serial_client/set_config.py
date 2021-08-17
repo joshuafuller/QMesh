@@ -64,6 +64,7 @@ ser_msg.sys_cfg.radio_cfg.type = qmesh_pb2.RadioCfg.LORA
 #ser_msg.sys_cfg.radio_cfg.frequency = cfg_dict['frequency']
 ser_msg.sys_cfg.radio_cfg.frequencies.extend(cfg_dict['frequencies'])
 ser_msg.sys_cfg.radio_cfg.tx_power = tx_power
+ser_msg.sys_cfg.radio_cfg.tcxo_time_us = cfg_dict['tcxo_time_us']
 ser_msg.sys_cfg.radio_cfg.lora_cfg.bw = cfg_dict['bw']
 ser_msg.sys_cfg.radio_cfg.lora_cfg.sf = cfg_dict['sf']
 ser_msg.sys_cfg.radio_cfg.lora_cfg.cr = cfg_dict['cr']
