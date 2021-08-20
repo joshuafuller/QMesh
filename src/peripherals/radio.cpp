@@ -70,6 +70,29 @@ static void fhss_change_channel_cb(uint8_t current_channel);
 
 shared_ptr<FEC> frame_fec;  
 
+
+static auto compute_fhss_preamble() -> uint32_t;
+static auto compute_fhss_preamble() -> uint32_t {
+    constexpr float US_IN_MS = 1000.F;
+    constexpr float MS_IN_S = 1000.F;
+    float bw_f = NAN;
+    bw_f = lora_bw.at(radio_cb.radio_cfg.lora_cfg.bw);
+    float sf_f = radio_cb.radio_cfg.lora_cfg.sf;
+    float sym_time_s = powf(2, sf_f)/bw_f;
+    float sym_time_us = sym_time_s*US_IN_MS*MS_IN_S;
+    int tcxo_settling_sym = static_cast<int>(ceilf(radio_cb.radio_cfg.tcxo_time_us/sym_time_us));
+    constexpr int SF_TABLE_ADJ = 7;
+    lora_cad_params_t lora_cad_params = cad_params[radio_cb.radio_cfg.lora_cfg.bw][radio_cb.radio_cfg.lora_cfg.sf-SF_TABLE_ADJ];
+    constexpr int CAD_PADDING = 1;
+    int cad_sym = lora_cad_params.num_sym + CAD_PADDING;
+    constexpr int CHANNEL_PADDING = 1;
+    uint32_t fhss_pre_len = (radio_cb.radio_cfg.frequencies_count+CHANNEL_PADDING)*\
+                    (tcxo_settling_sym+cad_sym);
+    uint32_t pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length + fhss_pre_len;
+
+    return pre_len;
+}
+
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
 static constexpr int QUARTER_SECOND = 250;
@@ -93,9 +116,7 @@ void init_radio() {
     debug_printf(DBG_INFO, "Radio Power is %d\r\n", radio_cb.radio_cfg.tx_power);    
     debug_printf(DBG_INFO, "Initial Radio Preamble Length is %d\r\n", 
                 radio_cb.radio_cfg.lora_cfg.preamble_length); 
-    constexpr int MAGIC_SEVEN = 7;
-    radio_cb.radio_cfg.lora_cfg.fhss_pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length + 
-            MAGIC_SEVEN*(radio_cb.radio_cfg.frequencies_count+2); 
+    radio_cb.radio_cfg.lora_cfg.fhss_pre_len = compute_fhss_preamble();
     debug_printf(DBG_INFO, "FHSS-Adjusted Radio Preamble Length is %d\r\n", 
             radio_cb.radio_cfg.lora_cfg.fhss_pre_len); 
     if(radio_cb.radio_cfg.frequencies_count == 1) {

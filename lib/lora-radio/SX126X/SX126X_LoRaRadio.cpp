@@ -97,16 +97,6 @@ const float lora_symbol_time[3][6] = {{ 32.768, 16.384, 8.192, 4.096, 2.048, 1.0
                                        { 16.384, 8.192,  4.096, 2.048, 1.024, 0.512 },  // 250 KHz
                                        { 8.192,  4.096,  2.048, 1.024, 0.512, 0.256 }}; // 500 KHz
 
-typedef struct {
-    uint8_t num_sym;
-    uint8_t det_min;
-    uint8_t det_max;
-} lora_cad_params_t;
-static const lora_cad_params_t cad_params[3][6] =
-                {{ {2, 10, 22}, {2, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25}, {4, 10, 28} },  // 125KHz -- from appnote
-                 { {4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {4, 10, 28} },  // 250KHz -- interpolated
-                 { {4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {8, 10, 29} }}; // 500KHz -- from appnote
-
 
 DigitalOut fhss_mon_sig(MBED_CONF_APP_FHSS_MON);
 
@@ -200,21 +190,24 @@ void SX126X_LoRaRadio::dio1_irq_isr()
 #endif
 }
 
-uint16_t SX126X_LoRaRadio::get_irq_status()
+auto SX126X_LoRaRadio::get_irq_status() -> uint16_t
 {
-    uint8_t status[2];
+    array<uint8_t, 2> status{};
 
-    read_opmode_command((uint8_t) RADIO_GET_IRQSTATUS, status, 2);
-    return (status[0] << 8) | status[1];
+    read_opmode_command(static_cast<uint8_t>(RADIO_GET_IRQSTATUS), status.data(), 2);
+    constexpr uint16_t SHIFT_ONE_BYTE = 8;
+    return (status[0] << SHIFT_ONE_BYTE) | status[1]; //NOLINT
 }
 
 void SX126X_LoRaRadio::clear_irq_status(uint16_t irq)
 {
-    uint8_t buf[2];
+    array<uint8_t, 2> buf{};
 
-    buf[0] = (uint8_t) (((uint16_t) irq >> 8) & 0x00FF);
-    buf[1] = (uint8_t) ((uint16_t) irq & 0x00FF);
-    write_opmode_command((uint8_t) RADIO_CLR_IRQSTATUS, buf, 2);
+    constexpr uint16_t LOWER_BYTE = 0x00FF;
+    constexpr uint16_t SHIFT_ONE_BYTE = 8;
+    buf[0] = static_cast<uint8_t>((irq >> SHIFT_ONE_BYTE) & LOWER_BYTE); //NOLINT
+    buf[1] = static_cast<uint8_t>(irq & LOWER_BYTE);
+    write_opmode_command(static_cast<uint8_t>(RADIO_CLR_IRQSTATUS), buf.data(), 2);
 }
 
 //TODO - Better do CAD here. CAD code is already part of the driver
@@ -244,8 +237,8 @@ bool SX126X_LoRaRadio::perform_carrier_sense(const radio_modems_t modem,
     elapsed_time.start();
 
     // Perform carrier sense for maxCarrierSenseTime
-    while (elapsed_time.read_ms() < (int) max_carrier_sense_time) {
-        rssi = get_rssi();
+    while (elapsed_time.read_ms() < static_cast<int>(max_carrier_sense_time)) {
+        rssi = get_rssi(); //NOLINT
 
         if (rssi > rssi_threshold) {
             status = false;
@@ -379,7 +372,7 @@ void SX126X_LoRaRadio::tx_timeout_handler() {
 void SX126X_LoRaRadio::handle_dio1_irq()
 {
     uint16_t irq_status = get_irq_status();
-    fhss_mon_sig = !fhss_mon_sig;
+    fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0);
 
     //debug_printf(DBG_INFO, "IRQ is %8x\r\n", irq_status);
     if ((irq_status & IRQ_TX_DONE) == IRQ_TX_DONE) {
@@ -388,15 +381,17 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     }
     if ((irq_status & IRQ_RX_DONE) == IRQ_RX_DONE) {
         // Implicit header timeout workaround
-        write_to_register(0x0920, 0x00);
-        uint8_t val = read_register(0x0944);
+        constexpr uint16_t IMPL_WORKAROUND_REG0 = 0x0920;
+        constexpr uint16_t IMPL_WORKAROUND_REG1 = 0x0944;
+        write_to_register(IMPL_WORKAROUND_REG0, 0x00);
+        uint8_t val = read_register(IMPL_WORKAROUND_REG1);
         val |= 0x02;
-        write_to_register(0x0944, 0x02);
+        write_to_register(IMPL_WORKAROUND_REG1, 0x02);
         // --------------------
         radio.cad_pending.store(false);
         //stop_read_rssi();
         if ((irq_status & IRQ_CRC_ERROR) == IRQ_CRC_ERROR) {
-            if (_radio_events && _radio_events->rx_error) {
+            if ((_radio_events != nullptr) && _radio_events->rx_error) {
                 _radio_events->rx_error();
             }
         } else {
@@ -409,9 +404,9 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             read_fifo(_data_buffer, payload_len, offset);
             get_packet_status(&pkt_status);
             if (pkt_status.modem_type == MODEM_FSK) {
-                rssi = pkt_status.params.gfsk.rssi_sync;
+                rssi = pkt_status.params.gfsk.rssi_sync; //NOLINT 
             } else {
-                rssi = pkt_status.params.lora.rssi_pkt;
+                rssi = pkt_status.params.lora.rssi_pkt; //NOLINT
                 snr = pkt_status.params.lora.snr_pkt;
             }
             _radio_events->rx_done_tmr(_data_buffer, rssi_list_sptr, cur_tmr_sptr, 
@@ -420,7 +415,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         }
     }
     else if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
-        if(irq_status & IRQ_CAD_ACTIVITY_DETECTED) {
+        if((irq_status & IRQ_CAD_ACTIVITY_DETECTED) != 0) {
             if(!stop_cad.load() && !cad_rx_running) {
                 radio.receive_cad_rx();
             } else {
@@ -430,9 +425,9 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         else {  
             if(!stop_cad.load()) {
                 rx_hop_frequency();
-                fhss_mon_sig = !fhss_mon_sig; 
+                fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0); 
                 radio.receive_cad_rx();
-                fhss_mon_sig = !fhss_mon_sig;
+                fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0);
             } else {
                 cad_pending.store(false);
             }
@@ -443,13 +438,11 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             tx_timeout.detach();
             debug_printf(DBG_WARN, "Tx Timeout\r\n");
             _radio_events->tx_timeout();
-        } else if ((_radio_events && _radio_events->rx_timeout) && (_operation_mode == MODE_RX)) {
+        } else if (((_radio_events != nullptr) && _radio_events->rx_timeout) && 
+                        (_operation_mode == MODE_RX)) {
             debug_printf(DBG_WARN, "Rx Timeout\r\n");
             _radio_events->rx_timeout();
         }
-        uint32_t hop_freq = *cur_hop_freq;
-        //radio.sleep();
-        //radio.wakeup();
         if(!stop_cad.load()) {
             if(radio_cb.radio_cfg.frequencies_count > 1) {
                 radio.rx_hop_frequency();
@@ -461,7 +454,6 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         else {
             radio.cad_pending.store(false);
         }
-        //cad_process_detect(true, hop_freq);
     }
 
     clear_irq_status(IRQ_RADIO_ALL);
@@ -480,7 +472,7 @@ void SX126X_LoRaRadio::calibrate_image(const uint32_t freq, const bool locking)
 {
     if(locking) { lock(); }
 
-    uint8_t cal_freq[2];
+    array<uint8_t, 2> cal_freq{};
 
     if (freq > 900000000) {
         cal_freq[0] = 0xE1;
@@ -499,7 +491,7 @@ void SX126X_LoRaRadio::calibrate_image(const uint32_t freq, const bool locking)
         cal_freq[1] = 0x6F;
     }
 
-    write_opmode_command((uint8_t) RADIO_CALIBRATEIMAGE, cal_freq, 2);
+    write_opmode_command(static_cast<uint8_t>(RADIO_CALIBRATEIMAGE), cal_freq.data(), 2);
 
     _image_calibrated = true;
 
@@ -510,7 +502,7 @@ void SX126X_LoRaRadio::set_channel(const uint32_t frequency, const bool locking)
 {
     if(locking) { lock(); }
 
-    uint8_t buf[4];
+    array<uint8_t, 4> buf{};
     uint32_t freq = 0;
 
 #if 0
@@ -520,14 +512,17 @@ void SX126X_LoRaRadio::set_channel(const uint32_t frequency, const bool locking)
         _image_calibrated = true;
     }
 #endif
+    constexpr uint32_t LOWER_BYTE = 0xFF;
+    constexpr uint32_t THREE_BYTES = 24;
+    constexpr uint32_t TWO_BYTES = 16;
+    constexpr uint32_t ONE_BYTE = 8;
+    freq = static_cast<uint32_t>(ceil((static_cast<float>(frequency) / static_cast<float>(FREQ_STEP))));
+    buf[0] = static_cast<uint8_t>((freq >> THREE_BYTES) & LOWER_BYTE);
+    buf[1] = static_cast<uint8_t>((freq >> TWO_BYTES) & LOWER_BYTE);
+    buf[2] = static_cast<uint8_t>((freq >> ONE_BYTE) & LOWER_BYTE);
+    buf[3] = static_cast<uint8_t>(freq & LOWER_BYTE);
 
-    freq = (uint32_t) ceil(((float) frequency / (float) FREQ_STEP));
-    buf[0] = (uint8_t) ((freq >> 24) & 0xFF);
-    buf[1] = (uint8_t) ((freq >> 16) & 0xFF);
-    buf[2] = (uint8_t) ((freq >> 8) & 0xFF);
-    buf[3] = (uint8_t) (freq & 0xFF);
-
-    write_opmode_command((uint8_t) RADIO_SET_RFFREQUENCY, buf, 4);
+    write_opmode_command(static_cast<uint8_t>(RADIO_SET_RFFREQUENCY), buf.data(), 4);
 
     if(locking) { unlock(); }
 }
@@ -1352,11 +1347,11 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, con
 
     // _tx_timeout in ms should be converted to us and then divided by
     // 15.625 us. Check data-sheet 13.1.4 SetTX() section.
-    uint32_t timeout_scalled = ceil((_tx_timeout * 1000) / 15.625);
+    uint32_t timeout_scaled = ceil((_tx_timeout * 1000) / 15.625);
 
-    buf[0] = (uint8_t) ((timeout_scalled >> 16) & 0xFF);
-    buf[1] = (uint8_t) ((timeout_scalled >> 8) & 0xFF);
-    buf[2] = (uint8_t) (timeout_scalled & 0xFF);
+    buf[0] = (uint8_t) ((timeout_scaled >> 16) & 0xFF);
+    buf[1] = (uint8_t) ((timeout_scaled >> 8) & 0xFF);
+    buf[2] = (uint8_t) (timeout_scaled & 0xFF);
 
     write_opmode_command(RADIO_SET_TX, buf, 3);
     tx_int_mon = 1;

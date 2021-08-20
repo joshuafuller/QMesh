@@ -5,7 +5,7 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
                             const int num_timing_offsets,
                             const int cur_seed, 
                             const int max_pwr_diff, 
-                            const int num_channels) :
+                            const int num_channels) : 
     AntiInterference(freq_range, num_timing_offsets, cur_seed, max_pwr_diff, num_channels) {
     pwr_rand.seed(cur_seed);
     pwr_off_dist_sptr = std::make_shared<std::uniform_int_distribution<int8_t>>(0, max_pwr_diff);

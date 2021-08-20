@@ -514,4 +514,14 @@ private:
     void tx_timeout_handler();
 };
 
+using lora_cad_params_t = struct {
+    uint8_t num_sym;
+    uint8_t det_min;
+    uint8_t det_max;
+};
+const array<array<lora_cad_params_t, 6>, 3> cad_params = { //NOLINT 
+    array<lora_cad_params_t, 6>{{{2, 10, 22}, {2, 10, 22}, {4, 10, 23}, {4, 10, 24}, {4, 10, 25}, {4, 10, 28}}},  // 125KHz -- from appnote
+    array<lora_cad_params_t, 6>{{{4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {4, 10, 28}}},  // 250KHz -- interpolated
+    array<lora_cad_params_t, 6>{{{4, 10, 21}, {4, 10, 22}, {4, 10, 22}, {4, 10, 23}, {4, 10, 25}, {8, 10, 29}}}}; // 500KHz -- from appnote
+
 #endif /* MBED_LORA_RADIO_DRV_SX126X_LORARADIO_H_ */
