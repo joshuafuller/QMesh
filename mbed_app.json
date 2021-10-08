@@ -45,7 +45,7 @@
         "retransmit_dis_in":   { "value": "PE_7"},
         "retransmit_dis_out":  { "value": "PE_8"},
         "rssi_mon":            { "value": "PF_15"},
-        "fhss_mon":            { "value": "PE_0"},
+        "fhss_mon":            { "value": "PE_0"}
     },
     "target_overrides": {
         "*": {
