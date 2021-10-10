@@ -28,9 +28,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "serial_data.hpp"
+#include "voice_msg.hpp"
 
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
+static Mutex Frame_mutex;
+static mt19937 Frame_stream_id_rng;
+static atomic<int> Frame_last_stream_id;
 
 auto Frame::size() -> size_t {
     return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
@@ -247,8 +251,40 @@ void Frame::createFromKISS(DataMsg &data_msg) {
 }
 
 
+void Frame::createFromVoice(VoiceMsgProcessor &vmp) {
+    hdr.var_subhdr.fields.ttl = 0; //NOLINT
+    hdr.var_subhdr.fields.sender = radio_cb.address; //NOLINT
+    hdr.var_subhdr.fields.sym_offset = 0; //NOLINT
+    hdr.cons_subhdr.fields.stream_id = Frame::createStreamID(); //NOLINT
+    hdr.cons_subhdr.fields.type = DataMsg_Type_VOICETX; //NOLINT
+    vector<uint8_t> pld = vmp.getDataPayload();
+    MBED_ASSERT(pld.size() == radio_cb.net_cfg.pld_len);
+    pld.resize(pld.size());
+#warning finish this
+    this->setCRC();
+}
+
+
 auto Frame::getKISSMaxSize() -> size_t {
     return radio_cb.net_cfg.pld_len-sizeof(kiss_subhdr);
+}
+
+
+auto Frame::createStreamID() -> uint8_t {
+    uniform_int_distribution<uint8_t> timing_off_dist(0, MAX_UINT8_VAL); 
+    Frame_mutex.lock();
+    uint8_t new_stream_id = 0;
+    do {
+        new_stream_id = timing_off_dist(Frame_stream_id_rng);
+    } while(new_stream_id == Frame_last_stream_id);
+    Frame_last_stream_id = new_stream_id;
+    Frame_mutex.unlock();
+    return new_stream_id;
+}
+
+
+void Frame::seed_stream_id(const int seed) {
+    Frame_stream_id_rng.seed(seed);
 }
 
 

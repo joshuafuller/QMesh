@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include "nv_settings.hpp"
 #include "kiss_serial.hpp"
+#include "voice_msg.hpp"
 #include "fec.hpp"
 #include "qmesh.pb.h"
 #include "pb_common.h"
@@ -77,6 +78,7 @@ using frame_types = enum frame_types {
     KISS_FRAME = 2,
 };
 
+
 /**
  * This class implements the QMesh Frame. It provides both the storage
  * of Frame data fields as well as various methods for performing
@@ -100,8 +102,8 @@ public:
         } var_subhdr;
         union {
             struct __attribute__((__packed__)) {
-                uint32_t type : 2;
-                uint32_t stream_id : 14;
+                uint32_t type : 3;
+                uint32_t stream_id : 13;
             } fields;
             uint8_t b;
         } cons_subhdr;
@@ -116,11 +118,15 @@ public:
     } kiss_subhdr;
     shared_ptr<FEC> fec;
 	bool tx_frame{};
+
+    static constexpr int MAX_UINT8_VAL = 255;
+
 private:
     frame_hdr hdr{};
     vector<uint8_t> data;
     crc8_t crc{};
     bool redundant;
+
 protected:
     // receive stats
     int16_t rssi{};
@@ -129,6 +135,10 @@ protected:
     PKT_STATUS_ENUM pkt_status;
 
 public:
+    static auto createStreamID() -> uint8_t;
+
+    static void seed_stream_id(int seed);
+
     /**
     * Get the combined, un-FEC'd size of the Frame.
     */
@@ -140,15 +150,26 @@ public:
             case 1: return DataMsg_Type_RX;
             case 2: return DataMsg_Type_KISSTX;
             case 3: return DataMsg_Type_KISSRX;
+            case 4: return DataMsg_Type_VOICETX;
+            case 5: return DataMsg_Type_VOICERX;
             default: MBED_ASSERT(false);
         }
     }
 
     void setDataMsgType(const DataMsg_Type datamsg_type) {
+        hdr.cons_subhdr.fields.type = datamsg_type;
         if(datamsg_type == DataMsg_Type_TX) {
             hdr.cons_subhdr.fields.type = 0;
         } else if(datamsg_type == DataMsg_Type_RX) {
             hdr.cons_subhdr.fields.type = 1;
+        } else if(datamsg_type == DataMsg_Type_KISSRX) {
+            hdr.cons_subhdr.fields.type = 2;
+        } else if(datamsg_type == DataMsg_Type_KISSTX) {
+            hdr.cons_subhdr.fields.type = 3;
+        } else if(datamsg_type == DataMsg_Type_VOICETX) {
+            hdr.cons_subhdr.fields.type = 4;
+        } else if(datamsg_type == DataMsg_Type_VOICERX) {
+            hdr.cons_subhdr.fields.type = 5;
         } else {
             MBED_ASSERT(false);
         }
@@ -178,6 +199,8 @@ public:
     void createFromKISS(DataMsg &data_msg);
 
     static auto getKISSMaxSize() -> size_t;
+
+    void createFromVoice(VoiceMsgProcessor &vmp);
 
     /// Equality operator for Frames
     auto operator == (const Frame &L) -> bool {
@@ -289,6 +312,11 @@ public:
     /**
      * Sets the Stream ID
      */
+    void setStreamID() {
+        hdr.cons_subhdr.fields.stream_id = Frame::createStreamID();
+        setCRC();
+    }
+
     void setStreamID(const uint8_t id) {
         hdr.cons_subhdr.fields.stream_id = id;
         setCRC();
@@ -455,6 +483,7 @@ public:
 
     RadioEvent(radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);
 };
+
 
 extern Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail, tx_radio_evt_mail;
 

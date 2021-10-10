@@ -72,7 +72,8 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_VERSION = 28,
     SerialMsg_Type_TURN_OLED_ON = 29,
     SerialMsg_Type_TURN_OLED_OFF = 30,
-    SerialMsg_Type_INT_PARAMS = 31
+    SerialMsg_Type_INT_PARAMS = 31,
+    SerialMsg_Type_VOICE_MSG = 32
 } SerialMsg_Type;
 
 typedef enum _ErrorMsg_Type {
@@ -84,7 +85,9 @@ typedef enum _DataMsg_Type {
     DataMsg_Type_TX = 0,
     DataMsg_Type_RX = 1,
     DataMsg_Type_KISSTX = 2,
-    DataMsg_Type_KISSRX = 3
+    DataMsg_Type_KISSRX = 3,
+    DataMsg_Type_VOICETX = 4,
+    DataMsg_Type_VOICERX = 5
 } DataMsg_Type;
 
 typedef enum _UpdateMsg_Type {
@@ -188,6 +191,7 @@ typedef struct _SerialMsg {
     struct _UpdateMsg *update_msg;
     struct _VersionMsg *ver_msg;
     struct _IntParamsMsg *int_params_msg;
+    struct _VoiceFrameMsg *voice_frame_msg;
 } SerialMsg;
 
 typedef struct _StatusMsg {
@@ -229,6 +233,13 @@ typedef struct _UpdateMsg {
 typedef struct _VersionMsg {
     char msg[128];
 } VersionMsg;
+
+typedef PB_BYTES_ARRAY_T(32) VoiceFrameMsg_payload_t;
+typedef struct _VoiceFrameMsg {
+    uint32_t size_bits;
+    bool end_stream;
+    VoiceFrameMsg_payload_t payload;
+} VoiceFrameMsg;
 
 typedef struct _LogMsg {
     bool valid;
@@ -272,6 +283,8 @@ typedef struct _SysCfgMsg {
     bool log_packets_en;
     bool boot_log_en;
     bool watchdog_timer_en;
+    uint32_t voice_frames_per_frame;
+    uint32_t codec2_bitrate;
 } SysCfgMsg;
 
 
@@ -293,16 +306,16 @@ typedef struct _SysCfgMsg {
 #define _StatusMsg_Status_ARRAYSIZE ((StatusMsg_Status)(StatusMsg_Status_RUNNING+1))
 
 #define _SerialMsg_Type_MIN SerialMsg_Type_GET_CONFIG
-#define _SerialMsg_Type_MAX SerialMsg_Type_INT_PARAMS
-#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_INT_PARAMS+1))
+#define _SerialMsg_Type_MAX SerialMsg_Type_VOICE_MSG
+#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_VOICE_MSG+1))
 
 #define _ErrorMsg_Type_MIN ErrorMsg_Type_CRC_ERR
 #define _ErrorMsg_Type_MAX ErrorMsg_Type_OTHER_ERR
 #define _ErrorMsg_Type_ARRAYSIZE ((ErrorMsg_Type)(ErrorMsg_Type_OTHER_ERR+1))
 
 #define _DataMsg_Type_MIN DataMsg_Type_TX
-#define _DataMsg_Type_MAX DataMsg_Type_KISSRX
-#define _DataMsg_Type_ARRAYSIZE ((DataMsg_Type)(DataMsg_Type_KISSRX+1))
+#define _DataMsg_Type_MAX DataMsg_Type_VOICERX
+#define _DataMsg_Type_ARRAYSIZE ((DataMsg_Type)(DataMsg_Type_VOICERX+1))
 
 #define _UpdateMsg_Type_MIN UpdateMsg_Type_FIRST
 #define _UpdateMsg_Type_MAX UpdateMsg_Type_ACKERR
@@ -315,7 +328,7 @@ typedef struct _SysCfgMsg {
 #define FECCfg_init_default                      {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default, 0}
 #define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0}
-#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0}
+#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
 #define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_default                      {""}
@@ -324,10 +337,11 @@ typedef struct _SysCfgMsg {
 #define GPSMsg_init_default                      {0, 0, 0}
 #define LogMsg_init_default                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_default}
 #define TimeMsg_init_default                     {0}
-#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 #define VersionMsg_init_default                  {""}
 #define ErrorMsg_init_default                    {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0, 0}
+#define VoiceFrameMsg_init_default               {0, 0, {0, {0}}}
 #define UpdateMsg_init_default                   {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define IntParamsMsg_init_default                {0, 0, 0, 0}
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
@@ -335,7 +349,7 @@ typedef struct _SysCfgMsg {
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero, 0}
 #define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0}
-#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0}
+#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
 #define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_zero                         {""}
@@ -344,10 +358,11 @@ typedef struct _SysCfgMsg {
 #define GPSMsg_init_zero                         {0, 0, 0}
 #define LogMsg_init_zero                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_zero}
 #define TimeMsg_init_zero                        {0}
-#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 #define VersionMsg_init_zero                     {""}
 #define ErrorMsg_init_zero                       {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0, 0}
+#define VoiceFrameMsg_init_zero                  {0, 0, {0, {0}}}
 #define UpdateMsg_init_zero                      {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define IntParamsMsg_init_zero                   {0, 0, 0, 0}
 
@@ -409,6 +424,7 @@ typedef struct _SysCfgMsg {
 #define SerialMsg_update_msg_tag                 12
 #define SerialMsg_ver_msg_tag                    13
 #define SerialMsg_int_params_msg_tag             14
+#define SerialMsg_voice_frame_msg_tag            15
 #define StatusMsg_status_tag                     1
 #define StatusMsg_tx_full_tag                    2
 #define StatusMsg_time_tag                       3
@@ -431,6 +447,9 @@ typedef struct _SysCfgMsg {
 #define UpdateMsg_sha256_upd_tag                 6
 #define UpdateMsg_err_reason_tag                 7
 #define VersionMsg_msg_tag                       1
+#define VoiceFrameMsg_size_bits_tag              1
+#define VoiceFrameMsg_end_stream_tag             2
+#define VoiceFrameMsg_payload_tag                3
 #define LogMsg_valid_tag                         1
 #define LogMsg_count_tag                         2
 #define LogMsg_timestamp_tag                     3
@@ -459,6 +478,8 @@ typedef struct _SysCfgMsg {
 #define SysCfgMsg_log_packets_en_tag             8
 #define SysCfgMsg_boot_log_en_tag                9
 #define SysCfgMsg_watchdog_timer_en_tag          10
+#define SysCfgMsg_voice_frames_per_frame_tag     11
+#define SysCfgMsg_codec2_bitrate_tag             12
 
 /* Struct field encoding specification for nanopb */
 #define LoraCfg_FIELDLIST(X, a) \
@@ -516,7 +537,9 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  net_cfg,           6) \
 X(a, STATIC,   SINGULAR, BOOL,     gps_en,            7) \
 X(a, STATIC,   SINGULAR, BOOL,     log_packets_en,    8) \
 X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,       9) \
-X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  10)
+X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  10) \
+X(a, STATIC,   SINGULAR, UINT32,   voice_frames_per_frame,  11) \
+X(a, STATIC,   SINGULAR, UINT32,   codec2_bitrate,   12)
 #define SysCfgMsg_CALLBACK NULL
 #define SysCfgMsg_DEFAULT NULL
 #define SysCfgMsg_radio_cfg_MSGTYPE RadioCfg
@@ -604,7 +627,8 @@ X(a, POINTER,  OPTIONAL, MESSAGE,  error_msg,        10) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  time_msg,         11) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  update_msg,       12) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  ver_msg,          13) \
-X(a, POINTER,  OPTIONAL, MESSAGE,  int_params_msg,   14)
+X(a, POINTER,  OPTIONAL, MESSAGE,  int_params_msg,   14) \
+X(a, POINTER,  OPTIONAL, MESSAGE,  voice_frame_msg,  15)
 #define SerialMsg_CALLBACK NULL
 #define SerialMsg_DEFAULT NULL
 #define SerialMsg_sys_cfg_MSGTYPE SysCfgMsg
@@ -619,6 +643,7 @@ X(a, POINTER,  OPTIONAL, MESSAGE,  int_params_msg,   14)
 #define SerialMsg_update_msg_MSGTYPE UpdateMsg
 #define SerialMsg_ver_msg_MSGTYPE VersionMsg
 #define SerialMsg_int_params_msg_MSGTYPE IntParamsMsg
+#define SerialMsg_voice_frame_msg_MSGTYPE VoiceFrameMsg
 
 #define VersionMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   msg,               1)
@@ -646,6 +671,13 @@ X(a, STATIC,   SINGULAR, UINT32,   kiss_stream_id,   11) \
 X(a, STATIC,   SINGULAR, BOOL,     redundant,        12)
 #define DataMsg_CALLBACK NULL
 #define DataMsg_DEFAULT NULL
+
+#define VoiceFrameMsg_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   size_bits,         1) \
+X(a, STATIC,   SINGULAR, BOOL,     end_stream,        2) \
+X(a, STATIC,   SINGULAR, BYTES,    payload,           3)
+#define VoiceFrameMsg_CALLBACK NULL
+#define VoiceFrameMsg_DEFAULT NULL
 
 #define UpdateMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
@@ -684,6 +716,7 @@ extern const pb_msgdesc_t SerialMsg_msg;
 extern const pb_msgdesc_t VersionMsg_msg;
 extern const pb_msgdesc_t ErrorMsg_msg;
 extern const pb_msgdesc_t DataMsg_msg;
+extern const pb_msgdesc_t VoiceFrameMsg_msg;
 extern const pb_msgdesc_t UpdateMsg_msg;
 extern const pb_msgdesc_t IntParamsMsg_msg;
 
@@ -706,6 +739,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define VersionMsg_fields &VersionMsg_msg
 #define ErrorMsg_fields &ErrorMsg_msg
 #define DataMsg_fields &DataMsg_msg
+#define VoiceFrameMsg_fields &VoiceFrameMsg_msg
 #define UpdateMsg_fields &UpdateMsg_msg
 #define IntParamsMsg_fields &IntParamsMsg_msg
 
@@ -715,7 +749,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define FECCfg_size                              35
 #define RadioCfg_size                            226
 #define NetCfg_size                              286
-#define SysCfgMsg_size                           579
+#define SysCfgMsg_size                           591
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           48
 #define DbgMsg_size                              258
@@ -728,6 +762,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define VersionMsg_size                          130
 #define ErrorMsg_size                            260
 #define DataMsg_size                             569
+#define VoiceFrameMsg_size                       42
 #define UpdateMsg_size                           4343
 #define IntParamsMsg_size                        44
 

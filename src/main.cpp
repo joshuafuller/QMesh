@@ -41,8 +41,6 @@ Thread background_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); //
 
 time_t boot_timestamp;
 
-extern mt19937 stream_id_rng;
-
 #ifdef APRS
 Afsk my_afsk;
 #endif
@@ -169,7 +167,7 @@ auto main() -> int
         oled->displayOff();
     }
 
-    stream_id_rng.seed(radio_cb.address);
+    Frame::seed_stream_id(radio_cb.address);
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX
     ThisThread::sleep_for(HALF_SECOND);

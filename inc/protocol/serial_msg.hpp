@@ -63,6 +63,8 @@ public:
     auto ver_msg() -> VersionMsg&;
     auto has_int_params_msg() const -> bool;
     auto int_params_msg() -> IntParamsMsg&;
+    auto has_voice_frame_msg() const -> bool;
+    auto voice_frame_msg() -> VoiceFrameMsg&;
 };
 
 #endif /* SERIAL_MSG_HPP */

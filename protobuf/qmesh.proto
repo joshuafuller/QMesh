@@ -69,6 +69,8 @@ message SysCfgMsg {
   bool log_packets_en = 8;
   bool boot_log_en = 9;
   bool watchdog_timer_en = 10;
+  uint32 voice_frames_per_frame = 11;
+  uint32 codec2_bitrate = 12;
 }
 
 message ClockSetMsg {
@@ -168,6 +170,7 @@ message SerialMsg {
     TURN_OLED_ON = 29;
     TURN_OLED_OFF = 30;
     INT_PARAMS = 31;
+    VOICE_MSG = 32;
   }
   Type type = 1;
   bool retry = 2;
@@ -184,6 +187,7 @@ message SerialMsg {
   UpdateMsg update_msg = 12 [(nanopb).type = FT_POINTER, (nanopb).descriptorsize = DS_4];
   VersionMsg ver_msg = 13 [(nanopb).type = FT_POINTER];
   IntParamsMsg int_params_msg = 14 [(nanopb).type = FT_POINTER];
+  VoiceFrameMsg voice_frame_msg = 15 [(nanopb).type = FT_POINTER];
 }
 
 message VersionMsg {
@@ -205,6 +209,8 @@ message DataMsg {
     RX = 1;
     KISSTX = 2;
     KISSRX = 3;
+    VOICETX = 4;
+    VOICERX = 5;
   }
   Type type = 1;
   uint32 stream_id = 2;
@@ -218,6 +224,12 @@ message DataMsg {
   uint32 kiss_tot_frames = 10;
   uint32 kiss_stream_id = 11;
   bool redundant = 12;
+}
+
+message VoiceFrameMsg {
+  uint32 size_bits = 1;
+  bool end_stream = 2;
+  bytes payload = 3 [(nanopb).max_size = 32];
 }
 
 message UpdateMsg {

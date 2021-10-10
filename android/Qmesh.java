@@ -4290,6 +4290,16 @@ public final class Qmesh {
      * <code>bool watchdog_timer_en = 10;</code>
      */
     boolean getWatchdogTimerEn();
+
+    /**
+     * <code>uint32 voice_frames_per_frame = 11;</code>
+     */
+    int getVoiceFramesPerFrame();
+
+    /**
+     * <code>uint32 codec2_bitrate = 12;</code>
+     */
+    int getCodec2Bitrate();
   }
   /**
    * Protobuf type {@code SysCfgMsg}
@@ -4310,6 +4320,8 @@ public final class Qmesh {
       logPacketsEn_ = false;
       bootLogEn_ = false;
       watchdogTimerEn_ = false;
+      voiceFramesPerFrame_ = 0;
+      codec2Bitrate_ = 0;
     }
 
     @java.lang.Override
@@ -4417,6 +4429,16 @@ public final class Qmesh {
             case 80: {
 
               watchdogTimerEn_ = input.readBool();
+              break;
+            }
+            case 88: {
+
+              voiceFramesPerFrame_ = input.readUInt32();
+              break;
+            }
+            case 96: {
+
+              codec2Bitrate_ = input.readUInt32();
               break;
             }
             default: {
@@ -4713,6 +4735,24 @@ public final class Qmesh {
       return watchdogTimerEn_;
     }
 
+    public static final int VOICE_FRAMES_PER_FRAME_FIELD_NUMBER = 11;
+    private int voiceFramesPerFrame_;
+    /**
+     * <code>uint32 voice_frames_per_frame = 11;</code>
+     */
+    public int getVoiceFramesPerFrame() {
+      return voiceFramesPerFrame_;
+    }
+
+    public static final int CODEC2_BITRATE_FIELD_NUMBER = 12;
+    private int codec2Bitrate_;
+    /**
+     * <code>uint32 codec2_bitrate = 12;</code>
+     */
+    public int getCodec2Bitrate() {
+      return codec2Bitrate_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4756,6 +4796,12 @@ public final class Qmesh {
       }
       if (watchdogTimerEn_ != false) {
         output.writeBool(10, watchdogTimerEn_);
+      }
+      if (voiceFramesPerFrame_ != 0) {
+        output.writeUInt32(11, voiceFramesPerFrame_);
+      }
+      if (codec2Bitrate_ != 0) {
+        output.writeUInt32(12, codec2Bitrate_);
       }
       unknownFields.writeTo(output);
     }
@@ -4806,6 +4852,14 @@ public final class Qmesh {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(10, watchdogTimerEn_);
       }
+      if (voiceFramesPerFrame_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(11, voiceFramesPerFrame_);
+      }
+      if (codec2Bitrate_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(12, codec2Bitrate_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -4853,6 +4907,10 @@ public final class Qmesh {
           == other.getBootLogEn());
       result = result && (getWatchdogTimerEn()
           == other.getWatchdogTimerEn());
+      result = result && (getVoiceFramesPerFrame()
+          == other.getVoiceFramesPerFrame());
+      result = result && (getCodec2Bitrate()
+          == other.getCodec2Bitrate());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -4896,6 +4954,10 @@ public final class Qmesh {
       hash = (37 * hash) + WATCHDOG_TIMER_EN_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getWatchdogTimerEn());
+      hash = (37 * hash) + VOICE_FRAMES_PER_FRAME_FIELD_NUMBER;
+      hash = (53 * hash) + getVoiceFramesPerFrame();
+      hash = (37 * hash) + CODEC2_BITRATE_FIELD_NUMBER;
+      hash = (53 * hash) + getCodec2Bitrate();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5065,6 +5127,10 @@ public final class Qmesh {
 
         watchdogTimerEn_ = false;
 
+        voiceFramesPerFrame_ = 0;
+
+        codec2Bitrate_ = 0;
+
         return this;
       }
 
@@ -5117,6 +5183,8 @@ public final class Qmesh {
         result.logPacketsEn_ = logPacketsEn_;
         result.bootLogEn_ = bootLogEn_;
         result.watchdogTimerEn_ = watchdogTimerEn_;
+        result.voiceFramesPerFrame_ = voiceFramesPerFrame_;
+        result.codec2Bitrate_ = codec2Bitrate_;
         onBuilt();
         return result;
       }
@@ -5194,6 +5262,12 @@ public final class Qmesh {
         }
         if (other.getWatchdogTimerEn() != false) {
           setWatchdogTimerEn(other.getWatchdogTimerEn());
+        }
+        if (other.getVoiceFramesPerFrame() != 0) {
+          setVoiceFramesPerFrame(other.getVoiceFramesPerFrame());
+        }
+        if (other.getCodec2Bitrate() != 0) {
+          setCodec2Bitrate(other.getCodec2Bitrate());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5863,6 +5937,58 @@ public final class Qmesh {
       public Builder clearWatchdogTimerEn() {
         
         watchdogTimerEn_ = false;
+        onChanged();
+        return this;
+      }
+
+      private int voiceFramesPerFrame_ ;
+      /**
+       * <code>uint32 voice_frames_per_frame = 11;</code>
+       */
+      public int getVoiceFramesPerFrame() {
+        return voiceFramesPerFrame_;
+      }
+      /**
+       * <code>uint32 voice_frames_per_frame = 11;</code>
+       */
+      public Builder setVoiceFramesPerFrame(int value) {
+        
+        voiceFramesPerFrame_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 voice_frames_per_frame = 11;</code>
+       */
+      public Builder clearVoiceFramesPerFrame() {
+        
+        voiceFramesPerFrame_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int codec2Bitrate_ ;
+      /**
+       * <code>uint32 codec2_bitrate = 12;</code>
+       */
+      public int getCodec2Bitrate() {
+        return codec2Bitrate_;
+      }
+      /**
+       * <code>uint32 codec2_bitrate = 12;</code>
+       */
+      public Builder setCodec2Bitrate(int value) {
+        
+        codec2Bitrate_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 codec2_bitrate = 12;</code>
+       */
+      public Builder clearCodec2Bitrate() {
+        
+        codec2Bitrate_ = 0;
         onChanged();
         return this;
       }
@@ -11829,6 +11955,19 @@ public final class Qmesh {
      * <code>.IntParamsMsg int_params_msg = 14 [(.nanopb) = { ... }</code>
      */
     Qmesh.IntParamsMsgOrBuilder getIntParamsMsgOrBuilder();
+
+    /**
+     * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+     */
+    boolean hasVoiceFrameMsg();
+    /**
+     * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+     */
+    Qmesh.VoiceFrameMsg getVoiceFrameMsg();
+    /**
+     * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+     */
+    Qmesh.VoiceFrameMsgOrBuilder getVoiceFrameMsgOrBuilder();
   }
   /**
    * Protobuf type {@code SerialMsg}
@@ -12038,6 +12177,19 @@ public final class Qmesh {
 
               break;
             }
+            case 122: {
+              Qmesh.VoiceFrameMsg.Builder subBuilder = null;
+              if (voiceFrameMsg_ != null) {
+                subBuilder = voiceFrameMsg_.toBuilder();
+              }
+              voiceFrameMsg_ = input.readMessage(Qmesh.VoiceFrameMsg.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(voiceFrameMsg_);
+                voiceFrameMsg_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
             default: {
               if (!parseUnknownFieldProto3(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -12203,6 +12355,10 @@ public final class Qmesh {
        * <code>INT_PARAMS = 31;</code>
        */
       INT_PARAMS(31),
+      /**
+       * <code>VOICE_MSG = 32;</code>
+       */
+      VOICE_MSG(32),
       UNRECOGNIZED(-1),
       ;
 
@@ -12334,6 +12490,10 @@ public final class Qmesh {
        * <code>INT_PARAMS = 31;</code>
        */
       public static final int INT_PARAMS_VALUE = 31;
+      /**
+       * <code>VOICE_MSG = 32;</code>
+       */
+      public static final int VOICE_MSG_VALUE = 32;
 
 
       public final int getNumber() {
@@ -12386,6 +12546,7 @@ public final class Qmesh {
           case 29: return TURN_OLED_ON;
           case 30: return TURN_OLED_OFF;
           case 31: return INT_PARAMS;
+          case 32: return VOICE_MSG;
           default: return null;
         }
       }
@@ -12716,6 +12877,27 @@ public final class Qmesh {
       return getIntParamsMsg();
     }
 
+    public static final int VOICE_FRAME_MSG_FIELD_NUMBER = 15;
+    private Qmesh.VoiceFrameMsg voiceFrameMsg_;
+    /**
+     * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+     */
+    public boolean hasVoiceFrameMsg() {
+      return voiceFrameMsg_ != null;
+    }
+    /**
+     * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+     */
+    public Qmesh.VoiceFrameMsg getVoiceFrameMsg() {
+      return voiceFrameMsg_ == null ? Qmesh.VoiceFrameMsg.getDefaultInstance() : voiceFrameMsg_;
+    }
+    /**
+     * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+     */
+    public Qmesh.VoiceFrameMsgOrBuilder getVoiceFrameMsgOrBuilder() {
+      return getVoiceFrameMsg();
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -12771,6 +12953,9 @@ public final class Qmesh {
       }
       if (intParamsMsg_ != null) {
         output.writeMessage(14, getIntParamsMsg());
+      }
+      if (voiceFrameMsg_ != null) {
+        output.writeMessage(15, getVoiceFrameMsg());
       }
       unknownFields.writeTo(output);
     }
@@ -12836,6 +13021,10 @@ public final class Qmesh {
       if (intParamsMsg_ != null) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(14, getIntParamsMsg());
+      }
+      if (voiceFrameMsg_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(15, getVoiceFrameMsg());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -12916,6 +13105,11 @@ public final class Qmesh {
         result = result && getIntParamsMsg()
             .equals(other.getIntParamsMsg());
       }
+      result = result && (hasVoiceFrameMsg() == other.hasVoiceFrameMsg());
+      if (hasVoiceFrameMsg()) {
+        result = result && getVoiceFrameMsg()
+            .equals(other.getVoiceFrameMsg());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -12979,6 +13173,10 @@ public final class Qmesh {
       if (hasIntParamsMsg()) {
         hash = (37 * hash) + INT_PARAMS_MSG_FIELD_NUMBER;
         hash = (53 * hash) + getIntParamsMsg().hashCode();
+      }
+      if (hasVoiceFrameMsg()) {
+        hash = (37 * hash) + VOICE_FRAME_MSG_FIELD_NUMBER;
+        hash = (53 * hash) + getVoiceFrameMsg().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -13189,6 +13387,12 @@ public final class Qmesh {
           intParamsMsg_ = null;
           intParamsMsgBuilder_ = null;
         }
+        if (voiceFrameMsgBuilder_ == null) {
+          voiceFrameMsg_ = null;
+        } else {
+          voiceFrameMsg_ = null;
+          voiceFrameMsgBuilder_ = null;
+        }
         return this;
       }
 
@@ -13276,6 +13480,11 @@ public final class Qmesh {
           result.intParamsMsg_ = intParamsMsg_;
         } else {
           result.intParamsMsg_ = intParamsMsgBuilder_.build();
+        }
+        if (voiceFrameMsgBuilder_ == null) {
+          result.voiceFrameMsg_ = voiceFrameMsg_;
+        } else {
+          result.voiceFrameMsg_ = voiceFrameMsgBuilder_.build();
         }
         onBuilt();
         return result;
@@ -13366,6 +13575,9 @@ public final class Qmesh {
         }
         if (other.hasIntParamsMsg()) {
           mergeIntParamsMsg(other.getIntParamsMsg());
+        }
+        if (other.hasVoiceFrameMsg()) {
+          mergeVoiceFrameMsg(other.getVoiceFrameMsg());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -14869,6 +15081,123 @@ public final class Qmesh {
           intParamsMsg_ = null;
         }
         return intParamsMsgBuilder_;
+      }
+
+      private Qmesh.VoiceFrameMsg voiceFrameMsg_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.VoiceFrameMsg, Qmesh.VoiceFrameMsg.Builder, Qmesh.VoiceFrameMsgOrBuilder> voiceFrameMsgBuilder_;
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public boolean hasVoiceFrameMsg() {
+        return voiceFrameMsgBuilder_ != null || voiceFrameMsg_ != null;
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.VoiceFrameMsg getVoiceFrameMsg() {
+        if (voiceFrameMsgBuilder_ == null) {
+          return voiceFrameMsg_ == null ? Qmesh.VoiceFrameMsg.getDefaultInstance() : voiceFrameMsg_;
+        } else {
+          return voiceFrameMsgBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder setVoiceFrameMsg(Qmesh.VoiceFrameMsg value) {
+        if (voiceFrameMsgBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          voiceFrameMsg_ = value;
+          onChanged();
+        } else {
+          voiceFrameMsgBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder setVoiceFrameMsg(
+          Qmesh.VoiceFrameMsg.Builder builderForValue) {
+        if (voiceFrameMsgBuilder_ == null) {
+          voiceFrameMsg_ = builderForValue.build();
+          onChanged();
+        } else {
+          voiceFrameMsgBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder mergeVoiceFrameMsg(Qmesh.VoiceFrameMsg value) {
+        if (voiceFrameMsgBuilder_ == null) {
+          if (voiceFrameMsg_ != null) {
+            voiceFrameMsg_ =
+              Qmesh.VoiceFrameMsg.newBuilder(voiceFrameMsg_).mergeFrom(value).buildPartial();
+          } else {
+            voiceFrameMsg_ = value;
+          }
+          onChanged();
+        } else {
+          voiceFrameMsgBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearVoiceFrameMsg() {
+        if (voiceFrameMsgBuilder_ == null) {
+          voiceFrameMsg_ = null;
+          onChanged();
+        } else {
+          voiceFrameMsg_ = null;
+          voiceFrameMsgBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.VoiceFrameMsg.Builder getVoiceFrameMsgBuilder() {
+        
+        onChanged();
+        return getVoiceFrameMsgFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.VoiceFrameMsgOrBuilder getVoiceFrameMsgOrBuilder() {
+        if (voiceFrameMsgBuilder_ != null) {
+          return voiceFrameMsgBuilder_.getMessageOrBuilder();
+        } else {
+          return voiceFrameMsg_ == null ?
+              Qmesh.VoiceFrameMsg.getDefaultInstance() : voiceFrameMsg_;
+        }
+      }
+      /**
+       * <code>.VoiceFrameMsg voice_frame_msg = 15 [(.nanopb) = { ... }</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.VoiceFrameMsg, Qmesh.VoiceFrameMsg.Builder, Qmesh.VoiceFrameMsgOrBuilder> 
+          getVoiceFrameMsgFieldBuilder() {
+        if (voiceFrameMsgBuilder_ == null) {
+          voiceFrameMsgBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              Qmesh.VoiceFrameMsg, Qmesh.VoiceFrameMsg.Builder, Qmesh.VoiceFrameMsgOrBuilder>(
+                  getVoiceFrameMsg(),
+                  getParentForChildren(),
+                  isClean());
+          voiceFrameMsg_ = null;
+        }
+        return voiceFrameMsgBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -16448,6 +16777,14 @@ public final class Qmesh {
        * <code>KISSRX = 3;</code>
        */
       KISSRX(3),
+      /**
+       * <code>VOICETX = 4;</code>
+       */
+      VOICETX(4),
+      /**
+       * <code>VOICERX = 5;</code>
+       */
+      VOICERX(5),
       UNRECOGNIZED(-1),
       ;
 
@@ -16467,6 +16804,14 @@ public final class Qmesh {
        * <code>KISSRX = 3;</code>
        */
       public static final int KISSRX_VALUE = 3;
+      /**
+       * <code>VOICETX = 4;</code>
+       */
+      public static final int VOICETX_VALUE = 4;
+      /**
+       * <code>VOICERX = 5;</code>
+       */
+      public static final int VOICERX_VALUE = 5;
 
 
       public final int getNumber() {
@@ -16491,6 +16836,8 @@ public final class Qmesh {
           case 1: return RX;
           case 2: return KISSTX;
           case 3: return KISSRX;
+          case 4: return VOICETX;
+          case 5: return VOICERX;
           default: return null;
         }
       }
@@ -17531,6 +17878,612 @@ public final class Qmesh {
 
     @java.lang.Override
     public Qmesh.DataMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface VoiceFrameMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:VoiceFrameMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>uint32 size_bits = 1;</code>
+     */
+    int getSizeBits();
+
+    /**
+     * <code>bool end_stream = 2;</code>
+     */
+    boolean getEndStream();
+
+    /**
+     * <code>bytes payload = 3 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString getPayload();
+  }
+  /**
+   * Protobuf type {@code VoiceFrameMsg}
+   */
+  public  static final class VoiceFrameMsg extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:VoiceFrameMsg)
+      VoiceFrameMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use VoiceFrameMsg.newBuilder() to construct.
+    private VoiceFrameMsg(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private VoiceFrameMsg() {
+      sizeBits_ = 0;
+      endStream_ = false;
+      payload_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private VoiceFrameMsg(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              sizeBits_ = input.readUInt32();
+              break;
+            }
+            case 16: {
+
+              endStream_ = input.readBool();
+              break;
+            }
+            case 26: {
+
+              payload_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Qmesh.internal_static_VoiceFrameMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Qmesh.internal_static_VoiceFrameMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Qmesh.VoiceFrameMsg.class, Qmesh.VoiceFrameMsg.Builder.class);
+    }
+
+    public static final int SIZE_BITS_FIELD_NUMBER = 1;
+    private int sizeBits_;
+    /**
+     * <code>uint32 size_bits = 1;</code>
+     */
+    public int getSizeBits() {
+      return sizeBits_;
+    }
+
+    public static final int END_STREAM_FIELD_NUMBER = 2;
+    private boolean endStream_;
+    /**
+     * <code>bool end_stream = 2;</code>
+     */
+    public boolean getEndStream() {
+      return endStream_;
+    }
+
+    public static final int PAYLOAD_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString payload_;
+    /**
+     * <code>bytes payload = 3 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString getPayload() {
+      return payload_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (sizeBits_ != 0) {
+        output.writeUInt32(1, sizeBits_);
+      }
+      if (endStream_ != false) {
+        output.writeBool(2, endStream_);
+      }
+      if (!payload_.isEmpty()) {
+        output.writeBytes(3, payload_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (sizeBits_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, sizeBits_);
+      }
+      if (endStream_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, endStream_);
+      }
+      if (!payload_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, payload_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Qmesh.VoiceFrameMsg)) {
+        return super.equals(obj);
+      }
+      Qmesh.VoiceFrameMsg other = (Qmesh.VoiceFrameMsg) obj;
+
+      boolean result = true;
+      result = result && (getSizeBits()
+          == other.getSizeBits());
+      result = result && (getEndStream()
+          == other.getEndStream());
+      result = result && getPayload()
+          .equals(other.getPayload());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + SIZE_BITS_FIELD_NUMBER;
+      hash = (53 * hash) + getSizeBits();
+      hash = (37 * hash) + END_STREAM_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getEndStream());
+      hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
+      hash = (53 * hash) + getPayload().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.VoiceFrameMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Qmesh.VoiceFrameMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.VoiceFrameMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Qmesh.VoiceFrameMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code VoiceFrameMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:VoiceFrameMsg)
+        Qmesh.VoiceFrameMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Qmesh.internal_static_VoiceFrameMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Qmesh.internal_static_VoiceFrameMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Qmesh.VoiceFrameMsg.class, Qmesh.VoiceFrameMsg.Builder.class);
+      }
+
+      // Construct using Qmesh.VoiceFrameMsg.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        sizeBits_ = 0;
+
+        endStream_ = false;
+
+        payload_ = com.google.protobuf.ByteString.EMPTY;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Qmesh.internal_static_VoiceFrameMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public Qmesh.VoiceFrameMsg getDefaultInstanceForType() {
+        return Qmesh.VoiceFrameMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Qmesh.VoiceFrameMsg build() {
+        Qmesh.VoiceFrameMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Qmesh.VoiceFrameMsg buildPartial() {
+        Qmesh.VoiceFrameMsg result = new Qmesh.VoiceFrameMsg(this);
+        result.sizeBits_ = sizeBits_;
+        result.endStream_ = endStream_;
+        result.payload_ = payload_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Qmesh.VoiceFrameMsg) {
+          return mergeFrom((Qmesh.VoiceFrameMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Qmesh.VoiceFrameMsg other) {
+        if (other == Qmesh.VoiceFrameMsg.getDefaultInstance()) return this;
+        if (other.getSizeBits() != 0) {
+          setSizeBits(other.getSizeBits());
+        }
+        if (other.getEndStream() != false) {
+          setEndStream(other.getEndStream());
+        }
+        if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
+          setPayload(other.getPayload());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        Qmesh.VoiceFrameMsg parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (Qmesh.VoiceFrameMsg) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int sizeBits_ ;
+      /**
+       * <code>uint32 size_bits = 1;</code>
+       */
+      public int getSizeBits() {
+        return sizeBits_;
+      }
+      /**
+       * <code>uint32 size_bits = 1;</code>
+       */
+      public Builder setSizeBits(int value) {
+        
+        sizeBits_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 size_bits = 1;</code>
+       */
+      public Builder clearSizeBits() {
+        
+        sizeBits_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean endStream_ ;
+      /**
+       * <code>bool end_stream = 2;</code>
+       */
+      public boolean getEndStream() {
+        return endStream_;
+      }
+      /**
+       * <code>bool end_stream = 2;</code>
+       */
+      public Builder setEndStream(boolean value) {
+        
+        endStream_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool end_stream = 2;</code>
+       */
+      public Builder clearEndStream() {
+        
+        endStream_ = false;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString payload_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes payload = 3 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString getPayload() {
+        return payload_;
+      }
+      /**
+       * <code>bytes payload = 3 [(.nanopb) = { ... }</code>
+       */
+      public Builder setPayload(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        payload_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes payload = 3 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearPayload() {
+        
+        payload_ = getDefaultInstance().getPayload();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:VoiceFrameMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:VoiceFrameMsg)
+    private static final Qmesh.VoiceFrameMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Qmesh.VoiceFrameMsg();
+    }
+
+    public static Qmesh.VoiceFrameMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<VoiceFrameMsg>
+        PARSER = new com.google.protobuf.AbstractParser<VoiceFrameMsg>() {
+      @java.lang.Override
+      public VoiceFrameMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new VoiceFrameMsg(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<VoiceFrameMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<VoiceFrameMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Qmesh.VoiceFrameMsg getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -19459,6 +20412,11 @@ public final class Qmesh {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_DataMsg_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_VoiceFrameMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_VoiceFrameMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_UpdateMsg_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -19494,79 +20452,85 @@ public final class Qmesh {
       " \001(\tB\006\222?\003\010\200\002\022\027\n\017beacon_interval\030\002 \001(\r\022\023\n" +
       "\013num_offsets\030\003 \001(\r\022\017\n\007pld_len\030\004 \001(\r\022\024\n\014f" +
       "ull_pkt_len\030\005 \001(\r\022\023\n\013walsh_codes\030\006 \001(\010\022\023" +
-      "\n\013invert_bits\030\007 \001(\010\"\303\002\n\tSysCfgMsg\022\035\n\004mod" +
+      "\n\013invert_bits\030\007 \001(\010\"\373\002\n\tSysCfgMsg\022\035\n\004mod" +
       "e\030\001 \001(\0162\017.SysCfgMsg.Mode\022\017\n\007address\030\002 \001(" +
       "\r\022\034\n\tradio_cfg\030\003 \001(\0132\t.RadioCfg\022\032\n\010test_" +
       "cfg\030\004 \001(\0132\010.TestCfg\022\030\n\007fec_cfg\030\005 \001(\0132\007.F" +
       "ECCfg\022\030\n\007net_cfg\030\006 \001(\0132\007.NetCfg\022\016\n\006gps_e" +
       "n\030\007 \001(\010\022\026\n\016log_packets_en\030\010 \001(\010\022\023\n\013boot_" +
-      "log_en\030\t \001(\010\022\031\n\021watchdog_timer_en\030\n \001(\010\"" +
-      "@\n\004Mode\022\n\n\006NORMAL\020\000\022\016\n\nMODE_RESET\020\001\022\017\n\013M" +
-      "ODE_SILENT\020\002\022\013\n\007TESTING\020\003\"\033\n\013ClockSetMsg" +
-      "\022\014\n\004time\030\001 \001(\r\"\227\002\n\tStatusMsg\022!\n\006status\030\001" +
-      " \001(\0162\021.StatusMsg.Status\022\017\n\007tx_full\030\002 \001(\010" +
-      "\022\014\n\004time\030\003 \001(\r\022\017\n\007oled_on\030\004 \001(\010\022\024\n\014total" +
-      "_rx_pkt\030\005 \001(\r\022\031\n\021total_rx_corr_pkt\030\006 \001(\r" +
-      "\022\024\n\014total_tx_pkt\030\007 \001(\r\022\024\n\014last_rx_rssi\030\010" +
-      " \001(\r\022\023\n\013last_rx_snr\030\t \001(\r\022\021\n\theap_size\030\n" +
-      " \001(\r\"2\n\006Status\022\013\n\007BOOTING\020\000\022\016\n\nMANAGEMEN" +
-      "T\020\001\022\013\n\007RUNNING\020\002\"\035\n\006DbgMsg\022\023\n\003msg\030\001 \001(\tB" +
-      "\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg\022\r\n\005crc32\030\001 \001(\r\"=" +
-      "\n\nBootLogMsg\022\r\n\005valid\030\001 \001(\010\022\021\n\tboot_time" +
-      "\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1\n\006GPSMsg\022\r\n\005valid" +
-      "\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003lon\030\003 \001(\002\"\336\001\n\006Log" +
-      "Msg\022\r\n\005valid\030\001 \001(\010\022\r\n\005count\030\002 \001(\r\022\021\n\ttim" +
-      "estamp\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\013\n\003ttl\030\005 \001(" +
-      "\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n\004rssi\030\007 \001(\021\022\013\n\003sn" +
-      "r\030\010 \001(\021\022\017\n\007rx_size\030\t \001(\005\022\020\n\010comp_crc\030\n \001" +
-      "(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006uptime\030\014 \001(\r\022\030\n\007gps_m" +
-      "sg\030\r \001(\0132\007.GPSMsg\"\027\n\007TimeMsg\022\014\n\004time\030\001 \001" +
-      "(\r\"\375\007\n\tSerialMsg\022\035\n\004type\030\001 \001(\0162\017.SerialM" +
-      "sg.Type\022\r\n\005retry\030\002 \001(\010\022\"\n\007sys_cfg\030\003 \001(\0132" +
-      "\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tclock_set\030\004 \001(\0132\014." +
-      "ClockSetMsgB\005\222?\002\030\004\022!\n\006status\030\005 \001(\0132\n.Sta" +
-      "tusMsgB\005\222?\002\030\004\022\037\n\007dbg_msg\030\006 \001(\0132\007.DbgMsgB" +
-      "\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\0132\007.LogMsgB\005\222?\002\030\004\022" +
-      "(\n\014boot_log_msg\030\010 \001(\0132\013.BootLogMsgB\005\222?\002\030" +
-      "\004\022!\n\010data_msg\030\t \001(\0132\010.DataMsgB\005\222?\002\030\004\022#\n\t" +
-      "error_msg\030\n \001(\0132\t.ErrorMsgB\005\222?\002\030\004\022!\n\010tim" +
-      "e_msg\030\013 \001(\0132\010.TimeMsgB\005\222?\002\030\004\022+\n\nupdate_m" +
-      "sg\030\014 \001(\0132\n.UpdateMsgB\013\222?\002\030\004\222?\003\240\001\004\022#\n\007ver" +
-      "_msg\030\r \001(\0132\013.VersionMsgB\005\222?\002\030\004\022,\n\016int_pa" +
-      "rams_msg\030\016 \001(\0132\r.IntParamsMsgB\005\222?\002\030\004\"\363\003\n" +
-      "\004Type\022\016\n\nGET_CONFIG\020\000\022\016\n\nSET_CONFIG\020\001\022\n\n" +
-      "\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOCK_SET\020\004\022\n\n\006ST" +
-      "ATUS\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013STAY_IN_MGT\020\007\022" +
-      "\r\n\tDEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022\016\n\nERASE_LOGS" +
-      "\020\n\022\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\tERASE_CFG\020\014\022\014" +
-      "\n\010READ_LOG\020\r\022\022\n\016READ_LOG_RETRY\020\016\022\r\n\tREPL" +
-      "Y_LOG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022\027\n\023READ_BOOT_" +
-      "LOG_RETRY\020\021\022\022\n\016REPLY_BOOT_LOG\020\022\022\013\n\007CRC_E" +
-      "RR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017" +
-      "ENTER_KISS_MODE\020\027\022\022\n\016EXIT_KISS_MODE\020\030\022\014\n" +
-      "\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPDATE\020\033\022\013\n\007VERS" +
-      "ION\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\rTURN_OLED_OFF" +
-      "\020\036\022\016\n\nINT_PARAMS\020\037:\006\222?\003\240\001\010\"!\n\nVersionMsg" +
-      "\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004typ" +
-      "e\030\001 \001(\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?" +
-      "\003\010\200\002\"\"\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001" +
-      "\"\253\002\n\007DataMsg\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Typ" +
-      "e\022\021\n\tstream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sen" +
-      "der\030\004 \001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n\007payload" +
-      "\030\006 \001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001" +
-      "(\010\022\026\n\016kiss_cur_frame\030\t \001(\r\022\027\n\017kiss_tot_f" +
-      "rames\030\n \001(\r\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tr" +
-      "edundant\030\014 \001(\010\".\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n" +
-      "\n\006KISSTX\020\002\022\n\n\006KISSRX\020\003\"\375\001\n\tUpdateMsg\022\035\n\004" +
-      "type\030\001 \001(\0162\017.UpdateMsg.Type\022\017\n\007pkt_cnt\030\002" +
-      " \001(\005\022\024\n\004path\030\003 \001(\tB\006\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B" +
-      "\006\222?\003\010\200 \022\031\n\nsha256_pkt\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsh" +
-      "a256_upd\030\006 \001(\014B\005\222?\002\010 \022\031\n\nerr_reason\030\007 \001(" +
-      "\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005FIRST\020\000\022\010\n\004LAST\020\001\022\n\n" +
-      "\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]" +
-      "\n\014IntParamsMsg\022\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007c" +
-      "hannel\030\002 \001(\005\022\023\n\013time_offset\030\003 \001(\005\022\022\n\npwr" +
-      "_offset\030\004 \001(\005b\006proto3"
+      "log_en\030\t \001(\010\022\031\n\021watchdog_timer_en\030\n \001(\010\022" +
+      "\036\n\026voice_frames_per_frame\030\013 \001(\r\022\026\n\016codec" +
+      "2_bitrate\030\014 \001(\r\"@\n\004Mode\022\n\n\006NORMAL\020\000\022\016\n\nM" +
+      "ODE_RESET\020\001\022\017\n\013MODE_SILENT\020\002\022\013\n\007TESTING\020" +
+      "\003\"\033\n\013ClockSetMsg\022\014\n\004time\030\001 \001(\r\"\227\002\n\tStatu" +
+      "sMsg\022!\n\006status\030\001 \001(\0162\021.StatusMsg.Status\022" +
+      "\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030\003 \001(\r\022\017\n\007oled_o" +
+      "n\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005 \001(\r\022\031\n\021total_r" +
+      "x_corr_pkt\030\006 \001(\r\022\024\n\014total_tx_pkt\030\007 \001(\r\022\024" +
+      "\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013last_rx_snr\030\t \001(" +
+      "\r\022\021\n\theap_size\030\n \001(\r\"2\n\006Status\022\013\n\007BOOTIN" +
+      "G\020\000\022\016\n\nMANAGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006DbgM" +
+      "sg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg\022" +
+      "\r\n\005crc32\030\001 \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030\001 " +
+      "\001(\010\022\021\n\tboot_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1\n" +
+      "\006GPSMsg\022\r\n\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003l" +
+      "on\030\003 \001(\002\"\336\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005co" +
+      "unt\030\002 \001(\r\022\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender\030\004" +
+      " \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n\004" +
+      "rssi\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(\005" +
+      "\022\020\n\010comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006uptim" +
+      "e\030\014 \001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007Tim" +
+      "eMsg\022\014\n\004time\030\001 \001(\r\"\274\010\n\tSerialMsg\022\035\n\004type" +
+      "\030\001 \001(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010\022\"" +
+      "\n\007sys_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tcl" +
+      "ock_set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006st" +
+      "atus\030\005 \001(\0132\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_msg" +
+      "\030\006 \001(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\0132" +
+      "\007.LogMsgB\005\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132\013." +
+      "BootLogMsgB\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010.Da" +
+      "taMsgB\005\222?\002\030\004\022#\n\terror_msg\030\n \001(\0132\t.ErrorM" +
+      "sgB\005\222?\002\030\004\022!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB\005\222" +
+      "?\002\030\004\022+\n\nupdate_msg\030\014 \001(\0132\n.UpdateMsgB\013\222?" +
+      "\002\030\004\222?\003\240\001\004\022#\n\007ver_msg\030\r \001(\0132\013.VersionMsgB" +
+      "\005\222?\002\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntPara" +
+      "msMsgB\005\222?\002\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016." +
+      "VoiceFrameMsgB\005\222?\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CON" +
+      "FIG\020\000\022\016\n\nSET_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DAT" +
+      "A\020\003\022\r\n\tCLOCK_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_ST" +
+      "ATUS\020\006\022\017\n\013STAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n" +
+      "\n\006REBOOT\020\t\022\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT" +
+      "_LOGS\020\013\022\r\n\tERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016" +
+      "READ_LOG_RETRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_" +
+      "BOOT_LOG\020\020\022\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016R" +
+      "EPLY_BOOT_LOG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME" +
+      "\020\024\022\007\n\003ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020" +
+      "\027\022\022\n\016EXIT_KISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003L" +
+      "OG\020\032\022\n\n\006UPDATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OL" +
+      "ED_ON\020\035\022\021\n\rTURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS" +
+      "\020\037\022\r\n\tVOICE_MSG\020 :\006\222?\003\240\001\010\"!\n\nVersionMsg\022" +
+      "\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type" +
+      "\030\001 \001(\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003" +
+      "\010\200\002\"\"\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"" +
+      "\305\002\n\007DataMsg\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type" +
+      "\022\021\n\tstream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006send" +
+      "er\030\004 \001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030" +
+      "\006 \001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(" +
+      "\010\022\026\n\016kiss_cur_frame\030\t \001(\r\022\027\n\017kiss_tot_fr" +
+      "ames\030\n \001(\r\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tre" +
+      "dundant\030\014 \001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n" +
+      "\006KISSTX\020\002\022\n\n\006KISSRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VO" +
+      "ICERX\020\005\"N\n\rVoiceFrameMsg\022\021\n\tsize_bits\030\001 " +
+      "\001(\r\022\022\n\nend_stream\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014" +
+      "B\005\222?\002\010 \"\375\001\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.Up" +
+      "dateMsg.Type\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 " +
+      "\001(\tB\006\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha2" +
+      "56_pkt\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B" +
+      "\005\222?\002\010 \022\031\n\nerr_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Typ" +
+      "e\022\t\n\005FIRST\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003AC" +
+      "K\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022" +
+      "\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n" +
+      "\013time_offset\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005b\006" +
+      "proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -19616,7 +20580,7 @@ public final class Qmesh {
     internal_static_SysCfgMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SysCfgMsg_descriptor,
-        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", });
+        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", "VoiceFramesPerFrame", "Codec2Bitrate", });
     internal_static_ClockSetMsg_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_ClockSetMsg_fieldAccessorTable = new
@@ -19670,7 +20634,7 @@ public final class Qmesh {
     internal_static_SerialMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SerialMsg_descriptor,
-        new java.lang.String[] { "Type", "Retry", "SysCfg", "ClockSet", "Status", "DbgMsg", "LogMsg", "BootLogMsg", "DataMsg", "ErrorMsg", "TimeMsg", "UpdateMsg", "VerMsg", "IntParamsMsg", });
+        new java.lang.String[] { "Type", "Retry", "SysCfg", "ClockSet", "Status", "DbgMsg", "LogMsg", "BootLogMsg", "DataMsg", "ErrorMsg", "TimeMsg", "UpdateMsg", "VerMsg", "IntParamsMsg", "VoiceFrameMsg", });
     internal_static_VersionMsg_descriptor =
       getDescriptor().getMessageTypes().get(15);
     internal_static_VersionMsg_fieldAccessorTable = new
@@ -19689,14 +20653,20 @@ public final class Qmesh {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DataMsg_descriptor,
         new java.lang.String[] { "Type", "StreamId", "Ttl", "Sender", "SymOffset", "Payload", "Crc", "Voice", "KissCurFrame", "KissTotFrames", "KissStreamId", "Redundant", });
-    internal_static_UpdateMsg_descriptor =
+    internal_static_VoiceFrameMsg_descriptor =
       getDescriptor().getMessageTypes().get(18);
+    internal_static_VoiceFrameMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_VoiceFrameMsg_descriptor,
+        new java.lang.String[] { "SizeBits", "EndStream", "Payload", });
+    internal_static_UpdateMsg_descriptor =
+      getDescriptor().getMessageTypes().get(19);
     internal_static_UpdateMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_UpdateMsg_descriptor,
         new java.lang.String[] { "Type", "PktCnt", "Path", "Pld", "Sha256Pkt", "Sha256Upd", "ErrReason", });
     internal_static_IntParamsMsg_descriptor =
-      getDescriptor().getMessageTypes().get(19);
+      getDescriptor().getMessageTypes().get(20);
     internal_static_IntParamsMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_IntParamsMsg_descriptor,

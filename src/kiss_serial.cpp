@@ -38,6 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha256.h"
 #include "pseudo_serial.hpp"
 #include "serial_data.hpp"
+#include "voice_msg.hpp"
 #include "peripherals.hpp"
 #include "Adafruit_SSD1306.h"
 
@@ -592,11 +593,14 @@ void KISSSerial::send_error(const string &err_str) {
 }  
 
 
+#if 0
 Mutex stream_id_lock;
 mt19937 stream_id_rng; //NOLINT
 static atomic<int> last_stream_id;
 static constexpr int MAX_UINT8_VAL = 255;
 static uniform_int_distribution<uint8_t> timing_off_dist(0, MAX_UINT8_VAL);  
+
+
 static auto get_stream_id() -> uint8_t;
 static auto get_stream_id() -> uint8_t {
     stream_id_lock.lock();
@@ -608,6 +612,7 @@ static auto get_stream_id() -> uint8_t {
     stream_id_lock.unlock();
     return new_stream_id;
 }
+#endif
 
 
 static auto check_upd_pkt_sha256(const UpdateMsg &update_msg) -> bool;
@@ -645,6 +650,7 @@ void KISSSerial::rx_serial_thread_fn() {
     past_log_msg.clear();
     auto ser_msg = make_shared<SerMsg>();
     int err = 0;
+    auto voice = make_shared<VoiceMsgProcessor>();
     for(;;) {
         ser_msg->clear();
         err = load_SerMsg(*ser_msg, *pser_rd);
@@ -666,6 +672,21 @@ void KISSSerial::rx_serial_thread_fn() {
             MBED_ASSERT(disp_file != nullptr);
             fclose(disp_file);
             oled->displayOff();
+        }
+        if(ser_msg->type() == SerialMsg_Type_VOICE_MSG) {
+            MBED_ASSERT(ser_msg->has_voice_frame_msg());
+            vector<uint8_t> frame(ser_msg->voice_frame_msg().payload.size);
+            memcpy(frame.data(), ser_msg->voice_frame_msg().payload.bytes, ser_msg->voice_frame_msg().payload.size);
+            if(voice->addFrame(frame)) {
+                auto frame = make_shared<Frame>();
+                frame->loadFromPB(ser_msg->data_msg());
+                frame->setSender(radio_cb.address);
+                frame->setStreamID();
+                auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
+                enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+                send_ack();
+                voice->clearFrames();
+            }
         }
         if(ser_msg->type() == SerialMsg_Type_TURN_OLED_ON) {
             debug_printf(DBG_INFO, "Received a request to turn ON the OLED display\r\n");
@@ -861,7 +882,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 auto frame = make_shared<Frame>();
                 frame->loadFromPB(ser_msg->data_msg());
                 frame->setSender(radio_cb.address);
-                frame->setStreamID(get_stream_id());
+                frame->setStreamID();
                 auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
                 enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
                 send_ack();
@@ -874,7 +895,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 size_t frame_num = 0;
                 size_t tot_frames = ceilf(static_cast<float>(ser_msg->data_msg().payload.size)/
                                             static_cast<float>(max_pld_size));
-                uint8_t stream_id = get_stream_id();
+                uint8_t stream_id = Frame::createStreamID();
                 vector<uint8_t> frags(ser_msg->data_msg().payload.size);
                 memcpy(frags.data(), ser_msg->data_msg().payload.bytes, frags.size());
                 // KEEP CHECKING THIS
