@@ -3,7 +3,6 @@
 
 
 auto VoiceMsgProcessor::getDataPayload() -> vector<uint8_t> {
-    vector<uint8_t> pld;
     switch(radio_cb.codec2_bitrate) {
         case BITRATE_450:  return setFrames<four_frame_450bps_t>(frames); break;
         case BITRATE_700:  return setFrames<four_frame_700bps_t>(frames); break;

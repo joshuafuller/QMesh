@@ -485,31 +485,56 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
 }
 
 
+static void send_to_uarts(const SerMsg &ser_msg);
+static void send_to_uarts(const SerMsg &ser_msg) {
+    if(ser_msg.has_data_msg()) { // Send it out over the serial ports
+        kiss_sers_mtx.lock();
+        for(auto & kiss_ser : kiss_sers) {
+            auto ser_msg_sptr_en = make_shared<SerMsg>(ser_msg);
+            kiss_ser->enqueue_msg(ser_msg_sptr_en);
+        }
+            kiss_sers_mtx.unlock();
+    }
+}
+
+
 void rx_frame_ser_thread_fn() {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
-        auto ser_msg_sptr = make_shared<SerMsg>();
-        ser_msg_sptr->type(SerialMsg_Type_DATA);
-        rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg());
         // Handle KISS frames vs. "regular" QMesh frames
-        if(ser_msg_sptr->data_msg().type == DataMsg_Type_KISSRX || 
-            ser_msg_sptr->data_msg().type == DataMsg_Type_KISSTX) {
+        if(rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSRX || 
+            rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSTX) {
+            auto ser_msg_sptr = make_shared<SerMsg>();
+            ser_msg_sptr->type(SerialMsg_Type_DATA);
+            rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg());
             ser_msg_sptr->data_msg().type = DataMsg_Type_KISSRX;
             auto frag = make_shared<DataMsg>(ser_msg_sptr->data_msg());
             auto pkt = handle_incoming_frag(frag);
             if(pkt != nullptr) {
                 ser_msg_sptr->data_msg() = *pkt;
             }
-        } else {
-            ser_msg_sptr->data_msg().type = DataMsg_Type_RX;
-        }
-        if(ser_msg_sptr->has_data_msg()) { // Send it out over the serial ports
-            kiss_sers_mtx.lock();
-            for(auto & kiss_ser : kiss_sers) {
-                auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
-                kiss_ser->enqueue_msg(ser_msg_sptr_en);
+            send_to_uarts(*ser_msg_sptr);
+        } else if(rx_frame_sptr->getDataMsgType() == DataMsg_Type_VOICERX ||
+                    rx_frame_sptr->getDataMsgType() == DataMsg_Type_VOICETX) {
+            auto voice = make_shared<VoiceMsgProcessor>();
+            vector<uint8_t> pld;
+            rx_frame_sptr->getPayload(pld);
+            vector<vector<uint8_t>> voice_frames = voice->getVoiceFrames(pld);
+            for(auto & voice_frame : voice_frames) {
+                auto voice_ser_msg_sptr = make_shared<SerMsg>();
+                voice_ser_msg_sptr->type(SerialMsg_Type_VOICE_MSG);
+                voice_ser_msg_sptr->voice_frame_msg().end_stream = false;
+                voice_ser_msg_sptr->voice_frame_msg().payload.size = voice_frame.size();
+                memcpy(voice_ser_msg_sptr->voice_frame_msg().payload.bytes, 
+                        voice_frame.data(), voice_frame.size());
+                send_to_uarts(*voice_ser_msg_sptr);
             }
-            kiss_sers_mtx.unlock();
+        } else {
+            auto ser_msg_sptr = make_shared<SerMsg>();
+            ser_msg_sptr->type(SerialMsg_Type_DATA);
+            rx_frame_sptr->saveToPB(ser_msg_sptr->data_msg());
+            ser_msg_sptr->data_msg().type = DataMsg_Type_RX;
+            send_to_uarts(*ser_msg_sptr);
         }
     }
 }

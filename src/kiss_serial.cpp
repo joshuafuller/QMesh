@@ -262,8 +262,8 @@ auto KISSSerial::save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_
 
 
 KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
-    port_name(std::move(my_port_name)),
-    port_type(ser_port_type) {
+    port_type(ser_port_type),
+    port_name(std::move(my_port_name)) {
     pser_rd = nullptr;
     pser_wr = nullptr;
     past_log_msg.clear();
@@ -557,7 +557,7 @@ void KISSSerial::send_status() {
     }
     ser_msg->status().tx_full = tx_frame_mail.full();
     ser_msg->status().time = time(nullptr);
-    auto *display_file = fopen("/fs/display.off", "r");
+    auto *display_file = fopen("/fs/display.off", "re");
     if(display_file == nullptr) {
         ser_msg->status().oled_on = true;
     } else {
@@ -668,30 +668,37 @@ void KISSSerial::rx_serial_thread_fn() {
         }
         if(ser_msg->type() == SerialMsg_Type_TURN_OLED_OFF) {
             debug_printf(DBG_INFO, "Received a request to turn OFF the OLED display\r\n");
-            auto *disp_file = fopen("/fs/display.off", "w");
+            auto *disp_file = fopen("/fs/display.off", "we");
             MBED_ASSERT(disp_file != nullptr);
             fclose(disp_file);
             oled->displayOff();
         }
         if(ser_msg->type() == SerialMsg_Type_VOICE_MSG) {
             MBED_ASSERT(ser_msg->has_voice_frame_msg());
-            vector<uint8_t> frame(ser_msg->voice_frame_msg().payload.size);
-            memcpy(frame.data(), ser_msg->voice_frame_msg().payload.bytes, ser_msg->voice_frame_msg().payload.size);
-            if(voice->addFrame(frame)) {
+            if(!ser_msg->voice_frame_msg().end_stream) {
+                vector<uint8_t> voice_frame(ser_msg->voice_frame_msg().payload.size);
+                memcpy(voice_frame.data(), ser_msg->voice_frame_msg().payload.bytes, 
+                        ser_msg->voice_frame_msg().payload.size);
+                if(voice->addFrame(voice_frame)) {
+                    auto frame = make_shared<Frame>();
+                    frame->createFromVoice(*voice);
+                    auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
+                    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+                    voice->clearFrames();
+                }
+            } else {
                 auto frame = make_shared<Frame>();
-                frame->loadFromPB(ser_msg->data_msg());
-                frame->setSender(radio_cb.address);
-                frame->setStreamID();
+                frame->createFromVoice(*voice);
                 auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
                 enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
-                send_ack();
                 voice->clearFrames();
             }
+            send_ack();
         }
         if(ser_msg->type() == SerialMsg_Type_TURN_OLED_ON) {
             debug_printf(DBG_INFO, "Received a request to turn ON the OLED display\r\n");
             fs.remove("display.off");
-            auto *disp_file = fopen("/fs/display.off", "r");
+            auto *disp_file = fopen("/fs/display.off", "re");
             MBED_ASSERT(disp_file == nullptr);
             oled->displayOn();
         }        
@@ -720,7 +727,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 }
                 string upd_fname(ser_msg->update_msg().path); 
                 upd_fname.append(".tmp");
-                upd_file = fopen(upd_fname.c_str(), "w");
+                upd_file = fopen(upd_fname.c_str(), "we");
                 mbedtls_sha256_init(&sha256_cxt);
                 mbedtls_sha256_starts(&sha256_cxt, 0);
                 if(upd_file == nullptr) {
@@ -805,7 +812,7 @@ void KISSSerial::rx_serial_thread_fn() {
 							fs.rename(upd_fname_tmp.c_str(), upd_fname.c_str());
 							string upd_fname_sha256(ser_msg->update_msg().path); 
 							upd_fname_sha256.append(".sha256");
-							FILE *upd_file_sha256 = fopen(upd_fname_sha256.c_str(), "w");
+							FILE *upd_file_sha256 = fopen(upd_fname_sha256.c_str(), "we");
 							if(upd_file_sha256 != nullptr) {
 								fwrite(ser_msg->update_msg().sha256_upd.bytes, 1, SHA256_SIZE, upd_file_sha256); 
 								fclose(upd_file_sha256);
@@ -1029,7 +1036,7 @@ void KISSSerial::rx_serial_thread_fn() {
                         logfile_names.push_back(file_path);
                     }								
                     reading_log = true;
-                    f = fopen(logfile_names[0].c_str(), "r");
+                    f = fopen(logfile_names[0].c_str(), "re");
                     if(f == nullptr) {
                         string err_msg = "Unable to open logfile ";
                         err_msg.append(logfile_names[0]);
@@ -1052,7 +1059,7 @@ void KISSSerial::rx_serial_thread_fn() {
                         debug_printf(DBG_WARN, "Finished reading logs. Now rebooting...\r\n");
 					    reboot_system();	 	
                     } else {
-                        f = fopen(logfile_names[0].c_str(), "r");
+                        f = fopen(logfile_names[0].c_str(), "re");
                         MBED_ASSERT(f);
                         logfile_names.erase(logfile_names.begin());   
                         string cur_line;
@@ -1092,7 +1099,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 shared_mtx.lock();
 				if(!reading_bootlog) {
 					reading_bootlog = true;
-					f = fopen("/fs/boot_log.bin", "r");
+					f = fopen("/fs/boot_log.bin", "re");
 					MBED_ASSERT(f);
 				}
                 auto cur_log_msg = make_shared<SerMsg>();
