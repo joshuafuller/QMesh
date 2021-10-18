@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "LittleFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
+#include "voice_msg.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -127,7 +128,7 @@ void init_filesystem() {
 
 static void write_default_cfg();
 static void write_default_cfg() {
-    auto *f = fopen("/fs/settings.bin", "w");
+    auto *f = fopen("/fs/settings.bin", "we");
     MBED_ASSERT(f);
     SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
     radio_cb = sys_cfg_msg_zero;
@@ -162,6 +163,8 @@ static void write_default_cfg() {
     radio_cb.net_cfg.pld_len = FRAME_PAYLOAD_LEN;
     radio_cb.net_cfg.walsh_codes = false;
     radio_cb.net_cfg.invert_bits = false;
+    radio_cb.net_cfg.voice_frames_per_frame = DEFAULT_VOICE_FRAMES_PER_FRAME;
+    radio_cb.net_cfg.codec2_bitrate = DEFAULT_CODEC2_BITRATE;
 
     radio_cb.has_fec_cfg = true;
     FECCfg FECCfg_zero = FECCfg_init_zero;
@@ -189,7 +192,7 @@ static void write_default_cfg() {
     MBED_ASSERT(save_SerMsg(*ser_msg, *f_ps) == WRITE_SUCCESS);
     fflush(f);
     fclose(f); 
-    f = fopen("/fs/settings.bin", "r");
+    f = fopen("/fs/settings.bin", "re");
     MBED_ASSERT(f);
     fclose(f);
 }
@@ -198,11 +201,11 @@ static void write_default_cfg() {
 //extern Thread rx_serial_thread;
 void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Stats on settings.bin\r\n");  
-    auto *f = fopen("/fs/settings.bin", "r");
+    auto *f = fopen("/fs/settings.bin", "re");
     if(f == nullptr) {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
         write_default_cfg();
-        f = fopen("/fs/settings.bin", "r");
+        f = fopen("/fs/settings.bin", "re");
         MBED_ASSERT(f);     
     }
     struct stat file_stat{};
@@ -215,7 +218,7 @@ void load_settings_from_flash() {
         fclose(f);
         debug_printf(DBG_WARN, "Invalid settings.bin. Creating new file with default settings\r\n");
         write_default_cfg();
-        f = fopen("/fs/settings.bin", "r");
+        f = fopen("/fs/settings.bin", "re");
         MBED_ASSERT(f);
     }
     MBED_ASSERT(ser_msg->type() == SerialMsg_Type_CONFIG);
@@ -245,6 +248,11 @@ void load_settings_from_flash() {
     MBED_ASSERT(radio_cb.has_fec_cfg);
     MBED_ASSERT(radio_cb.fec_cfg.conv_rate == 2);
     MBED_ASSERT(radio_cb.fec_cfg.conv_order == 7);
+    // Voice parameters
+    MBED_ASSERT(VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate));
+    MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
+    radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
+
 #if 0
     // Check if low-power mode is set. If so, delete the UART
     //rx_serial_thread.start(rx_serial_thread_fn);
@@ -262,7 +270,7 @@ void load_settings_from_flash() {
 
 void save_settings_to_flash() {
     debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
-    auto *f = fopen("/fs/settings.bin", "w"); 
+    auto *f = fopen("/fs/settings.bin", "we"); 
     MBED_ASSERT(f);
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_CONFIG);
@@ -281,7 +289,7 @@ void log_boot() {
     ser_msg->boot_log_msg().count = 0;
     ser_msg->boot_log_msg().valid = true;
 
-    auto *f = fopen("/fs/boot_log.bin", "a+");
+    auto *f = fopen("/fs/boot_log.bin", "a+e");
     MBED_ASSERT(f);
     auto f_ps = make_shared<FilePseudoSerial>(f);
     save_SerMsg(*ser_msg, *f_ps);
@@ -292,10 +300,10 @@ void log_boot() {
 auto open_logfile() -> FILE * {
     // Step one: get the size of the current logfile. If current logfile is too big,
     //  move it down the "logfile stack".
-    auto *f = fopen("/fs/log/logfile.bin", "r");
+    auto *f = fopen("/fs/log/logfile.bin", "re");
     if(f == nullptr) {
         debug_printf(DBG_INFO, "Need to create the logfile\r\n");
-        f = fopen("/fs/log/logfile.bin", "w");
+        f = fopen("/fs/log/logfile.bin", "we");
         MBED_ASSERT(f);
     }
     fclose(f);
@@ -312,7 +320,7 @@ auto open_logfile() -> FILE * {
         }
         fs.rename("log/logfile.bin", "log/logfile000.bin");
     }
-    f = fopen("/fs/log/logfile.bin", "a+");
+    f = fopen("/fs/log/logfile.bin", "a+e");
     MBED_ASSERT(f != nullptr);
     return f;
 }

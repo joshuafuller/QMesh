@@ -1,0 +1,1 @@
+*,-cppcoreguidelines-pro-type-union-access,-cert-dcl50-cpp,-google-runtime-references,-hicpp-vararg,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-type-vararg,-fuchsia-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-hicpp-no-array-decay

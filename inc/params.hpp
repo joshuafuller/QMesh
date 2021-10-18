@@ -37,6 +37,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Default address for the node
 #define DEFAULT_ADDRESS 0
 
+// Default voice parameters
+#define DEFAULT_CODEC2_BITRATE 700
+#define DEFAULT_VOICE_FRAMES_PER_FRAME 4
+
 // Radio parameters
 #define RADIO_INVERT_IQ false
 #define RADIO_HOP_PERIOD 1

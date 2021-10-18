@@ -156,7 +156,7 @@ auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_data_msg) ->
         comb_buf.resize(stream.bytes_written+sizeof(crc_t));
         memcpy(comb_buf.data(), buf.data(), stream.bytes_written);
         crc_t crc = compute_frame_crc(vector<uint8_t>(comb_buf.begin(), comb_buf.begin()+stream.bytes_written));
-        memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t));
+        memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t)); //NOLINT
     } else {
         comb_buf.resize(ser_msg.data_msg().payload.size);
         memcpy(comb_buf.data(), ser_msg.data_msg().payload.bytes, ser_msg.data_msg().payload.size);

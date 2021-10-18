@@ -6,7 +6,7 @@ sf: 9
 bw: 1
 cr: 0
 num_offsets: 4
-payload_length: 32
+#payload_length: 32
 cw_test_mode: false
 # RF Parameters
 frequencies:
@@ -28,3 +28,6 @@ watchdog_timer_en: true
 walsh_codes: false 
 # Invert bits before transmission as an anti-interference thing
 invert_bits: true
+# codec2 stuff
+voice_frames_per_frame: 4;
+codec2_bitrate: 700;

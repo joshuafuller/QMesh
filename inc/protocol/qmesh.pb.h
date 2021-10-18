@@ -170,6 +170,8 @@ typedef struct _NetCfg {
     uint32_t full_pkt_len;
     bool walsh_codes;
     bool invert_bits;
+    uint32_t voice_frames_per_frame;
+    uint32_t codec2_bitrate;
 } NetCfg;
 
 typedef struct _SerialCRCMsg {
@@ -283,8 +285,6 @@ typedef struct _SysCfgMsg {
     bool log_packets_en;
     bool boot_log_en;
     bool watchdog_timer_en;
-    uint32_t voice_frames_per_frame;
-    uint32_t codec2_bitrate;
 } SysCfgMsg;
 
 
@@ -327,8 +327,8 @@ typedef struct _SysCfgMsg {
 #define TestCfg_init_default                     {0, 0, 0}
 #define FECCfg_init_default                      {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default, 0}
-#define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0}
-#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0, 0, 0}
+#define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0, 0, 0}
+#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
 #define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_default                      {""}
@@ -348,8 +348,8 @@ typedef struct _SysCfgMsg {
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero, 0}
-#define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0}
-#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0, 0, 0}
+#define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0, 0, 0}
+#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
 #define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_zero                         {""}
@@ -409,6 +409,8 @@ typedef struct _SysCfgMsg {
 #define NetCfg_full_pkt_len_tag                  5
 #define NetCfg_walsh_codes_tag                   6
 #define NetCfg_invert_bits_tag                   7
+#define NetCfg_voice_frames_per_frame_tag        8
+#define NetCfg_codec2_bitrate_tag                9
 #define SerialCRCMsg_crc32_tag                   1
 #define SerialMsg_type_tag                       1
 #define SerialMsg_retry_tag                      2
@@ -478,8 +480,6 @@ typedef struct _SysCfgMsg {
 #define SysCfgMsg_log_packets_en_tag             8
 #define SysCfgMsg_boot_log_en_tag                9
 #define SysCfgMsg_watchdog_timer_en_tag          10
-#define SysCfgMsg_voice_frames_per_frame_tag     11
-#define SysCfgMsg_codec2_bitrate_tag             12
 
 /* Struct field encoding specification for nanopb */
 #define LoraCfg_FIELDLIST(X, a) \
@@ -523,7 +523,9 @@ X(a, STATIC,   SINGULAR, UINT32,   num_offsets,       3) \
 X(a, STATIC,   SINGULAR, UINT32,   pld_len,           4) \
 X(a, STATIC,   SINGULAR, UINT32,   full_pkt_len,      5) \
 X(a, STATIC,   SINGULAR, BOOL,     walsh_codes,       6) \
-X(a, STATIC,   SINGULAR, BOOL,     invert_bits,       7)
+X(a, STATIC,   SINGULAR, BOOL,     invert_bits,       7) \
+X(a, STATIC,   SINGULAR, UINT32,   voice_frames_per_frame,   8) \
+X(a, STATIC,   SINGULAR, UINT32,   codec2_bitrate,    9)
 #define NetCfg_CALLBACK NULL
 #define NetCfg_DEFAULT NULL
 
@@ -537,9 +539,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  net_cfg,           6) \
 X(a, STATIC,   SINGULAR, BOOL,     gps_en,            7) \
 X(a, STATIC,   SINGULAR, BOOL,     log_packets_en,    8) \
 X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,       9) \
-X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  10) \
-X(a, STATIC,   SINGULAR, UINT32,   voice_frames_per_frame,  11) \
-X(a, STATIC,   SINGULAR, UINT32,   codec2_bitrate,   12)
+X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  10)
 #define SysCfgMsg_CALLBACK NULL
 #define SysCfgMsg_DEFAULT NULL
 #define SysCfgMsg_radio_cfg_MSGTYPE RadioCfg
@@ -748,7 +748,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define TestCfg_size                             6
 #define FECCfg_size                              35
 #define RadioCfg_size                            226
-#define NetCfg_size                              286
+#define NetCfg_size                              298
 #define SysCfgMsg_size                           591
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           48

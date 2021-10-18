@@ -139,6 +139,8 @@ public:
         return bitrate/FRAME_RATE_HZ;
     }
 
+    static auto size() -> int;
+
     auto addFrame(const vector<uint8_t>& frame) -> bool;
 
     void clearFrames() {

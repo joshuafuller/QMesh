@@ -87,7 +87,7 @@ private:
     /// Produces an MbedJSONValue with the current status and queues it for transmission.
     void tx_serial_thread_fn();
     shared_ptr<PseudoSerial> pser_rd, pser_wr;
-    auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, bool kiss_data_msg) -> write_ser_msg_err_t;
+    static auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, bool kiss_data_msg) -> write_ser_msg_err_t;
     auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t;
 
 public:

@@ -33,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 static Mutex Frame_mutex;
-static mt19937 Frame_stream_id_rng;
+static mt19937 Frame_stream_id_rng; //NOLINT
 static atomic<int> Frame_last_stream_id;
 
 auto Frame::size() -> size_t {
@@ -58,7 +58,7 @@ auto Frame::codedSize() -> size_t {
 
 void Frame::serialize(vector<uint8_t> &ser_frame) {
     for(size_t i = 0; i < sizeof(hdr); i++) {
-        ser_frame.push_back(((uint8_t *) &hdr)[i]);
+        ser_frame.push_back(((uint8_t *) &hdr)[i]); //NOLINT
     }
     copy(data.begin(), data.end(), back_inserter(ser_frame));
     for(size_t i = 0; i < sizeof(crc); i++) {
@@ -75,7 +75,7 @@ void Frame::serialize_pb(vector<uint8_t> &buf) {
     data_msg.sym_offset = hdr.var_subhdr.fields.sym_offset;
     data_msg.payload.size = data.size();
     memcpy(data_msg.payload.bytes, data.data(), data.size());
-    pb_byte_t buffer[DataMsg_size];
+    pb_byte_t buffer[DataMsg_size]; //NOLINT
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
     bool status = pb_encode(&stream, DataMsg_fields, &data_msg);
     MBED_ASSERT(status);
@@ -131,7 +131,7 @@ auto Frame::calcCRC() -> uint8_t {
     uint32_t crc = 0;
     vector<uint8_t> crc_buf;
     for(size_t i = 0; i < sizeof(hdr.cons_subhdr); i++) {
-        crc_buf.push_back(((uint8_t *) &hdr.cons_subhdr)[i]);
+        crc_buf.push_back(((uint8_t *) &hdr.cons_subhdr)[i]); //NOLINT
     }
     copy(data.begin(), data.end(), back_inserter(crc_buf));
     ct.compute(static_cast<void *>(crc_buf.data()), crc_buf.size(), &crc);
@@ -302,7 +302,8 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
     debug_printf(dbg_type, "----------\r\n");
     debug_printf(dbg_type, "PAYLOAD\r\n");
     for(size_t i = 0; i < data.size(); i++) {
-        if(i%16 == 0) {
+        constexpr int BYTES_PER_ROW = 16;
+        if(i % BYTES_PER_ROW == 0) {
             debug_printf(dbg_type, "");
         }
         debug_printf_clean(dbg_type, "%2x ", data[i]);
@@ -487,13 +488,13 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
 
 static void send_to_uarts(const SerMsg &ser_msg);
 static void send_to_uarts(const SerMsg &ser_msg) {
-    if(ser_msg.has_data_msg()) { // Send it out over the serial ports
+    if(ser_msg.has_data_msg() || ser_msg.has_voice_frame_msg()) { 
         kiss_sers_mtx.lock();
         for(auto & kiss_ser : kiss_sers) {
             auto ser_msg_sptr_en = make_shared<SerMsg>(ser_msg);
             kiss_ser->enqueue_msg(ser_msg_sptr_en);
         }
-            kiss_sers_mtx.unlock();
+        kiss_sers_mtx.unlock();
     }
 }
 
@@ -501,7 +502,7 @@ static void send_to_uarts(const SerMsg &ser_msg) {
 void rx_frame_ser_thread_fn() {
     for(;;) {
         auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
-        // Handle KISS frames vs. "regular" QMesh frames
+        // Handle KISS frames vs. "regular" QMesh frames vs. voice frames
         if(rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSRX || 
             rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSTX) {
             auto ser_msg_sptr = make_shared<SerMsg>();

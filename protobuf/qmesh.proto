@@ -50,6 +50,8 @@ message NetCfg {
   uint32 full_pkt_len = 5;
   bool walsh_codes = 6;
   bool invert_bits = 7;
+  uint32 voice_frames_per_frame = 8;
+  uint32 codec2_bitrate = 9;
 }
 
 message SysCfgMsg {
@@ -69,8 +71,6 @@ message SysCfgMsg {
   bool log_packets_en = 8;
   bool boot_log_en = 9;
   bool watchdog_timer_en = 10;
-  uint32 voice_frames_per_frame = 11;
-  uint32 codec2_bitrate = 12;
 }
 
 message ClockSetMsg {

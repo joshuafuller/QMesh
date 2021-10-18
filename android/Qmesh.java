@@ -3314,6 +3314,16 @@ public final class Qmesh {
      * <code>bool invert_bits = 7;</code>
      */
     boolean getInvertBits();
+
+    /**
+     * <code>uint32 voice_frames_per_frame = 8;</code>
+     */
+    int getVoiceFramesPerFrame();
+
+    /**
+     * <code>uint32 codec2_bitrate = 9;</code>
+     */
+    int getCodec2Bitrate();
   }
   /**
    * Protobuf type {@code NetCfg}
@@ -3335,6 +3345,8 @@ public final class Qmesh {
       fullPktLen_ = 0;
       walshCodes_ = false;
       invertBits_ = false;
+      voiceFramesPerFrame_ = 0;
+      codec2Bitrate_ = 0;
     }
 
     @java.lang.Override
@@ -3395,6 +3407,16 @@ public final class Qmesh {
             case 56: {
 
               invertBits_ = input.readBool();
+              break;
+            }
+            case 64: {
+
+              voiceFramesPerFrame_ = input.readUInt32();
+              break;
+            }
+            case 72: {
+
+              codec2Bitrate_ = input.readUInt32();
               break;
             }
             default: {
@@ -3517,6 +3539,24 @@ public final class Qmesh {
       return invertBits_;
     }
 
+    public static final int VOICE_FRAMES_PER_FRAME_FIELD_NUMBER = 8;
+    private int voiceFramesPerFrame_;
+    /**
+     * <code>uint32 voice_frames_per_frame = 8;</code>
+     */
+    public int getVoiceFramesPerFrame() {
+      return voiceFramesPerFrame_;
+    }
+
+    public static final int CODEC2_BITRATE_FIELD_NUMBER = 9;
+    private int codec2Bitrate_;
+    /**
+     * <code>uint32 codec2_bitrate = 9;</code>
+     */
+    public int getCodec2Bitrate() {
+      return codec2Bitrate_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -3551,6 +3591,12 @@ public final class Qmesh {
       }
       if (invertBits_ != false) {
         output.writeBool(7, invertBits_);
+      }
+      if (voiceFramesPerFrame_ != 0) {
+        output.writeUInt32(8, voiceFramesPerFrame_);
+      }
+      if (codec2Bitrate_ != 0) {
+        output.writeUInt32(9, codec2Bitrate_);
       }
       unknownFields.writeTo(output);
     }
@@ -3588,6 +3634,14 @@ public final class Qmesh {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, invertBits_);
       }
+      if (voiceFramesPerFrame_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(8, voiceFramesPerFrame_);
+      }
+      if (codec2Bitrate_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(9, codec2Bitrate_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -3618,6 +3672,10 @@ public final class Qmesh {
           == other.getWalshCodes());
       result = result && (getInvertBits()
           == other.getInvertBits());
+      result = result && (getVoiceFramesPerFrame()
+          == other.getVoiceFramesPerFrame());
+      result = result && (getCodec2Bitrate()
+          == other.getCodec2Bitrate());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -3645,6 +3703,10 @@ public final class Qmesh {
       hash = (37 * hash) + INVERT_BITS_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getInvertBits());
+      hash = (37 * hash) + VOICE_FRAMES_PER_FRAME_FIELD_NUMBER;
+      hash = (53 * hash) + getVoiceFramesPerFrame();
+      hash = (37 * hash) + CODEC2_BITRATE_FIELD_NUMBER;
+      hash = (53 * hash) + getCodec2Bitrate();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3792,6 +3854,10 @@ public final class Qmesh {
 
         invertBits_ = false;
 
+        voiceFramesPerFrame_ = 0;
+
+        codec2Bitrate_ = 0;
+
         return this;
       }
 
@@ -3825,6 +3891,8 @@ public final class Qmesh {
         result.fullPktLen_ = fullPktLen_;
         result.walshCodes_ = walshCodes_;
         result.invertBits_ = invertBits_;
+        result.voiceFramesPerFrame_ = voiceFramesPerFrame_;
+        result.codec2Bitrate_ = codec2Bitrate_;
         onBuilt();
         return result;
       }
@@ -3894,6 +3962,12 @@ public final class Qmesh {
         }
         if (other.getInvertBits() != false) {
           setInvertBits(other.getInvertBits());
+        }
+        if (other.getVoiceFramesPerFrame() != 0) {
+          setVoiceFramesPerFrame(other.getVoiceFramesPerFrame());
+        }
+        if (other.getCodec2Bitrate() != 0) {
+          setCodec2Bitrate(other.getCodec2Bitrate());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -4148,6 +4222,58 @@ public final class Qmesh {
         onChanged();
         return this;
       }
+
+      private int voiceFramesPerFrame_ ;
+      /**
+       * <code>uint32 voice_frames_per_frame = 8;</code>
+       */
+      public int getVoiceFramesPerFrame() {
+        return voiceFramesPerFrame_;
+      }
+      /**
+       * <code>uint32 voice_frames_per_frame = 8;</code>
+       */
+      public Builder setVoiceFramesPerFrame(int value) {
+        
+        voiceFramesPerFrame_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 voice_frames_per_frame = 8;</code>
+       */
+      public Builder clearVoiceFramesPerFrame() {
+        
+        voiceFramesPerFrame_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int codec2Bitrate_ ;
+      /**
+       * <code>uint32 codec2_bitrate = 9;</code>
+       */
+      public int getCodec2Bitrate() {
+        return codec2Bitrate_;
+      }
+      /**
+       * <code>uint32 codec2_bitrate = 9;</code>
+       */
+      public Builder setCodec2Bitrate(int value) {
+        
+        codec2Bitrate_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 codec2_bitrate = 9;</code>
+       */
+      public Builder clearCodec2Bitrate() {
+        
+        codec2Bitrate_ = 0;
+        onChanged();
+        return this;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -4290,16 +4416,6 @@ public final class Qmesh {
      * <code>bool watchdog_timer_en = 10;</code>
      */
     boolean getWatchdogTimerEn();
-
-    /**
-     * <code>uint32 voice_frames_per_frame = 11;</code>
-     */
-    int getVoiceFramesPerFrame();
-
-    /**
-     * <code>uint32 codec2_bitrate = 12;</code>
-     */
-    int getCodec2Bitrate();
   }
   /**
    * Protobuf type {@code SysCfgMsg}
@@ -4320,8 +4436,6 @@ public final class Qmesh {
       logPacketsEn_ = false;
       bootLogEn_ = false;
       watchdogTimerEn_ = false;
-      voiceFramesPerFrame_ = 0;
-      codec2Bitrate_ = 0;
     }
 
     @java.lang.Override
@@ -4429,16 +4543,6 @@ public final class Qmesh {
             case 80: {
 
               watchdogTimerEn_ = input.readBool();
-              break;
-            }
-            case 88: {
-
-              voiceFramesPerFrame_ = input.readUInt32();
-              break;
-            }
-            case 96: {
-
-              codec2Bitrate_ = input.readUInt32();
               break;
             }
             default: {
@@ -4735,24 +4839,6 @@ public final class Qmesh {
       return watchdogTimerEn_;
     }
 
-    public static final int VOICE_FRAMES_PER_FRAME_FIELD_NUMBER = 11;
-    private int voiceFramesPerFrame_;
-    /**
-     * <code>uint32 voice_frames_per_frame = 11;</code>
-     */
-    public int getVoiceFramesPerFrame() {
-      return voiceFramesPerFrame_;
-    }
-
-    public static final int CODEC2_BITRATE_FIELD_NUMBER = 12;
-    private int codec2Bitrate_;
-    /**
-     * <code>uint32 codec2_bitrate = 12;</code>
-     */
-    public int getCodec2Bitrate() {
-      return codec2Bitrate_;
-    }
-
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4796,12 +4882,6 @@ public final class Qmesh {
       }
       if (watchdogTimerEn_ != false) {
         output.writeBool(10, watchdogTimerEn_);
-      }
-      if (voiceFramesPerFrame_ != 0) {
-        output.writeUInt32(11, voiceFramesPerFrame_);
-      }
-      if (codec2Bitrate_ != 0) {
-        output.writeUInt32(12, codec2Bitrate_);
       }
       unknownFields.writeTo(output);
     }
@@ -4852,14 +4932,6 @@ public final class Qmesh {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(10, watchdogTimerEn_);
       }
-      if (voiceFramesPerFrame_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(11, voiceFramesPerFrame_);
-      }
-      if (codec2Bitrate_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(12, codec2Bitrate_);
-      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -4907,10 +4979,6 @@ public final class Qmesh {
           == other.getBootLogEn());
       result = result && (getWatchdogTimerEn()
           == other.getWatchdogTimerEn());
-      result = result && (getVoiceFramesPerFrame()
-          == other.getVoiceFramesPerFrame());
-      result = result && (getCodec2Bitrate()
-          == other.getCodec2Bitrate());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -4954,10 +5022,6 @@ public final class Qmesh {
       hash = (37 * hash) + WATCHDOG_TIMER_EN_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getWatchdogTimerEn());
-      hash = (37 * hash) + VOICE_FRAMES_PER_FRAME_FIELD_NUMBER;
-      hash = (53 * hash) + getVoiceFramesPerFrame();
-      hash = (37 * hash) + CODEC2_BITRATE_FIELD_NUMBER;
-      hash = (53 * hash) + getCodec2Bitrate();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5127,10 +5191,6 @@ public final class Qmesh {
 
         watchdogTimerEn_ = false;
 
-        voiceFramesPerFrame_ = 0;
-
-        codec2Bitrate_ = 0;
-
         return this;
       }
 
@@ -5183,8 +5243,6 @@ public final class Qmesh {
         result.logPacketsEn_ = logPacketsEn_;
         result.bootLogEn_ = bootLogEn_;
         result.watchdogTimerEn_ = watchdogTimerEn_;
-        result.voiceFramesPerFrame_ = voiceFramesPerFrame_;
-        result.codec2Bitrate_ = codec2Bitrate_;
         onBuilt();
         return result;
       }
@@ -5262,12 +5320,6 @@ public final class Qmesh {
         }
         if (other.getWatchdogTimerEn() != false) {
           setWatchdogTimerEn(other.getWatchdogTimerEn());
-        }
-        if (other.getVoiceFramesPerFrame() != 0) {
-          setVoiceFramesPerFrame(other.getVoiceFramesPerFrame());
-        }
-        if (other.getCodec2Bitrate() != 0) {
-          setCodec2Bitrate(other.getCodec2Bitrate());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5937,58 +5989,6 @@ public final class Qmesh {
       public Builder clearWatchdogTimerEn() {
         
         watchdogTimerEn_ = false;
-        onChanged();
-        return this;
-      }
-
-      private int voiceFramesPerFrame_ ;
-      /**
-       * <code>uint32 voice_frames_per_frame = 11;</code>
-       */
-      public int getVoiceFramesPerFrame() {
-        return voiceFramesPerFrame_;
-      }
-      /**
-       * <code>uint32 voice_frames_per_frame = 11;</code>
-       */
-      public Builder setVoiceFramesPerFrame(int value) {
-        
-        voiceFramesPerFrame_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>uint32 voice_frames_per_frame = 11;</code>
-       */
-      public Builder clearVoiceFramesPerFrame() {
-        
-        voiceFramesPerFrame_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int codec2Bitrate_ ;
-      /**
-       * <code>uint32 codec2_bitrate = 12;</code>
-       */
-      public int getCodec2Bitrate() {
-        return codec2Bitrate_;
-      }
-      /**
-       * <code>uint32 codec2_bitrate = 12;</code>
-       */
-      public Builder setCodec2Bitrate(int value) {
-        
-        codec2Bitrate_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>uint32 codec2_bitrate = 12;</code>
-       */
-      public Builder clearCodec2Bitrate() {
-        
-        codec2Bitrate_ = 0;
         onChanged();
         return this;
       }
@@ -20448,19 +20448,19 @@ public final class Qmesh {
       "ioCfg.Type\022\032\n\013frequencies\030\002 \003(\005B\005\222?\002\020\020\022\020" +
       "\n\010tx_power\030\003 \001(\005\022\032\n\010lora_cfg\030\004 \001(\0132\010.Lor" +
       "aCfg\022\024\n\014tcxo_time_us\030\005 \001(\002\"\031\n\004Type\022\010\n\004LO" +
-      "RA\020\000\022\007\n\003FSK\020\001\"\243\001\n\006NetCfg\022\032\n\nbeacon_msg\030\001" +
+      "RA\020\000\022\007\n\003FSK\020\001\"\333\001\n\006NetCfg\022\032\n\nbeacon_msg\030\001" +
       " \001(\tB\006\222?\003\010\200\002\022\027\n\017beacon_interval\030\002 \001(\r\022\023\n" +
       "\013num_offsets\030\003 \001(\r\022\017\n\007pld_len\030\004 \001(\r\022\024\n\014f" +
       "ull_pkt_len\030\005 \001(\r\022\023\n\013walsh_codes\030\006 \001(\010\022\023" +
-      "\n\013invert_bits\030\007 \001(\010\"\373\002\n\tSysCfgMsg\022\035\n\004mod" +
-      "e\030\001 \001(\0162\017.SysCfgMsg.Mode\022\017\n\007address\030\002 \001(" +
-      "\r\022\034\n\tradio_cfg\030\003 \001(\0132\t.RadioCfg\022\032\n\010test_" +
-      "cfg\030\004 \001(\0132\010.TestCfg\022\030\n\007fec_cfg\030\005 \001(\0132\007.F" +
-      "ECCfg\022\030\n\007net_cfg\030\006 \001(\0132\007.NetCfg\022\016\n\006gps_e" +
-      "n\030\007 \001(\010\022\026\n\016log_packets_en\030\010 \001(\010\022\023\n\013boot_" +
-      "log_en\030\t \001(\010\022\031\n\021watchdog_timer_en\030\n \001(\010\022" +
-      "\036\n\026voice_frames_per_frame\030\013 \001(\r\022\026\n\016codec" +
-      "2_bitrate\030\014 \001(\r\"@\n\004Mode\022\n\n\006NORMAL\020\000\022\016\n\nM" +
+      "\n\013invert_bits\030\007 \001(\010\022\036\n\026voice_frames_per_" +
+      "frame\030\010 \001(\r\022\026\n\016codec2_bitrate\030\t \001(\r\"\303\002\n\t" +
+      "SysCfgMsg\022\035\n\004mode\030\001 \001(\0162\017.SysCfgMsg.Mode" +
+      "\022\017\n\007address\030\002 \001(\r\022\034\n\tradio_cfg\030\003 \001(\0132\t.R" +
+      "adioCfg\022\032\n\010test_cfg\030\004 \001(\0132\010.TestCfg\022\030\n\007f" +
+      "ec_cfg\030\005 \001(\0132\007.FECCfg\022\030\n\007net_cfg\030\006 \001(\0132\007" +
+      ".NetCfg\022\016\n\006gps_en\030\007 \001(\010\022\026\n\016log_packets_e" +
+      "n\030\010 \001(\010\022\023\n\013boot_log_en\030\t \001(\010\022\031\n\021watchdog" +
+      "_timer_en\030\n \001(\010\"@\n\004Mode\022\n\n\006NORMAL\020\000\022\016\n\nM" +
       "ODE_RESET\020\001\022\017\n\013MODE_SILENT\020\002\022\013\n\007TESTING\020" +
       "\003\"\033\n\013ClockSetMsg\022\014\n\004time\030\001 \001(\r\"\227\002\n\tStatu" +
       "sMsg\022!\n\006status\030\001 \001(\0162\021.StatusMsg.Status\022" +
@@ -20574,13 +20574,13 @@ public final class Qmesh {
     internal_static_NetCfg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_NetCfg_descriptor,
-        new java.lang.String[] { "BeaconMsg", "BeaconInterval", "NumOffsets", "PldLen", "FullPktLen", "WalshCodes", "InvertBits", });
+        new java.lang.String[] { "BeaconMsg", "BeaconInterval", "NumOffsets", "PldLen", "FullPktLen", "WalshCodes", "InvertBits", "VoiceFramesPerFrame", "Codec2Bitrate", });
     internal_static_SysCfgMsg_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_SysCfgMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SysCfgMsg_descriptor,
-        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", "VoiceFramesPerFrame", "Codec2Bitrate", });
+        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", });
     internal_static_ClockSetMsg_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_ClockSetMsg_fieldAccessorTable = new
