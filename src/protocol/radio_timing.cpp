@@ -107,6 +107,7 @@ void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction,
 
 
 auto RadioTiming::getWaitNoWarn() -> int32_t {
+    MBED_ASSERT(tmr_sptr);
     int elapsed_us = tmr_sptr->read_us();
     MBED_ASSERT(wait_duration_us < INT32_MAX);
     MBED_ASSERT(wait_duration_us-elapsed_us < INT32_MAX);
