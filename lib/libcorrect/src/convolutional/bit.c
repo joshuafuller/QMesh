@@ -1,7 +1,10 @@
 #include "correct/convolutional/bit.h"
+#include "mbed_assert.h"
+
 
 bit_writer_t *bit_writer_create(uint8_t *bytes, size_t len) {
     bit_writer_t *w = calloc(1, sizeof(bit_writer_t));
+    MBED_ASSERT(w);
 
     if (bytes) {
         bit_writer_reconfigure(w, bytes, len);
@@ -26,12 +29,12 @@ void bit_writer_destroy(bit_writer_t *w) {
 void bit_writer_write(bit_writer_t *w, uint8_t val, unsigned int n) {
     for (size_t j = 0; j < n; j++) {
         bit_writer_write_1(w, val);
-        val >>= 1;
+        val >>= 1U;
     }
 }
 
 void bit_writer_write_1(bit_writer_t *w, uint8_t val) {
-    w->current_byte |= val & 1;
+    w->current_byte |= val & 1U;
     w->current_byte_len++;
 
     if (w->current_byte_len == 8) {
@@ -183,6 +186,7 @@ void create_reverse_table() {
 
 bit_reader_t *bit_reader_create(const uint8_t *bytes, size_t len) {
     bit_reader_t *r = calloc(1, sizeof(bit_reader_t));
+    MBED_ASSERT(r);
 
     static bool reverse_table_created = false;
 

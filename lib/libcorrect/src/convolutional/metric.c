@@ -7,11 +7,11 @@ distance_t metric_soft_distance_quadratic(unsigned int hard_x, const uint8_t *so
     distance_t dist = 0;
     for (unsigned int i = 0; i < len; i++) {
         // first, convert hard_x to a soft measurement (0 -> 0, 1 - > 255)
-        unsigned int soft_x = (hard_x & 1) ? 255 : 0;
-        hard_x >>= 1;
+        unsigned int soft_x = (hard_x & 1U) ? 255U : 0U;
+        hard_x >>= 1U;
         int d = soft_y[i] - soft_x;
         dist += d*d;
     }
-    return dist >> 3;
+    return dist >> 3U;
 }
 

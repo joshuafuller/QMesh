@@ -30,16 +30,16 @@ void convolutional_decode_warmup(correct_convolutional *conv, unsigned int sets,
     for (unsigned int i = 0; i < conv->order - 1 && i < sets; i++) {
         // peel off rate bits from encoded to recover the same `out` as in the encoding process
         // the difference being that this `out` will have the channel noise/errors applied
-        unsigned int out;
+        unsigned int out = 0;
         if (!soft) {
             out = bit_reader_read(conv->bit_reader, conv->rate);
         }
         const distance_t *read_errors = conv->errors->read_errors;
         distance_t *write_errors = conv->errors->write_errors;
         // walk all of the state we have so far
-        for (size_t j = 0; j < (1 << (i + 1)); j += 1) {
-            unsigned int last = j >> 1;
-            distance_t dist;
+        for (size_t j = 0; j < (1U << (i + 1)); j += 1) {
+            unsigned int last = j >> 1U;
+            distance_t dist = 0;
             if (soft) {
                 if (conv->soft_measurement == CORRECT_SOFT_LINEAR) {
                     dist = metric_soft_distance_linear(conv->table[j], soft + i * conv->rate,
@@ -59,26 +59,26 @@ void convolutional_decode_warmup(correct_convolutional *conv, unsigned int sets,
 
 void convolutional_decode_inner(correct_convolutional *conv, unsigned int sets,
                                 const uint8_t *soft) {
-    shift_register_t highbit = 1 << (conv->order - 1);
+    shift_register_t highbit = 1U << (conv->order - 1);
     for (unsigned int i = conv->order - 1; i < (sets - conv->order + 1); i++) {
         distance_t *distances = conv->distances;
         // lasterrors are the aggregate bit errors for the states of shiftregister for the previous
         // time slice
         if (soft) {
             if (conv->soft_measurement == CORRECT_SOFT_LINEAR) {
-                for (unsigned int j = 0; j < 1 << (conv->rate); j++) {
+                for (unsigned int j = 0; j < 1U << (conv->rate); j++) {
                     distances[j] =
                         metric_soft_distance_linear(j, soft + i * conv->rate, conv->rate);
                 }
             } else {
-                for (unsigned int j = 0; j < 1 << (conv->rate); j++) {
+                for (unsigned int j = 0; j < 1U << (conv->rate); j++) {
                     distances[j] =
                         metric_soft_distance_quadratic(j, soft + i * conv->rate, conv->rate);
                 }
             }
         } else {
             unsigned int out = bit_reader_read(conv->bit_reader, conv->rate);
-            for (unsigned int i = 0; i < 1 << (conv->rate); i++) {
+            for (unsigned int i = 0; i < 1U << (conv->rate); i++) {
                 distances[i] = metric_distance(i, out);
             }
         }
@@ -86,7 +86,7 @@ void convolutional_decode_inner(correct_convolutional *conv, unsigned int sets,
         pair_lookup_fill_distance(pair_lookup, distances);
 
         // a mask to get the high order bit from the shift register
-        unsigned int num_iter = highbit << 1;
+        unsigned int num_iter = highbit << 1U;
         const distance_t *read_errors = conv->errors->read_errors;
         // aggregate bit errors for this time slice
         distance_t *write_errors = conv->errors->write_errors;
@@ -114,7 +114,7 @@ void convolutional_decode_inner(correct_convolutional *conv, unsigned int sets,
         // these two share a successor because the oldest high order bit will be shifted out, and
         // the other bits will be present in the successor
         //
-        shift_register_t highbase = highbit >> 1;
+        shift_register_t highbase = highbit >> 1U;
         for (shift_register_t low = 0, high = highbit, base = 0; high < num_iter;
              low += 8, high += 8, base += 4) {
             // shifted-right ancestors
@@ -135,8 +135,8 @@ void convolutional_decode_inner(correct_convolutional *conv, unsigned int sets,
                 distance_t high_error = (high_concat_dist & 0xffff) + high_past_error;
 
                 shift_register_t successor = low + offset;
-                distance_t error;
-                uint8_t history_mask;
+                distance_t error = 0;
+                uint8_t history_mask = 0;
                 if (low_error <= high_error) {
                     error = low_error;
                     history_mask = 0;
@@ -153,8 +153,8 @@ void convolutional_decode_inner(correct_convolutional *conv, unsigned int sets,
                 distance_t high_plus_one_error = (high_concat_dist >> 16) + high_past_error;
 
                 shift_register_t plus_one_successor = low_plus_one;
-                distance_t plus_one_error;
-                uint8_t plus_one_history_mask;
+                distance_t plus_one_error = 0;
+                uint8_t plus_one_history_mask = 0;
                 if (low_plus_one_error <= high_plus_one_error) {
                     plus_one_error = low_plus_one_error;
                     plus_one_history_mask = 0;
@@ -176,7 +176,7 @@ void convolutional_decode_tail(correct_convolutional *conv, unsigned int sets,
                                const uint8_t *soft) {
     // flush state registers
     // now we only shift in 0s, skipping 1-successors
-    shift_register_t highbit = 1 << (conv->order - 1);
+    shift_register_t highbit = 1U << (conv->order - 1);
     for (unsigned int i = sets - conv->order + 1; i < sets; i++) {
         // lasterrors are the aggregate bit errors for the states of shiftregister for the previous
         // time slice
@@ -190,30 +190,30 @@ void convolutional_decode_tail(correct_convolutional *conv, unsigned int sets,
         distance_t *distances = conv->distances;
         if (soft) {
             if (conv->soft_measurement == CORRECT_SOFT_LINEAR) {
-                for (unsigned int j = 0; j < 1 << (conv->rate); j++) {
+                for (unsigned int j = 0; j < 1U << (conv->rate); j++) {
                     distances[j] =
                         metric_soft_distance_linear(j, soft + i * conv->rate, conv->rate);
                 }
             } else {
-                for (unsigned int j = 0; j < 1 << (conv->rate); j++) {
+                for (unsigned int j = 0; j < 1U << (conv->rate); j++) {
                     distances[j] =
                         metric_soft_distance_quadratic(j, soft + i * conv->rate, conv->rate);
                 }
             }
         } else {
             unsigned int out = bit_reader_read(conv->bit_reader, conv->rate);
-            for (unsigned int i = 0; i < 1 << (conv->rate); i++) {
+            for (unsigned int i = 0; i < 1U << (conv->rate); i++) {
                 distances[i] = metric_distance(i, out);
             }
         }
         const unsigned int *table = conv->table;
 
         // a mask to get the high order bit from the shift register
-        unsigned int num_iter = highbit << 1;
-        unsigned int skip = 1 << (conv->order - (sets - i));
-        unsigned int base_skip = skip >> 1;
+        unsigned int num_iter = highbit << 1U;
+        unsigned int skip = 1U << (conv->order - (sets - i));
+        unsigned int base_skip = skip >> 1U;
 
-        shift_register_t highbase = highbit >> 1;
+        shift_register_t highbase = highbit >> 1U;
         for (shift_register_t low = 0, high = highbit, base = 0; high < num_iter;
              low += skip, high += skip, base += base_skip) {
             unsigned int low_output = table[low];
@@ -228,8 +228,8 @@ void convolutional_decode_tail(correct_convolutional *conv, unsigned int sets,
             distance_t high_error = high_dist + high_past_error;
 
             shift_register_t successor = low;
-            distance_t error;
-            uint8_t history_mask;
+            distance_t error = 0;
+            uint8_t history_mask = 0;
             if (low_error < high_error) {
                 error = low_error;
                 history_mask = 0;
@@ -250,7 +250,7 @@ void _convolutional_decode_init(correct_convolutional *conv, unsigned int min_tr
                                 unsigned int traceback_length, unsigned int renormalize_interval) {
     conv->has_init_decode = true;
 
-    conv->distances = calloc(1 << (conv->rate), sizeof(distance_t));
+    conv->distances = calloc(1U << (conv->rate), sizeof(distance_t));
     conv->pair_lookup = pair_lookup_create(conv->rate, conv->order, conv->table);
 
     conv->soft_measurement = CORRECT_SOFT_LINEAR;

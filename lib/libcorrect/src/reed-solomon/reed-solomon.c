@@ -13,6 +13,7 @@ static polynomial_t reed_solomon_build_generator(field_t field, unsigned int nro
 
 correct_reed_solomon *correct_reed_solomon_create(field_operation_t primitive_polynomial, field_logarithm_t first_consecutive_root, field_logarithm_t generator_root_gap, size_t num_roots) {
     correct_reed_solomon *rs = calloc(1, sizeof(correct_reed_solomon));
+    MBED_ASSERT(rs);
     rs->field = field_create(primitive_polynomial);
 
     rs->block_length = 255;
@@ -23,6 +24,7 @@ correct_reed_solomon *correct_reed_solomon_create(field_operation_t primitive_po
     rs->generator_root_gap = generator_root_gap;
 
     rs->generator_roots = malloc(rs->min_distance * sizeof(field_element_t));
+    MBED_ASSERT(rs);
 
     rs->generator = reed_solomon_build_generator(rs->field, rs->min_distance, rs->first_consecutive_root, rs->generator_root_gap, rs->generator, rs->generator_roots);
 

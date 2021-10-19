@@ -1,6 +1,7 @@
 #ifndef CORRECT_REED_SOLOMON_FIELD
 #define CORRECT_REED_SOLOMON_FIELD
 #include "correct/reed-solomon.h"
+#include "mbed_assert.h"
 
 /*
 field_t field_create(field_operation_t primitive_poly);
@@ -30,7 +31,9 @@ static inline field_t field_create(field_operation_t primitive_poly) {
     // exp should be of size 512 so that it can hold a "wraparound" which prevents some modulo ops
     // log should be of size 256. no wraparound here, the indices into this table are field elements
     field_element_t *exp = malloc(512 * sizeof(field_element_t));
+    MBED_ASSERT(exp);
     field_logarithm_t *log = malloc(256 * sizeof(field_logarithm_t));
+    MBED_ASSERT(log);
 
     // assume alpha is a primitive element, p(x) (primitive_poly) irreducible in GF(2^8)
     // addition is xor

@@ -1295,18 +1295,19 @@ void SX126X_LoRaRadio::configure_dio_irq(const uint16_t irq_mask, const uint16_t
                                          const bool locking)
 {
     if(locking) { lock(); }
-    uint8_t buf[8];
+    vector<uint8_t> buf;
+    constexpr uint16_t BYTE_MASK = 0x00FF;
+    constexpr uint16_t SHIFT_BYTE = 8U;
+    buf.push_back(static_cast<uint8_t>((irq_mask >> SHIFT_BYTE) & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>(irq_mask & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>((dio1_mask >> SHIFT_BYTE) & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>(dio1_mask & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>((dio2_mask >> SHIFT_BYTE) & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>(dio2_mask & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>((dio3_mask >> SHIFT_BYTE) & BYTE_MASK));
+    buf.push_back(static_cast<uint8_t>(dio3_mask & BYTE_MASK));
 
-    buf[0] = (uint8_t) ((irq_mask >> 8) & 0x00FF);
-    buf[1] = (uint8_t) (irq_mask & 0x00FF);
-    buf[2] = (uint8_t) ((dio1_mask >> 8) & 0x00FF);
-    buf[3] = (uint8_t) (dio1_mask & 0x00FF);
-    buf[4] = (uint8_t) ((dio2_mask >> 8) & 0x00FF);
-    buf[5] = (uint8_t) (dio2_mask & 0x00FF);
-    buf[6] = (uint8_t) ((dio3_mask >> 8) & 0x00FF);
-    buf[7] = (uint8_t) (dio3_mask & 0x00FF);
-
-    write_opmode_command((uint8_t) RADIO_CFG_DIOIRQ, buf, 8);
+    write_opmode_command(static_cast<uint8_t>(RADIO_CFG_DIOIRQ), buf.data(), buf.size());
     if(locking) { unlock(); }
 }
 
@@ -1315,10 +1316,10 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, con
     if(locking) { lock(); }
     set_tx_power(_tx_power);
 
-    if(_rxen.is_connected()) {
+    if(_rxen.is_connected() != 0) {
         _rxen = 0;
     }
-    if(_txen.is_connected()) {
+    if(_txen.is_connected() != 0) {
         _txen = 1;
     }
 
@@ -1332,28 +1333,34 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, con
     set_packet_params(&_packet_params);
 
     // 500KHz transmit workaround
+    constexpr uint16_t REG_500KHZ = 0x0889;
     if(_mod_params.params.lora.bandwidth == 9) {
-        uint8_t val = read_register(0x0889);
+        uint8_t val = read_register(REG_500KHZ);
         val &= 0xFE;
-        write_to_register(0x0889, val);
+        write_to_register(REG_500KHZ, val);
     } else {
-        uint8_t val = read_register(0x0889);
+        uint8_t val = read_register(REG_500KHZ);
         val |= 0x04;
-        write_to_register(0x0889, val);
+        write_to_register(REG_500KHZ, val);
     }
 
     write_fifo(buffer, size);
-    uint8_t buf[3];
+    vector<uint8_t> buf(3);
 
     // _tx_timeout in ms should be converted to us and then divided by
     // 15.625 us. Check data-sheet 13.1.4 SetTX() section.
-    uint32_t timeout_scaled = ceil((_tx_timeout * 1000) / 15.625);
+    constexpr int MS_IN_S = 1000;
+    constexpr float US_PER_UNIT = 15.625F;
+    uint32_t timeout_scaled = ceilf((static_cast<float>(_tx_timeout) * MS_IN_S) / US_PER_UNIT);
 
-    buf[0] = (uint8_t) ((timeout_scaled >> 16) & 0xFF);
-    buf[1] = (uint8_t) ((timeout_scaled >> 8) & 0xFF);
-    buf[2] = (uint8_t) (timeout_scaled & 0xFF);
+    constexpr uint8_t BYTE_MASK = 0xFFU;
+    constexpr uint32_t TWO_BYTE_SHIFT = 16U;
+    constexpr uint32_t ONE_BYTE_SHIFT = 8U;
+    buf[0] = static_cast<uint8_t>((timeout_scaled >> TWO_BYTE_SHIFT) & BYTE_MASK);
+    buf[1] = static_cast<uint8_t>((timeout_scaled >> ONE_BYTE_SHIFT) & BYTE_MASK);
+    buf[2] = static_cast<uint8_t>(timeout_scaled & BYTE_MASK);
 
-    write_opmode_command(RADIO_SET_TX, buf, 3);
+    write_opmode_command(RADIO_SET_TX, buf.data(), 3);
     tx_int_mon = 1;
     rx_int_mon = 0;
 
@@ -1390,27 +1397,33 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
     set_modulation_params(&_mod_params);
     set_packet_params(&_packet_params);
     write_fifo(buffer, size);
-    uint8_t buf[3];
+    vector<uint8_t> buf(3);
 
     // _tx_timeout in ms should be converted to us and then divided by
     // 15.625 us. Check data-sheet 13.1.4 SetTX() section.
-    uint32_t timeout_scalled = ceil((_tx_timeout * 1000) / 15.625);
+    constexpr int MS_IN_S = 1000;
+    constexpr float US_PER_UNIT = 15.625F;
+    uint32_t timeout_scaled = ceilf((static_cast<float>(_tx_timeout) * MS_IN_S) / US_PER_UNIT);
 
-    buf[0] = (uint8_t) ((timeout_scalled >> 16) & 0xFF);
-    buf[1] = (uint8_t) ((timeout_scalled >> 8) & 0xFF);
-    buf[2] = (uint8_t) (timeout_scalled & 0xFF);
+    constexpr uint8_t BYTE_MASK = 0xFFU;
+    constexpr uint32_t TWO_BYTE_SHIFT = 16U;
+    constexpr uint32_t ONE_BYTE_SHIFT = 8U;
+    buf[0] = static_cast<uint8_t>((timeout_scaled >> TWO_BYTE_SHIFT) & BYTE_MASK);
+    buf[1] = static_cast<uint8_t>((timeout_scaled >> ONE_BYTE_SHIFT) & BYTE_MASK);
+    buf[2] = static_cast<uint8_t>(timeout_scaled & BYTE_MASK);
 
     // A "dangling transaction". Write out the bytes to start the transaction, but
     //  don't raise the SPI select line right away. Instead, set a Timeout, and raise
     //  the line when the Timeout handler gets triggered.
-    write_opmode_command_dangling(RADIO_SET_TX, buf, 3);  
+    write_opmode_command_dangling(RADIO_SET_TX, buf.data(), 3);  
     CalTimeout dangle_timeout;
     dangle_timeout.attach_us(callback(this, &SX126X_LoRaRadio::dangle_timeout_handler), 
                                 radio_timing.getWaitNoWarn());
     dangling_flags.wait_any(0x1);
     write_opmode_command_finish();
     led3.LEDSolid();
-    radio.tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), 3000);
+    static constexpr int THREE_SECS_MS = 3000;
+    radio.tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), THREE_SECS_MS);
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
 }
@@ -1499,14 +1512,20 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
     set_packet_params(&_packet_params);
     lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
     lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
-    lora_cad_params_t my_cad_params = cad_params[bw][sf-7];
-    lora_cad_symbols_t num_syms;
+    constexpr int SF_BASE_ADJ = 7;
+    lora_cad_params_t my_cad_params = cad_params[bw][sf-SF_BASE_ADJ];
+    constexpr int ONE_SYM = 1;
+    constexpr int TWO_SYM = 2;
+    constexpr int FOUR_SYM = 4;
+    constexpr int EIGHT_SYM = 8;
+    constexpr int SIXTEEN_SYM = 16;
+    lora_cad_symbols_t num_syms = LORA_CAD_01_SYMBOL;
     switch(my_cad_params.num_sym) {
-        case 1:  num_syms = LORA_CAD_01_SYMBOL; break;
-        case 2:  num_syms = LORA_CAD_02_SYMBOL; break;
-        case 4:  num_syms = LORA_CAD_04_SYMBOL; break;
-        case 8:  num_syms = LORA_CAD_08_SYMBOL; break;
-        case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
+        case ONE_SYM:     num_syms = LORA_CAD_01_SYMBOL; break;
+        case TWO_SYM:     num_syms = LORA_CAD_02_SYMBOL; break;
+        case FOUR_SYM:    num_syms = LORA_CAD_04_SYMBOL; break;
+        case EIGHT_SYM:   num_syms = LORA_CAD_08_SYMBOL; break;
+        case SIXTEEN_SYM: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max+cad_det_peak_adj[*cur_hop_freq], 
@@ -1549,20 +1568,26 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
     lora_spread_factors_t sf = _mod_params.params.lora.spreading_factor;
     lora_bandwidths_t bw = _mod_params.params.lora.bandwidth;
 //    debug_printf(DBG_INFO, "LoRa BW here is %d\r\n", bw);
-    lora_cad_params_t my_cad_params;
+    constexpr int SF_BASE_ADJ = 7;
+    lora_cad_params_t my_cad_params = cad_params[0][sf-SF_BASE_ADJ]; // just to keep the linter happy
     switch(bw) {
-        case LORA_BW_125: my_cad_params = cad_params[0][sf-7]; break;
-        case LORA_BW_250: my_cad_params = cad_params[1][sf-7]; break;
-        case LORA_BW_500: my_cad_params = cad_params[2][sf-7]; break;
+        case LORA_BW_125: my_cad_params = cad_params[0][sf-SF_BASE_ADJ]; break;
+        case LORA_BW_250: my_cad_params = cad_params[1][sf-SF_BASE_ADJ]; break;
+        case LORA_BW_500: my_cad_params = cad_params[2][sf-SF_BASE_ADJ]; break;
         default: MBED_ASSERT(false); break;
     }
-    lora_cad_symbols_t num_syms;
+    lora_cad_symbols_t num_syms = LORA_CAD_01_SYMBOL;
+    constexpr int ONE_SYM = 1;
+    constexpr int TWO_SYM = 2;
+    constexpr int FOUR_SYM = 4;
+    constexpr int EIGHT_SYM = 8;
+    constexpr int SIXTEEN_SYM = 16;
     switch(my_cad_params.num_sym) {
-        case 1:  num_syms = LORA_CAD_01_SYMBOL; break;
-        case 2:  num_syms = LORA_CAD_02_SYMBOL; break;
-        case 4:  num_syms = LORA_CAD_04_SYMBOL; break;
-        case 8:  num_syms = LORA_CAD_08_SYMBOL; break;
-        case 16: num_syms = LORA_CAD_16_SYMBOL; break; 
+        case ONE_SYM:     num_syms = LORA_CAD_01_SYMBOL; break;
+        case TWO_SYM:     num_syms = LORA_CAD_02_SYMBOL; break;
+        case FOUR_SYM:    num_syms = LORA_CAD_04_SYMBOL; break;
+        case EIGHT_SYM:   num_syms = LORA_CAD_08_SYMBOL; break;
+        case SIXTEEN_SYM: num_syms = LORA_CAD_16_SYMBOL; break; 
         default: MBED_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max, 
