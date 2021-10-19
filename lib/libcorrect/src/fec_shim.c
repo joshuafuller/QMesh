@@ -22,6 +22,7 @@ void *init_rs_char(int symbol_size, int primitive_polynomial,
     }
 
     reed_solomon_shim *shim = malloc(sizeof(reed_solomon_shim));
+    MBED_ASSERT(shim);
 
     shim->pad = pad;
     shim->block_length = 255 - pad;

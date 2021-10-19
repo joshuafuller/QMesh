@@ -3,6 +3,7 @@
 
 error_buffer_t *error_buffer_create(unsigned int num_states) {
     error_buffer_t *buf = calloc(1, sizeof(error_buffer_t));
+    MBED_ASSERT(buf);
 
     // how large are the error buffers?
     buf->num_states = num_states;
