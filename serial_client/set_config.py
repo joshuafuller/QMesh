@@ -79,13 +79,16 @@ ser_msg.sys_cfg.fec_cfg.rs_num_roots = cfg_dict['rs_num_roots']
 ser_msg.sys_cfg.net_cfg.beacon_msg = cfg_dict['beacon_msg']
 ser_msg.sys_cfg.net_cfg.beacon_interval = beacon_interval
 ser_msg.sys_cfg.net_cfg.num_offsets = cfg_dict['num_offsets']
-ser_msg.sys_cfg.net_cfg.pld_len = cfg_dict['payload_length']
+#ser_msg.sys_cfg.net_cfg.pld_len = cfg_dict['payload_length']
 ser_msg.sys_cfg.gps_en = cfg_dict['gps_en']
 #ser_msg.sys_cfg.log_packets_en = cfg_dict['log_packets_en']
 ser_msg.sys_cfg.boot_log_en = cfg_dict['log_boot']
 ser_msg.sys_cfg.watchdog_timer_en = cfg_dict['watchdog_timer_en']
 ser_msg.sys_cfg.net_cfg.walsh_codes = cfg_dict['walsh_codes']
 ser_msg.sys_cfg.net_cfg.invert_bits = cfg_dict['invert_bits']
+
+ser_msg.sys_cfg.net_cfg.voice_frames_per_frame = cfg_dict['voice_frames_per_frame']
+ser_msg.sys_cfg.net_cfg.codec2_bitrate = cfg_dict['codec2_bitrate']
 
 ser_msg.sys_cfg.valid = True
 

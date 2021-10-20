@@ -33,5 +33,5 @@ walsh_codes: false
 # Invert bits before transmission as an anti-interference thing
 invert_bits: true
 # codec2 stuff
-voice_frames_per_frame: 4;
-codec2_bitrate: 700;
+voice_frames_per_frame: 4
+codec2_bitrate: 700

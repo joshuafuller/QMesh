@@ -62,7 +62,7 @@ auto Frame::codedSize() -> size_t {
 }
 
 void Frame::serialize(vector<uint8_t> &ser_frame) {
-    MBED_ASSERT(!ser_frame.empty());
+    //MBED_ASSERT(!ser_frame.empty());
     for(size_t i = 0; i < sizeof(hdr); i++) {
         ser_frame.push_back(((uint8_t *) &hdr)[i]); //NOLINT
     }
