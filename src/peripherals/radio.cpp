@@ -49,7 +49,7 @@ SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                        MBED_CONF_APP_LORA_RESET,  // PinName nrst
                        MBED_CONF_APP_LORA_BUSY,   // PinName busy,
                        NC);  
-SysCfgMsg radio_cb;
+SysCfgMsg radio_cb = SysCfgMsg_init_zero;
 
 // The callbacks used by the LoRa radio driver
 static radio_events_t radio_events;
@@ -98,6 +98,7 @@ static auto compute_fhss_preamble() -> uint32_t {
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int ONE_SECOND = 1000;
 void init_radio() {
+    MBED_ASSERT(radio_cb.valid);
     // Initialize Radio driver
     debug_printf(DBG_INFO, "Now initializing the radio\r\n");
     radio_events.tx_done_tmr = tx_done_cb;
@@ -226,6 +227,7 @@ void init_radio() {
 
 
 void reinit_radio() {
+    MBED_ASSERT(radio_cb.valid);
     uint32_t pre_len = 0;
     if(radio_cb.radio_cfg.frequencies_count > 1) {
         pre_len = radio_cb.radio_cfg.lora_cfg.fhss_pre_len;

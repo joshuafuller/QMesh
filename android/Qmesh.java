@@ -4416,6 +4416,11 @@ public final class Qmesh {
      * <code>bool watchdog_timer_en = 10;</code>
      */
     boolean getWatchdogTimerEn();
+
+    /**
+     * <code>bool valid = 11;</code>
+     */
+    boolean getValid();
   }
   /**
    * Protobuf type {@code SysCfgMsg}
@@ -4436,6 +4441,7 @@ public final class Qmesh {
       logPacketsEn_ = false;
       bootLogEn_ = false;
       watchdogTimerEn_ = false;
+      valid_ = false;
     }
 
     @java.lang.Override
@@ -4543,6 +4549,11 @@ public final class Qmesh {
             case 80: {
 
               watchdogTimerEn_ = input.readBool();
+              break;
+            }
+            case 88: {
+
+              valid_ = input.readBool();
               break;
             }
             default: {
@@ -4839,6 +4850,15 @@ public final class Qmesh {
       return watchdogTimerEn_;
     }
 
+    public static final int VALID_FIELD_NUMBER = 11;
+    private boolean valid_;
+    /**
+     * <code>bool valid = 11;</code>
+     */
+    public boolean getValid() {
+      return valid_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4882,6 +4902,9 @@ public final class Qmesh {
       }
       if (watchdogTimerEn_ != false) {
         output.writeBool(10, watchdogTimerEn_);
+      }
+      if (valid_ != false) {
+        output.writeBool(11, valid_);
       }
       unknownFields.writeTo(output);
     }
@@ -4932,6 +4955,10 @@ public final class Qmesh {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(10, watchdogTimerEn_);
       }
+      if (valid_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, valid_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -4979,6 +5006,8 @@ public final class Qmesh {
           == other.getBootLogEn());
       result = result && (getWatchdogTimerEn()
           == other.getWatchdogTimerEn());
+      result = result && (getValid()
+          == other.getValid());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -5022,6 +5051,9 @@ public final class Qmesh {
       hash = (37 * hash) + WATCHDOG_TIMER_EN_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getWatchdogTimerEn());
+      hash = (37 * hash) + VALID_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getValid());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5191,6 +5223,8 @@ public final class Qmesh {
 
         watchdogTimerEn_ = false;
 
+        valid_ = false;
+
         return this;
       }
 
@@ -5243,6 +5277,7 @@ public final class Qmesh {
         result.logPacketsEn_ = logPacketsEn_;
         result.bootLogEn_ = bootLogEn_;
         result.watchdogTimerEn_ = watchdogTimerEn_;
+        result.valid_ = valid_;
         onBuilt();
         return result;
       }
@@ -5320,6 +5355,9 @@ public final class Qmesh {
         }
         if (other.getWatchdogTimerEn() != false) {
           setWatchdogTimerEn(other.getWatchdogTimerEn());
+        }
+        if (other.getValid() != false) {
+          setValid(other.getValid());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5989,6 +6027,32 @@ public final class Qmesh {
       public Builder clearWatchdogTimerEn() {
         
         watchdogTimerEn_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean valid_ ;
+      /**
+       * <code>bool valid = 11;</code>
+       */
+      public boolean getValid() {
+        return valid_;
+      }
+      /**
+       * <code>bool valid = 11;</code>
+       */
+      public Builder setValid(boolean value) {
+        
+        valid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool valid = 11;</code>
+       */
+      public Builder clearValid() {
+        
+        valid_ = false;
         onChanged();
         return this;
       }
@@ -20453,84 +20517,84 @@ public final class Qmesh {
       "\013num_offsets\030\003 \001(\r\022\017\n\007pld_len\030\004 \001(\r\022\024\n\014f" +
       "ull_pkt_len\030\005 \001(\r\022\023\n\013walsh_codes\030\006 \001(\010\022\023" +
       "\n\013invert_bits\030\007 \001(\010\022\036\n\026voice_frames_per_" +
-      "frame\030\010 \001(\r\022\026\n\016codec2_bitrate\030\t \001(\r\"\303\002\n\t" +
+      "frame\030\010 \001(\r\022\026\n\016codec2_bitrate\030\t \001(\r\"\322\002\n\t" +
       "SysCfgMsg\022\035\n\004mode\030\001 \001(\0162\017.SysCfgMsg.Mode" +
       "\022\017\n\007address\030\002 \001(\r\022\034\n\tradio_cfg\030\003 \001(\0132\t.R" +
       "adioCfg\022\032\n\010test_cfg\030\004 \001(\0132\010.TestCfg\022\030\n\007f" +
       "ec_cfg\030\005 \001(\0132\007.FECCfg\022\030\n\007net_cfg\030\006 \001(\0132\007" +
       ".NetCfg\022\016\n\006gps_en\030\007 \001(\010\022\026\n\016log_packets_e" +
       "n\030\010 \001(\010\022\023\n\013boot_log_en\030\t \001(\010\022\031\n\021watchdog" +
-      "_timer_en\030\n \001(\010\"@\n\004Mode\022\n\n\006NORMAL\020\000\022\016\n\nM" +
-      "ODE_RESET\020\001\022\017\n\013MODE_SILENT\020\002\022\013\n\007TESTING\020" +
-      "\003\"\033\n\013ClockSetMsg\022\014\n\004time\030\001 \001(\r\"\227\002\n\tStatu" +
-      "sMsg\022!\n\006status\030\001 \001(\0162\021.StatusMsg.Status\022" +
-      "\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030\003 \001(\r\022\017\n\007oled_o" +
-      "n\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005 \001(\r\022\031\n\021total_r" +
-      "x_corr_pkt\030\006 \001(\r\022\024\n\014total_tx_pkt\030\007 \001(\r\022\024" +
-      "\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013last_rx_snr\030\t \001(" +
-      "\r\022\021\n\theap_size\030\n \001(\r\"2\n\006Status\022\013\n\007BOOTIN" +
-      "G\020\000\022\016\n\nMANAGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006DbgM" +
-      "sg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg\022" +
-      "\r\n\005crc32\030\001 \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030\001 " +
-      "\001(\010\022\021\n\tboot_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1\n" +
-      "\006GPSMsg\022\r\n\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003l" +
-      "on\030\003 \001(\002\"\336\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005co" +
-      "unt\030\002 \001(\r\022\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender\030\004" +
-      " \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n\004" +
-      "rssi\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(\005" +
-      "\022\020\n\010comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006uptim" +
-      "e\030\014 \001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007Tim" +
-      "eMsg\022\014\n\004time\030\001 \001(\r\"\274\010\n\tSerialMsg\022\035\n\004type" +
-      "\030\001 \001(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010\022\"" +
-      "\n\007sys_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tcl" +
-      "ock_set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006st" +
-      "atus\030\005 \001(\0132\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_msg" +
-      "\030\006 \001(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\0132" +
-      "\007.LogMsgB\005\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132\013." +
-      "BootLogMsgB\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010.Da" +
-      "taMsgB\005\222?\002\030\004\022#\n\terror_msg\030\n \001(\0132\t.ErrorM" +
-      "sgB\005\222?\002\030\004\022!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB\005\222" +
-      "?\002\030\004\022+\n\nupdate_msg\030\014 \001(\0132\n.UpdateMsgB\013\222?" +
-      "\002\030\004\222?\003\240\001\004\022#\n\007ver_msg\030\r \001(\0132\013.VersionMsgB" +
-      "\005\222?\002\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntPara" +
-      "msMsgB\005\222?\002\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016." +
-      "VoiceFrameMsgB\005\222?\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CON" +
-      "FIG\020\000\022\016\n\nSET_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DAT" +
-      "A\020\003\022\r\n\tCLOCK_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_ST" +
-      "ATUS\020\006\022\017\n\013STAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n" +
-      "\n\006REBOOT\020\t\022\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT" +
-      "_LOGS\020\013\022\r\n\tERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016" +
-      "READ_LOG_RETRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_" +
-      "BOOT_LOG\020\020\022\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016R" +
-      "EPLY_BOOT_LOG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME" +
-      "\020\024\022\007\n\003ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020" +
-      "\027\022\022\n\016EXIT_KISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003L" +
-      "OG\020\032\022\n\n\006UPDATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OL" +
-      "ED_ON\020\035\022\021\n\rTURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS" +
-      "\020\037\022\r\n\tVOICE_MSG\020 :\006\222?\003\240\001\010\"!\n\nVersionMsg\022" +
-      "\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type" +
-      "\030\001 \001(\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003" +
-      "\010\200\002\"\"\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"" +
-      "\305\002\n\007DataMsg\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type" +
-      "\022\021\n\tstream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006send" +
-      "er\030\004 \001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030" +
-      "\006 \001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(" +
-      "\010\022\026\n\016kiss_cur_frame\030\t \001(\r\022\027\n\017kiss_tot_fr" +
-      "ames\030\n \001(\r\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tre" +
-      "dundant\030\014 \001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n" +
-      "\006KISSTX\020\002\022\n\n\006KISSRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VO" +
-      "ICERX\020\005\"N\n\rVoiceFrameMsg\022\021\n\tsize_bits\030\001 " +
-      "\001(\r\022\022\n\nend_stream\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014" +
-      "B\005\222?\002\010 \"\375\001\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.Up" +
-      "dateMsg.Type\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 " +
-      "\001(\tB\006\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha2" +
-      "56_pkt\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B" +
-      "\005\222?\002\010 \022\031\n\nerr_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Typ" +
-      "e\022\t\n\005FIRST\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003AC" +
-      "K\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022" +
-      "\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n" +
-      "\013time_offset\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005b\006" +
-      "proto3"
+      "_timer_en\030\n \001(\010\022\r\n\005valid\030\013 \001(\010\"@\n\004Mode\022\n" +
+      "\n\006NORMAL\020\000\022\016\n\nMODE_RESET\020\001\022\017\n\013MODE_SILEN" +
+      "T\020\002\022\013\n\007TESTING\020\003\"\033\n\013ClockSetMsg\022\014\n\004time\030" +
+      "\001 \001(\r\"\227\002\n\tStatusMsg\022!\n\006status\030\001 \001(\0162\021.St" +
+      "atusMsg.Status\022\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030" +
+      "\003 \001(\r\022\017\n\007oled_on\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005" +
+      " \001(\r\022\031\n\021total_rx_corr_pkt\030\006 \001(\r\022\024\n\014total" +
+      "_tx_pkt\030\007 \001(\r\022\024\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013l" +
+      "ast_rx_snr\030\t \001(\r\022\021\n\theap_size\030\n \001(\r\"2\n\006S" +
+      "tatus\022\013\n\007BOOTING\020\000\022\016\n\nMANAGEMENT\020\001\022\013\n\007RU" +
+      "NNING\020\002\"\035\n\006DbgMsg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035" +
+      "\n\014SerialCRCMsg\022\r\n\005crc32\030\001 \001(\r\"=\n\nBootLog" +
+      "Msg\022\r\n\005valid\030\001 \001(\010\022\021\n\tboot_time\030\002 \001(\r\022\r\n" +
+      "\005count\030\003 \001(\r\"1\n\006GPSMsg\022\r\n\005valid\030\001 \001(\010\022\013\n" +
+      "\003lat\030\002 \001(\002\022\013\n\003lon\030\003 \001(\002\"\336\001\n\006LogMsg\022\r\n\005va" +
+      "lid\030\001 \001(\010\022\r\n\005count\030\002 \001(\r\022\021\n\ttimestamp\030\003 " +
+      "\001(\r\022\016\n\006sender\030\004 \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstre" +
+      "am_id\030\006 \001(\r\022\014\n\004rssi\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017" +
+      "\n\007rx_size\030\t \001(\005\022\020\n\010comp_crc\030\n \001(\r\022\013\n\003crc" +
+      "\030\013 \001(\r\022\016\n\006uptime\030\014 \001(\r\022\030\n\007gps_msg\030\r \001(\0132" +
+      "\007.GPSMsg\"\027\n\007TimeMsg\022\014\n\004time\030\001 \001(\r\"\274\010\n\tSe" +
+      "rialMsg\022\035\n\004type\030\001 \001(\0162\017.SerialMsg.Type\022\r" +
+      "\n\005retry\030\002 \001(\010\022\"\n\007sys_cfg\030\003 \001(\0132\n.SysCfgM" +
+      "sgB\005\222?\002\030\004\022&\n\tclock_set\030\004 \001(\0132\014.ClockSetM" +
+      "sgB\005\222?\002\030\004\022!\n\006status\030\005 \001(\0132\n.StatusMsgB\005\222" +
+      "?\002\030\004\022\037\n\007dbg_msg\030\006 \001(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n" +
+      "\007log_msg\030\007 \001(\0132\007.LogMsgB\005\222?\002\030\004\022(\n\014boot_l" +
+      "og_msg\030\010 \001(\0132\013.BootLogMsgB\005\222?\002\030\004\022!\n\010data" +
+      "_msg\030\t \001(\0132\010.DataMsgB\005\222?\002\030\004\022#\n\terror_msg" +
+      "\030\n \001(\0132\t.ErrorMsgB\005\222?\002\030\004\022!\n\010time_msg\030\013 \001" +
+      "(\0132\010.TimeMsgB\005\222?\002\030\004\022+\n\nupdate_msg\030\014 \001(\0132" +
+      "\n.UpdateMsgB\013\222?\002\030\004\222?\003\240\001\004\022#\n\007ver_msg\030\r \001(" +
+      "\0132\013.VersionMsgB\005\222?\002\030\004\022,\n\016int_params_msg\030" +
+      "\016 \001(\0132\r.IntParamsMsgB\005\222?\002\030\004\022.\n\017voice_fra" +
+      "me_msg\030\017 \001(\0132\016.VoiceFrameMsgB\005\222?\002\030\004\"\202\004\n\004" +
+      "Type\022\016\n\nGET_CONFIG\020\000\022\016\n\nSET_CONFIG\020\001\022\n\n\006" +
+      "CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOCK_SET\020\004\022\n\n\006STA" +
+      "TUS\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013STAY_IN_MGT\020\007\022\r" +
+      "\n\tDEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022\016\n\nERASE_LOGS\020" +
+      "\n\022\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\tERASE_CFG\020\014\022\014\n" +
+      "\010READ_LOG\020\r\022\022\n\016READ_LOG_RETRY\020\016\022\r\n\tREPLY" +
+      "_LOG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022\027\n\023READ_BOOT_L" +
+      "OG_RETRY\020\021\022\022\n\016REPLY_BOOT_LOG\020\022\022\013\n\007CRC_ER" +
+      "R\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017E" +
+      "NTER_KISS_MODE\020\027\022\022\n\016EXIT_KISS_MODE\020\030\022\014\n\010" +
+      "BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPDATE\020\033\022\013\n\007VERSI" +
+      "ON\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\rTURN_OLED_OFF\020" +
+      "\036\022\016\n\nINT_PARAMS\020\037\022\r\n\tVOICE_MSG\020 :\006\222?\003\240\001\010" +
+      "\"!\n\nVersionMsg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010E" +
+      "rrorMsg\022\034\n\004type\030\001 \001(\0162\016.ErrorMsg.Type\022\023\n" +
+      "\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"\n\004Type\022\013\n\007CRC_ERR\020\000\022" +
+      "\r\n\tOTHER_ERR\020\001\"\305\002\n\007DataMsg\022\033\n\004type\030\001 \001(\016" +
+      "2\r.DataMsg.Type\022\021\n\tstream_id\030\002 \001(\r\022\013\n\003tt" +
+      "l\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\022\n\nsym_offset\030\005 " +
+      "\001(\r\022\027\n\007payload\030\006 \001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(" +
+      "\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016kiss_cur_frame\030\t \001(\r" +
+      "\022\027\n\017kiss_tot_frames\030\n \001(\r\022\026\n\016kiss_stream" +
+      "_id\030\013 \001(\r\022\021\n\tredundant\030\014 \001(\010\"H\n\004Type\022\006\n\002" +
+      "TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISSTX\020\002\022\n\n\006KISSRX\020\003\022\013\n\007" +
+      "VOICETX\020\004\022\013\n\007VOICERX\020\005\"N\n\rVoiceFrameMsg\022" +
+      "\021\n\tsize_bits\030\001 \001(\r\022\022\n\nend_stream\030\002 \001(\010\022\026" +
+      "\n\007payload\030\003 \001(\014B\005\222?\002\010 \"\375\001\n\tUpdateMsg\022\035\n\004" +
+      "type\030\001 \001(\0162\017.UpdateMsg.Type\022\017\n\007pkt_cnt\030\002" +
+      " \001(\005\022\024\n\004path\030\003 \001(\tB\006\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B" +
+      "\006\222?\003\010\200 \022\031\n\nsha256_pkt\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsh" +
+      "a256_upd\030\006 \001(\014B\005\222?\002\010 \022\031\n\nerr_reason\030\007 \001(" +
+      "\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005FIRST\020\000\022\010\n\004LAST\020\001\022\n\n" +
+      "\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]" +
+      "\n\014IntParamsMsg\022\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007c" +
+      "hannel\030\002 \001(\005\022\023\n\013time_offset\030\003 \001(\005\022\022\n\npwr" +
+      "_offset\030\004 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -20580,7 +20644,7 @@ public final class Qmesh {
     internal_static_SysCfgMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SysCfgMsg_descriptor,
-        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", });
+        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", "Valid", });
     internal_static_ClockSetMsg_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_ClockSetMsg_fieldAccessorTable = new

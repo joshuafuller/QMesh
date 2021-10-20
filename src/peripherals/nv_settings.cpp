@@ -185,6 +185,8 @@ static void write_default_cfg() {
 
     radio_cb.watchdog_timer_en = false;
 
+    radio_cb.valid = true;
+
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_CONFIG);
     ser_msg->sys_cfg() = radio_cb;
@@ -253,6 +255,8 @@ void load_settings_from_flash() {
     MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
     radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
 
+    radio_cb.valid = true;
+
 #if 0
     // Check if low-power mode is set. If so, delete the UART
     //rx_serial_thread.start(rx_serial_thread_fn);
@@ -274,6 +278,7 @@ void save_settings_to_flash() {
     MBED_ASSERT(f);
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_CONFIG);
+    MBED_ASSERT(radio_cb.valid);
     ser_msg->sys_cfg() = radio_cb;
     auto f_ps = make_shared<FilePseudoSerial>(f);
     MBED_ASSERT(!save_SerMsg(*ser_msg, *f_ps));

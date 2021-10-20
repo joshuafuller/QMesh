@@ -851,6 +851,7 @@ void KISSSerial::rx_serial_thread_fn() {
             auto out_msg_sptr = make_shared<SerMsg>();
             out_msg_sptr->type(SerialMsg_Type_CONFIG);
             shared_mtx.lock();
+            MBED_ASSERT(radio_cb.valid);
             out_msg_sptr->sys_cfg() = radio_cb;
             shared_mtx.unlock();
             enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, out_msg_sptr);
@@ -861,6 +862,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 send_error(string("No Configuration Sent!\r\n"));
             } else {
                 shared_mtx.lock();
+                MBED_ASSERT(radio_cb.valid);
                 radio_cb = ser_msg->sys_cfg();
                 save_settings_to_flash();
                 shared_mtx.unlock();
@@ -888,6 +890,7 @@ void KISSSerial::rx_serial_thread_fn() {
             if(ser_msg->data_msg().type == DataMsg_Type_TX) {
                 auto frame = make_shared<Frame>();
                 frame->loadFromPB(ser_msg->data_msg());
+                MBED_ASSERT(radio_cb.valid);
                 frame->setSender(radio_cb.address);
                 frame->setStreamID();
                 auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
@@ -921,6 +924,7 @@ void KISSSerial::rx_serial_thread_fn() {
                     copy(frag_buf.begin(), frag_buf.end(), frag->payload.bytes);
                     auto frag_frame = make_shared<Frame>();
                     frag_frame->createFromKISS(*frag);
+                    MBED_ASSERT(radio_cb.valid);
                     frag_frame->setSender(radio_cb.address);
                     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frag_frame);
                     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
@@ -948,6 +952,7 @@ void KISSSerial::rx_serial_thread_fn() {
                     }
                     auto frag_frame = make_shared<Frame>();
                     frag_frame->createFromKISS(*frag);
+                    MBED_ASSERT(radio_cb.valid);
                     frag_frame->setSender(radio_cb.address);
                     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frag_frame);
                     enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);

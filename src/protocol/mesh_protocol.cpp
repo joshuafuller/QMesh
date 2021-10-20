@@ -101,6 +101,7 @@ atomic<int> last_rx_snr(0.0);
  */
 static constexpr int FRAME_BUF_SIZE = 256;
 void mesh_protocol_fsm() {
+    MBED_ASSERT(radio_cb.valid);
     shared_ptr<FEC> fec;
     FECCfg_Type fec_type = radio_cb.fec_cfg.type;
     debug_printf(DBG_INFO, "%d FEC was chosen\r\n", fec_type);
@@ -346,6 +347,7 @@ string beacon_msg;
  */
 extern time_t boot_timestamp;
 void beacon_fn() {
+    MBED_ASSERT(radio_cb.valid);
     auto beacon_frame_sptr = make_shared<Frame>();
     string beacon_msg(radio_cb.net_cfg.beacon_msg);
     beacon_frame_sptr->setBeaconPayload(beacon_msg);

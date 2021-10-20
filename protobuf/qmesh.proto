@@ -71,6 +71,7 @@ message SysCfgMsg {
   bool log_packets_en = 8;
   bool boot_log_en = 9;
   bool watchdog_timer_en = 10;
+  bool valid = 11;
 }
 
 message ClockSetMsg {

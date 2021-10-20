@@ -276,6 +276,7 @@ void SX126X_LoRaRadio::configure_freq_hop_freqs(vector<uint32_t>& my_hop_freqs)
 // Sequentially scan through the hop frequencies
 void SX126X_LoRaRadio::rx_hop_frequency()
 {
+    MBED_ASSERT(radio_cb.valid);
     if(radio_cb.radio_cfg.frequencies_count > 1) {
         set_channel(*cur_hop_freq);
         if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
@@ -444,6 +445,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             _radio_events->rx_timeout();
         }
         if(!stop_cad.load()) {
+            MBED_ASSERT(radio_cb.valid);
             if(radio_cb.radio_cfg.frequencies_count > 1) {
                 radio.rx_hop_frequency();
                 radio.receive_cad_rx();
@@ -641,6 +643,7 @@ void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
 #ifdef USES_TCXO
     caliberation_params_t calib_param;
     constexpr float US_PER_UNIT = 15.625F;
+    MBED_ASSERT(radio_cb.valid);
     uint32_t tcxo_time = ceilf(radio_cb.radio_cfg.tcxo_time_us / US_PER_UNIT);
     if(tcxo_time == 0) { // 0 just hangs the system, so make it slightly bigger
         tcxo_time = 1;
@@ -1430,6 +1433,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
 
 
 void SX126X_LoRaRadio::receive_sel(const bool locking) {
+    MBED_ASSERT(radio_cb.valid);
     if(radio_cb.radio_cfg.frequencies_count == 1) {
         radio.rx_hop_frequency(); 
         receive(locking);

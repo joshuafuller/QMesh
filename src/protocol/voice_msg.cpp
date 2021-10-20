@@ -3,6 +3,7 @@
 
 
 auto VoiceMsgProcessor::getDataPayload() -> vector<uint8_t> {
+    MBED_ASSERT(radio_cb.valid);
     switch(radio_cb.net_cfg.codec2_bitrate) {
         case BITRATE_450:  return setFrames<four_frame_450bps_t>(frames); break;
         case BITRATE_700:  return setFrames<four_frame_700bps_t>(frames); break;
@@ -16,6 +17,7 @@ auto VoiceMsgProcessor::getDataPayload() -> vector<uint8_t> {
 
 
 auto VoiceMsgProcessor::size() -> int {
+    MBED_ASSERT(radio_cb.valid);
     MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
     switch(radio_cb.net_cfg.codec2_bitrate) {
         case BITRATE_450:  return sizeof(four_frame_450bps_t); break;
@@ -30,6 +32,7 @@ auto VoiceMsgProcessor::size() -> int {
 
 
 auto VoiceMsgProcessor::getVoiceFrames(const vector<uint8_t>& pld) -> vector<vector<uint8_t>> {
+    MBED_ASSERT(radio_cb.valid);
     switch(radio_cb.net_cfg.codec2_bitrate) {
         case BITRATE_450:  return getFrames<four_frame_450bps_t>(pld, BITRATE_450); break;
         case BITRATE_700:  return getFrames<four_frame_700bps_t>(pld, BITRATE_700); break;
@@ -43,6 +46,7 @@ auto VoiceMsgProcessor::getVoiceFrames(const vector<uint8_t>& pld) -> vector<vec
 
 
 auto VoiceMsgProcessor::addFrame(const vector<uint8_t>& frame) -> bool {
+    MBED_ASSERT(radio_cb.valid);
     MBED_ASSERT(frames.size() <= radio_cb.net_cfg.voice_frames_per_frame);
     frames.push_back(frame);
     return frames.size() == radio_cb.net_cfg.voice_frames_per_frame;

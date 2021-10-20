@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2019 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -71,6 +71,7 @@ constexpr size_t NUM_TESTS = 10;
 constexpr size_t NUM_BENCHMARK_RUNS = 100;
 
 void testFEC() {
+    MBED_ASSERT(radio_cb.valid);
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
     fec_sptr = make_shared<FEC>(Frame::size());   
@@ -288,6 +289,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
 
 constexpr float MS_IN_SEC = 1000.F;
 void FEC::benchmark(size_t num_iters) {
+    MBED_ASSERT(radio_cb.valid);
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
     debug_printf(DBG_INFO, "Current frame size is %d\r\n", Frame::size());
@@ -377,6 +379,7 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
 
 
 auto FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
+    MBED_ASSERT(msg.size() <= 256);
     if(name == "Convolutional Coding") {
         lock.lock();
     }
@@ -405,6 +408,7 @@ auto FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> in
 
 
 auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
+    MBED_ASSERT(msg.size() <= 256);
     if(name == "RSV") {
         lock.lock();
     }
@@ -433,6 +437,7 @@ auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int
 
 
 auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
+    MBED_ASSERT(enc_msg.size() <= 256);
     if(name == "Convolutional Coding") {
         lock.lock();
     }
@@ -455,6 +460,7 @@ auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -
 
 
 auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
+    MBED_ASSERT(enc_msg.size() <= 256);
     if(name == "RSV") {
         lock.lock();
     }
@@ -484,6 +490,7 @@ auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) ->
 
 FECInterleave::FECInterleave(const int32_t my_msg_len) : 
     FEC(my_msg_len) {
+    MBED_ASSERT(my_msg_len <= 256);
     name = "Dummy Interleaver";
     int_params.bits_f = NAN;
     int_params.row_f = NAN;
@@ -510,6 +517,7 @@ static constexpr uint32_t SHIFT_ONE_BYTE = 8U;
 static constexpr uint32_t SHIFT_TWO_BYTES = 16U; 
 static constexpr uint32_t BYTE_MASK = 0x000000FF;
 auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
+    MBED_ASSERT(msg.size() <= 256);
     if(name == "RSVGolay") {
         lock.lock();
     }
@@ -537,6 +545,7 @@ auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -
 
 
 auto FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
+    MBED_ASSERT(enc_msg.size() <= 256);
     if(name == "RSVGolay") {
         lock.lock();
     }

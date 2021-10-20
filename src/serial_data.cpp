@@ -37,10 +37,15 @@ static mt19937 Frame_stream_id_rng; //NOLINT
 static atomic<int> Frame_last_stream_id;
 
 auto Frame::size() -> size_t {
-    return radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
+    MBED_ASSERT(radio_cb.valid);
+    size_t my_size = radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
+    MBED_ASSERT(my_size <= 256);
+    return my_size;
 }
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
+    MBED_ASSERT(buf.size() <= 256);
+    MBED_ASSERT(!buf.empty());
     constexpr int NUM_HOPS = 7;
     constexpr int SENDER_ADDR = 11;
     hdr.cons_subhdr.fields.type = 0;
@@ -57,6 +62,7 @@ auto Frame::codedSize() -> size_t {
 }
 
 void Frame::serialize(vector<uint8_t> &ser_frame) {
+    MBED_ASSERT(!ser_frame.empty());
     for(size_t i = 0; i < sizeof(hdr); i++) {
         ser_frame.push_back(((uint8_t *) &hdr)[i]); //NOLINT
     }
@@ -67,6 +73,7 @@ void Frame::serialize(vector<uint8_t> &ser_frame) {
 }
 
 void Frame::serialize_pb(vector<uint8_t> &buf) {
+    MBED_ASSERT(!buf.empty());
     DataMsg data_msg = DataMsg_init_zero;
     data_msg.type = getDataMsgType();
     data_msg.stream_id = hdr.cons_subhdr.fields.stream_id;
@@ -84,6 +91,7 @@ void Frame::serialize_pb(vector<uint8_t> &buf) {
 }
 
 void Frame::deserialize_pb(const vector<uint8_t> &buf) {
+    MBED_ASSERT(!buf.empty());
     DataMsg data_msg = DataMsg_init_default;
     pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size());
     bool status = pb_decode(&stream, DataMsg_fields, &data_msg);
@@ -98,6 +106,8 @@ void Frame::deserialize_pb(const vector<uint8_t> &buf) {
 }
 
 void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed) {
+    MBED_ASSERT(!buf.empty());
+    wht_buf.clear();
     mt19937 rand_gen(seed);
     for(uint8_t iter : buf) {
         uint8_t rand_byte = rand_gen();
@@ -107,15 +117,19 @@ void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const u
 
 auto Frame::serializeCoded(vector<uint8_t> &buf) -> size_t {
     //debug_printf(DBG_WARN, "Frame size is now %d\r\n", Frame::size());
+    buf.clear();
     vector<uint8_t> ser_buf;
     serialize(ser_buf);
+    MBED_ASSERT(!ser_buf.empty());
 	//debug_printf(DBG_WARN, "Serialized frame size is now %d\r\n", ser_buf.size());
     return fec->encode(ser_buf, buf);
 }
 
 auto Frame::serializeCodedInv(vector<uint8_t> &buf) -> size_t {
+    buf.clear();
     size_t ret_val = 0;
     ret_val = serializeCoded(buf);
+    MBED_ASSERT(!buf.empty());
     constexpr uint8_t ALL_ONES = 0xFF;
     for(uint8_t & it : buf) {
         it = it ^ ALL_ONES;
@@ -152,6 +166,8 @@ auto Frame::calcUniqueCRC() -> uint32_t {
 }
 
 auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
+    MBED_ASSERT(!buf->empty());
+    MBED_ASSERT(buf->size() <= 256);
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
     //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
@@ -188,6 +204,8 @@ auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STAT
 
 
 auto Frame::deserializeCodedInv(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
+    MBED_ASSERT(!buf->empty());
+    MBED_ASSERT(buf->size() <= 256);    
     auto buf_inv = make_shared<vector<uint8_t>>(*buf);
     // invert the encoded bits
     constexpr uint8_t ALL_ONES = 0xFF;
@@ -233,6 +251,7 @@ void Frame::saveToPB(DataMsg &data_msg) {
 
 
 void Frame::createFromKISS(DataMsg &data_msg) {
+    MBED_ASSERT(radio_cb.valid);
     hdr.var_subhdr.fields.ttl = 0; //NOLINT
     hdr.var_subhdr.fields.sender = radio_cb.address; //NOLINT
     hdr.var_subhdr.fields.sym_offset = 0; //NOLINT
@@ -252,6 +271,7 @@ void Frame::createFromKISS(DataMsg &data_msg) {
 
 
 void Frame::createFromVoice(VoiceMsgProcessor &vmp) {
+    MBED_ASSERT(radio_cb.valid);
     hdr.var_subhdr.fields.ttl = 0; //NOLINT
     hdr.var_subhdr.fields.sender = radio_cb.address; //NOLINT
     hdr.var_subhdr.fields.sym_offset = 0; //NOLINT
@@ -259,13 +279,14 @@ void Frame::createFromVoice(VoiceMsgProcessor &vmp) {
     hdr.cons_subhdr.fields.type = DataMsg_Type_VOICETX; //NOLINT
     vector<uint8_t> pld = vmp.getDataPayload();
     MBED_ASSERT(pld.size() == radio_cb.net_cfg.pld_len);
-    pld.resize(pld.size());
-#warning finish this
+    data.resize(pld.size());
+    copy(pld.begin(), pld.end(), data.begin());
     this->setCRC();
 }
 
 
 auto Frame::getKISSMaxSize() -> size_t {
+    MBED_ASSERT(radio_cb.valid);
     return radio_cb.net_cfg.pld_len-sizeof(kiss_subhdr);
 }
 
