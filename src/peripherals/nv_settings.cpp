@@ -360,7 +360,7 @@ void nv_log_fn() {
     auto *f = open_logfile();
     for(;;) {
         // Write the latest frame to disk
-        auto log_frame = dequeue_mail(nv_logger_mail);  
+        auto log_frame = nv_logger_mail.dequeue_mail();  
         int16_t rssi = 0;
         uint16_t rx_size = 0;
         int8_t snr = 0;

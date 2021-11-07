@@ -65,6 +65,8 @@ public:
     auto int_params_msg() -> IntParamsMsg&;
     auto has_voice_frame_msg() const -> bool;
     auto voice_frame_msg() -> VoiceFrameMsg&;
+    auto has_ack_msg() const -> bool;
+    auto ack_msg() -> AckMsg&;
 };
 
 #endif /* SERIAL_MSG_HPP */

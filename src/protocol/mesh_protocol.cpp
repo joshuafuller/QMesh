@@ -165,7 +165,7 @@ void mesh_protocol_fsm() {
                 radio.lock();
                 radio.receive_sel();
                 radio.unlock();
-                radio_event = dequeue_mail<shared_ptr<RadioEvent>>(unified_radio_evt_mail);
+                radio_event = unified_radio_evt_mail.dequeue_mail();
                 radio.stop_cad.store(true);
                 while(radio.cad_pending.load() == true) { };
                 radio.stop_cad.store(false);
@@ -212,13 +212,13 @@ void mesh_protocol_fsm() {
                             //radio.standby();
                             debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
                             rx_frame_sptr->setRedundant();
-                            enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
+                            rx_frame_mail.enqueue_mail_nonblocking(rx_frame_orig_sptr);
                             state = WAIT_FOR_EVENT;
                         }
                         else {
                             //radio.standby();
                             radio_timing.setTimer(radio_event->tmr_sptr);
-                            enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
+                            rx_frame_mail.enqueue_mail_nonblocking(rx_frame_orig_sptr);
                             retransmit_disable_out_n.write(0);
                             constexpr int TWO_SECONDS = 2000;
                             ThisThread::sleep_for(radio_timing.getWaitNoWarn()/TWO_SECONDS);
@@ -228,7 +228,7 @@ void mesh_protocol_fsm() {
                             else {
                                 debug_printf(DBG_WARN, "Retransmit blocked by diversity I/O signal\r\n");
                                 rx_frame_sptr->setRedundant();
-                                enqueue_mail_nonblocking<std::shared_ptr<Frame>>(rx_frame_mail, rx_frame_orig_sptr);
+                                rx_frame_mail.enqueue_mail_nonblocking(rx_frame_orig_sptr);
                                 state = WAIT_FOR_EVENT;
                             }
                         }
@@ -271,9 +271,9 @@ void mesh_protocol_fsm() {
                 radio.unlock();
 				tx_frame_sptr->tx_frame = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
-                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                tx_radio_event = tx_radio_evt_mail.dequeue_mail();
                 if(radio_cb.log_packets_en) {
-                    enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, tx_frame_sptr);
+                    nv_logger_mail.enqueue_mail(tx_frame_sptr);
                 }
                 radio_timing.setTimer(tx_radio_event->tmr_sptr);
                 led3.LEDOff(); 
@@ -323,9 +323,9 @@ void mesh_protocol_fsm() {
                 radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
                 radio.unlock();
 
-                tx_radio_event = dequeue_mail<std::shared_ptr<RadioEvent>>(tx_radio_evt_mail);
+                tx_radio_event = tx_radio_evt_mail.dequeue_mail();
                 if(radio_cb.log_packets_en) {
-                    enqueue_mail<std::shared_ptr<Frame>>(nv_logger_mail, rx_frame_sptr);
+                    nv_logger_mail.enqueue_mail(rx_frame_sptr);
                 }
                 led2.LEDOff();
                 led3.LEDOff();
@@ -355,7 +355,7 @@ void beacon_fn() {
     static uint8_t stream_id = 0;
     beacon_frame_sptr->setStreamID(stream_id++);
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+    unified_radio_evt_mail.enqueue_mail(radio_evt); 
 }
 
 

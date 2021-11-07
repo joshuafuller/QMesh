@@ -99,6 +99,10 @@ typedef enum _UpdateMsg_Type {
 } UpdateMsg_Type;
 
 /* Struct definitions */
+typedef struct _AckMsg {
+    uint32_t radio_out_queue_level;
+} AckMsg;
+
 typedef struct _BootLogMsg {
     bool valid;
     uint32_t boot_time;
@@ -194,6 +198,7 @@ typedef struct _SerialMsg {
     struct _VersionMsg *ver_msg;
     struct _IntParamsMsg *int_params_msg;
     struct _VoiceFrameMsg *voice_frame_msg;
+    struct _AckMsg *ack_msg;
 } SerialMsg;
 
 typedef struct _StatusMsg {
@@ -338,7 +343,8 @@ typedef struct _SysCfgMsg {
 #define GPSMsg_init_default                      {0, 0, 0}
 #define LogMsg_init_default                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_default}
 #define TimeMsg_init_default                     {0}
-#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define AckMsg_init_default                      {0}
 #define VersionMsg_init_default                  {""}
 #define ErrorMsg_init_default                    {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_default                     {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0, 0}
@@ -359,7 +365,8 @@ typedef struct _SysCfgMsg {
 #define GPSMsg_init_zero                         {0, 0, 0}
 #define LogMsg_init_zero                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_zero}
 #define TimeMsg_init_zero                        {0}
-#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define AckMsg_init_zero                         {0}
 #define VersionMsg_init_zero                     {""}
 #define ErrorMsg_init_zero                       {_ErrorMsg_Type_MIN, ""}
 #define DataMsg_init_zero                        {_DataMsg_Type_MIN, 0, 0, 0, 0, {0, {0}}, 0, 0, 0, 0, 0, 0}
@@ -368,6 +375,7 @@ typedef struct _SysCfgMsg {
 #define IntParamsMsg_init_zero                   {0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
+#define AckMsg_radio_out_queue_level_tag         1
 #define BootLogMsg_valid_tag                     1
 #define BootLogMsg_boot_time_tag                 2
 #define BootLogMsg_count_tag                     3
@@ -428,6 +436,7 @@ typedef struct _SysCfgMsg {
 #define SerialMsg_ver_msg_tag                    13
 #define SerialMsg_int_params_msg_tag             14
 #define SerialMsg_voice_frame_msg_tag            15
+#define SerialMsg_ack_msg_tag                    16
 #define StatusMsg_status_tag                     1
 #define StatusMsg_tx_full_tag                    2
 #define StatusMsg_time_tag                       3
@@ -631,7 +640,8 @@ X(a, POINTER,  OPTIONAL, MESSAGE,  time_msg,         11) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  update_msg,       12) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  ver_msg,          13) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  int_params_msg,   14) \
-X(a, POINTER,  OPTIONAL, MESSAGE,  voice_frame_msg,  15)
+X(a, POINTER,  OPTIONAL, MESSAGE,  voice_frame_msg,  15) \
+X(a, POINTER,  OPTIONAL, MESSAGE,  ack_msg,          16)
 #define SerialMsg_CALLBACK NULL
 #define SerialMsg_DEFAULT NULL
 #define SerialMsg_sys_cfg_MSGTYPE SysCfgMsg
@@ -647,6 +657,12 @@ X(a, POINTER,  OPTIONAL, MESSAGE,  voice_frame_msg,  15)
 #define SerialMsg_ver_msg_MSGTYPE VersionMsg
 #define SerialMsg_int_params_msg_MSGTYPE IntParamsMsg
 #define SerialMsg_voice_frame_msg_MSGTYPE VoiceFrameMsg
+#define SerialMsg_ack_msg_MSGTYPE AckMsg
+
+#define AckMsg_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   radio_out_queue_level,   1)
+#define AckMsg_CALLBACK NULL
+#define AckMsg_DEFAULT NULL
 
 #define VersionMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   msg,               1)
@@ -716,6 +732,7 @@ extern const pb_msgdesc_t GPSMsg_msg;
 extern const pb_msgdesc_t LogMsg_msg;
 extern const pb_msgdesc_t TimeMsg_msg;
 extern const pb_msgdesc_t SerialMsg_msg;
+extern const pb_msgdesc_t AckMsg_msg;
 extern const pb_msgdesc_t VersionMsg_msg;
 extern const pb_msgdesc_t ErrorMsg_msg;
 extern const pb_msgdesc_t DataMsg_msg;
@@ -739,6 +756,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define LogMsg_fields &LogMsg_msg
 #define TimeMsg_fields &TimeMsg_msg
 #define SerialMsg_fields &SerialMsg_msg
+#define AckMsg_fields &AckMsg_msg
 #define VersionMsg_fields &VersionMsg_msg
 #define ErrorMsg_fields &ErrorMsg_msg
 #define DataMsg_fields &DataMsg_msg
@@ -762,6 +780,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define LogMsg_size                              87
 #define TimeMsg_size                             6
 /* SerialMsg_size depends on runtime parameters */
+#define AckMsg_size                              6
 #define VersionMsg_size                          130
 #define ErrorMsg_size                            260
 #define DataMsg_size                             569

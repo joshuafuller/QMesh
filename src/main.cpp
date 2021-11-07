@@ -188,9 +188,9 @@ auto main() -> int
 #if MBED_CONF_APP_HAS_BLE == 1
     ThisThread::sleep_for(HALF_SECOND);
     auto ble_ser = make_shared<BLESerial>();
-    auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
-    auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
-    auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
+    //auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
+    //auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
+    //auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
 #endif /* MBED_CONF_APP_HAS_BLE */
     debug_printf(DBG_INFO, "Serial threads started");
     ThisThread::sleep_for(HALF_SECOND);
@@ -284,6 +284,9 @@ ThisThread::sleep_for(500);
         wdt_thread.start(wdt_fn);
     }
 #endif
+
+    debug_printf(DBG_INFO, "Starting the memory usage tracker\r\n");
+    start_max_memory_usage();
 
     debug_printf(DBG_INFO, "Started everything\r\n");
 

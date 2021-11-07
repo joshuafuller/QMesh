@@ -189,6 +189,11 @@ message SerialMsg {
   VersionMsg ver_msg = 13 [(nanopb).type = FT_POINTER];
   IntParamsMsg int_params_msg = 14 [(nanopb).type = FT_POINTER];
   VoiceFrameMsg voice_frame_msg = 15 [(nanopb).type = FT_POINTER];
+  AckMsg ack_msg = 16 [(nanopb).type = FT_POINTER];
+}
+
+message AckMsg {
+    uint32 radio_out_queue_level = 1;
 }
 
 message VersionMsg {

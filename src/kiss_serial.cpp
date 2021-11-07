@@ -432,13 +432,13 @@ void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
         }
         if(ser_msg_sptr->data_msg().voice && 
             (port_type == DEBUG_PORT || port_type == VOICE_PORT)) {
-            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);  
+            tx_ser_queue.enqueue_mail(ser_msg_sptr);  
         } else if (!ser_msg_sptr->data_msg().voice && 
             (port_type == DEBUG_PORT || port_type == APRS_PORT)) {
-            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);  
+            tx_ser_queue.enqueue_mail(ser_msg_sptr);  
         }
     } else if(kiss_extended) {
-        enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);
+        tx_ser_queue.enqueue_mail(ser_msg_sptr);
     }
 }
 
@@ -516,7 +516,7 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_
 
 void KISSSerial::tx_serial_thread_fn() {
     for(;;) {
-        auto ser_msg_sptr = dequeue_mail<shared_ptr<SerMsg>>(tx_ser_queue);
+        auto ser_msg_sptr = tx_ser_queue.dequeue_mail();
         // In KISS mode, we only send out data packets in KISS format.
         if(!kiss_extended) {
             // Silently drop anything that isn't a KISSRX frame when we're in KISS mode.
@@ -573,14 +573,15 @@ void KISSSerial::send_status() {
     mbed_stats_heap_t heap_stats;
     mbed_stats_heap_get(&heap_stats);
     ser_msg->status().heap_size = heap_stats.current_size;
-    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg);
+    tx_ser_queue.enqueue_mail(ser_msg);
 }  
 
 
 void KISSSerial::send_ack() {
     auto ser_msg_sptr = make_shared<SerMsg>();
     ser_msg_sptr->type(SerialMsg_Type_ACK);
-    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);    
+    ser_msg_sptr->ack_msg().radio_out_queue_level = unified_radio_evt_mail.getLevel();
+    tx_ser_queue.enqueue_mail(ser_msg_sptr);    
 }  
 
 
@@ -589,7 +590,7 @@ void KISSSerial::send_error(const string &err_str) {
     ser_msg_sptr->type(SerialMsg_Type_ERR);
     strncpy(ser_msg_sptr->error_msg().msg, err_str.c_str(), sizeof(ser_msg_sptr->error_msg().msg));
     debug_printf(DBG_WARN, "%s", err_str.c_str());
-    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, ser_msg_sptr);   
+    tx_ser_queue.enqueue_mail(ser_msg_sptr);   
 }  
 
 
@@ -662,7 +663,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 reply_msg->error_msg().type = ErrorMsg_Type_CRC_ERR;
                 string err_reason("CRC Error");
                 strncpy(reply_msg->error_msg().msg, err_reason.c_str(), sizeof(reply_msg->error_msg().msg));
-                enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
+                tx_ser_queue.enqueue_mail(reply_msg);
             }
             continue;
         }
@@ -683,14 +684,14 @@ void KISSSerial::rx_serial_thread_fn() {
                     auto frame = make_shared<Frame>();
                     frame->createFromVoice(*voice);
                     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
-                    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+                    unified_radio_evt_mail.enqueue_mail(radio_evt); 
                     voice->clearFrames();
                 }
             } else {
                 auto frame = make_shared<Frame>();
                 frame->createFromVoice(*voice);
                 auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
-                enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+                unified_radio_evt_mail.enqueue_mail(radio_evt); 
                 voice->clearFrames();
             }
             send_ack();
@@ -710,7 +711,7 @@ void KISSSerial::rx_serial_thread_fn() {
             debug_printf(DBG_INFO, "Sending %s\r\n", compile_str.c_str());
             strncpy(reply_msg->ver_msg().msg, compile_str.c_str(), sizeof(reply_msg->ver_msg().msg));
             ThisThread::sleep_for(HALF_SECOND);
-            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
+            tx_ser_queue.enqueue_mail(reply_msg);
         }
         if(ser_msg->type() == SerialMsg_Type_UPDATE) {
             debug_printf(DBG_INFO, "Received an update message\r\n");
@@ -836,7 +837,7 @@ void KISSSerial::rx_serial_thread_fn() {
 				MBED_ASSERT(false);
 			}
             reply_msg->update_msg().pkt_cnt = upd_pkt_cnt;
-            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg);
+            tx_ser_queue.enqueue_mail(reply_msg);
         } else if(ser_msg->type() == SerialMsg_Type_EXIT_KISS_MODE) {
             shared_mtx.lock();
             kiss_extended = true;
@@ -854,7 +855,7 @@ void KISSSerial::rx_serial_thread_fn() {
             MBED_ASSERT(radio_cb.valid);
             out_msg_sptr->sys_cfg() = radio_cb;
             shared_mtx.unlock();
-            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, out_msg_sptr);
+            tx_ser_queue.enqueue_mail(out_msg_sptr);
             send_ack();
         } else if(ser_msg->type() == SerialMsg_Type_SET_CONFIG) {
             debug_printf(DBG_INFO, "Serial config received\r\n");
@@ -894,7 +895,7 @@ void KISSSerial::rx_serial_thread_fn() {
                 frame->setSender(radio_cb.address);
                 frame->setStreamID();
                 auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frame);
-                enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt); 
+                unified_radio_evt_mail.enqueue_mail(radio_evt); 
                 send_ack();
             } else if(ser_msg->data_msg().type == DataMsg_Type_KISSTX) {
                 debug_printf(DBG_INFO, "Received a KISS frame on port %s of size %d\r\n",
@@ -927,7 +928,7 @@ void KISSSerial::rx_serial_thread_fn() {
                     MBED_ASSERT(radio_cb.valid);
                     frag_frame->setSender(radio_cb.address);
                     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, frag_frame);
-                    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_evt);
+                    unified_radio_evt_mail.enqueue_mail(radio_evt);
                     debug_printf(DBG_INFO, "Enqueued a KISS fragment of size %d\r\n",
                                     frag->payload.size); 
                 } 
@@ -1060,7 +1061,7 @@ void KISSSerial::rx_serial_thread_fn() {
                         auto reply_msg_sptr = make_shared<SerMsg>(); 
                         reply_msg_sptr->type(SerialMsg_Type_REPLY_LOG);
                         reply_msg_sptr->log_msg().valid = false;
-                        enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr);   
+                        tx_ser_queue.enqueue_mail(reply_msg_sptr);   
                         debug_printf(DBG_WARN, "Finished reading logs. Now rebooting...\r\n");
 					    reboot_system();	 	
                     } else {
@@ -1077,7 +1078,7 @@ void KISSSerial::rx_serial_thread_fn() {
                                 send_error("Logfile entry has no log message\r\n");
                             }
                             reply_msg_sptr->log_msg() = cur_log_msg->log_msg();
-                            enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr);   
+                            tx_ser_queue.enqueue_mail(reply_msg_sptr);   
                         } else {
                             send_error("Logfile read error\r\n");
                         }		
@@ -1092,7 +1093,7 @@ void KISSSerial::rx_serial_thread_fn() {
                     }
                     reply_msg_sptr->log_msg() = cur_log_msg->log_msg();
                     reply_msg_sptr->log_msg().valid = true;
-                    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr); 
+                    tx_ser_queue.enqueue_mail(reply_msg_sptr); 
 				}
                 shared_mtx.unlock();
             }
@@ -1114,14 +1115,14 @@ void KISSSerial::rx_serial_thread_fn() {
                     reply_msg->type(SerialMsg_Type_REPLY_BOOT_LOG);
                     reply_msg->boot_log_msg().valid = false;
                     auto reply_msg_sptr = make_shared<SerMsg>(*reply_msg);
-                    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr); 
+                    tx_ser_queue.enqueue_mail(reply_msg_sptr); 
 					debug_printf(DBG_WARN, "Now rebooting...\r\n");
 					reboot_system();	    
 				} else {
                     cur_log_msg->type(SerialMsg_Type_REPLY_BOOT_LOG);
                     cur_log_msg->boot_log_msg().count = line_count++;
                     auto reply_msg_sptr = make_shared<SerMsg>(*cur_log_msg);
-                    enqueue_mail<shared_ptr<SerMsg>>(tx_ser_queue, reply_msg_sptr);                               						
+                    tx_ser_queue.enqueue_mail(reply_msg_sptr);                               						
 				}
                 shared_mtx.unlock();
             }

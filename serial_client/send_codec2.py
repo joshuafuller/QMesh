@@ -55,5 +55,3 @@ while True:
     samples = np.array(frames, dtype=np.int16)
     c2_frames.append(c2.encode(samples))
     if len(c2_frames) == frames_per_pkt:
-
-

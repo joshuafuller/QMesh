@@ -41,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "serial_msg.hpp"
 #include "pseudo_serial.hpp"
 #include "params.hpp"
+#include "mail_queues.hpp"
 #if MBED_CONF_APP_HAS_BLE == 1
 #include "ble/BLE.h"
 #include "ble_serial.hpp"
@@ -74,7 +75,7 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t;
 
 class KISSSerial {
 private:
-    Mail<std::shared_ptr<SerMsg>, QUEUE_DEPTH> tx_ser_queue;
+    EventMail<std::shared_ptr<SerMsg>> tx_ser_queue;
     vector<string> logfile_names;
     SerMsg past_log_msg;
     Thread *rx_ser_thread{}, *tx_ser_thread{};

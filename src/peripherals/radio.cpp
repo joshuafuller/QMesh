@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "mail_queues.hpp"
 
 #define SX126X   0xDD
 
@@ -55,7 +56,7 @@ SysCfgMsg radio_cb = SysCfgMsg_init_zero;
 static radio_events_t radio_events;
 
 // Event queue for communicating events from the radio
-Mail<shared_ptr<RadioEvent>, QUEUE_DEPTH> unified_radio_evt_mail, tx_radio_evt_mail;
+EventMail<shared_ptr<RadioEvent>> unified_radio_evt_mail, tx_radio_evt_mail;
 
 // Prototypes for the callbacks
 static void tx_done_cb(shared_ptr<CalTimer> tmr_sptr);
@@ -225,7 +226,7 @@ void init_radio() {
     }
 }
 
-
+ 
 void reinit_radio() {
     MBED_ASSERT(radio_cb.valid);
     uint32_t pre_len = 0;
@@ -296,7 +297,7 @@ static void tx_done_cb(shared_ptr<CalTimer> tmr_sptr)
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT, tmr_sptr);
     MBED_ASSERT(!tx_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> > (tx_radio_evt_mail, radio_event);
+    tx_radio_evt_mail.enqueue_mail(radio_event);
 }
 
 
@@ -307,7 +308,7 @@ static void rx_done_cb(uint8_t const *payload, shared_ptr<list<pair<uint32_t, ui
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, tmr_sptr, payload, rssi_list_sptr, 
                                             static_cast<size_t>(size), rssi, snr);
     MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
+    unified_radio_evt_mail.enqueue_mail(radio_event);
     //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
 }
 
@@ -321,7 +322,7 @@ static void tx_timeout_cb()
     init_radio();
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
     MBED_ASSERT(!tx_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(tx_radio_evt_mail, radio_event);
+    tx_radio_evt_mail.enqueue_mail(radio_event);
 }
  
 static void rx_timeout_cb()
@@ -329,7 +330,7 @@ static void rx_timeout_cb()
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);  
+    unified_radio_evt_mail.enqueue_mail(radio_event);  
 }
  
 static void rx_error_cb()
@@ -337,7 +338,7 @@ static void rx_error_cb()
     radio.standby();
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
     MBED_ASSERT(!unified_radio_evt_mail.full());
-    enqueue_mail<std::shared_ptr<RadioEvent> >(unified_radio_evt_mail, radio_event);
+    unified_radio_evt_mail.enqueue_mail(radio_event);
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) { }

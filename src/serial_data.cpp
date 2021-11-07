@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "voice_msg.hpp"
 
 
-Mail<shared_ptr<Frame>, QUEUE_DEPTH> tx_frame_mail, rx_frame_mail, nv_logger_mail;
+EventMail<shared_ptr<Frame>> tx_frame_mail, rx_frame_mail, nv_logger_mail;
 static Mutex Frame_mutex;
 static mt19937 Frame_stream_id_rng; //NOLINT
 static atomic<int> Frame_last_stream_id;
@@ -522,7 +522,7 @@ static void send_to_uarts(const SerMsg &ser_msg) {
 
 void rx_frame_ser_thread_fn() {
     for(;;) {
-        auto rx_frame_sptr = dequeue_mail<std::shared_ptr<Frame>>(rx_frame_mail);
+        auto rx_frame_sptr = rx_frame_mail.dequeue_mail();
         // Handle KISS frames vs. "regular" QMesh frames vs. voice frames
         if(rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSRX || 
             rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSTX) {
