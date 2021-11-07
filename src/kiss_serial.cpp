@@ -41,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "voice_msg.hpp"
 #include "peripherals.hpp"
 #include "Adafruit_SSD1306.h"
+#include "mem_trace.hpp"
 
 extern EventQueue background_queue;
 
@@ -542,6 +543,7 @@ extern atomic<int> total_rx_corr_pkt;
 extern atomic<int> total_tx_pkt;
 extern atomic<int> last_rx_rssi;
 extern atomic<int> last_rx_snr;
+
 void KISSSerial::send_status() {
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_STATUS);
@@ -573,6 +575,7 @@ void KISSSerial::send_status() {
     mbed_stats_heap_t heap_stats;
     mbed_stats_heap_get(&heap_stats);
     ser_msg->status().heap_size = heap_stats.current_size;
+    ser_msg->status().peak_mem_usage = get_max_memory_usage();
     tx_ser_queue.enqueue_mail(ser_msg);
 }  
 

@@ -19,8 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MEM_TRACE_HPP
 #define MEM_TRACE_HPP
 
+#include <cstdint>
+
 void print_memory_info(); /// Print memory usage statistics
 
 void start_max_memory_usage();
+
+auto get_max_memory_usage() -> uint32_t;
 
 #endif /* MEM_TRACE_HPP */

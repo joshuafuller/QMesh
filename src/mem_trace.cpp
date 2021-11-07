@@ -55,6 +55,11 @@ static void print_max_memory_usage() {
 }
 
 
+auto get_max_memory_usage() -> uint32_t {
+    return max_stack_usage+max_heap_usage;
+}
+
+
 void start_max_memory_usage() {
     max_stack_usage = 0;
     max_heap_usage = 0;
