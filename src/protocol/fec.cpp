@@ -101,6 +101,8 @@ constexpr int ORDER_8 = 8;
 constexpr int ORDER_9 = 9;
 constexpr int ORDER_15 = 15;
 
+static constexpr float BITS_IN_BYTE_F = 8.F;
+
 constexpr size_t NUM_TESTS = 10;
 constexpr size_t NUM_BENCHMARK_RUNS = 100;
 
@@ -317,7 +319,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
     debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
     int_params.bits = static_cast<int32_t>(int_params.bits_f);
-    int_params.bytes = static_cast<int32_t>(ceilf((int_params.row_f*int_params.col_f)/static_cast<float>(BITS_IN_BYTE)));
+    int_params.bytes = static_cast<size_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE_F));
     int_params.row = static_cast<int32_t>(int_params.row_f);
     int_params.col = static_cast<int32_t>(int_params.col_f);
 
@@ -386,7 +388,6 @@ void FEC::benchmark(size_t num_iters) {
 }
 
 
-static constexpr float BITS_IN_BYTE_F = 8.F;
 FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
             const int32_t my_rs_corr_bytes) 
     : FECConv(my_msg_len, inv_rate, order) {
@@ -410,10 +411,10 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
     int_params.bits_f = static_cast<float>(conv_params.bytes*BITS_IN_BYTE);
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
-    int_params.bits = static_cast<int32_t>(int_params.bits_f);
-    int_params.bytes = static_cast<int32_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE_F));
-    int_params.row = static_cast<int32_t>(int_params.row_f);
-    int_params.col = static_cast<int32_t>(int_params.col_f);
+    int_params.bits = static_cast<size_t>(int_params.bits_f);
+    int_params.bytes = static_cast<size_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE_F));
+    int_params.row = static_cast<size_t>(int_params.row_f);
+    int_params.col = static_cast<size_t>(int_params.col_f);
     enc_size = int_params.bytes;
 }
 

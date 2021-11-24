@@ -78,6 +78,11 @@ public:
         enc_size = my_msg_len;
     }
 
+    /// Constructor to facilitate unit testing.
+    FEC(const int32_t my_msg_len, const int32_t inv_rate, 
+            const int32_t order, const int32_t my_rs_corr_bytes) : 
+            FEC(my_msg_len) {}
+
     /// Gets the name of the FEC.
     auto getName() -> std::string {
         return name;
@@ -156,6 +161,11 @@ protected:
 public:
     explicit FECInterleave(int32_t my_msg_len);
 
+    /// Constructor to facilitate unit testing.
+    FECInterleave(const int32_t my_msg_len, const int32_t inv_rate, 
+            const int32_t order, const int32_t my_rs_corr_bytes) : 
+            FECInterleave(my_msg_len) {}
+
     auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t override;
 
     auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
@@ -188,6 +198,11 @@ public:
      * @param order Order of the coder. Values supported are 6, 7, 8, and 9.
      */
     FECConv(int32_t my_msg_len, int32_t inv_rate, int32_t order);
+
+    /// Constructor to facilitate unit testing.
+    FECConv(const int32_t my_msg_len, const int32_t inv_rate, 
+            const int32_t order, const int32_t my_rs_corr_bytes) : 
+            FECConv(my_msg_len, inv_rate, order) {}
 
     FECConv(const FECConv &old) : FECConv(old.msg_len, old.inv_rate, old.order) { };
 
