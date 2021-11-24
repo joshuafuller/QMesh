@@ -5,107 +5,9 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
-#include "fec.hpp"
+#include "test_fec.hpp"
 
 using namespace std;
-
-
-void rand_flip_bits(vector<uint8_t> data, const double p_flip) {
-    mt19937 rand_gen(time(0));
-
-}
-
-
-static constexpr int INPUT_ALTERED_ERR = 20;
-static constexpr int VECTOR_WRONG_SIZE_ERR = 21;
-static constexpr int VECTOR_ALTERED = 22;
-static constexpr int DATA_MISMATCH = 23;
-bool test_rsv_fec(const size_t pld_len, const int conv_order, const int conv_rate, const int num_rs_bytes,
-                    const double p_flip);
-bool test_rsv_fec(const size_t pld_len, const int conv_order, const int conv_rate, const int num_rs_bytes,
-                    const double p_flip) {
-    // Generate random data
-    mt19937 rand_data(time(0));
-    uniform_int_distribution<uint8_t> dist(0, 255);
-    vector<uint8_t> orig_test_data(pld_len, 0);
-    for(auto & td : orig_test_data) {
-        td = dist(rand_data);
-    }
-    // Encode it with one of the FEC objects
-    mt19937 rand_size(time(0));
-    uniform_int_distribution<size_t> arr_sizes(0, 256);
-    auto fec_enc = make_shared<FECRSVGolay>(pld_len);
-    vector<uint8_t> orig_enc_test_data(arr_sizes(rand_size), 0);
-    vector<uint8_t> test_data = orig_test_data;
-    fec_enc->encode(test_data, orig_enc_test_data);
-    if(test_data != orig_test_data) {
-        cout << "ERROR: FEC has inappropriately altered the input data!" << endl;
-        throw INPUT_ALTERED_ERR;
-    }
-    if(fec_enc->encSize() != orig_enc_test_data.size()) {
-        cout << "ERROR: Encoded test data vector is the wrong size!" << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    // Randomly flip bits
-    mt19937 rand_flip(time(0));
-    uniform_real_distribution<double> p_dist;
-    for(auto & td : orig_enc_test_data) {
-        static constexpr int BITS_IN_BYTE = 8;
-        for(int i = 0; i < BITS_IN_BYTE; i++) {
-            if(p_dist(rand_flip) < p_flip) {
-                td ^= 0x01 << i;
-            }
-        }
-    }
-    // Attempt to decode the altered bits with a "separate" FEC
-    auto fec_dec = make_shared<FECRSVGolay>(pld_len);
-    if(fec_dec->encSize() != orig_enc_test_data.size()) {
-        cout << "ERROR: size of FEC-encoded byte vector not the same as the FEC's stated encoded size" << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    vector<uint8_t> dec_test_data(arr_sizes(rand_size), 0);
-    vector<uint8_t> enc_test_data = orig_enc_test_data;
-    fec_dec->decode(enc_test_data, dec_test_data);
-    if(enc_test_data != orig_enc_test_data) {
-        cout << "ERROR: enc_test_data was altered by the decode method " << __LINE__ << endl;
-        throw VECTOR_ALTERED;
-    }
-    if(pld_len != dec_test_data.size()) {
-        cout << "ERROR: size of decoded vector is not the same as the payload length " << __LINE__ << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    if(orig_test_data.size() != dec_test_data.size()) {
-        cout << "ERROR: size of original and decoded vector not the same " << __LINE__ << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    // Attempt to decode the altered bits with the "original" FEC
-    if(fec_enc->encSize() != orig_enc_test_data.size()) {
-        cout << "ERROR: size of FEC-encoded byte vector not the same as the FEC's stated encoded size " << __LINE__ << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    vector<uint8_t> dec_test_data2(arr_sizes(rand_size), 0);
-    vector<uint8_t> enc_test_data2 = orig_enc_test_data;
-    fec_dec->decode(enc_test_data2, dec_test_data2);
-    if(enc_test_data2 != orig_enc_test_data) {
-        cout << "ERROR: enc_test_data was altered by the decode method " << __LINE__ << endl;
-        throw VECTOR_ALTERED;
-    }
-    if(pld_len != dec_test_data2.size()) {
-        cout << "ERROR: size of decoded vector is not the same as the payload length " << __LINE__ << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    if(orig_test_data.size() != dec_test_data2.size()) {
-        cout << "ERROR: size of original and decoded vector not the same " << __LINE__ << endl;
-        throw VECTOR_WRONG_SIZE_ERR;
-    }
-    // Compare the final results
-    if(dec_test_data != dec_test_data2) {
-        cout << "ERROR: decoded data does not match " << __LINE__ << endl;
-        throw DATA_MISMATCH;
-    }
-    return orig_test_data == dec_test_data;
-}
-
 
 void test_fec();
 void test_fec() {
@@ -124,7 +26,7 @@ void test_fec() {
                         int num_correct = 0;
                         int num_total = 0;
                         for(int i = 0; i < num_trials; i++) {
-                            if(test_rsv_fec(pld_len, conv_order, conv_rate, rs_byte, p_flip)) {
+                            if(test_fec<FECInterleave>(pld_len, conv_order, conv_rate, rs_byte, p_flip)) {
                                 num_correct += 1;
                             }
                             num_total += 1;
@@ -138,7 +40,6 @@ void test_fec() {
         }
     }
 }
-
 
 int main() {
     test_fec();

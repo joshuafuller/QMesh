@@ -208,8 +208,8 @@ auto FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_
     if(name == "Dummy Interleaver") {
         lock.lock();
     }
+    dec_msg.resize(msg_len);
     MBED_ASSERT(enc_msg.size() == enc_size);
-    vector<uint8_t> int_msg(enc_size, 0);
     deinterleaveBits(enc_msg, dec_msg);
     MBED_ASSERT(dec_msg.size() == msg_len);
     if(name == "Dummy Interleaver") {
@@ -223,17 +223,18 @@ auto FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_
 // Using a technique similar to the AO-40 OSCAR interleaving setup
 void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) const {
     MBED_ASSERT(bytes.size() == int_params.pre_bytes);
-    vector<uint8_t> new_bytes_preint(int_params.pre_bytes, 0x00);
+    vector<uint8_t> new_bytes_preint(int_params.bytes, 0x00);
     vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
     copy(bytes.begin(), bytes.end(), new_bytes_preint.begin());
     uint32_t bit_idx = 0;
-    for(uint32_t row = 0; row < int_params.row; row++) {
-        for(uint32_t col = 0; col < int_params.col; col++) {
-            bool bit = getBit(new_bytes_preint, row + col*int_params.row);
+    for(uint32_t col = 0; col < int_params.row; col++) {
+        for(uint32_t row = 0; row < int_params.col; row++) {
+            bool bit = getBit(new_bytes_preint, col + row*int_params.row);
             setBit(bit, bit_idx++, new_bytes_int);
         }
     }
     bytes_int.resize(int_params.bytes);
+    MBED_ASSERT(bytes_int.size() == int_params.bytes);
     copy(new_bytes_int.begin(), new_bytes_int.end(), bytes_int.begin());
     MBED_ASSERT(bytes_int.size() == int_params.bytes);
 }
@@ -243,14 +244,15 @@ void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<ui
     MBED_ASSERT(bytes_int.size() == int_params.bytes);
     vector<uint8_t> new_bytes_deint(bytes_int.size(), 0x00);
     uint32_t bit_idx = 0;
-    for(uint32_t row = 0; row < int_params.row; row++) {
-        for(uint32_t col = 0; col < int_params.col; col++) {
+    for(uint32_t col = 0; col < int_params.row; col++) {
+        for(uint32_t row = 0; row < int_params.col; row++) {
             bool bit = getBit(bytes_int, bit_idx++);
-            setBit(bit, row + col*int_params.row, new_bytes_deint);
+            setBit(bit, col + row*int_params.row, new_bytes_deint);
         }
     }
-    copy(new_bytes_deint.begin(), new_bytes_deint.end(), bytes_deint.begin());
+    MBED_ASSERT(new_bytes_deint.size() >= int_params.pre_bytes);
     MBED_ASSERT(bytes_deint.size() == int_params.pre_bytes);
+    copy(new_bytes_deint.begin(), new_bytes_deint.begin()+int_params.pre_bytes, bytes_deint.begin());
 }
 
 
@@ -315,7 +317,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
     debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
     int_params.bits = static_cast<int32_t>(int_params.bits_f);
-    int_params.bytes = static_cast<int32_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE));
+    int_params.bytes = static_cast<int32_t>(ceilf((int_params.row_f*int_params.col_f)/static_cast<float>(BITS_IN_BYTE)));
     int_params.row = static_cast<int32_t>(int_params.row_f);
     int_params.col = static_cast<int32_t>(int_params.col_f);
 
@@ -547,6 +549,8 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
     int_params.bytes = static_cast<size_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE_F));
     int_params.row = static_cast<size_t>(int_params.row_f);
     int_params.col = static_cast<size_t>(int_params.col_f);
+    //printf("Parameters are pre_bytes %d, bits %f %d, row %d, col %d, bytes %d\r\n", 
+    //    int_params.pre_bytes, int_params.bits_f, int_params.bits, int_params.row, int_params.col, int_params.bytes);
     enc_size = int_params.bytes;
 }
 

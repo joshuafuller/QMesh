@@ -4,7 +4,7 @@ CFLAGS = -Wall -g -DTEST_FEC
 LIBCORRECT_OBJS = bit.o convolutional.o decode.o encode.o error_buffer.o history_buffer.o lookup.o \
 	fec_shim.o metric.o decode_rs.o encode_rs.o polynomial.o reed-solomon.o
 OBJS = test_fec.o fec.o 
-INCLUDES = -I../inc/peripherals -I../inc/protocol -I../inc -I../lib/libcorrect/include -I../lib/golay
+INCLUDES = -I../inc/peripherals -I../inc/protocol -I../inc -I../lib/libcorrect/include -I../lib/golay -I./
 LIBS = -lm
 TARGET = test_fec
 LIBCORRECT_PATH = ../lib/libcorrect/
