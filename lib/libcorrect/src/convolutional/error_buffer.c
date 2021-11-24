@@ -1,5 +1,9 @@
 #include "correct/convolutional/error_buffer.h"
+#ifndef TEST_FEC
 #include "mbed_assert.h"
+#else
+#define MBED_ASSERT
+#endif /* TEST_FEC */
 
 error_buffer_t *error_buffer_create(unsigned int num_states) {
     error_buffer_t *buf = calloc(1, sizeof(error_buffer_t));

@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbed.h"
 #include <random>
 #include <string>
+#include <vector>
 #include <memory>
 #include <fstream>
 #include <sstream>
@@ -571,6 +572,8 @@ void KISSSerial::send_status() {
     ser_msg->status().total_tx_pkt = total_tx_pkt;
     ser_msg->status().last_rx_rssi = last_rx_rssi;
     ser_msg->status().last_rx_snr = last_rx_snr;
+    // Status of the radio queue
+    ser_msg->status().radio_out_queue_level = unified_radio_evt_mail.getLevel();
     // Heap size for tracking whether we have memory leak(s)
     mbed_stats_heap_t heap_stats;
     mbed_stats_heap_get(&heap_stats);

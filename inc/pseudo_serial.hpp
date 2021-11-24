@@ -1,7 +1,9 @@
 #ifndef PSEUDO_SERIAL_HPP
 #define PSEUDO_SERIAL_HPP
 
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include <vector>
 #include <string>
 #include <utility>

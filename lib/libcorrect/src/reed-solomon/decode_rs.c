@@ -1,5 +1,9 @@
 #include "correct/reed-solomon/encode.h"
+#ifndef TEST_FEC
 #include "mbed_assert.h"
+#else
+#define MBED_ASSERT
+#endif
 
 // calculate all syndromes of the received polynomial at the roots of the generator
 // because we're evaluating at the roots of the generator, and because the transmitted

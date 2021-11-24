@@ -19,13 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #ifndef NV_SETTINGS_HPP
  #define NV_SETTINGS_HPP
 
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include "params.hpp"
+#ifndef TEST_FEC
 #include "LittleFileSystem.h"
 #include "QSPIFBlockDevice.h"
 
 extern QSPIFBlockDevice bd;
 extern LittleFileSystem fs;
+#endif /* TEST_FEC */
 
 void nv_log_fn();
 

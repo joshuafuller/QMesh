@@ -1,5 +1,9 @@
 #include "correct/convolutional/lookup.h"
+#ifndef TEST_FEC
 #include "mbed_assert.h"
+#else
+#define MBED_ASSERT
+#endif /* TEST_FEC */
 
 // table has numstates rows
 // each row contains all of the polynomial output bits concatenated together

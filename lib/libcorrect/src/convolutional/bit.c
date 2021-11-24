@@ -1,5 +1,9 @@
 #include "correct/convolutional/bit.h"
+#ifndef TEST_FEC
 #include "mbed_assert.h"
+#else
+#define MBED_ASSERT
+#endif
 
 
 bit_writer_t *bit_writer_create(uint8_t *bytes, size_t len) {

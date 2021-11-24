@@ -16,16 +16,50 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include "params.hpp"
 #include "correct.h"
 #include "fec.hpp"
+#ifndef TEST_FEC
 #include "serial_data.hpp"
+#endif /* TEST_FEC */
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <random>
 #include "mem_trace.hpp"
+
+using namespace std;
+
+#ifdef TEST_FEC
+void MBED_ASSERT(bool condition) {
+    if(!condition) {
+        throw MBED_ASSERT_CONDITION;
+    }
+}
+#endif /* TEST_FEC */
+
+#ifdef TEST_FEC
+// Special debug printf. Prepends "[-] " to facilitate using the same
+//  UART for both AT commands as well as debug commands.
+enum DBG_TYPES {
+    DBG_INFO,
+    DBG_WARN,
+    DBG_ERR,
+};
+
+auto debug_printf(enum DBG_TYPES, const char *fmt, ...) -> int;
+auto debug_printf(enum DBG_TYPES, const char *fmt, ...) -> int {
+    return 0;
+}
+
+auto debug_printf_clean(enum DBG_TYPES, const char *fmt, ...) -> int;
+auto debug_printf_clean(enum DBG_TYPES, const char *fmt, ...) -> int {
+    return 0;
+}
+#endif /* TEST_FEC */
 
 // Polynomials
 // These have been determined via find_conv_libfec_poly.c
@@ -70,6 +104,7 @@ constexpr int ORDER_15 = 15;
 constexpr size_t NUM_TESTS = 10;
 constexpr size_t NUM_BENCHMARK_RUNS = 100;
 
+#ifndef TEST_FEC
 void testFEC() {
     MBED_ASSERT(radio_cb.valid);
     vector<shared_ptr<FEC>> test_fecs;
@@ -149,6 +184,7 @@ void testFEC() {
         test_fec->benchmark(NUM_BENCHMARK_RUNS);
     }
 }
+#endif /* TEST_FEC */
 
 
 auto FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
@@ -289,6 +325,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
 
 constexpr float MS_IN_SEC = 1000.F;
 void FEC::benchmark(size_t num_iters) {
+#ifndef TEST_FEC
     MBED_ASSERT(radio_cb.valid);
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
@@ -343,6 +380,7 @@ void FEC::benchmark(size_t num_iters) {
     float dec_iters_per_sec = static_cast<float>(num_iters) / (static_cast<float>(dec_num_ms) / MS_IN_SEC);
     debug_printf(DBG_INFO, "Decode: %f ms/iteration, %f iterations/s\r\n", dec_ms_per_iter, dec_iters_per_sec);        
     debug_printf(DBG_INFO, "====================\r\n");
+#endif /* TEST_FEC */
 }
 
 
@@ -420,7 +458,7 @@ auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int
     vector<uint8_t> conv_enc_msg(conv_params.bytes, 0);
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
                             rs_enc_msg_size, conv_enc_msg.data());
-    MBED_ASSERT(conv_enc_len = conv_params.bits);
+    MBED_ASSERT(conv_enc_len == conv_params.bits);
     MBED_ASSERT(static_cast<int32_t>(conv_enc_msg.size()) == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);

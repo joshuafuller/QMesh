@@ -2,7 +2,11 @@
 #include <string.h>
 
 #include "fec_shim.h"
-#include "mbed_assert.h"
+#ifndef TEST_FEC
+#include "mbed_assert.h" 
+#else
+#define MBED_ASSERT 
+#endif /* TEST_FEC */
 
 typedef struct {
     correct_reed_solomon *rs;

@@ -1,7 +1,9 @@
 #ifndef SERIAL_MSG_HPP
 #define SERIAL_MSG_HPP
 
+#ifndef TEST_FEC
 #include "qmesh.pb.h"
+#endif /* TEST_FEC */
 #include <memory>
 
 template <typename T> 

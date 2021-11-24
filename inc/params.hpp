@@ -104,7 +104,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CDEBYTES_E22
 
+#ifndef TEST_FEC
 #include "sx126x_ds.h"
+#endif /* TEST_FEC */
 #define LORA_DEVICE SX1262
 #ifdef CDEBYTES_E22
 #define USES_TCXO

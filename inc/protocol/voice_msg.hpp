@@ -1,8 +1,9 @@
 #ifndef VOICE_MSG_HPP
 #define VOICE_MSG_HPP
 
-
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include <deque>
 #include <vector>
 

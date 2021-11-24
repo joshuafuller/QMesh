@@ -213,6 +213,7 @@ typedef struct _StatusMsg {
     uint32_t last_rx_snr;
     uint32_t heap_size;
     uint32_t peak_mem_usage;
+    uint32_t radio_out_queue_level;
 } StatusMsg;
 
 typedef struct _TestCfg {
@@ -337,7 +338,7 @@ typedef struct _SysCfgMsg {
 #define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0, 0, 0}
 #define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
-#define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_default                      {""}
 #define SerialCRCMsg_init_default                {0}
 #define BootLogMsg_init_default                  {0, 0, 0}
@@ -359,7 +360,7 @@ typedef struct _SysCfgMsg {
 #define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0, 0, 0}
 #define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
-#define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_zero                         {""}
 #define SerialCRCMsg_init_zero                   {0}
 #define BootLogMsg_init_zero                     {0, 0, 0}
@@ -449,6 +450,7 @@ typedef struct _SysCfgMsg {
 #define StatusMsg_last_rx_snr_tag                9
 #define StatusMsg_heap_size_tag                  10
 #define StatusMsg_peak_mem_usage_tag             11
+#define StatusMsg_radio_out_queue_level_tag      12
 #define TestCfg_cw_test_mode_tag                 1
 #define TestCfg_preamble_test_mode_tag           2
 #define TestCfg_test_fec_tag                     3
@@ -577,7 +579,8 @@ X(a, STATIC,   SINGULAR, UINT32,   total_tx_pkt,      7) \
 X(a, STATIC,   SINGULAR, UINT32,   last_rx_rssi,      8) \
 X(a, STATIC,   SINGULAR, UINT32,   last_rx_snr,       9) \
 X(a, STATIC,   SINGULAR, UINT32,   heap_size,        10) \
-X(a, STATIC,   SINGULAR, UINT32,   peak_mem_usage,   11)
+X(a, STATIC,   SINGULAR, UINT32,   peak_mem_usage,   11) \
+X(a, STATIC,   SINGULAR, UINT32,   radio_out_queue_level,  12)
 #define StatusMsg_CALLBACK NULL
 #define StatusMsg_DEFAULT NULL
 
@@ -775,7 +778,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define NetCfg_size                              298
 #define SysCfgMsg_size                           593
 #define ClockSetMsg_size                         6
-#define StatusMsg_size                           54
+#define StatusMsg_size                           60
 #define DbgMsg_size                              258
 #define SerialCRCMsg_size                        6
 #define BootLogMsg_size                          14

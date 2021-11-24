@@ -1,5 +1,9 @@
 #include "correct/convolutional/history_buffer.h"
+#ifndef TEST_FEC
 #include "mbed_assert.h"
+#else
+#define MBED_ASSERT
+#endif /* TEST_FEC */
 
 history_buffer *history_buffer_create(unsigned int min_traceback_length,
                                       unsigned int traceback_group_length,

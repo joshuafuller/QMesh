@@ -19,7 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef FEC_HPP
 #define FEC_HPP
 
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include "correct.h"
 #include "params.hpp"
 #include <cmath>
@@ -31,6 +33,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <typeinfo>
 #include "golay.h"
 
+#ifdef TEST_FEC
+class Mutex {
+public:
+    void lock() {}
+    void unlock() {}
+};
+
+static constexpr int MBED_ASSERT_CONDITION = 10;
+void MBED_ASSERT(bool condition);
+//#define MBED_ASSERT
+#endif /* TEST_FEC */
+
 constexpr int BITS_IN_BYTE = 8;
 constexpr int DEFAULT_CONV_CONS_LEN = 7;
 constexpr int DEFAULT_CONV_ORDER = 2;
@@ -38,10 +52,12 @@ constexpr int DEFAULT_RS_BYTES = 8;
 
 // Convolutional Codes
 
+#ifndef TEST_FEC
 /**
  * Performs some testing of the different Forward Error Correction algorithms.
  */
 void testFEC();
+#endif /* TEST_FEC */
 
 /**
  * Base class for Forward Error Correction. Provides some generically-useful functions,
@@ -49,7 +65,7 @@ void testFEC();
  */
 class FEC {
 protected:
-    string name;
+    std::string name;
     size_t msg_len;
     size_t enc_size;
     Mutex lock;
@@ -63,7 +79,7 @@ public:
     }
 
     /// Gets the name of the FEC.
-    auto getName() -> string {
+    auto getName() -> std::string {
         return name;
     }
 
@@ -76,7 +92,7 @@ public:
      * @param msg Byte vector of data to be encoded.
      * @param enc_msg Byte vector of encoded data.
      */
-    virtual auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
+    virtual auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t {
         if(name == "Dummy FEC") {
             lock.lock();
         }
@@ -93,7 +109,7 @@ public:
      * @param enc_msg Byte vector of encoded data.
      * @param dec_msg Byte vector of decoded data.
      */
-    virtual auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
+    virtual auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t {
         if(name == "Dummy FEC") {
             lock.lock();
         }
@@ -120,16 +136,16 @@ protected:
         uint32_t pre_bytes{};
     } int_params;
     
-    void interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) const;
-    void deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) const;
+    void interleaveBits(const std::vector<uint8_t> &bytes, std::vector<uint8_t> &bytes_int) const;
+    void deinterleaveBits(const std::vector<uint8_t> &bytes_int, std::vector<uint8_t> &bytes_deint) const;
 
-    static auto getBit(const vector<uint8_t> &bytes, const int32_t pos) -> bool {
+    static auto getBit(const std::vector<uint8_t> &bytes, const int32_t pos) -> bool {
         uint8_t byte = bytes[pos/BITS_IN_BYTE];
         size_t byte_pos = pos % BITS_IN_BYTE;
         return (((1U << byte_pos) & byte) != 0);
     }
 
-    static void setBit(const bool bit, const int32_t pos, vector<uint8_t> &bytes) {
+    static void setBit(const bool bit, const int32_t pos, std::vector<uint8_t> &bytes) {
 		size_t byte_pos = pos % BITS_IN_BYTE;
         bytes[pos/BITS_IN_BYTE] &= ~(1U << byte_pos);
         uint8_t my_bit = (bit == false) ? 0 : 1;
@@ -140,9 +156,9 @@ protected:
 public:
     explicit FECInterleave(int32_t my_msg_len);
 
-    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
+    auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t override;
 
-    auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
+    auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
 };
 
 
@@ -205,9 +221,9 @@ public:
         correct_convolutional_destroy(corr_con);
     }
 
-    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
+    auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t override;
 
-    auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
+    auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
 };
 
 
@@ -263,9 +279,9 @@ public:
         correct_reed_solomon_destroy(rs_con);
     }
 
-    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &rsv_enc_msg) -> int32_t override;
+    auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &rsv_enc_msg) -> int32_t override;
 
-    auto decode(const vector<uint8_t> &rsv_enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
+    auto decode(const std::vector<uint8_t> &rsv_enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
 };
 
 
@@ -291,13 +307,11 @@ public:
                                                 DEFAULT_CONV_CONS_LEN, DEFAULT_RS_BYTES) { };
 
     /// Destructor.
-    ~FECRSVGolay() {
-        correct_reed_solomon_destroy(rs_con);
-    }
+    ~FECRSVGolay() { }
 
-    auto encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t override;
+    auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t override;
 
-    auto decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t override;
+    auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
 
     auto encSize() -> int override {
         return static_cast<int>(enc_size+3);

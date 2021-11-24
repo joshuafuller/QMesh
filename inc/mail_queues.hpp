@@ -1,7 +1,9 @@
 #ifndef MAIL_QUEUE_HPP
 #define MAIL_QUEUE_HPP
 
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include <atomic>
 
 

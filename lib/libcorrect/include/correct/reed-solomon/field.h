@@ -1,7 +1,11 @@
 #ifndef CORRECT_REED_SOLOMON_FIELD
 #define CORRECT_REED_SOLOMON_FIELD
 #include "correct/reed-solomon.h"
+#ifndef TEST_FEC
 #include "mbed_assert.h"
+#else
+#define MBED_ASSERT
+#endif /* TEST_FEC */
 
 /*
 field_t field_create(field_operation_t primitive_poly);

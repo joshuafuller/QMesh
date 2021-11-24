@@ -30,14 +30,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     encoded as Base64.
 */
 
+#ifndef TEST_FEC
 #include "mbed.h"
+#endif /* TEST_FEC */
 #include <string>
 #include <utility>
 #include <atomic>
+#ifndef TEST_FEC
 #include "qmesh.pb.h"
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
+#endif /* TEST_FEC */
 #include "serial_msg.hpp"
 #include "pseudo_serial.hpp"
 #include "params.hpp"
