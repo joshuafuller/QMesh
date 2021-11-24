@@ -109,8 +109,8 @@ bool test_fec(const size_t pld_len, const int conv_order, const int conv_rate, c
 
 template<typename T>
 void test_fec() {
-    static vector<int> conv_orders = { 7 };
-    static vector<int> conv_rates = { 2 };
+    static vector<int> conv_orders = { 6, 7, 9 };
+    static vector<int> conv_rates = { 2, 3 };
     static vector<int> rs_bytes = { 2, 3, 4, 5, 6, 7, 8 };
     static vector<double> p_flips = { 0.00, 0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30 };
     static pair<int, int> pld_len_range(16, 64);

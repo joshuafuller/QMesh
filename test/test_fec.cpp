@@ -10,9 +10,10 @@
 using namespace std;
 
 int main() {
-    test_fec<FECConv>();
     test_fec<FECRSV>();
+    test_fec<FECConv>();
     test_fec<FECInterleave>();
+    test_fec<FECRSVGolay>();
 
     return 0;
 }
