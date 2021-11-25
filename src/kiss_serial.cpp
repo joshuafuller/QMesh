@@ -46,8 +46,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern EventQueue background_queue;
 
-void print_memory_info();
-
 static constexpr int ERR_MSG_SIZE = 32;
 static constexpr int SHA256_SIZE = 32;
 
@@ -579,6 +577,9 @@ void KISSSerial::send_status() {
     mbed_stats_heap_get(&heap_stats);
     ser_msg->status().heap_size = heap_stats.current_size;
     ser_msg->status().peak_mem_usage = get_max_memory_usage();
+    // How many protocol deadlines we've missed
+    ser_msg->status().missed_deadlines = RadioTiming::getNumMissedDeadlines();
+    ser_msg->status().total_deadlines = RadioTiming::getNumTotalDeadlines();
     tx_ser_queue.enqueue_mail(ser_msg);
 }  
 

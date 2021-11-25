@@ -106,12 +106,26 @@ void RadioTiming::waitSymOffset(const uint8_t symb_frac, const float direction,
 }
 
 
+auto RadioTiming::getNumTotalDeadlines() -> uint32_t {
+    return num_total_deadlines;
+}
+
+
+auto RadioTiming::getNumMissedDeadlines() -> uint32_t {
+    return num_missed_deadlines;
+}
+
+
+uint32_t RadioTiming::num_total_deadlines = 0;
+uint32_t RadioTiming::num_missed_deadlines = 0;
 auto RadioTiming::getWaitNoWarn() -> int32_t {
     MBED_ASSERT(tmr_sptr);
     int elapsed_us = tmr_sptr->read_us();
     MBED_ASSERT(wait_duration_us < INT32_MAX);
     MBED_ASSERT(wait_duration_us-elapsed_us < INT32_MAX);
+    num_total_deadlines += 1;
     if(wait_duration_us-elapsed_us < 0) {
+        num_missed_deadlines += 1;
         return 0;
     }
     return wait_duration_us-elapsed_us;

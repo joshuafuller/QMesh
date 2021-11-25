@@ -96,6 +96,8 @@ message StatusMsg {
   uint32 heap_size = 10;
   uint32 peak_mem_usage = 11;
   uint32 radio_out_queue_level = 12;
+  uint32 missed_deadlines = 13;
+  uint32 total_deadlines = 14;
 }
 
 message DbgMsg {

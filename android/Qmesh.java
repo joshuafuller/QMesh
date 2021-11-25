@@ -6652,6 +6652,16 @@ public final class Qmesh {
      * <code>uint32 radio_out_queue_level = 12;</code>
      */
     int getRadioOutQueueLevel();
+
+    /**
+     * <code>uint32 missed_deadlines = 13;</code>
+     */
+    int getMissedDeadlines();
+
+    /**
+     * <code>uint32 total_deadlines = 14;</code>
+     */
+    int getTotalDeadlines();
   }
   /**
    * Protobuf type {@code StatusMsg}
@@ -6678,6 +6688,8 @@ public final class Qmesh {
       heapSize_ = 0;
       peakMemUsage_ = 0;
       radioOutQueueLevel_ = 0;
+      missedDeadlines_ = 0;
+      totalDeadlines_ = 0;
     }
 
     @java.lang.Override
@@ -6763,6 +6775,16 @@ public final class Qmesh {
             case 96: {
 
               radioOutQueueLevel_ = input.readUInt32();
+              break;
+            }
+            case 104: {
+
+              missedDeadlines_ = input.readUInt32();
+              break;
+            }
+            case 112: {
+
+              totalDeadlines_ = input.readUInt32();
               break;
             }
             default: {
@@ -7020,6 +7042,24 @@ public final class Qmesh {
       return radioOutQueueLevel_;
     }
 
+    public static final int MISSED_DEADLINES_FIELD_NUMBER = 13;
+    private int missedDeadlines_;
+    /**
+     * <code>uint32 missed_deadlines = 13;</code>
+     */
+    public int getMissedDeadlines() {
+      return missedDeadlines_;
+    }
+
+    public static final int TOTAL_DEADLINES_FIELD_NUMBER = 14;
+    private int totalDeadlines_;
+    /**
+     * <code>uint32 total_deadlines = 14;</code>
+     */
+    public int getTotalDeadlines() {
+      return totalDeadlines_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -7069,6 +7109,12 @@ public final class Qmesh {
       }
       if (radioOutQueueLevel_ != 0) {
         output.writeUInt32(12, radioOutQueueLevel_);
+      }
+      if (missedDeadlines_ != 0) {
+        output.writeUInt32(13, missedDeadlines_);
+      }
+      if (totalDeadlines_ != 0) {
+        output.writeUInt32(14, totalDeadlines_);
       }
       unknownFields.writeTo(output);
     }
@@ -7127,6 +7173,14 @@ public final class Qmesh {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(12, radioOutQueueLevel_);
       }
+      if (missedDeadlines_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(13, missedDeadlines_);
+      }
+      if (totalDeadlines_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(14, totalDeadlines_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -7166,6 +7220,10 @@ public final class Qmesh {
           == other.getPeakMemUsage());
       result = result && (getRadioOutQueueLevel()
           == other.getRadioOutQueueLevel());
+      result = result && (getMissedDeadlines()
+          == other.getMissedDeadlines());
+      result = result && (getTotalDeadlines()
+          == other.getTotalDeadlines());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -7203,6 +7261,10 @@ public final class Qmesh {
       hash = (53 * hash) + getPeakMemUsage();
       hash = (37 * hash) + RADIO_OUT_QUEUE_LEVEL_FIELD_NUMBER;
       hash = (53 * hash) + getRadioOutQueueLevel();
+      hash = (37 * hash) + MISSED_DEADLINES_FIELD_NUMBER;
+      hash = (53 * hash) + getMissedDeadlines();
+      hash = (37 * hash) + TOTAL_DEADLINES_FIELD_NUMBER;
+      hash = (53 * hash) + getTotalDeadlines();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -7360,6 +7422,10 @@ public final class Qmesh {
 
         radioOutQueueLevel_ = 0;
 
+        missedDeadlines_ = 0;
+
+        totalDeadlines_ = 0;
+
         return this;
       }
 
@@ -7398,6 +7464,8 @@ public final class Qmesh {
         result.heapSize_ = heapSize_;
         result.peakMemUsage_ = peakMemUsage_;
         result.radioOutQueueLevel_ = radioOutQueueLevel_;
+        result.missedDeadlines_ = missedDeadlines_;
+        result.totalDeadlines_ = totalDeadlines_;
         onBuilt();
         return result;
       }
@@ -7481,6 +7549,12 @@ public final class Qmesh {
         }
         if (other.getRadioOutQueueLevel() != 0) {
           setRadioOutQueueLevel(other.getRadioOutQueueLevel());
+        }
+        if (other.getMissedDeadlines() != 0) {
+          setMissedDeadlines(other.getMissedDeadlines());
+        }
+        if (other.getTotalDeadlines() != 0) {
+          setTotalDeadlines(other.getTotalDeadlines());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -7838,6 +7912,58 @@ public final class Qmesh {
       public Builder clearRadioOutQueueLevel() {
         
         radioOutQueueLevel_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int missedDeadlines_ ;
+      /**
+       * <code>uint32 missed_deadlines = 13;</code>
+       */
+      public int getMissedDeadlines() {
+        return missedDeadlines_;
+      }
+      /**
+       * <code>uint32 missed_deadlines = 13;</code>
+       */
+      public Builder setMissedDeadlines(int value) {
+        
+        missedDeadlines_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 missed_deadlines = 13;</code>
+       */
+      public Builder clearMissedDeadlines() {
+        
+        missedDeadlines_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int totalDeadlines_ ;
+      /**
+       * <code>uint32 total_deadlines = 14;</code>
+       */
+      public int getTotalDeadlines() {
+        return totalDeadlines_;
+      }
+      /**
+       * <code>uint32 total_deadlines = 14;</code>
+       */
+      public Builder setTotalDeadlines(int value) {
+        
+        totalDeadlines_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 total_deadlines = 14;</code>
+       */
+      public Builder clearTotalDeadlines() {
+        
+        totalDeadlines_ = 0;
         onChanged();
         return this;
       }
@@ -21328,77 +21454,79 @@ public final class Qmesh {
       "_timer_en\030\n \001(\010\022\r\n\005valid\030\013 \001(\010\"@\n\004Mode\022\n" +
       "\n\006NORMAL\020\000\022\016\n\nMODE_RESET\020\001\022\017\n\013MODE_SILEN" +
       "T\020\002\022\013\n\007TESTING\020\003\"\033\n\013ClockSetMsg\022\014\n\004time\030" +
-      "\001 \001(\r\"\316\002\n\tStatusMsg\022!\n\006status\030\001 \001(\0162\021.St" +
+      "\001 \001(\r\"\201\003\n\tStatusMsg\022!\n\006status\030\001 \001(\0162\021.St" +
       "atusMsg.Status\022\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030" +
       "\003 \001(\r\022\017\n\007oled_on\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005" +
       " \001(\r\022\031\n\021total_rx_corr_pkt\030\006 \001(\r\022\024\n\014total" +
       "_tx_pkt\030\007 \001(\r\022\024\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013l" +
       "ast_rx_snr\030\t \001(\r\022\021\n\theap_size\030\n \001(\r\022\026\n\016p" +
       "eak_mem_usage\030\013 \001(\r\022\035\n\025radio_out_queue_l" +
-      "evel\030\014 \001(\r\"2\n\006Status\022\013\n\007BOOTING\020\000\022\016\n\nMAN" +
-      "AGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006DbgMsg\022\023\n\003msg\030" +
-      "\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg\022\r\n\005crc32\030\001" +
-      " \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030\001 \001(\010\022\021\n\tboo" +
-      "t_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1\n\006GPSMsg\022\r\n" +
-      "\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003lon\030\003 \001(\002\"\336" +
-      "\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005count\030\002 \001(\r\022" +
-      "\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\013\n\003tt" +
-      "l\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n\004rssi\030\007 \001(\021" +
-      "\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(\005\022\020\n\010comp_c" +
-      "rc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006uptime\030\014 \001(\r\022\030\n" +
-      "\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007TimeMsg\022\014\n\004ti" +
-      "me\030\001 \001(\r\"\335\010\n\tSerialMsg\022\035\n\004type\030\001 \001(\0162\017.S" +
-      "erialMsg.Type\022\r\n\005retry\030\002 \001(\010\022\"\n\007sys_cfg\030" +
-      "\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tclock_set\030\004 " +
-      "\001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006status\030\005 \001(\013" +
-      "2\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_msg\030\006 \001(\0132\007.D" +
-      "bgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\0132\007.LogMsgB\005" +
-      "\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132\013.BootLogMsg" +
-      "B\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010.DataMsgB\005\222?\002" +
-      "\030\004\022#\n\terror_msg\030\n \001(\0132\t.ErrorMsgB\005\222?\002\030\004\022" +
-      "!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB\005\222?\002\030\004\022+\n\nup" +
-      "date_msg\030\014 \001(\0132\n.UpdateMsgB\013\222?\002\030\004\222?\003\240\001\004\022" +
-      "#\n\007ver_msg\030\r \001(\0132\013.VersionMsgB\005\222?\002\030\004\022,\n\016" +
-      "int_params_msg\030\016 \001(\0132\r.IntParamsMsgB\005\222?\002" +
-      "\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016.VoiceFrame" +
-      "MsgB\005\222?\002\030\004\022\037\n\007ack_msg\030\020 \001(\0132\007.AckMsgB\005\222?" +
-      "\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CONFIG\020\000\022\016\n\nSET_CONF" +
-      "IG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOCK_SET\020" +
-      "\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013STAY_IN" +
-      "_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022\016\n\nERA" +
-      "SE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\tERASE_" +
-      "CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_LOG_RETRY\020\016\022" +
-      "\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022\027\n\023REA" +
-      "D_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_BOOT_LOG\020\022\022\013" +
-      "\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025\022\007\n\003ER" +
-      "R\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016EXIT_KISS_MO" +
-      "DE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPDATE\020\033\022" +
-      "\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\rTURN_O" +
-      "LED_OFF\020\036\022\016\n\nINT_PARAMS\020\037\022\r\n\tVOICE_MSG\020 " +
-      ":\006\222?\003\240\001\010\"\'\n\006AckMsg\022\035\n\025radio_out_queue_le" +
-      "vel\030\001 \001(\r\"!\n\nVersionMsg\022\023\n\003msg\030\001 \001(\tB\006\222?" +
-      "\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type\030\001 \001(\0162\016.ErrorMs" +
-      "g.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"\n\004Type\022\013\n\007C" +
-      "RC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"\305\002\n\007DataMsg\022\033\n\004t" +
-      "ype\030\001 \001(\0162\r.DataMsg.Type\022\021\n\tstream_id\030\002 " +
-      "\001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\022\n\nsym_" +
-      "offset\030\005 \001(\r\022\027\n\007payload\030\006 \001(\014B\006\222?\003\010\200\004\022\013\n" +
-      "\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016kiss_cur_fr" +
-      "ame\030\t \001(\r\022\027\n\017kiss_tot_frames\030\n \001(\r\022\026\n\016ki" +
-      "ss_stream_id\030\013 \001(\r\022\021\n\tredundant\030\014 \001(\010\"H\n" +
-      "\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISSTX\020\002\022\n\n\006KIS" +
-      "SRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VOICERX\020\005\"N\n\rVoice" +
-      "FrameMsg\022\021\n\tsize_bits\030\001 \001(\r\022\022\n\nend_strea" +
-      "m\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014B\005\222?\002\010 \"\375\001\n\tUpda" +
-      "teMsg\022\035\n\004type\030\001 \001(\0162\017.UpdateMsg.Type\022\017\n\007" +
-      "pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 \001(\tB\006\222?\003\010\200\001\022\023\n\003p" +
-      "ld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha256_pkt\030\005 \001(\014B\005\222?" +
-      "\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B\005\222?\002\010 \022\031\n\nerr_re" +
-      "ason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005FIRST\020\000\022\010\n\004" +
-      "LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:" +
-      "\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022\023\n\013freq_wobble\030\001" +
-      " \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n\013time_offset\030\003 \001" +
-      "(\005\022\022\n\npwr_offset\030\004 \001(\005b\006proto3"
+      "evel\030\014 \001(\r\022\030\n\020missed_deadlines\030\r \001(\r\022\027\n\017" +
+      "total_deadlines\030\016 \001(\r\"2\n\006Status\022\013\n\007BOOTI" +
+      "NG\020\000\022\016\n\nMANAGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006Dbg" +
+      "Msg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg" +
+      "\022\r\n\005crc32\030\001 \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030\001" +
+      " \001(\010\022\021\n\tboot_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1" +
+      "\n\006GPSMsg\022\r\n\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003" +
+      "lon\030\003 \001(\002\"\336\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005c" +
+      "ount\030\002 \001(\r\022\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender\030" +
+      "\004 \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n" +
+      "\004rssi\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(" +
+      "\005\022\020\n\010comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006upti" +
+      "me\030\014 \001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007Ti" +
+      "meMsg\022\014\n\004time\030\001 \001(\r\"\335\010\n\tSerialMsg\022\035\n\004typ" +
+      "e\030\001 \001(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010\022" +
+      "\"\n\007sys_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tc" +
+      "lock_set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006s" +
+      "tatus\030\005 \001(\0132\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_ms" +
+      "g\030\006 \001(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\013" +
+      "2\007.LogMsgB\005\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132\013" +
+      ".BootLogMsgB\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010.D" +
+      "ataMsgB\005\222?\002\030\004\022#\n\terror_msg\030\n \001(\0132\t.Error" +
+      "MsgB\005\222?\002\030\004\022!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB\005" +
+      "\222?\002\030\004\022+\n\nupdate_msg\030\014 \001(\0132\n.UpdateMsgB\013\222" +
+      "?\002\030\004\222?\003\240\001\004\022#\n\007ver_msg\030\r \001(\0132\013.VersionMsg" +
+      "B\005\222?\002\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntPar" +
+      "amsMsgB\005\222?\002\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016" +
+      ".VoiceFrameMsgB\005\222?\002\030\004\022\037\n\007ack_msg\030\020 \001(\0132\007" +
+      ".AckMsgB\005\222?\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CONFIG\020\000\022" +
+      "\016\n\nSET_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n" +
+      "\tCLOCK_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006" +
+      "\022\017\n\013STAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBO" +
+      "OT\020\t\022\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020" +
+      "\013\022\r\n\tERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_L" +
+      "OG_RETRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_L" +
+      "OG\020\020\022\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_B" +
+      "OOT_LOG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003" +
+      "ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016E" +
+      "XIT_KISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n" +
+      "\n\006UPDATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020" +
+      "\035\022\021\n\rTURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS\020\037\022\r\n\t" +
+      "VOICE_MSG\020 :\006\222?\003\240\001\010\"\'\n\006AckMsg\022\035\n\025radio_o" +
+      "ut_queue_level\030\001 \001(\r\"!\n\nVersionMsg\022\023\n\003ms" +
+      "g\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type\030\001 \001(" +
+      "\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"" +
+      "\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"\305\002\n\007D" +
+      "ataMsg\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type\022\021\n\ts" +
+      "tream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sender\030\004 " +
+      "\001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030\006 \001(\014" +
+      "B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016" +
+      "kiss_cur_frame\030\t \001(\r\022\027\n\017kiss_tot_frames\030" +
+      "\n \001(\r\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tredunda" +
+      "nt\030\014 \001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISS" +
+      "TX\020\002\022\n\n\006KISSRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VOICERX" +
+      "\020\005\"N\n\rVoiceFrameMsg\022\021\n\tsize_bits\030\001 \001(\r\022\022" +
+      "\n\nend_stream\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014B\005\222?\002" +
+      "\010 \"\375\001\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.UpdateM" +
+      "sg.Type\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 \001(\tB\006" +
+      "\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha256_pk" +
+      "t\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B\005\222?\002\010" +
+      " \022\031\n\nerr_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005" +
+      "FIRST\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n" +
+      "\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022\023\n\013fr" +
+      "eq_wobble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n\013time" +
+      "_offset\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005b\006proto" +
+      "3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -21460,7 +21588,7 @@ public final class Qmesh {
     internal_static_StatusMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_StatusMsg_descriptor,
-        new java.lang.String[] { "Status", "TxFull", "Time", "OledOn", "TotalRxPkt", "TotalRxCorrPkt", "TotalTxPkt", "LastRxRssi", "LastRxSnr", "HeapSize", "PeakMemUsage", "RadioOutQueueLevel", });
+        new java.lang.String[] { "Status", "TxFull", "Time", "OledOn", "TotalRxPkt", "TotalRxCorrPkt", "TotalTxPkt", "LastRxRssi", "LastRxSnr", "HeapSize", "PeakMemUsage", "RadioOutQueueLevel", "MissedDeadlines", "TotalDeadlines", });
     internal_static_DbgMsg_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_DbgMsg_fieldAccessorTable = new

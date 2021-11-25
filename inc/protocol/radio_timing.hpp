@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mbed.h"
 #include <memory>
 #include <array>
+#include <atomic>
 
 extern DigitalOut rx_int_mon, tx_int_mon, int_trig_mon; /// GPIO signals to monitor timing accuracy/jitter
 extern DigitalOut rssi_mon;
@@ -70,10 +71,19 @@ private:
     shared_ptr<Timer> tmr_sptr;
     int32_t wait_duration_us;
 
+
 public:
+    static uint32_t num_total_deadlines;
+    static uint32_t num_missed_deadlines;
+    
 auto get_pkt_time_us() const -> uint32_t {
     return pkt_time_us;
 }
+
+
+static auto getNumTotalDeadlines() -> uint32_t;
+static auto getNumMissedDeadlines() -> uint32_t;
+
 
 /**
  * Given the various LoRa parameters, pre-compute all of the different timing
