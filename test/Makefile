@@ -1,6 +1,6 @@
 CC = gcc
 CPP = g++
-CFLAGS = -Wall -g -DTEST_FEC
+CFLAGS = -Wall -g -DTEST_FEC -fsanitize=address
 LIBCORRECT_OBJS = bit.o convolutional.o decode.o encode.o error_buffer.o history_buffer.o lookup.o \
 	fec_shim.o metric.o decode_rs.o encode_rs.o polynomial.o reed-solomon.o
 OBJS = test_fec.o fec.o 
@@ -65,7 +65,7 @@ golay.o :
 test_fec : fec_shim.o bit.o convolutional.o decode.o encode.o error_buffer.o history_buffer.o \
 		lookup.o metric.o decode_rs.o encode_rs.o polynomial.o reed-solomon.o test_fec.o \
 		fec.o golay.o
-	$(CPP) -o test_fec fec_shim.o bit.o convolutional.o decode.o encode.o error_buffer.o \
+	$(CPP) $(CFLAGS) -o test_fec fec_shim.o bit.o convolutional.o decode.o encode.o error_buffer.o \
 		history_buffer.o lookup.o metric.o decode_rs.o encode_rs.o polynomial.o reed-solomon.o \
 		test_fec.o fec.o golay.o
 
