@@ -130,6 +130,16 @@ def print_status_msg(status_msg):
     print("Status is %s" % (status_str))
     print("Time is %s" % (status_msg.time))
     print("Queue state is %s" % (status_msg.tx_full))
+    print("Radio out queue level is %d" % (status_msg.radio_out_queue_level))
+    # uint32 heap_size = 10;
+    # uint32 peak_mem_usage = 11;
+    # uint32 radio_out_queue_level = 12;
+    # uint32 missed_deadlines = 13;
+    # uint32 total_deadlines = 14;
+    print("Heap size is %d" % (status_msg.heap_size))
+    print("Peak Memory usage is %d" % (status_msg.peak_mem_usage))
+    print("Total protocol deadlines is %d" % (status_msg.total_deadlines))
+    print("Missed protocol deadlines is %d" % (status_msg.missed_deadlines))
     print("----------")
 
 
