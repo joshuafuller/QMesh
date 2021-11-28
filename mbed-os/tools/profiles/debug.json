@@ -2,7 +2,7 @@
     "GCC_ARM": {
         "common": ["-c", "-Wall", "-Wextra",
                    "-Wno-unused-parameter", "-Wno-missing-field-initializers",
-                   "-fmessage-length=0", "-fno-exceptions",
+                   "-fmessage-length=0", 
                    "-ffunction-sections", "-fdata-sections", "-funsigned-char",
                    "-MMD", "-fno-delete-null-pointer-checks",
                    "-fomit-frame-pointer", "-Og", "-g3", "-DMBED_DEBUG",
@@ -20,7 +20,7 @@
                    "-Wno-armcc-pragma-push-pop", "-Wno-armcc-pragma-anon-unions",
                    "-Wno-reserved-user-defined-literal", "-Wno-deprecated-register",
                    "-DMULADDC_CANNOT_USE_R7", "-fdata-sections",
-                   "-fno-exceptions", "-MMD", "-D_LIBCPP_EXTERN_TEMPLATE(...)=",
+                   "-MMD", "-D_LIBCPP_EXTERN_TEMPLATE(...)=",
                    "-fshort-enums", "-fshort-wchar", "-DMBED_DEBUG",
                    "-DMBED_TRAP_ERRORS_ENABLED=1"],
         "asm": [],
