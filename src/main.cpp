@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mbed.h"
+#include "os_portability.hpp"
 #include "peripherals.hpp"
 #include "params.hpp"
 #include "serial_data.hpp"
@@ -30,20 +30,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ble_serial.hpp"
 
 
-
-constexpr int THREAD_STACK_SIZE = 4096;
-Thread mesh_protocol_thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
-Thread rx_frame_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
-Thread nv_log_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
-
-EventQueue background_queue;
-Thread background_thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+Thread *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *background_thread;
+EventQueue *background_queue;
+static void create_threads();
+static void create_threads() {
+    constexpr int THREAD_STACK_SIZE = 4096;
+    background_queue = new EventQueue();
+    mesh_protocol_thread = new Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
+    rx_frame_thread = new Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
+    nv_log_thread = new Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
+    background_thread = new Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+} 
 
 time_t boot_timestamp;
-
-#ifdef APRS
-Afsk my_afsk;
-#endif
 
 system_state_t current_mode = system_state_t::BOOTING;
 atomic<bool> stay_in_management(false);
@@ -58,14 +57,25 @@ static constexpr int I2C_FREQ = 400000;
 
 
 void send_status();
-#ifdef USER_BUTTON
-DigitalIn user_button(USER_BUTTON);
-#else // for the nRF52 board
-DigitalIn user_button(BUTTON1);
-#endif
-//MBED_CONF_APP_QSPI_FLASH_IO0
-SoftI2C oled_i2c(MBED_CONF_APP_OLED_SDA, MBED_CONF_APP_OLED_SCL);  // SDA, SCL
+
+DigitalIn *user_button;
+SoftI2C *oled_i2c;
 shared_ptr<Adafruit_SSD1306_I2c> oled;
+void create_serial_data_objects();
+void create_kiss_serial_data_objects();
+void create_radio_timing_data_objects();
+void create_nv_settings_objects();
+void create_radio_objects();
+void create_mesh_protocol_objects();
+static void create_peripherals();
+static void create_peripherals() {
+    #ifdef USER_BUTTON
+    user_button = new DigitalIn(USER_BUTTON);
+    #else // for the nRF52 board
+    user_button = new DigitalIn(BUTTON1);
+    #endif
+    oled_i2c = new SoftI2C(MBED_CONF_APP_OLED_SDA, MBED_CONF_APP_OLED_SCL);  // SDA, SCL
+}
 
 void print_stats()
 {
@@ -100,7 +110,7 @@ void print_stats()
 constexpr uint32_t WDT_TIMEOUT_MS = 6000;
 static void wdt_pet() { // pet the watchdog
     Watchdog::get_instance().kick();
-    background_queue.call_in(WDT_TIMEOUT_MS/2, wdt_pet);
+    background_queue->call_in(WDT_TIMEOUT_MS/2, wdt_pet);
 }
 #endif
 
@@ -108,6 +118,14 @@ static void wdt_pet() { // pet the watchdog
 // main() runs in its own thread in the OS
 auto main() -> int
 {
+    create_threads();
+    create_peripherals();
+    create_serial_data_objects();
+    create_kiss_serial_data_objects();
+    create_radio_timing_data_objects();
+    create_nv_settings_objects();
+    create_radio_objects();
+    create_mesh_protocol_objects();
     start_cal();
     time(&boot_timestamp);
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
@@ -118,18 +136,18 @@ auto main() -> int
 
     // Set up the LEDs
     ThisThread::sleep_for(HALF_SECOND);
-    background_thread.start(callback(&background_queue, &EventQueue::dispatch_forever));
-    led1.setEvtQueue(&background_queue);
-    led2.setEvtQueue(&background_queue);
-    led3.setEvtQueue(&background_queue);  
+    background_thread->start(callback(background_queue, &EventQueue::dispatch_forever));
+    led1.setEvtQueue(background_queue);
+    led2.setEvtQueue(background_queue);
+    led3.setEvtQueue(background_queue);  
 
-    oled_i2c.frequency(I2C_FREQ);
-    oled_i2c.start();
+    oled_i2c->frequency(I2C_FREQ);
+    oled_i2c->start();
     
     constexpr int OLED_NUM_LINES = 32;
     constexpr int OLED_NUM_COLS = 128;
     constexpr int OLED_CONST = 0x78;
-    oled = make_shared<Adafruit_SSD1306_I2c>(oled_i2c, MBED_CONF_APP_FHSS_MON, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
+    oled = make_shared<Adafruit_SSD1306_I2c>(*oled_i2c, MBED_CONF_APP_FHSS_MON, OLED_CONST, OLED_NUM_LINES, OLED_NUM_COLS);
 
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
@@ -138,10 +156,10 @@ auto main() -> int
     oled->printf("In rescue mode...\r\n");
     oled->display();
 	ThisThread::sleep_for(ONE_SECOND);
-	if(user_button != 0) {
+	if(user_button != nullptr) {
 		led1.LEDFastBlink();
 		ThisThread::sleep_for(ONE_SECOND);
-		if(user_button != 0) {
+		if(user_button != nullptr) {
 			rescue_filesystem();
 		}
 	}
@@ -151,7 +169,7 @@ auto main() -> int
 #else
     auto *push_button = new PushButton(USER_BUTTON);
 #endif
-    push_button->SetQueue(background_queue);
+    push_button->SetQueue(*background_queue);
     ThisThread::sleep_for(ONE_SECOND);
 
     // Mount the filesystem, load the configuration, log the bootup
@@ -159,7 +177,7 @@ auto main() -> int
     load_settings_from_flash();
     log_boot();
 
-    auto *disp_file = fopen("/fs/display.off", "r");
+    auto *disp_file = fopen("/fs/display.off", "re");
     if(disp_file == nullptr) {
         oled->displayOn();
         fclose(disp_file);
@@ -174,7 +192,7 @@ auto main() -> int
     auto bt_ser = make_shared<KISSSerialUART>(MBED_CONF_APP_KISS_UART_TX, 
                                             MBED_CONF_APP_KISS_UART_RX, 
                                             string("BT"), DEBUG_PORT);
-    MBED_ASSERT(bt_ser);
+    PORTABLE_ASSERT(bt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX */
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
     ThisThread::sleep_for(HALF_SECOND);
@@ -183,7 +201,7 @@ auto main() -> int
                                                 MBED_CONF_APP_KISS_UART_EN_ALT,
                                                 MBED_CONF_APP_KISS_UART_ST_ALT, 
                                                 string("BT-ALT"), DEBUG_PORT);
-    MBED_ASSERT(bt_alt_ser);
+    PORTABLE_ASSERT(bt_alt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
 #if MBED_CONF_APP_HAS_BLE == 1
     ThisThread::sleep_for(HALF_SECOND);
@@ -196,7 +214,7 @@ auto main() -> int
     ThisThread::sleep_for(HALF_SECOND);
     send_status();
 
-    rx_frame_thread.start(rx_frame_ser_thread_fn);
+    rx_frame_thread->start(rx_frame_ser_thread_fn);
 
     // Start up the GPS code
 #if 0
@@ -251,7 +269,7 @@ ThisThread::sleep_for(500);
 #endif
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
-    nv_log_thread.start(nv_log_fn);
+    nv_log_thread->start(nv_log_fn);
 
     ThisThread::sleep_for(QUARTER_SECOND);
 
@@ -262,19 +280,19 @@ ThisThread::sleep_for(500);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
-    mesh_protocol_thread.start(mesh_protocol_fsm);
+    mesh_protocol_thread->start(mesh_protocol_fsm);
 
     debug_printf(DBG_INFO, "Time to chill...\r\n");
     ThisThread::sleep_for(QUARTER_SECOND);  
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
-    background_queue.call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
+    background_queue->call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
                             beacon_fn);
     ThisThread::sleep_for(QUARTER_SECOND);
  
     // Start the OLED monitoring
-    background_queue.call(oled_mon_fn);
+    background_queue->call(oled_mon_fn);
 
     // Enable the watchdog timer if configured to do so
 #if 0

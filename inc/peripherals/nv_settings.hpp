@@ -27,8 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "LittleFileSystem.h"
 #include "QSPIFBlockDevice.h"
 
-extern QSPIFBlockDevice bd;
-extern LittleFileSystem fs;
+extern QSPIFBlockDevice *bd;
+extern LittleFileSystem *fs;
 #endif /* TEST_FEC */
 
 void nv_log_fn();

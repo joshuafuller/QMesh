@@ -3,8 +3,8 @@
 
 
 auto VoiceMsgProcessor::getDataPayload() -> vector<uint8_t> {
-    MBED_ASSERT(radio_cb.valid);
-    MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 2 ||
+    PORTABLE_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 2 ||
                 radio_cb.net_cfg.voice_frames_per_frame == 4);
     if(radio_cb.net_cfg.voice_frames_per_frame == 2) {
         switch(radio_cb.net_cfg.codec2_bitrate) {
@@ -17,7 +17,7 @@ auto VoiceMsgProcessor::getDataPayload() -> vector<uint8_t> {
             case BITRATE_2400: return setFramesBig<two_frame_2400bps_t>(frames); break;
             case BITRATE_3200: return setFramesBig<two_frame_3200bps_t>(frames); break;
         }
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     } else if(radio_cb.net_cfg.voice_frames_per_frame == 4) {
         switch(radio_cb.net_cfg.codec2_bitrate) {
             case BITRATE_450:  return setFrames<four_frame_450bps_t>(frames); break;
@@ -29,16 +29,16 @@ auto VoiceMsgProcessor::getDataPayload() -> vector<uint8_t> {
             case BITRATE_2400: return setFramesBig<four_frame_2400bps_t>(frames); break;
             case BITRATE_3200: return setFramesBig<four_frame_3200bps_t>(frames); break;
         }
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     } else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
 }
 
 
 auto VoiceMsgProcessor::size() -> int {
-    MBED_ASSERT(radio_cb.valid);
-    MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 2 ||
+    PORTABLE_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 2 ||
                 radio_cb.net_cfg.voice_frames_per_frame == 4);
     if(radio_cb.net_cfg.voice_frames_per_frame == 2) {
         switch(radio_cb.net_cfg.codec2_bitrate) {
@@ -51,7 +51,7 @@ auto VoiceMsgProcessor::size() -> int {
             case BITRATE_2400: return sizeof(two_frame_size_2400bps_t); break;
             case BITRATE_3200: return sizeof(two_frame_size_3200bps_t); break;
         }
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     } else if(radio_cb.net_cfg.voice_frames_per_frame == 4) {
         switch(radio_cb.net_cfg.codec2_bitrate) {
             case BITRATE_450:  return sizeof(four_frame_450bps_t); break;
@@ -63,16 +63,16 @@ auto VoiceMsgProcessor::size() -> int {
             case BITRATE_2400: return sizeof(four_frame_2400bps_t); break;
             case BITRATE_3200: return sizeof(four_frame_3200bps_t); break;
         }
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     } else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
 }
 
 
 auto VoiceMsgProcessor::getVoiceFrames(const vector<uint8_t>& pld) -> vector<vector<uint8_t>> {
-    MBED_ASSERT(radio_cb.valid);
-    MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 2 ||
+    PORTABLE_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 2 ||
                 radio_cb.net_cfg.voice_frames_per_frame == 4);
     if(radio_cb.net_cfg.voice_frames_per_frame == 2) {
         switch(radio_cb.net_cfg.codec2_bitrate) {
@@ -85,7 +85,7 @@ auto VoiceMsgProcessor::getVoiceFrames(const vector<uint8_t>& pld) -> vector<vec
             case BITRATE_2400: return getFramesBig<two_frame_2400bps_t>(pld, BITRATE_2400); break;
             case BITRATE_3200: return getFramesBig<two_frame_3200bps_t>(pld, BITRATE_3200); break;
         }
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     } else if(radio_cb.net_cfg.voice_frames_per_frame == 4) {
         switch(radio_cb.net_cfg.codec2_bitrate) {
             case BITRATE_450:  return getFrames<four_frame_450bps_t>(pld, BITRATE_450); break;
@@ -97,16 +97,16 @@ auto VoiceMsgProcessor::getVoiceFrames(const vector<uint8_t>& pld) -> vector<vec
             case BITRATE_2400: return getFramesBig<four_frame_2400bps_t>(pld, BITRATE_2400); break;
             case BITRATE_3200: return getFramesBig<four_frame_3200bps_t>(pld, BITRATE_3200); break;
         } 
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     } else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
 }
 
 
 auto VoiceMsgProcessor::addFrame(const vector<uint8_t>& frame) -> bool {
-    MBED_ASSERT(radio_cb.valid);
-    MBED_ASSERT(frames.size() <= radio_cb.net_cfg.voice_frames_per_frame);
+    PORTABLE_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(frames.size() <= radio_cb.net_cfg.voice_frames_per_frame);
     frames.push_back(frame);
     return frames.size() == radio_cb.net_cfg.voice_frames_per_frame;
 }

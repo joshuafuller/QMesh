@@ -16,8 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mbed.h"
-#include "rtos.h"
+#include "os_portability.hpp"
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <string>
@@ -38,25 +37,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "SX126X_LoRaRadio.h"
 
-SX126X_LoRaRadio radio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
-                       MBED_CONF_APP_LORA_SPI_MISO, // PinName miso
-                       MBED_CONF_APP_LORA_SPI_SCLK, // PinName sclk
-                       MBED_CONF_APP_LORA_CS,  // PinName nss
-                       MBED_CONF_APP_LORA_RXCTL,  // PinName rxen
-                       MBED_CONF_APP_LORA_TXCTL,  // PinName txen
-                       MBED_CONF_APP_LORA_RESET,  // PinName reset
-                       MBED_CONF_APP_LORA_DIO1,  // PinName dio1
-                       MBED_CONF_APP_LORA_DIO2,  // PinName dio2
-                       MBED_CONF_APP_LORA_RESET,  // PinName nrst
-                       MBED_CONF_APP_LORA_BUSY,   // PinName busy,
-                       NC);  
+SX126X_LoRaRadio *radio;  
 SysCfgMsg radio_cb = SysCfgMsg_init_zero;
 
 // The callbacks used by the LoRa radio driver
-static radio_events_t radio_events;
+static radio_events_t *radio_events;
 
 // Event queue for communicating events from the radio
-EventMail<shared_ptr<RadioEvent>> unified_radio_evt_mail, tx_radio_evt_mail;
+EventMail<shared_ptr<RadioEvent>> *unified_radio_evt_mail, *tx_radio_evt_mail;
+
+void create_radio_objects() {
+    radio = new SX126X_LoRaRadio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
+                                    MBED_CONF_APP_LORA_SPI_MISO, // PinName miso
+                                    MBED_CONF_APP_LORA_SPI_SCLK, // PinName sclk
+                                    MBED_CONF_APP_LORA_CS,  // PinName nss
+                                    MBED_CONF_APP_LORA_RXCTL,  // PinName rxen
+                                    MBED_CONF_APP_LORA_TXCTL,  // PinName txen
+                                    MBED_CONF_APP_LORA_RESET,  // PinName reset
+                                    MBED_CONF_APP_LORA_DIO1,  // PinName dio1
+                                    MBED_CONF_APP_LORA_DIO2,  // PinName dio2
+                                    MBED_CONF_APP_LORA_RESET,  // PinName nrst
+                                    MBED_CONF_APP_LORA_BUSY,   // PinName busy,
+                                    NC); 
+    radio_events = new radio_events_t();
+    unified_radio_evt_mail = new EventMail<shared_ptr<RadioEvent>>();
+    tx_radio_evt_mail = new EventMail<shared_ptr<RadioEvent>>();
+}
 
 // Prototypes for the callbacks
 static void tx_done_cb(shared_ptr<CalTimer> tmr_sptr);
@@ -83,7 +89,7 @@ static auto compute_fhss_preamble() -> uint32_t {
     float sym_time_us = sym_time_s*US_IN_MS*MS_IN_S;
     int tcxo_settling_sym = static_cast<int>(ceilf(radio_cb.radio_cfg.tcxo_time_us/sym_time_us));
     constexpr int SF_TABLE_ADJ = 7;
-    lora_cad_params_t lora_cad_params = cad_params[radio_cb.radio_cfg.lora_cfg.bw][radio_cb.radio_cfg.lora_cfg.sf-SF_TABLE_ADJ];
+    lora_cad_params_t lora_cad_params = cad_params[radio_cb.radio_cfg.lora_cfg.bw][radio_cb.radio_cfg.lora_cfg.sf-SF_TABLE_ADJ]; //NOLINT
     constexpr int CAD_PADDING = 1;
     int cad_sym = lora_cad_params.num_sym + CAD_PADDING;
     constexpr int CHANNEL_PADDING = 1;
@@ -99,18 +105,18 @@ static auto compute_fhss_preamble() -> uint32_t {
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int ONE_SECOND = 1000;
 void init_radio() {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     // Initialize Radio driver
     debug_printf(DBG_INFO, "Now initializing the radio\r\n");
-    radio_events.tx_done_tmr = tx_done_cb;
-    radio_events.rx_done_tmr = rx_done_cb;
-    radio_events.rx_error = rx_error_cb;
-    radio_events.tx_timeout = tx_timeout_cb;
-    radio_events.rx_timeout = rx_timeout_cb;
-    radio_events.rx_preamble_det = rx_preamble_det_cb;
-    radio_events.fhss_change_channel = fhss_change_channel_cb;
+    radio_events->tx_done_tmr = tx_done_cb;
+    radio_events->rx_done_tmr = rx_done_cb;
+    radio_events->rx_error = rx_error_cb;
+    radio_events->tx_timeout = tx_timeout_cb;
+    radio_events->rx_timeout = rx_timeout_cb;
+    radio_events->rx_preamble_det = rx_preamble_det_cb;
+    radio_events->fhss_change_channel = fhss_change_channel_cb;
     ThisThread::sleep_for(QUARTER_SECOND);
-    radio.init_radio(&radio_events);
+    radio->init_radio(radio_events);
     debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
     debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
     debug_printf(DBG_INFO, "Radio CR is %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
@@ -126,10 +132,10 @@ void init_radio() {
     }
     vector<uint32_t> freqs;
     for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
-        freqs.push_back(radio_cb.radio_cfg.frequencies[i]); 
-        debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb.radio_cfg.frequencies[i]);
+        freqs.push_back(radio_cb.radio_cfg.frequencies[i]); //NOLINT
+        debug_printf(DBG_INFO, "Frequencies PULLED %d\r\n", radio_cb.radio_cfg.frequencies[i]); //NOLINT
     }
-    radio.configure_freq_hop_freqs(freqs);
+    radio->configure_freq_hop_freqs(freqs);
     switch(radio_cb.fec_cfg.type) {
         case FECCfg_Type_NONE:
             debug_printf(DBG_INFO, "FEC algorithm is NONE\r\n");
@@ -147,7 +153,7 @@ void init_radio() {
             debug_printf(DBG_INFO, "FEC algorithm is RSVGOLAY\r\n");
             break; 
         default:
-            MBED_ASSERT(false);   
+            PORTABLE_ASSERT(false);   
     }
     if(radio_cb.fec_cfg.type == FECCfg_Type_NONE) {
         frame_fec = make_shared<FEC>(Frame::size());
@@ -168,7 +174,7 @@ void init_radio() {
             radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
     }
     else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
     Frame tmp_frame(frame_fec);
     radio_cb.net_cfg.full_pkt_len = tmp_frame.codedSize();
@@ -179,7 +185,7 @@ void init_radio() {
     } else {
         pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length;
     }
-    radio.set_rx_config(MODEM_LORA, 
+    radio->set_rx_config(MODEM_LORA, 
                             radio_cb.radio_cfg.lora_cfg.bw,
                             radio_cb.radio_cfg.lora_cfg.sf, 
                             radio_cb.radio_cfg.lora_cfg.cr,
@@ -190,32 +196,32 @@ void init_radio() {
                             radio_cb.net_cfg.full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
-    radio.set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
+    radio->set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
                             radio_cb.radio_cfg.lora_cfg.bw, 
                             radio_cb.radio_cfg.lora_cfg.sf,
                             radio_cb.radio_cfg.lora_cfg.cr, 
                             pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
-    radio.set_public_network(false);
-    radio.set_channel(*freqs.begin());
-    radio_timing.computeTimes(radio_cb.radio_cfg.lora_cfg.bw, 
+    radio->set_public_network(false);
+    radio->set_channel(*freqs.begin());
+    radio_timing->computeTimes(radio_cb.radio_cfg.lora_cfg.bw, 
                         radio_cb.radio_cfg.lora_cfg.sf, 
                         radio_cb.radio_cfg.lora_cfg.cr, 
                         pre_len, 
                         radio_cb.net_cfg.full_pkt_len);
     constexpr float RX_TIMEOUT_INCREMENT = 15.625F;
-    radio.cad_rx_timeout = radio_timing.get_pkt_time_us() / RX_TIMEOUT_INCREMENT;
+    radio->cad_rx_timeout = radio_timing->get_pkt_time_us() / RX_TIMEOUT_INCREMENT;
     if(radio_cb.test_cfg.cw_test_mode) { 
         debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
-        radio.set_tx_continuous_wave(0, 0, 0);
+        radio->set_tx_continuous_wave(0, 0, 0);
         while(true) {
             ThisThread::sleep_for(ONE_SECOND);
         }
     }
     else if(radio_cb.test_cfg.preamble_test_mode) {
         debug_printf(DBG_WARN, "Starting continuous preamble output...\r\n");
-        radio.set_tx_continuous_preamble();
+        radio->set_tx_continuous_preamble();
         while(true) {
             ThisThread::sleep_for(ONE_SECOND);
         }
@@ -228,7 +234,7 @@ void init_radio() {
 
  
 void reinit_radio() {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     uint32_t pre_len = 0;
     if(radio_cb.radio_cfg.frequencies_count > 1) {
         pre_len = radio_cb.radio_cfg.lora_cfg.fhss_pre_len;
@@ -236,7 +242,7 @@ void reinit_radio() {
         pre_len = radio_cb.radio_cfg.lora_cfg.preamble_length;
     }
     // Initialize Radio driver
-    radio.set_rx_config(MODEM_LORA, 
+    radio->set_rx_config(MODEM_LORA, 
                             radio_cb.radio_cfg.lora_cfg.bw,
                             radio_cb.radio_cfg.lora_cfg.sf, 
                             radio_cb.radio_cfg.lora_cfg.cr,
@@ -247,14 +253,14 @@ void reinit_radio() {
                             radio_cb.net_cfg.full_pkt_len,
                             RADIO_CRC_ON, RADIO_FREQ_HOP, RADIO_HOP_PERIOD,
                             RADIO_INVERT_IQ, true);
-    radio.set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
+    radio->set_tx_config(MODEM_LORA, radio_cb.radio_cfg.tx_power, 0,
                             radio_cb.radio_cfg.lora_cfg.bw, 
                             radio_cb.radio_cfg.lora_cfg.sf,
                             radio_cb.radio_cfg.lora_cfg.cr, 
                             pre_len,
                             RADIO_FIXED_LEN, RADIO_CRC_ON, RADIO_FREQ_HOP,
                             RADIO_HOP_PERIOD, RADIO_INVERT_IQ, RADIO_TX_TIMEOUT);
-    radio.set_public_network(false);
+    radio->set_public_network(false);
 }
 
 RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum) {
@@ -276,7 +282,7 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> 
     rssi_list_sptr = std::move(my_rssi_list_sptr);
     tmr_sptr = std::move(my_tmr_sptr);
     evt_enum = my_evt_enum;
-    MBED_ASSERT(my_size <= 256);
+    PORTABLE_ASSERT(my_size <= 256);
     buf = std::make_shared<vector<uint8_t>>();
     buf->resize(my_size);
     memcpy(buf->data(), my_buf, my_size);
@@ -294,21 +300,21 @@ RadioEvent::RadioEvent(const radio_evt_enum_t my_evt_enum, const shared_ptr<Fram
 
 static void tx_done_cb(shared_ptr<CalTimer> tmr_sptr)
 {
-    radio.standby();
+    radio->standby();
     auto radio_event = make_shared<RadioEvent>(TX_DONE_EVT, tmr_sptr);
-    MBED_ASSERT(!tx_radio_evt_mail.full());
-    tx_radio_evt_mail.enqueue_mail(radio_event);
+    PORTABLE_ASSERT(!tx_radio_evt_mail->full());
+    tx_radio_evt_mail->enqueue_mail(radio_event);
 }
 
 
 static void rx_done_cb(uint8_t const *payload, shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr, 
                     shared_ptr<CalTimer> tmr_sptr, uint16_t size, int16_t rssi, int8_t snr)
 {
-    radio.standby();
+    radio->standby();
     auto radio_event = make_shared<RadioEvent>(RX_DONE_EVT, tmr_sptr, payload, rssi_list_sptr, 
                                             static_cast<size_t>(size), rssi, snr);
-    MBED_ASSERT(!unified_radio_evt_mail.full());
-    unified_radio_evt_mail.enqueue_mail(radio_event);
+    PORTABLE_ASSERT(!unified_radio_evt_mail->full());
+    unified_radio_evt_mail->enqueue_mail(radio_event);
     //debug_printf(DBG_INFO, "RX Done interrupt generated %d rssi %d snr %d\r\n", size, rssi, snr); 
 }
 
@@ -318,27 +324,27 @@ static void rx_preamble_det_cb() { }
 
 static void tx_timeout_cb()
 {
-    radio.standby();
+    radio->standby();
     init_radio();
     auto radio_event = make_shared<RadioEvent>(TX_TIMEOUT_EVT);
-    MBED_ASSERT(!tx_radio_evt_mail.full());
-    tx_radio_evt_mail.enqueue_mail(radio_event);
+    PORTABLE_ASSERT(!tx_radio_evt_mail->full());
+    tx_radio_evt_mail->enqueue_mail(radio_event);
 }
  
 static void rx_timeout_cb()
 {
-    radio.standby();
+    radio->standby();
     auto radio_event = make_shared<RadioEvent>(RX_TIMEOUT_EVT);
-    MBED_ASSERT(!unified_radio_evt_mail.full());
-    unified_radio_evt_mail.enqueue_mail(radio_event);  
+    PORTABLE_ASSERT(!unified_radio_evt_mail->full());
+    unified_radio_evt_mail->enqueue_mail(radio_event);  
 }
  
 static void rx_error_cb()
 {
-    radio.standby();
+    radio->standby();
     auto radio_event = make_shared<RadioEvent>(RX_ERROR_EVT);
-    MBED_ASSERT(!unified_radio_evt_mail.full());
-    unified_radio_evt_mail.enqueue_mail(radio_event);
+    PORTABLE_ASSERT(!unified_radio_evt_mail->full());
+    unified_radio_evt_mail->enqueue_mail(radio_event);
 }
 
 static void fhss_change_channel_cb(uint8_t current_channel) { }

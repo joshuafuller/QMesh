@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define FEC_HPP
 
 #ifndef TEST_FEC
-#include "mbed.h"
+#include "os_portability.hpp"
 #endif /* TEST_FEC */
 #include "correct.h"
 #include "params.hpp"
@@ -40,9 +40,9 @@ public:
     void unlock() {}
 };
 
-static constexpr int MBED_ASSERT_CONDITION = 10;
-void MBED_ASSERT(bool condition);
-//#define MBED_ASSERT
+static constexpr int PORTABLE_ASSERT_CONDITION = 10;
+void PORTABLE_ASSERT(bool condition);
+//#define PORTABLE_ASSERT
 #endif /* TEST_FEC */
 
 constexpr int BITS_IN_BYTE = 8;
@@ -101,7 +101,7 @@ public:
         if(name == "Dummy FEC") {
             lock.lock();
         }
-        MBED_ASSERT(msg.size() == msg_len);
+        PORTABLE_ASSERT(msg.size() == msg_len);
         enc_msg = msg;
         return msg.size();
         if(name == "Dummy FEC") {
@@ -118,7 +118,7 @@ public:
         if(name == "Dummy FEC") {
             lock.lock();
         }
-        MBED_ASSERT(enc_msg.size() == msg_len);
+        PORTABLE_ASSERT(enc_msg.size() == msg_len);
         dec_msg = enc_msg;
         return msg_len;
         if(name == "Dummy FEC") {

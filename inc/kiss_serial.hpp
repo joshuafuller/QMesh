@@ -177,7 +177,7 @@ public:
 
 
 // debug_printf() uses this vector to determine which serial ports to send out
-extern Mutex kiss_sers_mtx;
+extern Mutex *kiss_sers_mtx;
 extern vector<KISSSerial *> kiss_sers;
 
 

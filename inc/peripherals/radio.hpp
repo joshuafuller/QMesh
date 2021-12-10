@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdint>
 #include "SX126X_LoRaRadio.h"
 
-extern SX126X_LoRaRadio radio;
+extern SX126X_LoRaRadio *radio;
 
 /// Two modes: normal mesh mode, and beacon mode.
 enum class radio_mode_t { MESH_MODE_NORMAL, MESH_MODE_BEACON, };
@@ -43,7 +43,7 @@ void init_radio();
 void reinit_radio();
 
 // Test functions, one for transmitting and one for receiving
-constexpr int RX_DONE_SIGNAL = 0xAB;
+//constexpr int RX_DONE_SIGNAL = 0xAB;
 void tx_test_radio();
 void rx_test_radio();
 

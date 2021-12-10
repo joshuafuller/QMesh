@@ -9,10 +9,10 @@
 #include <list>
 #include <algorithm>
 #ifndef TEST_HARNESS
-#include "mbed.h"
+#include "os_portability.hpp"
 #else
 using namespace std;
-#define MBED_ASSERT
+#define PORTABLE_ASSERT
 #endif
 
 
@@ -34,8 +34,8 @@ public:
         max_pwr_diff = my_max_pwr_diff;
         num_channels = my_num_channels;
         ttl = 0;
-        MBED_ASSERT(freq_range.first < freq_range.second);
-        MBED_ASSERT(abs(freq_range.first-freq_range.second) > 0);
+        PORTABLE_ASSERT(freq_range.first < freq_range.second);
+        PORTABLE_ASSERT(abs(freq_range.first-freq_range.second) > 0);
     }
 
     static auto seqLen() -> int {

@@ -2,7 +2,7 @@
 #define VOICE_MSG_HPP
 
 #ifndef TEST_FEC
-#include "mbed.h"
+#include "os_portability.hpp"
 #endif /* TEST_FEC */
 #include <deque>
 #include <vector>
@@ -16,9 +16,9 @@ static constexpr int BITRATE_1400 = 1400;
 static constexpr int BITRATE_1600 = 1600;
 static constexpr int BITRATE_2400 = 2400;
 static constexpr int BITRATE_3200 = 3200;
-static vector<int> bitrates = {BITRATE_450, BITRATE_700, BITRATE_1200,
+static vector<int> bitrates = {BITRATE_450, BITRATE_700, BITRATE_1200, //NOLINT
                                 BITRATE_1300, BITRATE_1400, BITRATE_1600,
-                                BITRATE_2400, BITRATE_3200};
+                                BITRATE_2400, BITRATE_3200}; 
 
 static constexpr int FRAME_RATE_HZ = 25;
 
@@ -121,25 +121,25 @@ auto setFrames(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
     frame.frame3 = 0;
     {
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[0].size() <= sizeof(frame_tmp));
+        PORTABLE_ASSERT(frames[0].size() <= sizeof(frame_tmp));
         memcpy(&frame_tmp, frames[0].data(), frames[0].size());
         frame.frame0 = frame_tmp;
     }
     if(frames.size() >= 1) { //NOLINT
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[1].size() <= sizeof(frame_tmp));
+        PORTABLE_ASSERT(frames[1].size() <= sizeof(frame_tmp));
         memcpy(&frame_tmp, frames[1].data(), frames[1].size());  
         frame.frame1 = frame_tmp;      
     }  //NOLINT
     if(frames.size() >= 2) { 
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[1].size() <= sizeof(frame_tmp));
+        PORTABLE_ASSERT(frames[1].size() <= sizeof(frame_tmp));
         memcpy(&frame_tmp, frames[1].data(), frames[1].size());  
         frame.frame1 = frame_tmp;      
     }
     if(frames.size() >= 3) {
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[2].size() <= sizeof(frame_tmp));
+        PORTABLE_ASSERT(frames[2].size() <= sizeof(frame_tmp));
         memcpy(&frame_tmp, frames[2].data(), frames[2].size());  
         frame.frame2 = frame_tmp;          
     }
@@ -163,34 +163,34 @@ auto setFramesBig(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
     frame.frame3b = 0;
     {
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[0].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[0].size() <= sizeof(frame_tmp*2));
         memcpy(&frame_tmp, frames[0].data(), frames[0].size()/2);
         frame.frame0a = frame_tmp;
-        memcpy(&frame_tmp, frames[0].data()+frames[0].size()/2, frames[0].size()/2);
+        memcpy(&frame_tmp, frames[0].data()+frames[0].size()/2, frames[0].size()/2); //NOLINT
         frame.frame0b = frame_tmp;
     }
     if(frames.size() >= 1) { //NOLINT
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[1].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[1].size() <= sizeof(frame_tmp*2));
         memcpy(&frame_tmp, frames[1].data(), frames[1].size()/2);
         frame.frame1a = frame_tmp;
-        memcpy(&frame_tmp, frames[1].data()+frames[1].size()/2, frames[1].size()/2);
+        memcpy(&frame_tmp, frames[1].data()+frames[1].size()/2, frames[1].size()/2); //NOLINT
         frame.frame1b = frame_tmp;   
     }  //NOLINT
     if(frames.size() >= 2) { 
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[2].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[2].size() <= sizeof(frame_tmp*2));
         memcpy(&frame_tmp, frames[2].data(), frames[2].size()/2);
         frame.frame2a = frame_tmp;
-        memcpy(&frame_tmp, frames[2].data()+frames[2].size()/2, frames[2].size()/2);
+        memcpy(&frame_tmp, frames[2].data()+frames[2].size()/2, frames[2].size()/2); //NOLINT
         frame.frame2b = frame_tmp;     
     }
     if(frames.size() >= 3) {
         uint64_t frame_tmp = 0;
-        MBED_ASSERT(frames[3].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[3].size() <= sizeof(frame_tmp*2));
         memcpy(&frame_tmp, frames[3].data(), frames[3].size()/2);
         frame.frame3a = frame_tmp;
-        memcpy(&frame_tmp, frames[3].data()+frames[3].size()/2, frames[3].size()/2);
+        memcpy(&frame_tmp, frames[3].data()+frames[3].size()/2, frames[3].size()/2); //NOLINT
         frame.frame3b = frame_tmp;           
     }
     vector<uint8_t> pld(sizeof(T), 0);
@@ -207,9 +207,9 @@ auto getFrames(vector<uint8_t> pld, const int bitrate) -> vector<vector<uint8_t>
             static_cast<float>(FRAME_RATE_HZ)/static_cast<float>(BITS_IN_BYTE))));
     vector<vector<uint8_t>> frames;
     // Copy in the initial values
-    MBED_ASSERT(pld.size() == sizeof(T));
+    PORTABLE_ASSERT(pld.size() == sizeof(T));
     memcpy(&frame, pld.data(), pld.size());
-    MBED_ASSERT((frame.num_frames > 0) & (frame.num_frames <= 4));
+    PORTABLE_ASSERT((frame.num_frames > 0) & (frame.num_frames <= 4));
     {
         uint64_t frame_tmp = frame.frame0;
         frames[0] = vector<uint8_t>(bytes_per_frame, 0);
@@ -240,10 +240,10 @@ auto getFramesBig(vector<uint8_t> pld, const int bitrate) -> vector<vector<uint8
     T frame{};
     int bytes_per_frame = static_cast<int>(ceilf((static_cast<float>(bitrate)/
             static_cast<float>(FRAME_RATE_HZ)/static_cast<float>(BITS_IN_BYTE))));
-    MBED_ASSERT((frame.num_frames > 0) & (frame.num_frames <= 4));
+    PORTABLE_ASSERT((frame.num_frames > 0) & (frame.num_frames <= 4));
     vector<vector<uint8_t>> frames(frame.num_frames);
     // Copy in the initial values
-    MBED_ASSERT(pld.size() == sizeof(T));
+    PORTABLE_ASSERT(pld.size() == sizeof(T));
     memcpy(&frame, pld.data(), pld.size());
     {
         uint64_t frame_tmp = frame.frame0a;
@@ -293,7 +293,7 @@ public:
     }
 
     static auto bits_per_frame(const int bitrate) -> int {
-        MBED_ASSERT(valid_bitrate(bitrate));
+        PORTABLE_ASSERT(valid_bitrate(bitrate));
         return bitrate/FRAME_RATE_HZ;
     }
 

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mbed.h"
+#include "os_portability.hpp"
 #include "params.hpp"
 #include "serial_data.hpp"
 #include <cmath>
@@ -37,14 +37,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "anti_interference.hpp"
 #include "peripherals.hpp"
 
-extern EventQueue background_queue;
+extern EventQueue *background_queue;
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
 
 volatile bool retransmit_pending = false;
-InterruptIn retransmit_disable_in_n(MBED_CONF_APP_RETRANSMIT_DIS_IN, PullUp);
-DigitalOut retransmit_disable_out_n(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
+InterruptIn *retransmit_disable_in_n;
+DigitalOut *retransmit_disable_out_n;
+
+RadioTiming *radio_timing;
+
+
+void create_mesh_protocol_objects() {
+    retransmit_disable_in_n = new InterruptIn(MBED_CONF_APP_RETRANSMIT_DIS_IN, PullUp);
+    retransmit_disable_out_n = new DigitalOut(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
+    radio_timing = new RadioTiming();
+}
 
 
 /**
@@ -88,7 +97,6 @@ static enum {
     RETRANSMIT_PACKET
 } state = WAIT_FOR_EVENT;
 
-RadioTiming radio_timing;
 
 atomic<int> total_rx_pkt(0);
 atomic<int> total_rx_corr_pkt(0);
@@ -101,7 +109,7 @@ atomic<int> last_rx_snr(0.0);
  */
 static constexpr int FRAME_BUF_SIZE = 256;
 void mesh_protocol_fsm() {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     shared_ptr<FEC> fec;
     FECCfg_Type fec_type = radio_cb.fec_cfg.type;
     debug_printf(DBG_INFO, "%d FEC was chosen\r\n", fec_type);
@@ -119,7 +127,7 @@ void mesh_protocol_fsm() {
         fec = make_shared<FECRSVGolay>(Frame::size(), radio_cb.fec_cfg.conv_rate, 
                 radio_cb.fec_cfg.conv_order, radio_cb.fec_cfg.rs_num_roots);
     } else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
     std::shared_ptr<RadioEvent> radio_event;
     std::shared_ptr<RadioEvent> tx_radio_event;
@@ -145,54 +153,54 @@ void mesh_protocol_fsm() {
                         radio_cb.net_cfg.num_offsets, radio_cb.address, 
                         MAX_PWR_DIFF, radio_cb.radio_cfg.frequencies_count);        
     }
-    radio.configure_freq_hop(anti_inter);
+    radio->configure_freq_hop(anti_inter);
     auto next_sym_off = 0;
 
     // Set up an initial timer
     auto initial_timer = make_shared<Timer>();
     initial_timer->reset();
     initial_timer->start();
-    radio_timing.setTimer(initial_timer);
-    radio_timing.waitFullSlots(1); // Change this to be zero once we know zero works
+    radio_timing->setTimer(initial_timer);
+    radio_timing->waitFullSlots(1); // Change this to be zero once we know zero works
     for(;;) {
         debug_printf(DBG_INFO, "--------------------\r\n");
         //print_memory_info();
         switch(state) {
             case WAIT_FOR_EVENT:
-                retransmit_disable_out_n.write(1);
+                retransmit_disable_out_n->write(1);
                 led2.LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
-                radio.lock();
-                radio.receive_sel();
-                radio.unlock();
-                radio_event = unified_radio_evt_mail.dequeue_mail();
-                radio.stop_cad.store(true);
-                while(radio.cad_pending.load() == true) { };
-                radio.stop_cad.store(false);
-                debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->evt_enum);
-                if(radio_event->evt_enum == TX_FRAME_EVT) {
-                    tx_frame_sptr = radio_event->frame;
-                    tx_frame_sptr->fec = fec;
-                    radio.lock();
-                    radio.standby();
+                radio->lock();
+                radio->receive_sel();
+                radio->unlock();
+                radio_event = unified_radio_evt_mail->dequeue_mail();
+                radio->stop_cad.store(true);
+                while(radio->cad_pending.load() == true) { };
+                radio->stop_cad.store(false);
+                debug_printf(DBG_INFO, "Event received is %d\r\n", radio_event->get_evt_enum());
+                if(radio_event->get_evt_enum() == TX_FRAME_EVT) {
+                    tx_frame_sptr = radio_event->get_frame();
+                    tx_frame_sptr->get_FEC() = fec;
+                    radio->lock();
+                    radio->standby();
                     anti_inter->setTTL(0);
-                    radio.tx_hop_frequency();
-                    radio.unlock();
+                    radio->tx_hop_frequency();
+                    radio->unlock();
                     state = TX_PACKET;
                 }
-                else if(radio_event->evt_enum == RX_DONE_EVT) {
+                else if(radio_event->get_evt_enum() == RX_DONE_EVT) {
                     //radio.standby();
                     //debug_printf(DBG_INFO, "Received a packet\r\n");
                     total_rx_pkt.store(total_rx_pkt.load()+1);
-                    last_rx_rssi.store(radio_event->rssi);
-                    last_rx_snr.store(radio_event->snr);
-                    background_queue.call(oled_mon_fn);
+                    last_rx_rssi.store(radio_event->get_rssi());
+                    last_rx_snr.store(radio_event->get_snr());
+                    background_queue->call(oled_mon_fn);
                     // Load up the frame
                     led2.LEDSolid();
                     auto rx_frame_noninv_sptr = make_shared<Frame>(fec);
                     auto rx_frame_inv_sptr = make_shared<Frame>(fec);
-                    auto pkt_status_noninv = rx_frame_noninv_sptr->deserializeCoded(radio_event->buf);
-                    auto pkt_status_inv = rx_frame_inv_sptr->deserializeCodedInv(radio_event->buf);
+                    auto pkt_status_noninv = rx_frame_noninv_sptr->deserializeCoded(radio_event->get_buf());
+                    auto pkt_status_inv = rx_frame_inv_sptr->deserializeCodedInv(radio_event->get_buf());
                     auto pkt_status = pkt_status_noninv;
                     rx_frame_sptr = rx_frame_noninv_sptr;
                     if(pkt_status != PKT_OK) {
@@ -201,34 +209,34 @@ void mesh_protocol_fsm() {
                     }
                     if(pkt_status == PKT_OK) {
                         total_rx_corr_pkt.store(total_rx_corr_pkt.load()+1);
-                        background_queue.call(oled_mon_fn);
+                        background_queue->call(oled_mon_fn);
                         auto rx_frame_orig_sptr = make_shared<Frame>(*rx_frame_sptr);
                         rx_frame_sptr->setSender(radio_cb.address);
                         rx_frame_sptr->incrementTTL();
                         anti_inter->setTTL(rx_frame_sptr->getTTL());
-                        radio.tx_hop_frequency();
-						rx_frame_sptr->tx_frame = false;
+                        radio->tx_hop_frequency();
+						rx_frame_sptr->get_tx_frame() = false;
                         if(checkRedundantPkt(rx_frame_sptr)) {
                             //radio.standby();
                             debug_printf(DBG_WARN, "Seen packet before, dropping frame\r\n");
                             rx_frame_sptr->setRedundant();
-                            rx_frame_mail.enqueue_mail_nonblocking(rx_frame_orig_sptr);
+                            rx_frame_mail->enqueue_mail_nonblocking(rx_frame_orig_sptr);
                             state = WAIT_FOR_EVENT;
                         }
                         else {
                             //radio.standby();
-                            radio_timing.setTimer(radio_event->tmr_sptr);
-                            rx_frame_mail.enqueue_mail_nonblocking(rx_frame_orig_sptr);
-                            retransmit_disable_out_n.write(0);
+                            radio_timing->setTimer(radio_event->get_tmr_sptr());
+                            rx_frame_mail->enqueue_mail_nonblocking(rx_frame_orig_sptr);
+                            retransmit_disable_out_n->write(0);
                             constexpr int TWO_SECONDS = 2000;
-                            ThisThread::sleep_for(radio_timing.getWaitNoWarn()/TWO_SECONDS);
-                            if(retransmit_disable_in_n.read() != 0) {
+                            ThisThread::sleep_for(radio_timing->getWaitNoWarn()/TWO_SECONDS);
+                            if(retransmit_disable_in_n->read() != 0) {
                                 state = RETRANSMIT_PACKET;
                             }
                             else {
                                 debug_printf(DBG_WARN, "Retransmit blocked by diversity I/O signal\r\n");
                                 rx_frame_sptr->setRedundant();
-                                rx_frame_mail.enqueue_mail_nonblocking(rx_frame_orig_sptr);
+                                rx_frame_mail->enqueue_mail_nonblocking(rx_frame_orig_sptr);
                                 state = WAIT_FOR_EVENT;
                             }
                         }
@@ -238,7 +246,7 @@ void mesh_protocol_fsm() {
                         state = WAIT_FOR_EVENT;
                     }                        
                 }
-                else if(radio_event->evt_enum == RX_TIMEOUT_EVT) {
+                else if(radio_event->get_evt_enum() == RX_TIMEOUT_EVT) {
                     debug_printf(DBG_INFO, "Rx timed out\r\n");
                     state = WAIT_FOR_EVENT;
                 }
@@ -249,12 +257,12 @@ void mesh_protocol_fsm() {
 
             case TX_PACKET:
                 total_tx_pkt.store(total_tx_pkt.load()+1);
-                background_queue.call(oled_mon_fn);
+                background_queue->call(oled_mon_fn);
                 debug_printf(DBG_INFO, "Current state is TX_PACKET\r\n");
-                radio.lock();
+                radio->lock();
                 //radio.standby();
                 next_sym_off = anti_inter->timingOffset(); // Also need to "use" this value
-                radio.set_tx_power(radio_cb.radio_cfg.tx_power);
+                radio->set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
                 led2.LEDOff();
                 //led3.LEDSolid();
@@ -265,29 +273,29 @@ void mesh_protocol_fsm() {
                 } else {
                     tx_frame_size = tx_frame_sptr->serializeCoded(tx_frame_buf);
                 }
-                MBED_ASSERT(tx_frame_size < 256);
+                PORTABLE_ASSERT(tx_frame_size < 256);
                 debug_printf(DBG_INFO, "Sending %d bytes\r\n", tx_frame_size);
-                radio.send_with_delay(tx_frame_buf.data(), tx_frame_size, radio_timing);
-                radio.unlock();
-				tx_frame_sptr->tx_frame = true;
+                radio->send_with_delay(tx_frame_buf.data(), tx_frame_size, *radio_timing);
+                radio->unlock();
+				tx_frame_sptr->get_tx_frame() = true;
                 checkRedundantPkt(tx_frame_sptr); // Don't want to repeat packets we've already sent
-                tx_radio_event = tx_radio_evt_mail.dequeue_mail();
+                tx_radio_event = tx_radio_evt_mail->dequeue_mail();
                 if(radio_cb.log_packets_en) {
-                    nv_logger_mail.enqueue_mail(tx_frame_sptr);
+                    nv_logger_mail->enqueue_mail(tx_frame_sptr);
                 }
-                radio_timing.setTimer(tx_radio_event->tmr_sptr);
+                radio_timing->setTimer(tx_radio_event->get_tmr_sptr());
                 led3.LEDOff(); 
                 // Set the amount of time to wait until the next transmit
                 // Start with the two-slot baseline delay
                 // Subtract the last frame's symbol delay
                 // Add the next frame's symbol delay
-                radio_timing.waitFullSlots(2);              
+                radio_timing->waitFullSlots(2);              
                 uint8_t pre_off = 0;
                 uint8_t nsym_off = 0;
                 uint8_t sym_off = 0;
                 tx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", next_sym_off);
-                radio_timing.waitSymOffset(next_sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
+                radio_timing->waitSymOffset(next_sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
                 state = WAIT_FOR_EVENT;
                 }
             break;
@@ -295,8 +303,8 @@ void mesh_protocol_fsm() {
             case RETRANSMIT_PACKET:
                 debug_printf(DBG_INFO, "Current state is RETRANSMIT_PACKET\r\n");
                 {
-                radio.lock();
-                radio.set_tx_power(radio_cb.radio_cfg.tx_power-anti_inter->pwrDiff()); 
+                radio->lock();
+                radio->set_tx_power(radio_cb.radio_cfg.tx_power-anti_inter->pwrDiff()); 
                 led3.LEDSolid();
                 size_t rx_frame_size = 0;
                 if(anti_inter->invertBits() && radio_cb.net_cfg.invert_bits) {
@@ -304,28 +312,28 @@ void mesh_protocol_fsm() {
                 } else {
                     rx_frame_size = rx_frame_sptr->serializeCoded(rx_frame_buf);
                 }
-                MBED_ASSERT(rx_frame_size < 256);
+                PORTABLE_ASSERT(rx_frame_size < 256);
                 // Perform the timing offset work:
                 //  1. Start by waiting one full slot
                 //  2. Subtract the symbol fraction delay from the received packet
                 //  3. Set the new symbol fraction delay in the frame
                 //  4. Add the symbol fraction delay for the retransmitted packet
-				radio_timing.waitFullSlots(1);
+				radio_timing->waitFullSlots(1);
                 uint8_t pre_off = 0;
                 uint8_t nsym_off = 0;
                 uint8_t sym_off = 0;
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
-                radio_timing.waitSymOffset(sym_off, -1.0F, radio_cb.net_cfg.num_offsets);
+                radio_timing->waitSymOffset(sym_off, -1.0F, radio_cb.net_cfg.num_offsets);
                 rx_frame_sptr->setOffsets(0, 0, anti_inter->timingOffset());
                 rx_frame_sptr->getOffsets(pre_off, nsym_off, sym_off);
                 debug_printf(DBG_INFO, "Current timing offset is %d\r\n", sym_off);
-                radio_timing.waitSymOffset(sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
-                radio.send_with_delay(rx_frame_buf.data(), rx_frame_size, radio_timing);
-                radio.unlock();
+                radio_timing->waitSymOffset(sym_off, 1.0F, radio_cb.net_cfg.num_offsets);
+                radio->send_with_delay(rx_frame_buf.data(), rx_frame_size, *radio_timing);
+                radio->unlock();
 
-                tx_radio_event = tx_radio_evt_mail.dequeue_mail();
+                tx_radio_event = tx_radio_evt_mail->dequeue_mail();
                 if(radio_cb.log_packets_en) {
-                    nv_logger_mail.enqueue_mail(rx_frame_sptr);
+                    nv_logger_mail->enqueue_mail(rx_frame_sptr);
                 }
                 led2.LEDOff();
                 led3.LEDOff();
@@ -334,7 +342,7 @@ void mesh_protocol_fsm() {
             break;
 
             default:
-                MBED_ASSERT(false);
+                PORTABLE_ASSERT(false);
             break;
         }   
     }
@@ -347,7 +355,7 @@ string beacon_msg;
  */
 extern time_t boot_timestamp;
 void beacon_fn() {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     auto beacon_frame_sptr = make_shared<Frame>();
     string beacon_msg(radio_cb.net_cfg.beacon_msg);
     beacon_frame_sptr->setBeaconPayload(beacon_msg);
@@ -355,7 +363,7 @@ void beacon_fn() {
     static uint8_t stream_id = 0;
     beacon_frame_sptr->setStreamID(stream_id++);
     auto radio_evt = make_shared<RadioEvent>(TX_FRAME_EVT, beacon_frame_sptr);
-    unified_radio_evt_mail.enqueue_mail(radio_evt); 
+    unified_radio_evt_mail->enqueue_mail(radio_evt); 
 }
 
 
@@ -367,7 +375,7 @@ extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 void oled_mon_fn() {
     oled->clearDisplay();
     string kiss_modes_str;
-    kiss_sers_mtx.lock();
+    kiss_sers_mtx->lock();
     for(auto & kiss_ser : kiss_sers) {
         if(!kiss_ser->isKISSExtended()) {
             kiss_modes_str.append("KS ");
@@ -375,7 +383,7 @@ void oled_mon_fn() {
             kiss_modes_str.append("K+ ");
         }
     }
-    kiss_sers_mtx.unlock();
+    kiss_sers_mtx->unlock();
     oled->printf("PACKET STATS  %s\r\n", kiss_modes_str.c_str());      
     oled->printf("#T/R:%5d/%5d\r\n", total_tx_pkt.load(), total_rx_pkt.load());
     constexpr int HUNDRED_PCT = 100;

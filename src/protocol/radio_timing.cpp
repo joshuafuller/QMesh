@@ -17,14 +17,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cmath>
-#include "mbed.h"
+#include "os_portability.hpp"
 #include "serial_data.hpp"
 #include "radio_timing.hpp"
 
-DigitalOut rx_int_mon(MBED_CONF_APP_RX_INT_MON, 0);
-DigitalOut tx_int_mon(MBED_CONF_APP_TX_INT_MON, 0);
-DigitalOut int_trig_mon(MBED_CONF_APP_INT_TRIG_MON, 0);
-DigitalOut rssi_mon(MBED_CONF_APP_RSSI_MON, 0);
+DigitalOut *rx_int_mon;
+DigitalOut *tx_int_mon;
+DigitalOut *int_trig_mon;
+DigitalOut *rssi_mon;
+
+void create_radio_timing_data_objects() {
+    rx_int_mon = new DigitalOut(MBED_CONF_APP_RX_INT_MON, 0);
+    tx_int_mon = new DigitalOut(MBED_CONF_APP_TX_INT_MON, 0);
+    int_trig_mon = new DigitalOut(MBED_CONF_APP_INT_TRIG_MON, 0);
+    rssi_mon = new DigitalOut(MBED_CONF_APP_RSSI_MON, 0);
+}
 
 static constexpr float MS_IN_S = 1e3F;
 static constexpr float US_IN_S = 1e6F;
@@ -119,10 +126,10 @@ auto RadioTiming::getNumMissedDeadlines() -> uint32_t {
 uint32_t RadioTiming::num_total_deadlines = 0;
 uint32_t RadioTiming::num_missed_deadlines = 0;
 auto RadioTiming::getWaitNoWarn() -> int32_t {
-    MBED_ASSERT(tmr_sptr);
+    PORTABLE_ASSERT(tmr_sptr);
     int elapsed_us = tmr_sptr->read_us();
-    MBED_ASSERT(wait_duration_us < INT32_MAX);
-    MBED_ASSERT(wait_duration_us-elapsed_us < INT32_MAX);
+    PORTABLE_ASSERT(wait_duration_us < INT32_MAX);
+    PORTABLE_ASSERT(wait_duration_us-elapsed_us < INT32_MAX);
     num_total_deadlines += 1;
     if(wait_duration_us-elapsed_us < 0) {
         num_missed_deadlines += 1;

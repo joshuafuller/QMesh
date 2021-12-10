@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SERIAL_DATA_HPP
 
 #ifndef TEST_FEC
-#include "mbed.h"
+#include "os_portability.hpp"
 #endif /* TEST_FEC */
 #include <string>
 #include <utility>
@@ -119,9 +119,6 @@ public:
         } fields;
         uint8_t b[2]; //NOLINT
     } kiss_subhdr;
-    shared_ptr<FEC> fec;
-	bool tx_frame{};
-
     static constexpr int MAX_UINT8_VAL = 255;
 
 private:
@@ -129,15 +126,18 @@ private:
     vector<uint8_t> data;
     crc8_t crc{};
     bool redundant;
-
-protected:
     // receive stats
     int16_t rssi{};
     int8_t snr{};
     uint16_t rx_size{};
     PKT_STATUS_ENUM pkt_status;
+    shared_ptr<FEC> fec;
+	bool tx_frame{};
 
 public:
+    auto get_FEC() -> shared_ptr<FEC> & { return fec; }
+    auto get_tx_frame() -> bool & { return tx_frame; }
+
     static auto createStreamID() -> uint8_t;
 
     static void seed_stream_id(int seed);
@@ -154,8 +154,8 @@ public:
             case 2: return DataMsg_Type_KISSTX;
             case 3: return DataMsg_Type_KISSRX;
             case 4: return DataMsg_Type_VOICETX;
-            case 5: return DataMsg_Type_VOICERX;
-            default: MBED_ASSERT(false);
+            case 5: return DataMsg_Type_VOICERX; //NOLINT
+            default: PORTABLE_ASSERT(false);
         }
     }
 
@@ -172,9 +172,9 @@ public:
         } else if(datamsg_type == DataMsg_Type_VOICETX) {
             hdr.cons_subhdr.fields.type = 4;
         } else if(datamsg_type == DataMsg_Type_VOICERX) {
-            hdr.cons_subhdr.fields.type = 5;
+            hdr.cons_subhdr.fields.type = 5; //NOLINT
         } else {
-            MBED_ASSERT(false);
+            PORTABLE_ASSERT(false);
         }
     }
 
@@ -467,7 +467,7 @@ using radio_evt_enum_t = enum radio_evt_enum {
 };
 
 class RadioEvent {
-public:
+private:
     radio_evt_enum_t evt_enum;
     shared_ptr<CalTimer> tmr_sptr;
     int16_t rssi;
@@ -476,6 +476,7 @@ public:
     shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
     shared_ptr<Frame> frame;
 
+public:
     explicit RadioEvent(radio_evt_enum_t my_evt_enum);
 
     RadioEvent(radio_evt_enum_t my_evt_enum, shared_ptr<CalTimer> my_tmr);
@@ -485,10 +486,17 @@ public:
                 size_t my_size, int16_t my_rssi, int8_t my_snr);
 
     RadioEvent(radio_evt_enum_t my_evt_enum, const shared_ptr<Frame> &frame);
+
+    auto get_evt_enum() -> radio_evt_enum_t & { return evt_enum; };
+    auto get_tmr_sptr() -> shared_ptr<CalTimer> & { return tmr_sptr; };
+    auto get_buf() -> shared_ptr<vector<uint8_t>> & { return buf; };
+    auto get_rssi() -> int16_t & { return rssi; }
+    auto get_snr() -> int8_t & { return snr; }
+    auto get_frame() -> shared_ptr<Frame> & { return frame; }
 };
 
 
-extern EventMail<shared_ptr<RadioEvent>> unified_radio_evt_mail, tx_radio_evt_mail;
-extern EventMail<shared_ptr<Frame>> tx_frame_mail, rx_frame_mail, nv_logger_mail;
+extern EventMail<shared_ptr<RadioEvent>> *unified_radio_evt_mail, *tx_radio_evt_mail;
+extern EventMail<shared_ptr<Frame>> *tx_frame_mail, *rx_frame_mail, *nv_logger_mail;
 
 #endif /* SERIAL_DATA_HPP */

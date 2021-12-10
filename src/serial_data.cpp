@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mbed.h"
+#include "os_portability.hpp"
 #include <ATCmdParser.h>
 #include "serial_data.hpp"
 #include <string>
@@ -31,21 +31,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "voice_msg.hpp"
 
 
-EventMail<shared_ptr<Frame>> tx_frame_mail, rx_frame_mail, nv_logger_mail;
-static Mutex Frame_mutex;
-static mt19937 Frame_stream_id_rng; //NOLINT
+EventMail<shared_ptr<Frame>> *tx_frame_mail, *rx_frame_mail, *nv_logger_mail;
+static Mutex *Frame_mutex;
+static Mutex *dbg_printf_mutex;
+static Mutex *frame_map_mtx;
+static mt19937 *Frame_stream_id_rng; 
 static atomic<int> Frame_last_stream_id;
 
+void create_serial_data_objects() {
+    Frame_stream_id_rng = new mt19937(); //NOLINT
+    tx_frame_mail = new EventMail<shared_ptr<Frame>>();
+    rx_frame_mail = new EventMail<shared_ptr<Frame>>();
+    nv_logger_mail = new EventMail<shared_ptr<Frame>>();
+    Frame_mutex = new Mutex();
+    dbg_printf_mutex = new Mutex();
+    frame_map_mtx = new Mutex();
+}
+
 auto Frame::size() -> size_t {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     size_t my_size = radio_cb.net_cfg.pld_len + sizeof(hdr) + sizeof(crc);
-    MBED_ASSERT(my_size <= 256);
+    PORTABLE_ASSERT(my_size <= 256);
     return my_size;
 }
 
 void Frame::loadTestFrame(vector<uint8_t> &buf) {
-    MBED_ASSERT(buf.size() <= 256);
-    MBED_ASSERT(!buf.empty());
+    PORTABLE_ASSERT(buf.size() <= 256);
+    PORTABLE_ASSERT(!buf.empty());
     constexpr int NUM_HOPS = 7;
     constexpr int SENDER_ADDR = 11;
     hdr.cons_subhdr.fields.type = 0;
@@ -62,7 +74,7 @@ auto Frame::codedSize() -> size_t {
 }
 
 void Frame::serialize(vector<uint8_t> &ser_frame) {
-    //MBED_ASSERT(!ser_frame.empty());
+    //PORTABLE_ASSERT(!ser_frame.empty());
     for(size_t i = 0; i < sizeof(hdr); i++) {
         ser_frame.push_back(((uint8_t *) &hdr)[i]); //NOLINT
     }
@@ -73,7 +85,7 @@ void Frame::serialize(vector<uint8_t> &ser_frame) {
 }
 
 void Frame::serialize_pb(vector<uint8_t> &buf) {
-    MBED_ASSERT(!buf.empty());
+    PORTABLE_ASSERT(!buf.empty());
     DataMsg data_msg = DataMsg_init_zero;
     data_msg.type = getDataMsgType();
     data_msg.stream_id = hdr.cons_subhdr.fields.stream_id;
@@ -85,17 +97,17 @@ void Frame::serialize_pb(vector<uint8_t> &buf) {
     pb_byte_t buffer[DataMsg_size]; //NOLINT
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
     bool status = pb_encode(&stream, DataMsg_fields, &data_msg);
-    MBED_ASSERT(status);
+    PORTABLE_ASSERT(status);
     buf.resize(stream.bytes_written);
     memcpy(buf.data(), stream.state, stream.bytes_written);
 }
 
 void Frame::deserialize_pb(const vector<uint8_t> &buf) {
-    MBED_ASSERT(!buf.empty());
+    PORTABLE_ASSERT(!buf.empty());
     DataMsg data_msg = DataMsg_init_default;
     pb_istream_t stream = pb_istream_from_buffer(buf.data(), buf.size());
     bool status = pb_decode(&stream, DataMsg_fields, &data_msg);
-    MBED_ASSERT(status);
+    PORTABLE_ASSERT(status);
     hdr.cons_subhdr.fields.type = data_msg.type;
     hdr.cons_subhdr.fields.stream_id = data_msg.stream_id;
     hdr.var_subhdr.fields.sender = data_msg.sender;
@@ -106,7 +118,7 @@ void Frame::deserialize_pb(const vector<uint8_t> &buf) {
 }
 
 void Frame::whiten(const vector<uint8_t> &buf, vector<uint8_t> &wht_buf, const uint16_t seed) {
-    MBED_ASSERT(!buf.empty());
+    PORTABLE_ASSERT(!buf.empty());
     wht_buf.clear();
     mt19937 rand_gen(seed);
     for(uint8_t iter : buf) {
@@ -120,7 +132,7 @@ auto Frame::serializeCoded(vector<uint8_t> &buf) -> size_t {
     buf.clear();
     vector<uint8_t> ser_buf;
     serialize(ser_buf);
-    MBED_ASSERT(!ser_buf.empty());
+    PORTABLE_ASSERT(!ser_buf.empty());
 	//debug_printf(DBG_WARN, "Serialized frame size is now %d\r\n", ser_buf.size());
     return fec->encode(ser_buf, buf);
 }
@@ -129,7 +141,7 @@ auto Frame::serializeCodedInv(vector<uint8_t> &buf) -> size_t {
     buf.clear();
     size_t ret_val = 0;
     ret_val = serializeCoded(buf);
-    MBED_ASSERT(!buf.empty());
+    PORTABLE_ASSERT(!buf.empty());
     constexpr uint8_t ALL_ONES = 0xFF;
     for(uint8_t & it : buf) {
         it = it ^ ALL_ONES;
@@ -166,8 +178,8 @@ auto Frame::calcUniqueCRC() -> uint32_t {
 }
 
 auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
-    MBED_ASSERT(!buf->empty());
-    MBED_ASSERT(buf->size() <= 256);
+    PORTABLE_ASSERT(!buf->empty());
+    PORTABLE_ASSERT(buf->size() <= 256);
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
     //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
@@ -204,8 +216,8 @@ auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STAT
 
 
 auto Frame::deserializeCodedInv(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
-    MBED_ASSERT(!buf->empty());
-    MBED_ASSERT(buf->size() <= 256);    
+    PORTABLE_ASSERT(!buf->empty());
+    PORTABLE_ASSERT(buf->size() <= 256);    
     auto buf_inv = make_shared<vector<uint8_t>>(*buf);
     // invert the encoded bits
     constexpr uint8_t ALL_ONES = 0xFF;
@@ -251,7 +263,7 @@ void Frame::saveToPB(DataMsg &data_msg) {
 
 
 void Frame::createFromKISS(DataMsg &data_msg) {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     hdr.var_subhdr.fields.ttl = 0; //NOLINT
     hdr.var_subhdr.fields.sender = radio_cb.address; //NOLINT
     hdr.var_subhdr.fields.sym_offset = 0; //NOLINT
@@ -271,14 +283,14 @@ void Frame::createFromKISS(DataMsg &data_msg) {
 
 
 void Frame::createFromVoice(VoiceMsgProcessor &vmp) {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     hdr.var_subhdr.fields.ttl = 0; //NOLINT
     hdr.var_subhdr.fields.sender = radio_cb.address; //NOLINT
     hdr.var_subhdr.fields.sym_offset = 0; //NOLINT
     hdr.cons_subhdr.fields.stream_id = Frame::createStreamID(); //NOLINT
     hdr.cons_subhdr.fields.type = DataMsg_Type_VOICETX; //NOLINT
     vector<uint8_t> pld = vmp.getDataPayload();
-    MBED_ASSERT(pld.size() == radio_cb.net_cfg.pld_len);
+    PORTABLE_ASSERT(pld.size() == radio_cb.net_cfg.pld_len);
     data.resize(pld.size());
     copy(pld.begin(), pld.end(), data.begin());
     this->setCRC();
@@ -286,26 +298,26 @@ void Frame::createFromVoice(VoiceMsgProcessor &vmp) {
 
 
 auto Frame::getKISSMaxSize() -> size_t {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     return radio_cb.net_cfg.pld_len-sizeof(kiss_subhdr);
 }
 
 
 auto Frame::createStreamID() -> uint8_t {
     uniform_int_distribution<uint8_t> timing_off_dist(0, MAX_UINT8_VAL); 
-    Frame_mutex.lock();
+    Frame_mutex->lock();
     uint8_t new_stream_id = 0;
     do {
-        new_stream_id = timing_off_dist(Frame_stream_id_rng);
+        new_stream_id = timing_off_dist(*Frame_stream_id_rng);
     } while(new_stream_id == Frame_last_stream_id);
     Frame_last_stream_id = new_stream_id;
-    Frame_mutex.unlock();
+    Frame_mutex->unlock();
     return new_stream_id;
 }
 
 
 void Frame::seed_stream_id(const int seed) {
-    Frame_stream_id_rng.seed(seed);
+    Frame_stream_id_rng->seed(seed);
 }
 
 
@@ -336,9 +348,8 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
 }
 
 
-static Mutex dbg_printf_mutex;
 auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
-    dbg_printf_mutex.lock();
+    dbg_printf_mutex->lock();
     vector<char> tmp_str(DbgMsg_size);
     va_list args;
     va_start(args, fmt);
@@ -363,25 +374,25 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
         msg_type = "ERR ";
     }
     else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
     auto ser_msg_sptr = make_shared<SerMsg>();
     ser_msg_sptr->type(SerialMsg_Type_DEBUG_MSG);
     snprintf(ser_msg_sptr->dbg_msg().msg, sizeof(ser_msg_sptr->dbg_msg().msg), 
                 "[+] %s -- %s", msg_type.c_str(), tmp_str.data());   
-    kiss_sers_mtx.lock();
+    kiss_sers_mtx->lock();
     for(auto & kiss_ser : kiss_sers) {
         auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
         kiss_ser->enqueue_msg(ser_msg_sptr_en);
     }
-    kiss_sers_mtx.unlock();
+    kiss_sers_mtx->unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
         constexpr int TWO_SEC = 2000;
         ThisThread::sleep_for(TWO_SEC);
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
     va_end(args);
-    dbg_printf_mutex.unlock();
+    dbg_printf_mutex->unlock();
     return 0;
 }
 
@@ -411,23 +422,22 @@ auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> 
         msg_type = "ERR ";
     }
     else {
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
     auto ser_msg_sptr = shared_ptr<SerMsg>();
     strncpy(ser_msg_sptr->dbg_msg().msg, tmp_str.data(), sizeof(ser_msg_sptr->dbg_msg().msg));
-    kiss_sers_mtx.lock();
+    kiss_sers_mtx->lock();
     for(auto & kiss_ser : kiss_sers) {
         auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
         kiss_ser->enqueue_msg(ser_msg_sptr_en);
     }
-    kiss_sers_mtx.unlock();
+    kiss_sers_mtx->unlock();
     va_end(args);
     return 0;
 }
 
 
 
-static Mutex frame_map_mtx;
 extern EventQueue background_queue;
 using frag_info_t = struct {
     uint8_t tot_frames{};
@@ -442,7 +452,7 @@ atomic<int> cur_tag(0);
 
 static void purge_frag_map_entry(uint8_t stream_id, int tag);
 static void purge_frag_map_entry(uint8_t stream_id, int tag) {
-    frame_map_mtx.lock();
+    frame_map_mtx->lock();
     if(frag_map.find(stream_id) != frag_map.end()) { // Make sure it's not already erased
         // Tag tracks whether this entry has already been erased and a new stream is being tracked
         if(tag == frag_map.find(stream_id)->second.tag) {
@@ -453,7 +463,7 @@ static void purge_frag_map_entry(uint8_t stream_id, int tag) {
         debug_printf(DBG_INFO, "Tried to purge stream id %d from frag map, but frag already reassembled\r\n", 
                         stream_id);        
     }
-    frame_map_mtx.unlock();
+    frame_map_mtx->unlock();
 }
 
 
@@ -465,7 +475,7 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
         // Queue up assembled frame
         ret_val = frag;
     } else { // Otherwise, handle reassembly
-        frame_map_mtx.lock();
+        frame_map_mtx->lock();
         auto iter = frag_map.find(frag->stream_id);
         if(iter == frag_map.end()) { // first fragment of this KISS frame being tracked
             pair<uint8_t, frag_info_t> elem;
@@ -501,7 +511,7 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
             frag_map.erase(frag->stream_id);
             ret_val = frag_comb_datamsg;
         }
-        frame_map_mtx.unlock();
+        frame_map_mtx->unlock();
     }
     return ret_val;
 }
@@ -510,19 +520,19 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
 static void send_to_uarts(const SerMsg &ser_msg);
 static void send_to_uarts(const SerMsg &ser_msg) {
     if(ser_msg.has_data_msg() || ser_msg.has_voice_frame_msg()) { 
-        kiss_sers_mtx.lock();
+        kiss_sers_mtx->lock();
         for(auto & kiss_ser : kiss_sers) {
             auto ser_msg_sptr_en = make_shared<SerMsg>(ser_msg);
             kiss_ser->enqueue_msg(ser_msg_sptr_en);
         }
-        kiss_sers_mtx.unlock();
+        kiss_sers_mtx->unlock();
     }
 }
 
 
 void rx_frame_ser_thread_fn() {
     for(;;) {
-        auto rx_frame_sptr = rx_frame_mail.dequeue_mail();
+        auto rx_frame_sptr = rx_frame_mail->dequeue_mail();
         // Handle KISS frames vs. "regular" QMesh frames vs. voice frames
         if(rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSRX || 
             rx_frame_sptr->getDataMsgType() == DataMsg_Type_KISSTX) {

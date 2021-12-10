@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <exception>
 #include "qmesh.pb.h"
 #include "pb_common.h"
 #include "pb_encode.h"
@@ -44,19 +45,36 @@ static constexpr int FREQ_40_MHZ = 40000000;
 static constexpr int NUM_LOGFILES = 11;
 static constexpr int MAX_LOGFILE_SIZE = 1e6;
 
+QSPIFBlockDevice *bd;
+LittleFileSystem *fs;
 
-QSPIFBlockDevice bd(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
-                    MBED_CONF_APP_QSPI_FLASH_IO2, MBED_CONF_APP_QSPI_FLASH_IO3, 
-                    MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
-                    0, FREQ_40_MHZ);
-LittleFileSystem fs("fs");
+void create_nv_settings_objects() {
+    bd = new QSPIFBlockDevice(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
+                        MBED_CONF_APP_QSPI_FLASH_IO2, MBED_CONF_APP_QSPI_FLASH_IO3, 
+                        MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
+                        0, FREQ_40_MHZ);
+    fs = new LittleFileSystem("fs");
+}
+
 //extern UARTSerial gps_serial;
 extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 
+class ParamException : public exception {
+private:
+    string except_name;
+public:
+    explicit ParamException(const string &my_name) {
+        except_name = my_name;
+    }
+     auto what() const noexcept -> const char* override {
+        return except_name.c_str();
+    }
+};
+
 
 void rescue_filesystem() {
-    bd.init();
-	fs.reformat(&bd);
+    bd->init();
+	fs->reformat(bd);
     ThisThread::sleep_for(TWO_SEC);
     reboot_system();
 }
@@ -76,7 +94,7 @@ static void print_dir(const string &base_str) {
         if(string(dir_val->d_name) != "." && string(dir_val->d_name) != "..") {
             string scrubbed_fs_name(fname.str());
             scrubbed_fs_name.erase(0, 3);
-		    MBED_ASSERT(fs.stat(scrubbed_fs_name.c_str(), &file_stat) == 0);
+		    PORTABLE_ASSERT(fs->stat(scrubbed_fs_name.c_str(), &file_stat) == 0);
 		    debug_printf(DBG_INFO, "%s/%s, Size: %d\r\n", base_str.c_str(), dir_val->d_name, 
                             file_stat.st_size);
         }
@@ -94,22 +112,22 @@ static void print_dir(const string &base_str) {
 
 void init_filesystem() {
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
-    int err = bd.init();
+    int err = bd->init();
     debug_printf(DBG_INFO, "bd.init -> %d  \r\n", err);
-    debug_printf(DBG_INFO, "bd size: %llu\n",         bd.size());
-    debug_printf(DBG_INFO, "bd read size: %llu\n",    bd.get_read_size());
-    debug_printf(DBG_INFO, "bd program size: %llu\n", bd.get_program_size());
-    debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd.get_erase_size());
+    debug_printf(DBG_INFO, "bd size: %llu\n",         bd->size());
+    debug_printf(DBG_INFO, "bd read size: %llu\n",    bd->get_read_size());
+    debug_printf(DBG_INFO, "bd program size: %llu\n", bd->get_program_size());
+    debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd->get_erase_size());
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
-    err = fs.mount(&bd);
+    err = fs->mount(bd);
     debug_printf(DBG_WARN, "%s\r\n", (err != 0 ? "Fail :(" : "OK"));
     if(err != 0) {
         debug_printf(DBG_WARN, "No filesystem found, reformatting...\r\n");
-        err = fs.reformat(&bd);
+        err = fs->reformat(bd);
         debug_printf(DBG_WARN, "%s\r\n", (err != 0 ? "Fail :(" : "OK"));
-        MBED_ASSERT(!err);
-        int err = fs.mount(&bd);
-        MBED_ASSERT(!err);
+        PORTABLE_ASSERT(!err);
+        int err = fs->mount(bd);
+        PORTABLE_ASSERT(!err);
     }
 	// Display the root directory
     debug_printf(DBG_INFO, "Opening the root directory... \r\n");
@@ -122,14 +140,14 @@ void init_filesystem() {
     }
     print_dir(base_str);
     // Remove the boot failure file
-    fs.remove("boot.fail");
+    fs->remove("boot.fail");
 }
 
 
 static void write_default_cfg();
 static void write_default_cfg() {
     auto *f = fopen("/fs/settings.bin", "we");
-    MBED_ASSERT(f);
+    PORTABLE_ASSERT(f);
     SysCfgMsg sys_cfg_msg_zero = SysCfgMsg_init_zero;
     radio_cb = sys_cfg_msg_zero;
     radio_cb.mode = SysCfgMsg_Mode_NORMAL;
@@ -191,11 +209,11 @@ static void write_default_cfg() {
     ser_msg->type(SerialMsg_Type_CONFIG);
     ser_msg->sys_cfg() = radio_cb;
     auto f_ps = make_shared<FilePseudoSerial>(f);
-    MBED_ASSERT(save_SerMsg(*ser_msg, *f_ps) == WRITE_SUCCESS);
+    PORTABLE_ASSERT(save_SerMsg(*ser_msg, *f_ps) == WRITE_SUCCESS);
     fflush(f);
     fclose(f); 
     f = fopen("/fs/settings.bin", "re");
-    MBED_ASSERT(f);
+    PORTABLE_ASSERT(f);
     fclose(f);
 }
 
@@ -208,12 +226,12 @@ void load_settings_from_flash() {
         debug_printf(DBG_WARN, "Unable to open settings.bin. Creating new file with default settings\r\n");
         write_default_cfg();
         f = fopen("/fs/settings.bin", "re");
-        MBED_ASSERT(f);     
+        PORTABLE_ASSERT(f);     
     }
     struct stat file_stat{};
     stat("/fs/settings.bin", &file_stat);
     debug_printf(DBG_INFO, "Size is %d\r\n", file_stat.st_size);
-    MBED_ASSERT(file_stat.st_size < 1024);
+    PORTABLE_ASSERT(file_stat.st_size < 1024);
     auto ser_msg = make_shared<SerMsg>();
     auto f_ps = make_shared<FilePseudoSerial>(f);
     if(load_SerMsg(*ser_msg, *f_ps) != READ_SUCCESS) {
@@ -221,41 +239,156 @@ void load_settings_from_flash() {
         debug_printf(DBG_WARN, "Invalid settings.bin. Creating new file with default settings\r\n");
         write_default_cfg();
         f = fopen("/fs/settings.bin", "re");
-        MBED_ASSERT(f);
+        PORTABLE_ASSERT(f);
     }
-    MBED_ASSERT(ser_msg->type() == SerialMsg_Type_CONFIG);
-    MBED_ASSERT(ser_msg->has_sys_cfg());
+    PORTABLE_ASSERT(ser_msg->type() == SerialMsg_Type_CONFIG);
+    PORTABLE_ASSERT(ser_msg->has_sys_cfg());
     radio_cb = ser_msg->sys_cfg();
-
-    debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
-    debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
-    MBED_ASSERT(radio_cb.has_radio_cfg);
-    for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
-        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]); //NOLINT     
+    try {
+        debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
+        debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
+        constexpr int MAX_ADDR = 31;
+        if(radio_cb.address > MAX_ADDR) {
+            throw ParamException("Address needs to be between 0 and 31");
+        }
+        PORTABLE_ASSERT(radio_cb.has_radio_cfg);
+        if(!radio_cb.has_radio_cfg) {
+            throw ParamException("Missing radio_cfg");
+        }
+        constexpr int MAX_FREQUENCY_COUNT = 8;
+        if(radio_cb.radio_cfg.frequencies_count <= 0 || 
+            radio_cb.radio_cfg.frequencies_count > MAX_FREQUENCY_COUNT) {
+            throw ParamException("Incorrect number of frequencies");
+        }
+        for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
+            debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]); //NOLINT
+            constexpr int MIN_FREQ = 400e6;
+            constexpr int MAX_FREQ = 500e6;     
+            if(radio_cb.radio_cfg.frequencies[i] < MIN_FREQ ||  //NOLINT
+                radio_cb.radio_cfg.frequencies[i] > MAX_FREQ) { //NOLINT
+                throw ParamException("Incorrect frequency");
+            }
+        }
+        PORTABLE_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
+        if(!radio_cb.radio_cfg.has_lora_cfg) {
+            throw ParamException("Missing LoRa config");
+        }
+        debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
+        uint32_t lora_bw = radio_cb.radio_cfg.lora_cfg.bw;
+        constexpr uint32_t BW_125KHZ = 7;
+        constexpr uint32_t BW_250KHZ = 8;
+        constexpr uint32_t BW_500KHZ = 9;
+        if(lora_bw != BW_125KHZ && lora_bw != BW_250KHZ && lora_bw != BW_500KHZ) {
+            throw ParamException("Incorrect LoRa BW");
+        }
+        debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
+        uint32_t lora_cr = radio_cb.radio_cfg.lora_cfg.cr;
+        if(lora_cr != 0 && lora_cr != 1 && lora_cr != 2 && lora_cr != 3 && lora_cr != 4) {
+            throw ParamException("Incorrect LoRa CR");
+        }
+        uint32_t lora_sf = radio_cb.radio_cfg.lora_cfg.sf;
+        constexpr uint32_t SF_5 = 5;
+        constexpr uint32_t SF_6 = 6;
+        constexpr uint32_t SF_7 = 7;
+        constexpr uint32_t SF_8 = 8;
+        constexpr uint32_t SF_9 = 9;
+        constexpr uint32_t SF_10 = 10;
+        constexpr uint32_t SF_11 = 11;
+        constexpr uint32_t SF_12 = 12;
+        if(lora_sf != SF_5 && lora_sf != SF_6 && lora_sf != SF_7 && lora_sf != SF_8 
+            && lora_sf != SF_9 && lora_sf != SF_10 && lora_sf != SF_11 && lora_sf != SF_12) {
+            throw ParamException("Incorrect LoRa SF");        
+        }
+        debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
+        constexpr uint32_t MAX_PREAMBLE_LEN = 128;
+        if(radio_cb.radio_cfg.lora_cfg.preamble_length > MAX_PREAMBLE_LEN) {
+            throw ParamException("Preamble is too long");
+        }
+        debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb.radio_cfg.lora_cfg.preamble_length);
+        PORTABLE_ASSERT(radio_cb.has_net_cfg);
+        if(!radio_cb.has_net_cfg) {
+            throw ParamException("Missing net_cfg");
+        }
+        debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb.net_cfg.beacon_msg);
+        constexpr uint32_t MAX_BEACON_MSG_LEN = 64;
+        if(strlen(radio_cb.net_cfg.beacon_msg) > MAX_BEACON_MSG_LEN) {
+            throw ParamException("Beacon message is too long");
+        }
+        if(strlen(radio_cb.net_cfg.beacon_msg) < 1) {
+            throw ParamException("Beacon message is too short");
+        }
+        constexpr uint32_t ONE_HOUR = 3600;
+        debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb.net_cfg.beacon_interval);
+        if(radio_cb.net_cfg.beacon_interval > ONE_HOUR) {
+            throw ParamException("Beacon interval needs to be at least once an hour");
+        }
+        if(radio_cb.net_cfg.beacon_interval < 1) {
+            throw ParamException("Beacon interval needs to be at one second");
+        }
+        constexpr uint32_t MAX_PLD_LEN = 128;
+        debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
+        if(radio_cb.net_cfg.pld_len > MAX_PLD_LEN) {
+            throw ParamException("Payload cannot be more than 128 bytes");
+        } 
+        if(radio_cb.net_cfg.pld_len < 1) {
+            throw ParamException("Payload must be at least one byte long");
+        }
+        constexpr uint32_t MAX_TIMING_OFFSETS = 16;
+        debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
+                    radio_cb.net_cfg.num_offsets);
+        if(radio_cb.net_cfg.num_offsets > MAX_TIMING_OFFSETS) {
+            throw ParamException("More than 16 timing offsets is probably pointless");
+        }
+        debug_printf(DBG_INFO, "Has a GPS: %d\r\n", static_cast<int>(radio_cb.gps_en));
+        // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
+        //  anything else from occurring and leading to weird crashes
+        PORTABLE_ASSERT(radio_cb.has_fec_cfg);
+        if(!radio_cb.has_fec_cfg) {
+            throw ParamException("Missing fec_cfg");
+        }
+        constexpr uint32_t ALLOWED_CONV_RATE = 2;
+        PORTABLE_ASSERT(radio_cb.fec_cfg.conv_rate == ALLOWED_CONV_RATE);
+        if(radio_cb.fec_cfg.conv_rate != ALLOWED_CONV_RATE) {
+            throw ParamException("Only convolutional rate of 2 is supported");
+        }
+        constexpr uint32_t ALLOWED_CONV_ORDER = 7;
+        PORTABLE_ASSERT(radio_cb.fec_cfg.conv_order == ALLOWED_CONV_ORDER);
+        if(radio_cb.fec_cfg.conv_order != ALLOWED_CONV_ORDER) {
+            throw ParamException("Only convolutional K=7 is supported");
+        }
+        // Voice parameters
+        PORTABLE_ASSERT(VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate));
+        if(!VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate)) {
+            throw ParamException("Invalid codec2 bitrate");
+        }
+        PORTABLE_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
+        if(radio_cb.net_cfg.voice_frames_per_frame != 4) {
+            throw ParamException("Invalid number of voice frames per frame");
+        }
+        constexpr int32_t MAX_RS_ROOTS = 16;
+        if(radio_cb.fec_cfg.rs_num_roots < 4 || radio_cb.fec_cfg.rs_num_roots > MAX_RS_ROOTS) {
+            throw ParamException("Invalid number of Reed-Solomon bytes");
+        }
+        constexpr int MAX_TX_POWER_DBM = 22;
+        if(radio_cb.radio_cfg.tx_power > MAX_TX_POWER_DBM || radio_cb.radio_cfg.tx_power < 0) {
+            throw ParamException("Transmit power is out of range");
+        }
+        radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
+        radio_cb.valid = true;
+    } 
+    catch(const ParamException &param_except) {
+        debug_printf(DBG_WARN, "%s\r\n", param_except.what());
+        debug_printf(DBG_WARN, "Now erasing current config, writing the default config, and rebooting\r\n");
+        fclose(f);
+        write_default_cfg();
+        f = fopen("/fs/settings.bin", "re");
+        PORTABLE_ASSERT(f);
+        fclose(f);
+        constexpr uint32_t ONE_SECOND = 1000;
+        ThisThread::sleep_for(ONE_SECOND);
+        reboot_system();
     }
-    MBED_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
-    debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
-    debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
-    debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
-    debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb.radio_cfg.lora_cfg.preamble_length);
-    MBED_ASSERT(radio_cb.has_net_cfg);
-    debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb.net_cfg.beacon_msg);
-    debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb.net_cfg.beacon_interval);
-    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
-    debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
-                radio_cb.net_cfg.num_offsets);
-    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", static_cast<int>(radio_cb.gps_en));
-    // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
-    //  anything else from occurring and leading to weird crashes
-    MBED_ASSERT(radio_cb.has_fec_cfg);
-    MBED_ASSERT(radio_cb.fec_cfg.conv_rate == 2);
-    MBED_ASSERT(radio_cb.fec_cfg.conv_order == 7);
-    // Voice parameters
-    MBED_ASSERT(VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate));
-    MBED_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
-    radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
 
-    radio_cb.valid = true;
 
 #if 0
     // Check if low-power mode is set. If so, delete the UART
@@ -275,13 +408,13 @@ void load_settings_from_flash() {
 void save_settings_to_flash() {
     debug_printf(DBG_INFO, "Opening settings.bin...\r\n");
     auto *f = fopen("/fs/settings.bin", "we"); 
-    MBED_ASSERT(f);
+    PORTABLE_ASSERT(f);
     auto ser_msg = make_shared<SerMsg>();
     ser_msg->type(SerialMsg_Type_CONFIG);
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     ser_msg->sys_cfg() = radio_cb;
     auto f_ps = make_shared<FilePseudoSerial>(f);
-    MBED_ASSERT(!save_SerMsg(*ser_msg, *f_ps));
+    PORTABLE_ASSERT(!save_SerMsg(*ser_msg, *f_ps));
     fclose(f);  
 }
 
@@ -295,7 +428,7 @@ void log_boot() {
     ser_msg->boot_log_msg().valid = true;
 
     auto *f = fopen("/fs/boot_log.bin", "a+e");
-    MBED_ASSERT(f);
+    PORTABLE_ASSERT(f);
     auto f_ps = make_shared<FilePseudoSerial>(f);
     save_SerMsg(*ser_msg, *f_ps);
     fclose(f);      
@@ -309,11 +442,11 @@ auto open_logfile() -> FILE * {
     if(f == nullptr) {
         debug_printf(DBG_INFO, "Need to create the logfile\r\n");
         f = fopen("/fs/log/logfile.bin", "we");
-        MBED_ASSERT(f);
+        PORTABLE_ASSERT(f);
     }
     fclose(f);
     struct stat logfile_statbuf{};
-    fs.stat("log/logfile.bin", &logfile_statbuf);
+    fs->stat("log/logfile.bin", &logfile_statbuf);
     if(logfile_statbuf.st_size > MAX_LOGFILE_SIZE) {
         for(int i = NUM_LOGFILES; i >= 0; i--) {
             stringstream logfile_name;
@@ -321,12 +454,12 @@ auto open_logfile() -> FILE * {
             logfile_name << "log/logfile" << setw(3) << setfill('0') << i << ".json";
             debug_printf(DBG_INFO, "Now moving %s\r\n", logfile_name.str().c_str());
             logfile_name_plusone << "log/logfile" << setw(3) << setfill('0') << i+1 << ".json";
-            fs.rename(logfile_name.str().c_str(), logfile_name_plusone.str().c_str());
+            fs->rename(logfile_name.str().c_str(), logfile_name_plusone.str().c_str());
         }
-        fs.rename("log/logfile.bin", "log/logfile000.bin");
+        fs->rename("log/logfile.bin", "log/logfile000.bin");
     }
     f = fopen("/fs/log/logfile.bin", "a+e");
-    MBED_ASSERT(f != nullptr);
+    PORTABLE_ASSERT(f != nullptr);
     return f;
 }
 
@@ -338,7 +471,7 @@ void nv_log_fn() {
         debug_printf(DBG_INFO, "Log directory does not exist. Creating...\r\n");
         constexpr int UGO_RWX = 777;
         if(mkdir("/fs/log", UGO_RWX) != 0) {
-            MBED_ASSERT(false);
+            PORTABLE_ASSERT(false);
         }
         log_dir = opendir("/fs/log");
         if(log_dir == nullptr) {
@@ -352,7 +485,7 @@ void nv_log_fn() {
                 case ENOTDIR: debug_printf(DBG_INFO, "ENOTDIR\r\n"); break;
                 default: break;
             }
-            MBED_ASSERT(false);
+            PORTABLE_ASSERT(false);
         }
     }
     debug_printf(DBG_INFO, "Now opening the logfile\r\n");
@@ -360,7 +493,7 @@ void nv_log_fn() {
     auto *f = open_logfile();
     for(;;) {
         // Write the latest frame to disk
-        auto log_frame = nv_logger_mail.dequeue_mail();  
+        auto log_frame = nv_logger_mail->dequeue_mail();  
         int16_t rssi = 0;
         uint16_t rx_size = 0;
         int8_t snr = 0;
@@ -395,7 +528,7 @@ void nv_log_fn() {
         ser_msg->type(SerialMsg_Type_LOG);
         ser_msg->log_msg() = log_msg;
         auto f_ps = make_shared<FilePseudoSerial>(f);
-        MBED_ASSERT(!save_SerMsg(*ser_msg, *f_ps));
+        PORTABLE_ASSERT(!save_SerMsg(*ser_msg, *f_ps));
         fclose(f);
         f = open_logfile();
     }

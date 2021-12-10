@@ -2,7 +2,7 @@
 #define BLE_SERIAL_HPP
 #if MBED_CONF_APP_HAS_BLE == 1
 
-#include "mbed.h"
+#include "os_portability.hpp"
 #include <string>
 #include <utility>
 #include <fstream>
@@ -38,7 +38,7 @@ public:
             char *val = static_cast<char *>(evt.value.p);
             return *val;
         }
-        MBED_ASSERT(false);
+        PORTABLE_ASSERT(false);
     }
 
     void onDataWritten(const GattWriteCallbackParams *params) {

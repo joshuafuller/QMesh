@@ -2,7 +2,7 @@
 #define MAIL_QUEUE_HPP
 
 #ifndef TEST_FEC
-#include "mbed.h"
+#include "os_portability.hpp"
 #endif /* TEST_FEC */
 #include <atomic>
 
@@ -26,7 +26,7 @@ public:
             mail.free(static_cast<T *>(evt.value.p));
         } else if(evt.status == osEventTimeout) {
             timed_out = true;
-        } else { MBED_ASSERT(false); }
+        } else { PORTABLE_ASSERT(false); }
         level -= 1;
         return mail_item;
     }
@@ -45,7 +45,7 @@ public:
                 mail.free(static_cast<T *>(evt.value.p));
                 break;
             }
-            MBED_ASSERT(false);
+            PORTABLE_ASSERT(false);
         } 
         level -= 1;
         return mail_item;
@@ -76,7 +76,7 @@ public:
     */
     void enqueue_mail(T val) {
         auto mail_item = mail.alloc_for(osWaitForever);
-        MBED_ASSERT(mail_item != NULL);
+        PORTABLE_ASSERT(mail_item != NULL);
         *mail_item = val;
         while(mail.full()) {}
         level += 1;

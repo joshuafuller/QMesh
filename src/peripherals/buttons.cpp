@@ -48,10 +48,10 @@ void reboot_system() {
 
 void button_thread_fn();
 void button_fn() {
-    FILE *f = fopen("/fs/low_power.mode", "r");
+    FILE *f = fopen("/fs/low_power.mode", "re");
     if(f != nullptr) {
         fclose(f);
-        fs.remove("low_power.mode");
+        fs->remove("low_power.mode");
         mbed_file_handle(STDIN_FILENO)->enable_input(true);
         //gps_serial.enable_input(true);
         oled->displayOn();
@@ -60,7 +60,7 @@ void button_fn() {
         reboot_system();
     }
     else {
-        FILE *f = fopen("/fs/low_power.mode", "w");
+        FILE *f = fopen("/fs/low_power.mode", "we");
         if(f != nullptr) {
             fprintf(f, "In low power mode\r\n");
             fclose(f);

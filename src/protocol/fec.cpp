@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef TEST_FEC
-#include "mbed.h"
+#include "os_portability.hpp"
 #endif /* TEST_FEC */
 #include "params.hpp"
 #include "correct.h"
@@ -31,12 +31,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <random>
 #include "mem_trace.hpp"
 
-using namespace std;
+using namespace std; //NOLINT
 
 #ifdef TEST_FEC
-void MBED_ASSERT(bool condition) {
+void PORTABLE_ASSERT(bool condition) {
     if(!condition) {
-        throw MBED_ASSERT_CONDITION;
+        throw PORTABLE_ASSERT_CONDITION;
     }
 }
 #endif /* TEST_FEC */
@@ -108,7 +108,7 @@ constexpr size_t NUM_BENCHMARK_RUNS = 100;
 
 #ifndef TEST_FEC
 void testFEC() {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     vector<shared_ptr<FEC>> test_fecs;
     shared_ptr<FEC> fec_sptr;
     fec_sptr = make_shared<FEC>(Frame::size());   
@@ -193,11 +193,11 @@ auto FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg)
     if(name == "Dummy Interleaver") {
         lock.lock();
     }
-    MBED_ASSERT(msg.size() == msg_len);
+    PORTABLE_ASSERT(msg.size() == msg_len);
     enc_msg.resize(int_params.bytes);
     copy(msg.begin(), msg.end(), enc_msg.begin());
     interleaveBits(msg, enc_msg);
-    MBED_ASSERT(enc_msg.size() == enc_size);
+    PORTABLE_ASSERT(enc_msg.size() == enc_size);
     if(name == "Dummy Interleaver") {
         lock.unlock();
     }
@@ -211,9 +211,9 @@ auto FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_
         lock.lock();
     }
     dec_msg.resize(msg_len);
-    MBED_ASSERT(enc_msg.size() == enc_size);
+    PORTABLE_ASSERT(enc_msg.size() == enc_size);
     deinterleaveBits(enc_msg, dec_msg);
-    MBED_ASSERT(dec_msg.size() == msg_len);
+    PORTABLE_ASSERT(dec_msg.size() == msg_len);
     if(name == "Dummy Interleaver") {
         lock.unlock();
     }
@@ -224,7 +224,7 @@ auto FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_
 
 // Using a technique similar to the AO-40 OSCAR interleaving setup
 void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t> &bytes_int) const {
-    MBED_ASSERT(bytes.size() == int_params.pre_bytes);
+    PORTABLE_ASSERT(bytes.size() == int_params.pre_bytes);
     vector<uint8_t> new_bytes_preint(int_params.bytes, 0x00);
     vector<uint8_t> new_bytes_int(int_params.bytes, 0x00);
     copy(bytes.begin(), bytes.end(), new_bytes_preint.begin());
@@ -236,14 +236,14 @@ void FECInterleave::interleaveBits(const vector<uint8_t> &bytes, vector<uint8_t>
         }
     }
     bytes_int.resize(int_params.bytes);
-    MBED_ASSERT(bytes_int.size() == int_params.bytes);
+    PORTABLE_ASSERT(bytes_int.size() == int_params.bytes);
     copy(new_bytes_int.begin(), new_bytes_int.end(), bytes_int.begin());
-    MBED_ASSERT(bytes_int.size() == int_params.bytes);
+    PORTABLE_ASSERT(bytes_int.size() == int_params.bytes);
 }
 
 
 void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<uint8_t> &bytes_deint) const {
-    MBED_ASSERT(bytes_int.size() == int_params.bytes);
+    PORTABLE_ASSERT(bytes_int.size() == int_params.bytes);
     vector<uint8_t> new_bytes_deint(bytes_int.size(), 0x00);
     uint32_t bit_idx = 0;
     for(uint32_t col = 0; col < int_params.row; col++) {
@@ -252,8 +252,8 @@ void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<ui
             setBit(bit, col + row*int_params.row, new_bytes_deint);
         }
     }
-    MBED_ASSERT(new_bytes_deint.size() >= int_params.pre_bytes);
-    MBED_ASSERT(bytes_deint.size() == int_params.pre_bytes);
+    PORTABLE_ASSERT(new_bytes_deint.size() >= int_params.pre_bytes);
+    PORTABLE_ASSERT(bytes_deint.size() == int_params.pre_bytes);
     copy(new_bytes_deint.begin(), new_bytes_deint.begin()+int_params.pre_bytes, bytes_deint.begin());
 }
 
@@ -330,7 +330,7 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
 constexpr float MS_IN_SEC = 1000.F;
 void FEC::benchmark(size_t num_iters) {
 #ifndef TEST_FEC
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     debug_printf(DBG_INFO, "====================\r\n");
     debug_printf(DBG_INFO, "Now benchmarking the %s. Running for %d iterations\r\n", name.c_str(), num_iters);
     debug_printf(DBG_INFO, "Current frame size is %d\r\n", Frame::size());
@@ -420,26 +420,26 @@ FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t o
 
 
 auto FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
-    MBED_ASSERT(msg.size() <= 256);
+    PORTABLE_ASSERT(msg.size() <= 256);
     if(name == "Convolutional Coding") {
         lock.lock();
     }
     // Convolutional encode
-    MBED_ASSERT(msg.size() == msg_len);
+    PORTABLE_ASSERT(msg.size() == msg_len);
     vector<uint8_t> conv_msg(conv_params.bytes, 0);
     auto conv_len = static_cast<int32_t>(ceilf(static_cast<float>(correct_convolutional_encode(corr_con, msg.data(), 
             msg.size(), conv_msg.data()))/BITS_IN_BYTE_F));
-    MBED_ASSERT(conv_len == conv_params.bytes);
-    MBED_ASSERT((int32_t) conv_msg.size() == conv_params.bytes);
+    PORTABLE_ASSERT(conv_len == conv_params.bytes);
+    PORTABLE_ASSERT((int32_t) conv_msg.size() == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_msg(int_params.bytes, 0);
     copy(conv_msg.begin(), conv_msg.end(), int_msg.begin());
     interleaveBits(conv_msg, int_msg);
-    MBED_ASSERT(int_msg.size() == enc_size);
+    PORTABLE_ASSERT(int_msg.size() == enc_size);
 
     enc_msg.resize(int_params.bytes);
     copy(int_msg.begin(), int_msg.end(), enc_msg.begin());
-    MBED_ASSERT(enc_msg.size() == enc_size);
+    PORTABLE_ASSERT(enc_msg.size() == enc_size);
     if(name == "Convolutional Coding") {
         lock.unlock();
     }
@@ -449,24 +449,24 @@ auto FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> in
 
 
 auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
-    MBED_ASSERT(msg.size() <= 256);
+    PORTABLE_ASSERT(msg.size() <= 256);
     if(name == "RSV") {
         lock.lock();
     }
     // Reed-Solomon encode
-    MBED_ASSERT(msg.size() == msg_len);
+    PORTABLE_ASSERT(msg.size() == msg_len);
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     correct_reed_solomon_encode(rs_con, msg.data(), msg_len, rs_enc_msg.data());
     // Convolutional encode
     vector<uint8_t> conv_enc_msg(conv_params.bytes, 0);
     int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
                             rs_enc_msg_size, conv_enc_msg.data());
-    MBED_ASSERT(conv_enc_len == conv_params.bits);
-    MBED_ASSERT(static_cast<int32_t>(conv_enc_msg.size()) == conv_params.bytes);
+    PORTABLE_ASSERT(conv_enc_len == conv_params.bits);
+    PORTABLE_ASSERT(static_cast<int32_t>(conv_enc_msg.size()) == conv_params.bytes);
     // Interleave
     vector<uint8_t> int_enc_msg(enc_size, 0);
     interleaveBits(conv_enc_msg, int_enc_msg);
-	MBED_ASSERT(int_enc_msg.size() == enc_size);
+	PORTABLE_ASSERT(int_enc_msg.size() == enc_size);
     enc_msg.resize(enc_size);
     copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
     if(name == "RSV") {
@@ -478,20 +478,20 @@ auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int
 
 
 auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
-    MBED_ASSERT(enc_msg.size() <= 256);
+    PORTABLE_ASSERT(enc_msg.size() <= 256);
     if(name == "Convolutional Coding") {
         lock.lock();
     }
     // Deinterleave
-	MBED_ASSERT(enc_msg.size() == enc_size);
+	PORTABLE_ASSERT(enc_msg.size() == enc_size);
 	vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
+    PORTABLE_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
     // Convolutional decode
     dec_msg.resize(msg_len);
     int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, dec_msg.data());
-    MBED_ASSERT(dec_size == static_cast<int32_t>(msg_len));
+    PORTABLE_ASSERT(dec_size == static_cast<int32_t>(msg_len));
     if(name == "Convolutional Coding") {
         lock.unlock();
     }
@@ -501,26 +501,26 @@ auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -
 
 
 auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
-    MBED_ASSERT(enc_msg.size() <= 256);
+    PORTABLE_ASSERT(enc_msg.size() <= 256);
     if(name == "RSV") {
         lock.lock();
     }
     // Deinterleave
-    MBED_ASSERT(enc_msg.size() == enc_size);
+    PORTABLE_ASSERT(enc_msg.size() == enc_size);
     vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    MBED_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
+    PORTABLE_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
     // Convolutional decode
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
     size_t deconv_bytes = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, rs_enc_msg.data());
-    MBED_ASSERT(static_cast<int32_t>(deconv_bytes) == rs_enc_msg_size);
-    MBED_ASSERT(static_cast<int32_t>(rs_enc_msg.size()) == rs_enc_msg_size);
+    PORTABLE_ASSERT(static_cast<int32_t>(deconv_bytes) == rs_enc_msg_size);
+    PORTABLE_ASSERT(static_cast<int32_t>(rs_enc_msg.size()) == rs_enc_msg_size);
     // Reed-Solomon decode
     dec_msg.resize(msg_len);  
     correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg_size, dec_msg.data());
 
-    MBED_ASSERT(dec_msg.size() == msg_len);
+    PORTABLE_ASSERT(dec_msg.size() == msg_len);
     if(name == "RSV") {
         lock.unlock();
     }
@@ -531,7 +531,7 @@ auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) ->
 
 FECInterleave::FECInterleave(const int32_t my_msg_len) : 
     FEC(my_msg_len) {
-    MBED_ASSERT(my_msg_len <= 256);
+    PORTABLE_ASSERT(my_msg_len <= 256);
     name = "Dummy Interleaver";
     int_params.bits_f = NAN;
     int_params.row_f = NAN;
@@ -560,7 +560,7 @@ static constexpr uint32_t SHIFT_ONE_BYTE = 8U;
 static constexpr uint32_t SHIFT_TWO_BYTES = 16U; 
 static constexpr uint32_t BYTE_MASK = 0x000000FF;
 auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
-    MBED_ASSERT(msg.size() <= 256);
+    PORTABLE_ASSERT(msg.size() <= 256);
     if(name == "RSVGolay") {
         lock.lock();
     }
@@ -588,7 +588,7 @@ auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -
 
 
 auto FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
-    MBED_ASSERT(enc_msg.size() <= 256);
+    PORTABLE_ASSERT(enc_msg.size() <= 256);
     if(name == "RSVGolay") {
         lock.lock();
     }

@@ -43,7 +43,7 @@ class SoftI2C {
     * @param repeated Repeated start, true - do not send stop at end
     * @return 0 on success (ack), non-0 on failure (nack) 
     */
-    int read(int address, char *data, int length, bool repeated=false);  
+    auto read(int address, char *data, int length, bool repeated=false) -> int;  
     
     /**
     * Read a single byte from the I2C bus
@@ -51,7 +51,7 @@ class SoftI2C {
     * @param ack indicates if the byte is to be acknowledged (1 = acknowledge)
     * @return the byte read
     */
-    int read(int ack);
+    auto read(int ack) -> int;
     
     /**
     * Write to an I2C slave. 
@@ -64,7 +64,7 @@ class SoftI2C {
     * @param repeated Repeated start, true - do not send stop at end
     * @return 0 on success (ack), non-0 on failure (nack) 
     */
-    int write(int address, const char *data, int length, bool repeated=false);  
+    auto write(int address, const char *data, int length, bool repeated=false) -> int;  
     
     /**
     * Write single byte out on the I2C bus
@@ -72,19 +72,19 @@ class SoftI2C {
     * @param data data to write on the bus
     * @return '1' if an ACK is received, '0' otherwise
     */
-    int write(int data);
+    auto write(int data) -> int;
     
     /**
     * Create a (re-)start condition on the I2C bus
     */
-    void start(void);
+    void start();
     
     /**
     * Create a stop condition on the I2C bus
     */
-    void stop(void);
+    void stop();
     
-    protected:
+private:
     DigitalInOut _sda;
     DigitalInOut _scl;
     int delay_us;

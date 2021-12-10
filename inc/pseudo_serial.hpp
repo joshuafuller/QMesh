@@ -2,7 +2,7 @@
 #define PSEUDO_SERIAL_HPP
 
 #ifndef TEST_FEC
-#include "mbed.h"
+#include "os_portability.hpp"
 #endif /* TEST_FEC */
 #include <vector>
 #include <string>
@@ -29,25 +29,30 @@ public:
         fclose(f_wr);
     }
 
+    UARTPseudoSerial(const UARTPseudoSerial &obj) = delete;
+    auto operator= (UARTPseudoSerial &&) -> UARTPseudoSerial & = delete;
+    UARTPseudoSerial(UARTPseudoSerial &&) = delete;
+    auto operator=(const UARTPseudoSerial &) -> UARTPseudoSerial & = delete; 	
+
     explicit UARTPseudoSerial(UARTSerial &ser, const bool read) {
         f_rd = nullptr;
         f_wr = nullptr;
         if(read) {
             f_rd = fdopen(&ser, "r");
-            MBED_ASSERT(f_rd != nullptr);
+            PORTABLE_ASSERT(f_rd != nullptr);
         } else {
             f_wr = fdopen(&ser, "w");
-            MBED_ASSERT(f_wr != nullptr);
+            PORTABLE_ASSERT(f_wr != nullptr);
         }
     }
 
-     auto putc(const int val) -> int override {
-        MBED_ASSERT(f_wr != nullptr);
+    auto putc(const int val) -> int override {
+        PORTABLE_ASSERT(f_wr != nullptr);
         return fputc(val, f_wr);
     }
 
-     auto getc() -> int override {
-        MBED_ASSERT(f_rd != nullptr);
+    auto getc() -> int override {
+        PORTABLE_ASSERT(f_rd != nullptr);
         return fgetc(f_rd);
     }
 };
@@ -97,7 +102,7 @@ private:
     static constexpr uint8_t KISS_FEND = 0xC0;
 
     void checkAndSend(const uint8_t last_val) {
-        MBED_ASSERT(!tx_queue.empty());
+        PORTABLE_ASSERT(!tx_queue.empty());
         if(last_val == KISS_FEND || tx_queue.size() == BLE_MAX_PDU) {
             auto send_data_blob = make_shared<vector<uint8_t>>();
             for(int i = 0; i < BLE_MAX_PDU; i++) {
@@ -106,7 +111,7 @@ private:
             }
             if(!ble_out_queue.full()) {
                 auto *mail_item = ble_out_queue.alloc();
-                MBED_ASSERT(mail_item != nullptr);
+                PORTABLE_ASSERT(mail_item != nullptr);
                 *mail_item = pair<ser_port_type_t, shared_ptr<vector<uint8_t>>>(ser_type, send_data_blob);
                 ble_out_queue.put(mail_item);
             }
@@ -123,7 +128,7 @@ private:
                     rx_queue.push_back(it);
                 }
             } else {
-                MBED_ASSERT(false);
+                PORTABLE_ASSERT(false);
             }
         } 
     }
@@ -137,7 +142,7 @@ public:
         } else if(ser_type == VOICE_PORT) {
             my_in_queue = &voice_in_queue;
         } else {
-            MBED_ASSERT(false);
+            PORTABLE_ASSERT(false);
         }
     }
 

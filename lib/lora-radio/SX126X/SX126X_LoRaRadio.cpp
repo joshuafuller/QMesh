@@ -353,7 +353,7 @@ void SX126X_LoRaRadio::read_rssi_thread_fn() {
 
 
 void SX126X_LoRaRadio::start_read_rssi() {
-    rssi_mon.write(0x1);
+    rssi_mon->write(0x1);
     soft_dec_thread.start(callback(this,  &SX126X_LoRaRadio::read_rssi_thread_fn));
 }
 
@@ -361,7 +361,7 @@ void SX126X_LoRaRadio::start_read_rssi() {
 void SX126X_LoRaRadio::stop_read_rssi() {
     collect_rssi.store(false);
     soft_dec_thread.join();
-    rssi_mon.write(0x0);
+    rssi_mon->write(0x0);
 }
 
 
@@ -389,7 +389,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         val |= 0x02;
         write_to_register(IMPL_WORKAROUND_REG1, 0x02);
         // --------------------
-        radio.cad_pending.store(false);
+        radio->cad_pending.store(false);
         //stop_read_rssi();
         if ((irq_status & IRQ_CRC_ERROR) == IRQ_CRC_ERROR) {
             if ((_radio_events != nullptr) && _radio_events->rx_error) {
@@ -418,7 +418,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
     else if ((irq_status & IRQ_CAD_DONE) == IRQ_CAD_DONE) {
         if((irq_status & IRQ_CAD_ACTIVITY_DETECTED) != 0) {
             if(!stop_cad.load() && !cad_rx_running) {
-                radio.receive_cad_rx();
+                radio->receive_cad_rx();
             } else {
                 cad_pending.store(false);
             }
@@ -427,7 +427,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             if(!stop_cad.load()) {
                 rx_hop_frequency();
                 fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0); 
-                radio.receive_cad_rx();
+                radio->receive_cad_rx();
                 fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0);
             } else {
                 cad_pending.store(false);
@@ -447,14 +447,14 @@ void SX126X_LoRaRadio::handle_dio1_irq()
         if(!stop_cad.load()) {
             MBED_ASSERT(radio_cb.valid);
             if(radio_cb.radio_cfg.frequencies_count > 1) {
-                radio.rx_hop_frequency();
-                radio.receive_cad_rx();
+                radio->rx_hop_frequency();
+                radio->receive_cad_rx();
             } else {
-                radio.receive_sel();
+                radio->receive_sel();
             }
         }
         else {
-            radio.cad_pending.store(false);
+            radio->cad_pending.store(false);
         }
     }
 
@@ -1364,8 +1364,8 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, con
     buf[2] = static_cast<uint8_t>(timeout_scaled & BYTE_MASK);
 
     write_opmode_command(RADIO_SET_TX, buf.data(), 3);
-    tx_int_mon = 1;
-    rx_int_mon = 0;
+    *tx_int_mon = 1;
+    *rx_int_mon = 0;
 
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
@@ -1374,8 +1374,8 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, con
 void SX126X_LoRaRadio::dangle_timeout_handler() {
     CriticalSectionLock lock;
     _chip_select = 1;
-    tx_int_mon = 1;
-    rx_int_mon = 0;
+    *tx_int_mon = 1;
+    *rx_int_mon = 0;
     dangling_flags.set(0x1);
 }
 
@@ -1426,7 +1426,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
     write_opmode_command_finish();
     led3.LEDSolid();
     static constexpr int THREE_SECS_MS = 3000;
-    radio.tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), THREE_SECS_MS);
+    radio->tx_timeout.attach(callback(this, &SX126X_LoRaRadio::tx_timeout_handler), THREE_SECS_MS);
     _operation_mode = MODE_TX;
     if(locking) { unlock(); }
 }
@@ -1435,10 +1435,10 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
 void SX126X_LoRaRadio::receive_sel(const bool locking) {
     MBED_ASSERT(radio_cb.valid);
     if(radio_cb.radio_cfg.frequencies_count == 1) {
-        radio.rx_hop_frequency(); 
+        radio->rx_hop_frequency(); 
         receive(locking);
     } else {
-        radio.rx_hop_frequency(); 
+        radio->rx_hop_frequency(); 
         receive_cad_rx(locking);
     }
 }
@@ -1488,8 +1488,8 @@ void SX126X_LoRaRadio::receive(const bool locking)
     buf[2] = static_cast<uint8_t>(_rx_timeout & LOWER_BYTE);
 
     write_opmode_command(RADIO_SET_RX, buf.data(), 3);
-    rx_int_mon = 1;
-    tx_int_mon = 0;
+    *rx_int_mon = 1;
+    *tx_int_mon = 0;
 
     _operation_mode = MODE_RX;
     if(locking) { unlock(); }
@@ -1538,8 +1538,8 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
 
     write_to_register(REG_RX_GAIN, 0x96);
     write_opmode_command(RADIO_SET_CAD, nullptr, 0);
-    rx_int_mon = 1;
-    tx_int_mon = 0;
+    *rx_int_mon = 1;
+    *tx_int_mon = 0;
 
     _operation_mode = MODE_CAD;
     if(locking) { unlock(); }
@@ -1597,8 +1597,8 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
     set_cad_params(num_syms, my_cad_params.det_max, 
                     my_cad_params.det_min,
                     LORA_CAD_RX, cad_rx_timeout);
-    rx_int_mon = 1;
-    tx_int_mon = 0;
+    *rx_int_mon = 1;
+    *tx_int_mon = 0;
     write_opmode_command(RADIO_SET_CAD, nullptr, 0);
 
     _operation_mode = MODE_CAD;
