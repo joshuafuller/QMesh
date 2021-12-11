@@ -18,12 +18,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "leds.hpp"
 
-IndicatorLED led1(LED1);
-IndicatorLED led2(LED2);
-IndicatorLED led3(LED3);
+IndicatorLED *led1;
+IndicatorLED *led2;
+IndicatorLED *led3;
 
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int TWENTIETH_SECOND = 50;
+
+void create_led_objects() {
+    led1 = new IndicatorLED(LED1);
+    led2 = new IndicatorLED(LED2);
+    led3 = new IndicatorLED(LED3);   
+}
 
 void IndicatorLED::blinkFn() {
     if(led_state == LED_BLINK) {

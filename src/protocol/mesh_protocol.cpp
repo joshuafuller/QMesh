@@ -168,7 +168,7 @@ void mesh_protocol_fsm() {
         switch(state) {
             case WAIT_FOR_EVENT:
                 retransmit_disable_out_n->write(1);
-                led2.LEDOff();
+                led2->LEDOff();
                 debug_printf(DBG_INFO, "Current state is WAIT_FOR_EVENT\r\n");
                 radio->lock();
                 radio->receive_sel();
@@ -196,7 +196,7 @@ void mesh_protocol_fsm() {
                     last_rx_snr.store(radio_event->get_snr());
                     background_queue->call(oled_mon_fn);
                     // Load up the frame
-                    led2.LEDSolid();
+                    led2->LEDSolid();
                     auto rx_frame_noninv_sptr = make_shared<Frame>(fec);
                     auto rx_frame_inv_sptr = make_shared<Frame>(fec);
                     auto pkt_status_noninv = rx_frame_noninv_sptr->deserializeCoded(radio_event->get_buf());
@@ -229,7 +229,7 @@ void mesh_protocol_fsm() {
                             rx_frame_mail->enqueue_mail_nonblocking(rx_frame_orig_sptr);
                             retransmit_disable_out_n->write(0);
                             constexpr int TWO_SECONDS = 2000;
-                            ThisThread::sleep_for(radio_timing->getWaitNoWarn()/TWO_SECONDS);
+                            sleep_portable(radio_timing->getWaitNoWarn()/TWO_SECONDS);
                             if(retransmit_disable_in_n->read() != 0) {
                                 state = RETRANSMIT_PACKET;
                             }
@@ -264,8 +264,8 @@ void mesh_protocol_fsm() {
                 next_sym_off = anti_inter->timingOffset(); // Also need to "use" this value
                 radio->set_tx_power(radio_cb.radio_cfg.tx_power);
                 { 
-                led2.LEDOff();
-                //led3.LEDSolid();
+                led2->LEDOff();
+                //led3->LEDSolid();
                 tx_frame_sptr->setOffsets(0, 0, next_sym_off);
                 size_t tx_frame_size = 0;
                 if(anti_inter->invertBits() && radio_cb.net_cfg.invert_bits) {
@@ -284,7 +284,7 @@ void mesh_protocol_fsm() {
                     nv_logger_mail->enqueue_mail(tx_frame_sptr);
                 }
                 radio_timing->setTimer(tx_radio_event->get_tmr_sptr());
-                led3.LEDOff(); 
+                led3->LEDOff(); 
                 // Set the amount of time to wait until the next transmit
                 // Start with the two-slot baseline delay
                 // Subtract the last frame's symbol delay
@@ -305,7 +305,7 @@ void mesh_protocol_fsm() {
                 {
                 radio->lock();
                 radio->set_tx_power(radio_cb.radio_cfg.tx_power-anti_inter->pwrDiff()); 
-                led3.LEDSolid();
+                led3->LEDSolid();
                 size_t rx_frame_size = 0;
                 if(anti_inter->invertBits() && radio_cb.net_cfg.invert_bits) {
                     rx_frame_size = rx_frame_sptr->serializeCodedInv(rx_frame_buf);
@@ -335,8 +335,8 @@ void mesh_protocol_fsm() {
                 if(radio_cb.log_packets_en) {
                     nv_logger_mail->enqueue_mail(rx_frame_sptr);
                 }
-                led2.LEDOff();
-                led3.LEDOff();
+                led2->LEDOff();
+                led3->LEDOff();
                 state = WAIT_FOR_EVENT;
                 }
             break;

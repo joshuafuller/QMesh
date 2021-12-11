@@ -388,7 +388,7 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     kiss_sers_mtx->unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
         constexpr int TWO_SEC = 2000;
-        ThisThread::sleep_for(TWO_SEC);
+        sleep_portable(TWO_SEC);
         PORTABLE_ASSERT(false);
     }
     va_end(args);

@@ -80,7 +80,7 @@ void CalTimeout::attach_us(Callback< void()> func, us_timestamp_t t) {
 }
 
 #else
-void start_cal(void) {
+void start_cal() {
     
 }
 #endif

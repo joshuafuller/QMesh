@@ -75,7 +75,7 @@ public:
 void rescue_filesystem() {
     bd->init();
 	fs->reformat(bd);
-    ThisThread::sleep_for(TWO_SEC);
+    sleep_portable(TWO_SEC);
     reboot_system();
 }
 
@@ -385,7 +385,7 @@ void load_settings_from_flash() {
         PORTABLE_ASSERT(f);
         fclose(f);
         constexpr uint32_t ONE_SECOND = 1000;
-        ThisThread::sleep_for(ONE_SECOND);
+        sleep_portable(ONE_SECOND);
         reboot_system();
     }
 

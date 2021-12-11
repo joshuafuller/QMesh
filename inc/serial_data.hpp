@@ -210,13 +210,13 @@ public:
         auto L_cpy = make_shared<Frame>(L);
         auto R_cpy = make_shared<Frame>(*this);
         //debug_printf(DBG_INFO, "Setting up the comparison\r\n");
-        //ThisThread::sleep_for(1000); 
+        //sleep_portable(1000); 
         vector<uint8_t> l_ser_data;
         vector<uint8_t> r_ser_data;
         L_cpy->serialize(l_ser_data);
         R_cpy->serialize(r_ser_data);
         //debug_printf(DBG_INFO, "Getting serialized data\r\n");
-        //ThisThread::sleep_for(1000); 
+        //sleep_portable(1000); 
         return (l_ser_data == r_ser_data);
     }
 

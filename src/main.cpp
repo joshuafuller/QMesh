@@ -67,6 +67,7 @@ void create_radio_timing_data_objects();
 void create_nv_settings_objects();
 void create_radio_objects();
 void create_mesh_protocol_objects();
+void create_led_objects();
 static void create_peripherals();
 static void create_peripherals() {
     #ifdef USER_BUTTON
@@ -126,6 +127,7 @@ auto main() -> int
     create_nv_settings_objects();
     create_radio_objects();
     create_mesh_protocol_objects();
+    create_led_objects();
     start_cal();
     time(&boot_timestamp);
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
@@ -135,11 +137,11 @@ auto main() -> int
 #endif
 
     // Set up the LEDs
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     background_thread->start(callback(background_queue, &EventQueue::dispatch_forever));
-    led1.setEvtQueue(background_queue);
-    led2.setEvtQueue(background_queue);
-    led3.setEvtQueue(background_queue);  
+    led1->setEvtQueue(background_queue);
+    led2->setEvtQueue(background_queue);
+    led3->setEvtQueue(background_queue);  
 
     oled_i2c->frequency(I2C_FREQ);
     oled_i2c->start();
@@ -152,25 +154,25 @@ auto main() -> int
     oled->printf("Welcome to QMesh\r\n");
     oled->display();
 
-    led1.LEDBlink();
+    led1->LEDBlink();
     oled->printf("In rescue mode...\r\n");
     oled->display();
-	ThisThread::sleep_for(ONE_SECOND);
+	sleep_portable(ONE_SECOND);
 	if(user_button != nullptr) {
-		led1.LEDFastBlink();
-		ThisThread::sleep_for(ONE_SECOND);
+		led1->LEDFastBlink();
+		sleep_portable(ONE_SECOND);
 		if(user_button != nullptr) {
 			rescue_filesystem();
 		}
 	}
-	led1.LEDSolid();
+	led1->LEDSolid();
 #if MBED_CONF_APP_HAS_BLE == 1
     auto *push_button = new PushButton(BUTTON1);
 #else
     auto *push_button = new PushButton(USER_BUTTON);
 #endif
     push_button->SetQueue(*background_queue);
-    ThisThread::sleep_for(ONE_SECOND);
+    sleep_portable(ONE_SECOND);
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
@@ -188,14 +190,14 @@ auto main() -> int
     Frame::seed_stream_id(radio_cb.address);
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     auto bt_ser = make_shared<KISSSerialUART>(MBED_CONF_APP_KISS_UART_TX, 
                                             MBED_CONF_APP_KISS_UART_RX, 
                                             string("BT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX */
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     auto bt_alt_ser = make_shared<KISSSerialUART>(MBED_CONF_APP_KISS_UART_TX_ALT, 
                                                 MBED_CONF_APP_KISS_UART_RX_ALT,
                                                 MBED_CONF_APP_KISS_UART_EN_ALT,
@@ -204,14 +206,14 @@ auto main() -> int
     PORTABLE_ASSERT(bt_alt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
 #if MBED_CONF_APP_HAS_BLE == 1
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     auto ble_ser = make_shared<BLESerial>();
     //auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
     //auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
     //auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
 #endif /* MBED_CONF_APP_HAS_BLE */
     debug_printf(DBG_INFO, "Serial threads started");
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     send_status();
 
     rx_frame_thread->start(rx_frame_ser_thread_fn);
@@ -229,17 +231,17 @@ auto main() -> int
     oled->display();
     oled->display();
     send_status();
-    led1.LEDFastBlink();
-    ThisThread::sleep_for(TWO_SECONDS);
+    led1->LEDFastBlink();
+    sleep_portable(TWO_SECONDS);
     while(stay_in_management) {
-        ThisThread::sleep_for(FIVE_SECONDS);
+        sleep_portable(FIVE_SECONDS);
     }
     current_mode = system_state_t::RUNNING;
     send_status();
 
-    led1.LEDBlink();
-    led2.LEDOff();
-    led3.LEDOff();
+    led1->LEDBlink();
+    led2->LEDOff();
+    led3->LEDOff();
 
     // Test the FEC
 #if 0
@@ -254,42 +256,42 @@ auto main() -> int
     fec_test_interleave->benchmark(TENTH_SECOND);
     auto fec_test_conv = make_shared<FECConv>(Frame::size(), 2, 9);
     fec_test_conv->benchmark(TENTH_SECOND);
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     auto fec_test_rsv = make_shared<FECRSV>(Frame::size(), 2, 9, 8);
     fec_test_rsv->benchmark(TENTH_SECOND);
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     print_memory_info();
     auto fec_test_rsv_big = make_shared<FECRSV>(Frame::size(), 3, 9, 8);
     fec_test_rsv_big->benchmark(TENTH_SECOND);
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     print_memory_info();
     } 
 print_memory_info();
-ThisThread::sleep_for(500);
+sleep_portable(500);
 #endif
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread->start(nv_log_fn);
 
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
 
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing the Radio\r\n");
     init_radio();
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread->start(mesh_protocol_fsm);
 
     debug_printf(DBG_INFO, "Time to chill...\r\n");
-    ThisThread::sleep_for(QUARTER_SECOND);  
+    sleep_portable(QUARTER_SECOND);  
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
     background_queue->call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
                             beacon_fn);
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
  
     // Start the OLED monitoring
     background_queue->call(oled_mon_fn);
@@ -310,7 +312,7 @@ ThisThread::sleep_for(500);
 
     for(;;) {
 //        print_stats();
-        ThisThread::sleep_for(FIVE_SECONDS);
+        sleep_portable(FIVE_SECONDS);
     }
 }
 

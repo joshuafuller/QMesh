@@ -41,7 +41,7 @@ static constexpr int ONE_SECOND = 1000;
 void reboot_system() {
 	rebooting = true;
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     NVIC_SystemReset();
 }
 
@@ -56,7 +56,7 @@ void button_fn() {
         //gps_serial.enable_input(true);
         oled->displayOn();
         debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
-        ThisThread::sleep_for(ONE_SECOND);
+        sleep_portable(ONE_SECOND);
         reboot_system();
     }
     else {

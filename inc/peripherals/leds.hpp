@@ -73,8 +73,8 @@ public:
 };
 
 
-extern IndicatorLED led1;
-extern IndicatorLED led2;
-extern IndicatorLED led3;
+extern IndicatorLED *led1;
+extern IndicatorLED *led2;
+extern IndicatorLED *led3;
 
 #endif /* LEDS_HPP */

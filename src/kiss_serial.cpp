@@ -328,9 +328,9 @@ void KISSSerialUART::configure_hc05() {
     vector<char> reply_str(REPLY_STR_SIZE);
     *en_pin = 1;
     while(true) { };
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
     FILE *ser_fh = fdopen(&*ser, "rw");
     printf("testing\r\n");
     // Reset the module's configuration
@@ -339,26 +339,26 @@ void KISSSerialUART::configure_hc05() {
     printf("%s", reset_cmd.c_str());
     fgets(reply_str.data(), REPLY_STR_SIZE, ser_fh);
     printf("%s", reply_str.data());
-    ThisThread::sleep_for(HALF_SECOND);
+    sleep_portable(HALF_SECOND);
     // Change the name
     string bt_name_cmd("AT+NAME=");
     bt_name_cmd.append(portName());
     bt_name_cmd.append("\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
     printf("%s", bt_name_cmd.c_str());
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
 #if 0
     string baud_cmd("AT+UART=38400,0,0,\r\n");
     fprintf(ser_fh, "%s", baud_cmd.c_str());    
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
 #endif
     //ser->set_baud(38400);
     string reboot_cmd("AT+RESET\r\n");
     fprintf(ser_fh, "%s", reboot_cmd.c_str());
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
     string init_cmd("AT+INIT\r\n");
     fprintf(ser_fh, "%s", init_cmd.c_str());
-    ThisThread::sleep_for(QUARTER_SECOND);
+    sleep_portable(QUARTER_SECOND);
     *en_pin = 0;
     printf("Done with configuration\r\n");
 }
@@ -697,7 +697,7 @@ void KISSSerial::rx_serial_thread_fn() {
             string compile_str = getFlashCompileString();
             debug_printf(DBG_INFO, "Sending %s\r\n", compile_str.c_str());
             strncpy(reply_msg->ver_msg().msg, compile_str.c_str(), sizeof(reply_msg->ver_msg().msg));
-            ThisThread::sleep_for(HALF_SECOND);
+            sleep_portable(HALF_SECOND);
             tx_ser_queue.enqueue_mail(reply_msg);
         }
         if(ser_msg->type() == SerialMsg_Type_UPDATE) {
