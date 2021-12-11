@@ -34,14 +34,22 @@ All text above, and the splash screen must be included in any redistribution
 class DigitalOut2 : public DigitalOut
 {
 public:
-	DigitalOut2(PinName pin, bool active = false) : DigitalOut(pin) { write(active); };
-	DigitalOut2& operator= (int value) { write(value); return *this; };
-	DigitalOut2& operator= (DigitalOut2& rhs) { write(rhs.read()); return *this; };
-	operator int() { return read(); };
+	explicit DigitalOut2(PinName pin, bool active = false) : DigitalOut(pin) { write(static_cast<int>(active)); };
+	auto operator= (int value) -> DigitalOut2& { write(value); return *this; };
+	auto operator= (DigitalOut2 && rhs)  noexcept -> DigitalOut2& { write(rhs.read()); return *this; };
+	explicit operator int() { return read(); };
+    ~DigitalOut2() = default;
+    DigitalOut2(const DigitalOut2 &rhs) = delete;
+    auto operator= (const DigitalOut2 &) -> DigitalOut2 & = delete; 	
+    DigitalOut2 (DigitalOut2 &&) = delete;
 };
 
 #define SSD1306_EXTERNALVCC 0x1
 #define SSD1306_SWITCHCAPVCC 0x2
+
+static constexpr uint32_t HEIGHT = 32;
+static constexpr uint32_t WIDTH = 128;
+static constexpr uint8_t DATA_MODE = 0x40;
 
 /** The pure base class for the SSD1306 display driver.
  *
@@ -51,11 +59,12 @@ public:
 class Adafruit_SSD1306 : public Adafruit_GFX
 {
 public:
-	Adafruit_SSD1306(PinName RST, uint8_t rawHeight = 32, uint8_t rawWidth = 128)
+	explicit Adafruit_SSD1306(PinName RST, uint8_t rawHeight = HEIGHT, uint8_t rawWidth = WIDTH)
 		: Adafruit_GFX(rawWidth,rawHeight)
 		, rst(RST,false)
 	{
-		buffer.resize(rawHeight * rawWidth / 8);
+        static constexpr uint8_t BITS_PER_BYTE = 8;
+		buffer.resize(rawHeight * rawWidth / BITS_PER_BYTE);
 	};
 
 	void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC);
@@ -63,22 +72,26 @@ public:
 	// These must be implemented in the derived transport driver
 	virtual void command(uint8_t c) = 0;
 	virtual void data(uint8_t c) = 0;
-	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
+	void drawPixel(int16_t x, int16_t y, uint16_t color) override;
 
     // Turn the display on and off
-    void displayOff(void);
-    void displayOn(void);
+    void displayOff();
+    void displayOn();
 
 	/// Clear the display buffer    
-	void clearDisplay(void);
-	virtual void invertDisplay(bool i);
+	void clearDisplay();
+	void invertDisplay(bool i) override;
 
 	/// Cause the display to be updated with the buffer content.
 	void display();
 	/// Fill the buffer with the AdaFruit splash screen.
 	virtual void splash();
     
-protected:
+    auto get_buffer() -> std::vector<uint8_t> & {
+        return buffer;
+    }
+
+private:
 	virtual void sendDisplayBuffer() = 0;
 	DigitalOut2 rst;
 
@@ -105,7 +118,7 @@ public:
 	 * @param rawHeight - the vertical number of pixels for the display, defaults to 32
 	 * @param rawWidth - the horizonal number of pixels for the display, defaults to 128
 	 */
-	Adafruit_SSD1306_Spi(SPI &spi, PinName DC, PinName RST, PinName CS, uint8_t rawHieght = 32, uint8_t rawWidth = 128)
+	Adafruit_SSD1306_Spi(SPI &spi, PinName DC, PinName RST, PinName CS, uint8_t rawHieght = HEIGHT, uint8_t rawWidth = WIDTH)
 	    : Adafruit_SSD1306(RST, rawHieght, rawWidth)
 	    , cs(CS,true)
 	    , dc(DC,false)
@@ -116,7 +129,7 @@ public:
 		    display();
 	    };
 
-	virtual void command(uint8_t c)
+	void command(uint8_t c) override
 	{
 	    cs = 1;
 	    dc = 0;
@@ -125,7 +138,7 @@ public:
 	    cs = 1;
 	};
 
-	virtual void data(uint8_t c)
+	void data(uint8_t c) override
 	{
 	    cs = 1;
 	    dc = 1;
@@ -134,20 +147,22 @@ public:
 	    cs = 1;
 	};
 
-protected:
-	virtual void sendDisplayBuffer()
+private:
+	void sendDisplayBuffer() override
 	{
 		cs = 1;
 		dc = 1;
 		cs = 0;
 
-		for(uint16_t i=0, q=buffer.size(); i<q; i++)
-			mspi.write(buffer[i]);
+		for(unsigned char i : get_buffer()) {
+			mspi.write(i);
+        }
 
-		if(height() == 32)
+		if(height() == HEIGHT)
 		{
-			for(uint16_t i=0, q=buffer.size(); i<q; i++)
+			for(uint16_t i = 0, q = get_buffer().size(); i < q; i++) {
 				mspi.write(0);
+            }
 		}
 
 		cs = 1;
@@ -175,7 +190,7 @@ public:
 	 * @param rawHeight - The vertical number of pixels for the display, defaults to 32
 	 * @param rawWidth - The horizonal number of pixels for the display, defaults to 128
 	 */
-	Adafruit_SSD1306_I2c(SoftI2C &i2c, PinName RST, uint8_t i2cAddress = SSD_I2C_ADDRESS, uint8_t rawHeight = 32, uint8_t rawWidth = 128)
+	Adafruit_SSD1306_I2c(SoftI2C &i2c, PinName RST, uint8_t i2cAddress = SSD_I2C_ADDRESS, uint8_t rawHeight = HEIGHT, uint8_t rawWidth = WIDTH)
 	    : Adafruit_SSD1306(RST, rawHeight, rawWidth)
 	    , mi2c(i2c)
 	    , mi2cAddress(i2cAddress)
@@ -185,36 +200,38 @@ public:
 		    display();
 	    };
 
-	virtual void command(uint8_t c)
+	void command(uint8_t c) override
 	{
-		char buff[2];
+		vector<char> buff(2);
 		buff[0] = 0; // Command Mode
 		buff[1] = c;
-		mi2c.write(mi2cAddress, buff, sizeof(buff));
+		mi2c.write(mi2cAddress, buff.data(), buff.size());
 	}
 
-	virtual void data(uint8_t c)
+	void data(uint8_t c) override
 	{
-		char buff[2];
-		buff[0] = 0x40; // Data Mode
+		vector<char> buff(2);
+		buff[0] = DATA_MODE; // Data Mode
 		buff[1] = c;
-		mi2c.write(mi2cAddress, buff, sizeof(buff));
+		mi2c.write(mi2cAddress, buff.data(), buff.size());
 	};
 
-protected:
-	virtual void sendDisplayBuffer()
+private:
+	void sendDisplayBuffer() override
 	{
-		char buff[17];
-		buff[0] = 0x40; // Data Mode
+        static constexpr uint32_t BUFF_SIZE = 17;
+		vector<char> buff(BUFF_SIZE);
+		buff[0] = DATA_MODE; // Data Mode
 
 		// send display buffer in 16 byte chunks
-		for(uint16_t i=0, q=buffer.size(); i<q; i+=16 ) 
-		{	uint8_t x ;
-
-			// TODO - this will segfault if buffer.size() % 16 != 0
-			for(x=1; x<sizeof(buff); x++) 
-				buff[x] = buffer[i+x-1];
-			mi2c.write(mi2cAddress, buff, sizeof(buff));
+        static constexpr uint16_t CHUNK_SIZE = 16;
+		for(uint16_t i = 0, q = get_buffer().size(); i < q; i += CHUNK_SIZE) 
+		{	
+			// TODO(unknown): - this will segfault if buffer.size() % 16 != 0
+			for(uint32_t x = 1; x < buff.size(); x++) {
+				buff[x] = get_buffer()[i+x-1];
+            }
+			mi2c.write(mi2cAddress, buff.data(), buff.size());
 		}
 	};
 
