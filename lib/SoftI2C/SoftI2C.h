@@ -1,4 +1,4 @@
-#include "mbed.h"
+#include "os_portability.hpp"
 
 #ifndef SOFTI2C_H
 #define SOFTI2C_H
@@ -43,7 +43,7 @@ class SoftI2C {
     * @param repeated Repeated start, true - do not send stop at end
     * @return 0 on success (ack), non-0 on failure (nack) 
     */
-    auto read(int address, char *data, int length, bool repeated=false) -> int;  
+    auto read(uint32_t address, char *data, int length, bool repeated=false) -> int;  
     
     /**
     * Read a single byte from the I2C bus
@@ -64,7 +64,7 @@ class SoftI2C {
     * @param repeated Repeated start, true - do not send stop at end
     * @return 0 on success (ack), non-0 on failure (nack) 
     */
-    auto write(int address, const char *data, int length, bool repeated=false) -> int;  
+    auto write(uint32_t address, const char *data, int length, bool repeated=false) -> int;  
     
     /**
     * Write single byte out on the I2C bus
@@ -87,7 +87,7 @@ class SoftI2C {
 private:
     DigitalInOut _sda;
     DigitalInOut _scl;
-    int delay_us;
+    uint32_t delay_us;
     bool active;
 };
 

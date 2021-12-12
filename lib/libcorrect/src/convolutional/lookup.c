@@ -1,8 +1,8 @@
 #include "correct/convolutional/lookup.h"
 #ifndef TEST_FEC
-#include "mbed_assert.h"
+#include "os_portability.h"
 #else
-#define MBED_ASSERT
+#define PORTABLE_ASSERT
 #endif /* TEST_FEC */
 
 // table has numstates rows
@@ -30,11 +30,11 @@ pair_lookup_t pair_lookup_create(unsigned int rate,
     pair_lookup_t pairs;
 
     pairs.keys = malloc(sizeof(unsigned int) * (1U << (order - 1)));
-    MBED_ASSERT(pairs.keys);
+    PORTABLE_ASSERT(pairs.keys);
     pairs.outputs = calloc((1U << (rate * 2)), sizeof(unsigned int));
-    MBED_ASSERT(pairs.outputs);
+    PORTABLE_ASSERT(pairs.outputs);
     unsigned int *inv_outputs = calloc((1U << (rate * 2)), sizeof(unsigned int));
-    MBED_ASSERT(inv_outputs);
+    PORTABLE_ASSERT(inv_outputs);
     unsigned int output_counter = 1;
     // for every (even-numbered) shift register state, find the concatenated output of the state
     //   and the subsequent state that follows it (low bit set). then, check to see if this

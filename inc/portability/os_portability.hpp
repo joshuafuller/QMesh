@@ -16,5 +16,6 @@ using Thread_portable = Thread;
 using DigitalIn_portable = DigitalIn;
 
 void sleep_portable(uint32_t duration_ms);
+void wait_us_portable(uint32_t duration_us);
 
 #endif /* OS_PORTABILITY_HPP */

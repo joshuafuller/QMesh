@@ -3,9 +3,9 @@
 
 #include "fec_shim.h"
 #ifndef TEST_FEC
-#include "mbed_assert.h" 
+#include "os_portability.h" 
 #else
-#define MBED_ASSERT 
+#define PORTABLE_ASSERT 
 #endif /* TEST_FEC */
 
 typedef struct {
@@ -26,7 +26,7 @@ void *init_rs_char(int symbol_size, int primitive_polynomial,
     }
 
     reed_solomon_shim *shim = malloc(sizeof(reed_solomon_shim));
-    MBED_ASSERT(shim);
+    PORTABLE_ASSERT(shim);
 
     shim->pad = pad;
     shim->block_length = 255 - pad;
@@ -35,9 +35,9 @@ void *init_rs_char(int symbol_size, int primitive_polynomial,
     shim->rs = correct_reed_solomon_create(primitive_polynomial,
                                            first_consecutive_root, root_gap, number_roots);
     shim->msg_out = malloc(shim->block_length);
-    MBED_ASSERT(shim->msg_out);
+    PORTABLE_ASSERT(shim->msg_out);
     shim->erasures = malloc(number_roots);
-    MBED_ASSERT(shim->erasures);
+    PORTABLE_ASSERT(shim->erasures);
 
     return shim;
 }
@@ -92,7 +92,7 @@ static void *create_viterbi(unsigned int num_decoded_bits, unsigned int rate,
                             unsigned int order,
                             correct_convolutional_polynomial_t *poly) {
     convolutional_shim *shim = malloc(sizeof(convolutional_shim));
-    MBED_ASSERT(shim);
+    PORTABLE_ASSERT(shim);
 
     size_t num_decoded_bytes = (num_decoded_bits % 8)
                                    ? (num_decoded_bits / 8 + 1)
@@ -101,7 +101,7 @@ static void *create_viterbi(unsigned int num_decoded_bits, unsigned int rate,
     shim->rate = rate;
     shim->order = order;
     shim->buf = malloc(num_decoded_bytes);
-    MBED_ASSERT(shim->buf);
+    PORTABLE_ASSERT(shim->buf);
     shim->buf_len = num_decoded_bytes;
     shim->conv = correct_convolutional_create(rate, order, poly);
     shim->read_iter = shim->buf;

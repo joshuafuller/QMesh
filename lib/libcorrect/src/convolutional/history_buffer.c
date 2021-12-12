@@ -1,8 +1,8 @@
 #include "correct/convolutional/history_buffer.h"
 #ifndef TEST_FEC
-#include "mbed_assert.h"
+#include "os_portability.h"
 #else
-#define MBED_ASSERT
+#define PORTABLE_ASSERT
 #endif /* TEST_FEC */
 
 history_buffer *history_buffer_create(unsigned int min_traceback_length,
@@ -10,7 +10,7 @@ history_buffer *history_buffer_create(unsigned int min_traceback_length,
                                       unsigned int renormalize_interval, unsigned int num_states,
                                       shift_register_t highbit) {
     history_buffer *buf = calloc(1, sizeof(history_buffer));
-    MBED_ASSERT(buf);
+    PORTABLE_ASSERT(buf);
 
     *(unsigned int *)&buf->min_traceback_length = min_traceback_length;
     *(unsigned int *)&buf->traceback_group_length = traceback_group_length;
@@ -19,13 +19,13 @@ history_buffer *history_buffer_create(unsigned int min_traceback_length,
     *(shift_register_t *)&buf->highbit = highbit;
 
     buf->history = malloc(buf->cap * sizeof(uint8_t *));
-    MBED_ASSERT(buf->history);
+    PORTABLE_ASSERT(buf->history);
     for (unsigned int i = 0; i < buf->cap; i++) {
         buf->history[i] = calloc(num_states, sizeof(uint8_t));
-        MBED_ASSERT(buf->history[i]);
+        PORTABLE_ASSERT(buf->history[i]);
     }
     buf->fetched = malloc(buf->cap * sizeof(uint8_t));
-    MBED_ASSERT(buf->fetched);
+    PORTABLE_ASSERT(buf->fetched);
 
     buf->index = 0;
     buf->len = 0;

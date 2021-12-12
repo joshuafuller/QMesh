@@ -1,13 +1,13 @@
 #include "correct/convolutional/error_buffer.h"
 #ifndef TEST_FEC
-#include "mbed_assert.h"
+#include "os_portability.h"
 #else
-#define MBED_ASSERT
+#define PORTABLE_ASSERT
 #endif /* TEST_FEC */
 
 error_buffer_t *error_buffer_create(unsigned int num_states) {
     error_buffer_t *buf = calloc(1, sizeof(error_buffer_t));
-    MBED_ASSERT(buf);
+    PORTABLE_ASSERT(buf);
 
     // how large are the error buffers?
     buf->num_states = num_states;
@@ -17,9 +17,9 @@ error_buffer_t *error_buffer_create(unsigned int num_states) {
     // the error metric is the aggregated number of bit errors found
     //   at a given path which terminates at a particular shift register state
     buf->errors[0] = calloc(sizeof(distance_t), num_states);
-    MBED_ASSERT(buf->errors[0]);
+    PORTABLE_ASSERT(buf->errors[0]);
     buf->errors[1] = calloc(sizeof(distance_t), num_states);
-    MBED_ASSERT(buf->errors[1]);
+    PORTABLE_ASSERT(buf->errors[1]);
 
     // which buffer are we using, 0 or 1?
     buf->index = 0;

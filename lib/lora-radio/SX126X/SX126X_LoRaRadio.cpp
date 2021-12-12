@@ -22,6 +22,7 @@ Copyright (c) 2019, Arm Limited and affiliates.
 SPDX-License-Identifier: BSD-3-Clause
 */
 
+#include "os_portability.hpp"
 #include <math.h>
 #include "mbed_wait_api.h"
 #include "Timer.h"
@@ -36,7 +37,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "serial_data.hpp"
 
 // Squash a warning about wait_ms being deprecated
-#define wait_ms(x) wait_us(x*1000)
+#define wait_ms(x) wait_us_portable(x*1000)
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_SPI_FREQUENCY
 #define SPI_FREQUENCY    MBED_CONF_SX126X_LORA_DRIVER_SPI_FREQUENCY
@@ -276,7 +277,7 @@ void SX126X_LoRaRadio::configure_freq_hop_freqs(vector<uint32_t>& my_hop_freqs)
 // Sequentially scan through the hop frequencies
 void SX126X_LoRaRadio::rx_hop_frequency()
 {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     if(radio_cb.radio_cfg.frequencies_count > 1) {
         set_channel(*cur_hop_freq);
         if(cur_hop_freq == hop_freqs.end() || ++cur_hop_freq == hop_freqs.end()) {
@@ -445,7 +446,7 @@ void SX126X_LoRaRadio::handle_dio1_irq()
             _radio_events->rx_timeout();
         }
         if(!stop_cad.load()) {
-            MBED_ASSERT(radio_cb.valid);
+            PORTABLE_ASSERT(radio_cb.valid);
             if(radio_cb.radio_cfg.frequencies_count > 1) {
                 radio->rx_hop_frequency();
                 radio->receive_cad_rx();
@@ -609,7 +610,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events, const bool locking)
     _spi.format(8, 0);
     _spi.frequency(SPI_FREQUENCY);
     // 100 us wait to settle down
-    wait_us(100);
+    wait_us_portable(100);
 
     radio_reset();
 
@@ -643,7 +644,7 @@ void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
 #ifdef USES_TCXO
     caliberation_params_t calib_param;
     constexpr float US_PER_UNIT = 15.625F;
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     uint32_t tcxo_time = ceilf(radio_cb.radio_cfg.tcxo_time_us / US_PER_UNIT);
     if(tcxo_time == 0) { // 0 just hangs the system, so make it slightly bigger
         tcxo_time = 1;
@@ -746,12 +747,12 @@ void SX126X_LoRaRadio::wakeup(const bool locking)
     // now we should wait for the _busy line to go low
     if (_operation_mode == MODE_SLEEP) {
         _chip_select = 0;
-        wait_us(100);
+        wait_us_portable(100);
         _chip_select = 1;
-        wait_us(100);
+        wait_us_portable(100);
 #if 0
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
-        wait_us(3500);
+        wait_us_portable(3500);
         // whenever we wakeup from Cold sleep state, we need to perform
         // image calibration
         _force_image_calibration = true;
@@ -1433,7 +1434,7 @@ void SX126X_LoRaRadio::send_with_delay(const uint8_t *const buffer, const uint8_
 
 
 void SX126X_LoRaRadio::receive_sel(const bool locking) {
-    MBED_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.valid);
     if(radio_cb.radio_cfg.frequencies_count == 1) {
         radio->rx_hop_frequency(); 
         receive(locking);
@@ -1447,7 +1448,7 @@ void SX126X_LoRaRadio::receive_sel(const bool locking) {
 void SX126X_LoRaRadio::receive(const bool locking)
 {
     if(locking) { lock(); }
-    //MBED_ASSERT(false);
+    //PORTABLE_ASSERT(false);
     if (get_modem() == MODEM_LORA && _reception_mode != RECEPTION_MODE_CONTINUOUS) {
         // Data-sheet Table 13-11: StopOnPreambParam
         // We will use radio's internal timer to mark no reception. This behaviour
@@ -1530,7 +1531,7 @@ void SX126X_LoRaRadio::receive_cad(const bool locking)
         case FOUR_SYM:    num_syms = LORA_CAD_04_SYMBOL; break;
         case EIGHT_SYM:   num_syms = LORA_CAD_08_SYMBOL; break;
         case SIXTEEN_SYM: num_syms = LORA_CAD_16_SYMBOL; break; 
-        default: MBED_ASSERT(false); break;
+        default: PORTABLE_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max+cad_det_peak_adj[*cur_hop_freq], 
                     my_cad_params.det_min,
@@ -1578,7 +1579,7 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
         case LORA_BW_125: my_cad_params = cad_params[0][sf-SF_BASE_ADJ]; break;
         case LORA_BW_250: my_cad_params = cad_params[1][sf-SF_BASE_ADJ]; break;
         case LORA_BW_500: my_cad_params = cad_params[2][sf-SF_BASE_ADJ]; break;
-        default: MBED_ASSERT(false); break;
+        default: PORTABLE_ASSERT(false); break;
     }
     lora_cad_symbols_t num_syms = LORA_CAD_01_SYMBOL;
     constexpr int ONE_SYM = 1;
@@ -1592,7 +1593,7 @@ void SX126X_LoRaRadio::receive_cad_rx(const bool locking)
         case FOUR_SYM:    num_syms = LORA_CAD_04_SYMBOL; break;
         case EIGHT_SYM:   num_syms = LORA_CAD_08_SYMBOL; break;
         case SIXTEEN_SYM: num_syms = LORA_CAD_16_SYMBOL; break; 
-        default: MBED_ASSERT(false); break;
+        default: PORTABLE_ASSERT(false); break;
     }
     set_cad_params(num_syms, my_cad_params.det_max, 
                     my_cad_params.det_min,
@@ -1854,7 +1855,7 @@ void SX126X_LoRaRadio::set_buffer_base_addr(const uint8_t tx_base_addr, const ui
 
 uint8_t SX126X_LoRaRadio::get_status(const bool locking)
 {
-    MBED_ASSERT(false);
+    PORTABLE_ASSERT(false);
     return 0;
 }
 

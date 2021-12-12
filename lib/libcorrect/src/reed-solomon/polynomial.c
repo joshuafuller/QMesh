@@ -3,7 +3,7 @@
 polynomial_t polynomial_create(unsigned int order) {
     polynomial_t polynomial;
     polynomial.coeff = malloc(sizeof(field_element_t) * (order + 1));
-    MBED_ASSERT(polynomial.coeff);
+    PORTABLE_ASSERT(polynomial.coeff);
     polynomial.order = order;
     return polynomial;
 }
@@ -217,16 +217,16 @@ polynomial_t polynomial_create_from_roots(field_t field, unsigned int nroots, fi
     polynomial_t l;
     l.order = 1;
     l.coeff = calloc(2, sizeof(field_element_t));
-    MBED_ASSERT(l.coeff);
+    PORTABLE_ASSERT(l.coeff);
 
     polynomial_t r[2];
     // we'll keep two temporary stores of rightside polynomial
     // each time through the loop, we take the previous result and use it as new rightside
     // swap back and forth (prevents the need for a copy)
     r[0].coeff = calloc(order + 1, sizeof(field_element_t));
-    MBED_ASSERT(r[0].coeff);
+    PORTABLE_ASSERT(r[0].coeff);
     r[1].coeff = calloc(order + 1, sizeof(field_element_t));
-    MBED_ASSERT(r[1].coeff);
+    PORTABLE_ASSERT(r[1].coeff);
     unsigned int rcoeffres = 0;
 
     // initialize the result with x + roots[0]

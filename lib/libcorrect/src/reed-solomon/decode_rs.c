@@ -1,8 +1,8 @@
 #include "correct/reed-solomon/encode.h"
 #ifndef TEST_FEC
-#include "mbed_assert.h"
+#include "os_portability.h"
 #else
-#define MBED_ASSERT
+#define PORTABLE_ASSERT
 #endif
 
 // calculate all syndromes of the received polynomial at the roots of the generator
@@ -264,19 +264,19 @@ static void reed_solomon_find_modified_syndromes(correct_reed_solomon *rs, field
 void correct_reed_solomon_decoder_create(correct_reed_solomon *rs) {
     rs->has_init_decode = true;
     rs->syndromes = calloc(rs->min_distance, sizeof(field_element_t));
-    MBED_ASSERT(rs->syndromes);
+    PORTABLE_ASSERT(rs->syndromes);
     rs->modified_syndromes = calloc(2 * rs->min_distance, sizeof(field_element_t));
-    MBED_ASSERT(rs->modified_syndromes);
+    PORTABLE_ASSERT(rs->modified_syndromes);
     rs->received_polynomial = polynomial_create(rs->block_length - 1);
     rs->error_locator = polynomial_create(rs->min_distance);
     rs->error_locator_log = polynomial_create(rs->min_distance);
     rs->erasure_locator = polynomial_create(rs->min_distance);
     rs->error_roots = calloc(2 * rs->min_distance, sizeof(field_element_t));
-    MBED_ASSERT(rs->error_roots);
+    PORTABLE_ASSERT(rs->error_roots);
     rs->error_vals = malloc(rs->min_distance * sizeof(field_element_t));
-    MBED_ASSERT(rs->error_vals);
+    PORTABLE_ASSERT(rs->error_vals);
     rs->error_locations = malloc(rs->min_distance * sizeof(field_logarithm_t));
-    MBED_ASSERT(rs->error_locations);
+    PORTABLE_ASSERT(rs->error_locations);
 
     rs->last_error_locator = polynomial_create(rs->min_distance);
     rs->error_evaluator = polynomial_create(rs->min_distance - 1);

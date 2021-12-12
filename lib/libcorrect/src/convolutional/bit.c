@@ -1,14 +1,14 @@
 #include "correct/convolutional/bit.h"
 #ifndef TEST_FEC
-#include "mbed_assert.h"
+#include "os_portability.h"
 #else
-#define MBED_ASSERT
+#define PORTABLE_ASSERT
 #endif
 
 
 bit_writer_t *bit_writer_create(uint8_t *bytes, size_t len) {
     bit_writer_t *w = calloc(1, sizeof(bit_writer_t));
-    MBED_ASSERT(w);
+    PORTABLE_ASSERT(w);
 
     if (bytes) {
         bit_writer_reconfigure(w, bytes, len);
@@ -190,7 +190,7 @@ void create_reverse_table() {
 
 bit_reader_t *bit_reader_create(const uint8_t *bytes, size_t len) {
     bit_reader_t *r = calloc(1, sizeof(bit_reader_t));
-    MBED_ASSERT(r);
+    PORTABLE_ASSERT(r);
 
     static bool reverse_table_created = false;
 
