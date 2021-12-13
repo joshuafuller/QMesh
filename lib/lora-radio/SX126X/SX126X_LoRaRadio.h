@@ -352,23 +352,23 @@ private:
 
     // SPI and chip select control
     mbed::SPI _spi;
-    mbed::DigitalOut _chip_select;
+    DigitalOut_portable _chip_select;
 
     // module rest control
-    mbed::DigitalInOut _reset_ctl;
+    DigitalInOut_portable _reset_ctl;
 
     // module power control
-    mbed::DigitalOut _pwr_ctl;
+    DigitalOut_portable _pwr_ctl;
 
     // Interrupt controls
-    mbed::InterruptIn _dio1_ctl;;
+    InterruptIn_portable _dio1_ctl;;
 
     // module busy control
-    mbed::DigitalIn _busy;
+    DigitalIn_portable _busy;
 
     // RF switch controls, for the CDEBytes E22
-    mbed::DigitalOut _rxen;
-    mbed::DigitalOut _txen;
+    DigitalOut_portable _rxen;
+    DigitalOut_portable _txen;
 
     // Structure containing function pointers to the stack callbacks
     radio_events_t *_radio_events;
@@ -380,11 +380,11 @@ private:
 
 #ifdef MBED_CONF_RTOS_PRESENT
     // Thread to handle interrupts
-    rtos::Thread irq_thread;
+    Thread_portable irq_thread;
 #endif
 
     // Access protection
-    PlatformMutex mutex;
+    mutex_portable mutex;
 
     // helper functions
     void wakeup(bool locking = false);

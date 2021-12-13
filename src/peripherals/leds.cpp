@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ IndicatorLED::IndicatorLED(PinName led_pin_name) {
     led_state = LED_OFF;
     blink_led = false;
     blink_period = QUARTER_SECOND;
-    pin = new DigitalOut(led_pin_name);
+    pin = new DigitalOut_portable(led_pin_name);
     *pin = 0;
 }
 

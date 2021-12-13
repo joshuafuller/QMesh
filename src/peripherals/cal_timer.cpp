@@ -11,9 +11,9 @@
 #define BINS_PER_SEC (1.f/64.f)
 #define NUM_SECS 256
 
-static Timer tmr;
-static LowPowerTicker lpticker;
-extern EventQueue background_queue;
+static Timer_portable tmr;
+static lptimer_portable lpticker;
+extern EventQueue_portable *background_queue;
 static atomic<float> tmr_factor, tmr_factor_inv;
 static us_timestamp_t last_tmr_val = 0;
 static volatile bool cal_running = false;
@@ -30,7 +30,7 @@ void start_cal(void) {
 
 
 static void cal_handler(void) {
-    CriticalSectionLock lock;
+    CriticalSectionLock_portable lock;
     us_timestamp_t tmr_val = tmr.read_high_resolution_us();
     background_queue.call(cal_subhandler, tmr_val);
 }

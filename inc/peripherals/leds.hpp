@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2021 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LEDS_HPP
 #define LEDS_HPP
 
-#include "mbed.h"
+#include "os_portability.hpp"
 
 /**
  * Class that wraps the board's LEDs, and provides basic features
@@ -33,10 +33,10 @@ private:
         LED_SOLID,
         LED_BLINK
     } led_state;
-    DigitalOut *pin;
+    DigitalOut_portable *pin;
     bool blink_led;
     int blink_period;
-    EventQueue *evt_queue;
+    EventQueue_portable *evt_queue;
 
 public:
     /// Function resonsible for blinking the LED.

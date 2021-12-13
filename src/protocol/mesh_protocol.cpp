@@ -37,21 +37,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "anti_interference.hpp"
 #include "peripherals.hpp"
 
-extern EventQueue *background_queue;
+extern EventQueue_portable *background_queue;
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
 
 volatile bool retransmit_pending = false;
-InterruptIn *retransmit_disable_in_n;
-DigitalOut *retransmit_disable_out_n;
+InterruptIn_portable *retransmit_disable_in_n;
+DigitalOut_portable *retransmit_disable_out_n;
 
 RadioTiming *radio_timing;
 
 
 void create_mesh_protocol_objects() {
-    retransmit_disable_in_n = new InterruptIn(MBED_CONF_APP_RETRANSMIT_DIS_IN, PullUp);
-    retransmit_disable_out_n = new DigitalOut(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
+    retransmit_disable_in_n = new InterruptIn_portable(MBED_CONF_APP_RETRANSMIT_DIS_IN, PullUp);
+    retransmit_disable_out_n = new DigitalOut_portable(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
     radio_timing = new RadioTiming();
 }
 

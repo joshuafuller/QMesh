@@ -30,12 +30,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ble_serial.hpp"
 
 
-Thread *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *background_thread;
-EventQueue *background_queue;
+Thread_portable *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *background_thread;
+EventQueue_portable *background_queue;
 static void create_threads();
 static void create_threads() {
     constexpr int THREAD_STACK_SIZE = 4096;
-    background_queue = new EventQueue();
+    background_queue = new EventQueue_portable();
     mesh_protocol_thread = new Thread_portable(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
     rx_frame_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
     nv_log_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
@@ -58,7 +58,7 @@ static constexpr int I2C_FREQ = 400000;
 
 void send_status();
 
-DigitalIn *user_button;
+DigitalIn_portable *user_button;
 SoftI2C *oled_i2c;
 shared_ptr<Adafruit_SSD1306_I2c> oled;
 void create_serial_data_objects();
@@ -71,9 +71,9 @@ void create_led_objects();
 static void create_peripherals();
 static void create_peripherals() {
     #ifdef USER_BUTTON
-    user_button = new DigitalIn(USER_BUTTON);
+    user_button = new DigitalIn_portable(USER_BUTTON);
     #else // for the nRF52 board
-    user_button = new DigitalIn(BUTTON1);
+    user_button = new DigitalIn_portable(BUTTON1);
     #endif
     oled_i2c = new SoftI2C(MBED_CONF_APP_OLED_SDA, MBED_CONF_APP_OLED_SCL);  // SDA, SCL
 }
@@ -138,7 +138,7 @@ auto main() -> int
 
     // Set up the LEDs
     sleep_portable(HALF_SECOND);
-    background_thread->start(callback(background_queue, &EventQueue::dispatch_forever));
+    background_thread->start(callback(background_queue, &EventQueue_portable::dispatch_forever));
     led1->setEvtQueue(background_queue);
     led2->setEvtQueue(background_queue);
     led3->setEvtQueue(background_queue);  

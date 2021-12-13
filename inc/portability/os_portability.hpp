@@ -2,7 +2,6 @@
 #define OS_PORTABILITY_HPP
 
 #include "mbed.h"
-#include "SoftI2C.h"
 #include <cstdint>
 
 #define PORTABLE_ASSERT MBED_ASSERT
@@ -10,10 +9,16 @@
 using mutex_portable = Mutex;
 using timer_portable = Timer;
 using ticker_portable = Ticker;
-using I2C_portable = SoftI2C;
+using lpticker_portable = LowPowerTicker;
+//using I2C_portable = SoftI2C;
 using Watchdog_portable = Watchdog;
 using Thread_portable = Thread;
 using DigitalIn_portable = DigitalIn;
+using DigitalOut_portable = DigitalOut;
+using DigitalInOut_portable = DigitalInOut;
+using InterruptIn_portable = InterruptIn;
+using EventQueue_portable = EventQueue;
+using CriticalSectionLock_portable = CriticalSectionLock;
 
 template <typename T, int queue_len> 
 class Mail_portable

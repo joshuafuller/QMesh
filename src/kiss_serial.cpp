@@ -44,18 +44,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "mem_trace.hpp"
 
-extern EventQueue background_queue;
+extern EventQueue_portable background_queue;
 
 static constexpr int ERR_MSG_SIZE = 32;
 static constexpr int SHA256_SIZE = 32;
 
 // debug_printf() uses this vector to determine which serial ports to send out
 vector<KISSSerial *> kiss_sers;
-Mutex *kiss_sers_mtx;
-static Mutex *shared_mtx;
+mutex_portable *kiss_sers_mtx;
+static mutex_portable *shared_mtx;
 void create_kiss_serial_data_objects() {
-    kiss_sers_mtx = new Mutex();
-    shared_mtx = new Mutex();
+    kiss_sers_mtx = new mutex_portable();
+    shared_mtx = new mutex_portable();
 }
 
 static constexpr uint8_t FEND = 0xC0;
@@ -368,9 +368,9 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State
             const string &my_port_name, const ser_port_type_t ser_port_type) :
     KISSSerial(my_port_name, ser_port_type) {
     hc05 = true;
-    en_pin = new DigitalOut(En);
+    en_pin = new DigitalOut_portable(En);
     *en_pin = 1;
-    state_pin = new DigitalIn(State);                
+    state_pin = new DigitalIn_portable(State);                
     tx_port = tx;
     rx_port = rx;
     ser = make_shared<UARTSerial>(tx_port, rx_port, BT_BAUD_RATE);
