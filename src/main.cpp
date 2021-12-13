@@ -36,10 +36,10 @@ static void create_threads();
 static void create_threads() {
     constexpr int THREAD_STACK_SIZE = 4096;
     background_queue = new EventQueue();
-    mesh_protocol_thread = new Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
-    rx_frame_thread = new Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
-    nv_log_thread = new Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
-    background_thread = new Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+    mesh_protocol_thread = new Thread_portable(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
+    rx_frame_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
+    nv_log_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
+    background_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
 } 
 
 time_t boot_timestamp;

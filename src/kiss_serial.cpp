@@ -276,10 +276,10 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
         
     string rx_ser_name("RX-");
     rx_ser_name.append(portName());
-    rx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
+    rx_ser_thread = new Thread_portable(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
     string tx_ser_name("TX-");
     tx_ser_name.append(portName());
-    tx_ser_thread = new Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
+    tx_ser_thread = new Thread_portable(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
 
     kiss_sers_mtx->lock();
     kiss_sers.push_back(this);

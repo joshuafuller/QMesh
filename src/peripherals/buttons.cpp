@@ -23,12 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 
 //extern Thread tx_serial_thread, rx_serial_thread;
-extern Thread mesh_protocol_thread;
-extern Thread beacon_thread;
-extern Thread nv_log_thread;
-extern Thread oled_mon_thread;
+extern Thread_portable *mesh_protocol_thread;
+extern Thread_portable *beacon_thread;
+extern Thread_portable *nv_log_thread;
+extern Thread_portable *oled_mon_thread;
 extern rtos::Thread *lora_irq_thread;
-extern Thread btn_evt_thread;
+extern Thread_portable *btn_evt_thread;
 
 extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 //extern UARTSerial gps_serial;

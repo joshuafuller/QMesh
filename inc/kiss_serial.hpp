@@ -82,7 +82,7 @@ private:
     EventMail<std::shared_ptr<SerMsg>> tx_ser_queue;
     vector<string> logfile_names;
     SerMsg past_log_msg;
-    Thread *rx_ser_thread{}, *tx_ser_thread{};
+    Thread_portable *rx_ser_thread{}, *tx_ser_thread{};
     ser_port_type_t port_type;
     string port_name;
     atomic<bool> kiss_extended{};
