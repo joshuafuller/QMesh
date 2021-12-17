@@ -3,22 +3,20 @@
 
 #include "mbed.h"
 #include <cstdint>
+#include "asserts.hpp"
+#include "locking.hpp"
+#include "io_pins.hpp"
+#include "spi.hpp"
+#include "i2c.hpp"
 
-#define PORTABLE_ASSERT MBED_ASSERT
 
-using mutex_portable = Mutex;
+#if defined(MBED_OS)
 using timer_portable = Timer;
 using ticker_portable = Ticker;
 using lpticker_portable = LowPowerTicker;
-//using I2C_portable = SoftI2C;
 using Watchdog_portable = Watchdog;
 using Thread_portable = Thread;
-using DigitalIn_portable = DigitalIn;
-using DigitalOut_portable = DigitalOut;
-using DigitalInOut_portable = DigitalInOut;
-using InterruptIn_portable = InterruptIn;
 using EventQueue_portable = EventQueue;
-using CriticalSectionLock_portable = CriticalSectionLock;
 
 template <typename T, int queue_len> 
 class Mail_portable
@@ -68,6 +66,11 @@ public:
         return my_mail->free(mptr);
     }
 };
+#elif defined(ESP_IDF)
+
+#else
+#error Need to define either MBED_OS or ESP_IDF
+#endif 
 
 void sleep_portable(uint32_t duration_ms);
 void wait_us_portable(uint32_t duration_us);

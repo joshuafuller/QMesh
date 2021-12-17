@@ -121,5 +121,5 @@
         }
     },
     "macros": ["MBEDTLS_USER_CONFIG_FILE=\"mbedtls_lora_config.h\"",
-        "MBED_CPU_STATS_ENABLED=1"]
+        "MBED_CPU_STATS_ENABLED=1", "MBED_OS=1"]
 }

@@ -1,7 +1,7 @@
-#include "os_portability.hpp"
-
 #ifndef SOFTI2C_H
 #define SOFTI2C_H
+
+#include "os_portability.hpp"
 
 /**
 * A software I2C class in case you run out of hardware I2C pins or cannot use
