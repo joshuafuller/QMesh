@@ -357,7 +357,7 @@ void FEC::benchmark(size_t num_iters) {
     debug_printf(DBG_INFO, "%d PASSED; %d FAILED\r\n", correct_test, incorrect_test);
 
     debug_printf(DBG_INFO, "Benchmarking the encode...\r\n");
-    LowPowerTimer enc_timer;
+    CalTimer enc_timer;
     enc_timer.start();
     for(size_t i = 0; i < num_iters; i++) {
         encode(msg_data, enc_data);
@@ -366,7 +366,7 @@ void FEC::benchmark(size_t num_iters) {
     int enc_num_ms = enc_timer.read_ms();
     debug_printf(DBG_INFO, "Done!\r\n");
     debug_printf(DBG_INFO, "Benchmarking the decode...\r\n");
-    LowPowerTimer dec_timer;
+    CalTimer dec_timer;
     dec_timer.start();
     for(size_t i = 0; i < num_iters; i++) {
         decode(enc_data, msg_data);

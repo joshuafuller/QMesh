@@ -12,7 +12,7 @@
 #define NUM_SECS 256
 
 static Timer_portable tmr;
-static lptimer_portable lpticker;
+static lpticker_portable lpticker;
 extern EventQueue_portable *background_queue;
 static atomic<float> tmr_factor, tmr_factor_inv;
 static us_timestamp_t last_tmr_val = 0;

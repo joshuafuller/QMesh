@@ -119,6 +119,7 @@ static void wdt_pet() { // pet the watchdog
 // main() runs in its own thread in the OS
 auto main() -> int
 {
+    special_init();
     create_threads();
     create_peripherals();
     create_serial_data_objects();
