@@ -4,6 +4,7 @@
 #if defined(MBED_OS)
 #include "mbed.h"
 using Timer_portable = Timer;
+using LowPowerTimer_portable = LowPowerTimer;
 
 #elif defined(ESP_IDF)
 #include "esp_timer.h"
@@ -56,6 +57,8 @@ public:
         return read_us()/1000000;
     }
 };
+
+using LowPowerTimer_portable = Timer_portable;
 
 #endif
 
