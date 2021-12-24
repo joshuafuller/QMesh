@@ -26,9 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "params.hpp"
 #include <cmath>
 #include <map>
-#include <string>
 #include <random>
 #include <list>
+#include <string>
 #include <algorithm>
 #include <typeinfo>
 #include "golay.h"
@@ -64,13 +64,37 @@ void testFEC();
  * like interleaving, but otherwise just functions as a dummy FEC class.
  */
 class FEC {
-protected:
+private:
     std::string name;
     size_t msg_len;
     size_t enc_size;
     Mutex lock;
 
 public:
+    auto get_lock() -> Mutex & {
+        return lock;
+    }
+
+    auto get_msg_len() const -> const size_t & {
+        return msg_len;
+    }
+
+    void set_msg_len(const size_t my_msg_len) {
+        msg_len = my_msg_len;
+    }
+
+    void set_name(const std::string &my_name) {
+        name = my_name;
+    }
+
+    auto get_name() const -> const std::string & {
+        return name;
+    }
+
+    void set_enc_size(const size_t my_enc_size) {
+        enc_size = my_enc_size;
+    }
+
     /// Constructor.
     explicit FEC(const int32_t my_msg_len) {
         name = "Dummy FEC";
@@ -79,8 +103,8 @@ public:
     }
 
     /// Constructor to facilitate unit testing.
-    FEC(const int32_t my_msg_len, const int32_t inv_rate, 
-            const int32_t order, const int32_t my_rs_corr_bytes) : 
+    FEC(const int32_t my_msg_len, const int32_t  /*inv_rate*/, 
+            const int32_t  /*order*/, const int32_t  /*my_rs_corr_bytes*/) : 
             FEC(my_msg_len) {}
 
     /// Gets the name of the FEC.
@@ -88,7 +112,7 @@ public:
         return name;
     }
 
-    virtual auto encSize() -> int {
+    virtual auto encSize() -> size_t {
         return enc_size;
     }
 
@@ -133,17 +157,15 @@ public:
 /**
  * Derived class that just applies/removes the interleaving from the data.
  */ 
-class FECInterleave : public FEC {
-protected:
-    struct {
+typedef struct { //NOLINT
         float bits_f{}, row_f{}, col_f{};
         uint32_t bits{}, bytes{}, row{}, col{};   
         uint32_t pre_bytes{};
-    } int_params;
+    } int_params_struct;
+class FECInterleave : public FEC {
+    int_params_struct int_params;
     
-    void interleaveBits(const std::vector<uint8_t> &bytes, std::vector<uint8_t> &bytes_int) const;
-    void deinterleaveBits(const std::vector<uint8_t> &bytes_int, std::vector<uint8_t> &bytes_deint) const;
-
+private:
     static auto getBit(const std::vector<uint8_t> &bytes, const int32_t pos) -> bool {
         uint8_t byte = bytes[pos/BITS_IN_BYTE];
         size_t byte_pos = pos % BITS_IN_BYTE;
@@ -159,34 +181,71 @@ protected:
 
 
 public:
+    auto get_int_params() const -> const int_params_struct & {
+        return int_params;
+    }
+
+    void set_int_params(const int_params_struct &my_int_params) {
+        int_params = my_int_params;
+    }
+
+    auto get_int_params_mutable() -> int_params_struct & {
+        return int_params;
+    }
+
     explicit FECInterleave(int32_t my_msg_len);
 
     /// Constructor to facilitate unit testing.
-    FECInterleave(const int32_t my_msg_len, const int32_t inv_rate, 
-            const int32_t order, const int32_t my_rs_corr_bytes) : 
+    FECInterleave(const int32_t my_msg_len, const int32_t  /*inv_rate*/, 
+            const int32_t  /*order*/, const int32_t  /*my_rs_corr_bytes*/) : 
             FECInterleave(my_msg_len) {}
 
     auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t override;
 
     auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
+
+    void interleaveBits(const std::vector<uint8_t> &bytes, std::vector<uint8_t> &bytes_int) const;
+    
+    void deinterleaveBits(const std::vector<uint8_t> &bytes_int, std::vector<uint8_t> &bytes_deint) const;
 };
 
 
 /**
  * Derived class that uses convolutional coding.
  */
+typedef struct { //NOLINT
+        int32_t bits{};
+        int32_t bytes{};
+    } conv_params_struct;
 class FECConv: public FECInterleave {
-protected:
+private:
     // Convolutional coding parameters
     int32_t inv_rate{};
     int32_t order{};
     correct_convolutional *corr_con{};  
-    struct {
-        int32_t bits;
-        int32_t bytes;
-    } conv_params{};  
+    conv_params_struct conv_params{};  
 
-public:    
+public: 
+    auto get_conv_params() const -> const conv_params_struct & {
+        return conv_params;
+    }
+
+    auto get_conv_params_mutable() -> conv_params_struct & {
+        return conv_params;
+    }
+
+    auto get_inv_rate() const -> const int32_t & {
+        return inv_rate;
+    }
+
+    auto get_order() const -> const int32_t & {
+        return order;
+    }
+
+    auto get_corr_con() -> correct_convolutional * {
+        return corr_con;
+    }
+
     /** 
      * Default constructor. Creates an FECConv object with 1/2 rate and n=7.
      */
@@ -201,17 +260,17 @@ public:
 
     /// Constructor to facilitate unit testing.
     FECConv(const int32_t my_msg_len, const int32_t inv_rate, 
-            const int32_t order, const int32_t my_rs_corr_bytes) : 
+            const int32_t order, const int32_t  /*my_rs_corr_bytes*/) : 
             FECConv(my_msg_len, inv_rate, order) {}
 
-    FECConv(const FECConv &old) : FECConv(old.msg_len, old.inv_rate, old.order) { };
+    FECConv(const FECConv &old) : FECConv(old.get_msg_len(), old.inv_rate, old.order) { };
 
     auto operator= (const FECConv &rhs) -> FECConv & {
         if(this == &rhs) {
             return *this;
         }
         correct_convolutional_destroy(corr_con);
-        *this = FECConv(rhs.msg_len, rhs.inv_rate, rhs.order);
+        *this = FECConv(rhs.get_msg_len(), rhs.inv_rate, rhs.order);
         return *this;
     }
 
@@ -220,14 +279,14 @@ public:
         corr_con = rhs.corr_con;
         inv_rate = rhs.inv_rate;
         order = rhs.order;
-        enc_size = rhs.enc_size;
-        int_params = rhs.int_params;
-        msg_len = rhs.msg_len;
-        name = rhs.name;
+        set_enc_size(rhs.encSize());
+        set_int_params(rhs.get_int_params());
+        set_msg_len(rhs.get_msg_len());
+        set_name(rhs.get_name());
         return *this;
     }
     
-    FECConv(FECConv&& other) noexcept : FECInterleave(msg_len) {
+    FECConv(FECConv&& other) noexcept : FECInterleave(get_msg_len()) {
         *this = std::move(other);
     }
 
@@ -249,7 +308,7 @@ public:
  * is a (256,223) code.
  */
 class FECRSV: public FECConv {
-protected:
+private:
     int32_t rs_corr_bytes;
     correct_reed_solomon *rs_con;
     int32_t rs_enc_msg_size;
@@ -270,15 +329,16 @@ public:
     explicit FECRSV(const int32_t my_msg_len) : FECRSV(my_msg_len, DEFAULT_CONV_ORDER, DEFAULT_CONV_CONS_LEN, 
                                                     DEFAULT_RS_BYTES) { };
 
-    FECRSV(const FECRSV &old) : FECRSV(old.msg_len, old.inv_rate, old.order, old.rs_corr_bytes) { };
+    FECRSV(const FECRSV &old) : FECRSV(old.get_msg_len(), old.get_inv_rate(), 
+                                        old.get_order(), old.rs_corr_bytes) { };
 
     auto operator= (const FECRSV &rhs) -> FECRSV & {
         if(this == &rhs) {
             return *this;
         }
-        correct_convolutional_destroy(corr_con);
+        correct_convolutional_destroy(get_corr_con());
         correct_reed_solomon_destroy(rs_con);
-        *this = FECRSV(rhs.msg_len, rhs.inv_rate, rhs.order, rhs.rs_corr_bytes);
+        *this = FECRSV(rhs.get_msg_len(), rhs.get_inv_rate(), rhs.get_order(), rhs.rs_corr_bytes);
         return *this;
     }
 
@@ -311,7 +371,7 @@ public:
     FECRSVGolay(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
             const int32_t my_rs_corr_bytes) : 
             FECRSV(my_msg_len-2, inv_rate, order, my_rs_corr_bytes) { 
-        name = "RSVGolay";
+        set_name("RSVGolay");
     };
 
     /**
@@ -321,15 +381,12 @@ public:
     explicit FECRSVGolay(const int32_t my_msg_len) : FECRSVGolay(my_msg_len, DEFAULT_CONV_ORDER, 
                                                 DEFAULT_CONV_CONS_LEN, DEFAULT_RS_BYTES) { };
 
-    /// Destructor.
-    ~FECRSVGolay() { }
-
     auto encode(const std::vector<uint8_t> &msg, std::vector<uint8_t> &enc_msg) -> int32_t override;
 
     auto decode(const std::vector<uint8_t> &enc_msg, std::vector<uint8_t> &dec_msg) -> int32_t override;
 
-    auto encSize() -> int override {
-        return static_cast<int>(enc_size+3);
+    auto encSize() -> size_t override {
+        return static_cast<int>(FECRSV::encSize()+3);
     }
 };
 

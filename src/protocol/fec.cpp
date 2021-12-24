@@ -190,16 +190,16 @@ void testFEC() {
 
 
 auto FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
-    if(name == "Dummy Interleaver") {
-        lock.lock();
+    if(get_name() == "Dummy Interleaver") {
+        get_lock().lock();
     }
-    PORTABLE_ASSERT(msg.size() == msg_len);
+    PORTABLE_ASSERT(msg.size() == get_msg_len());
     enc_msg.resize(int_params.bytes);
     copy(msg.begin(), msg.end(), enc_msg.begin());
     interleaveBits(msg, enc_msg);
-    PORTABLE_ASSERT(enc_msg.size() == enc_size);
-    if(name == "Dummy Interleaver") {
-        lock.unlock();
+    PORTABLE_ASSERT(enc_msg.size() == encSize());
+    if(get_name() == "Dummy Interleaver") {
+        get_lock().unlock();
     }
 
     return enc_msg.size();
@@ -207,15 +207,15 @@ auto FECInterleave::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg)
 
 
 auto FECInterleave::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
-    if(name == "Dummy Interleaver") {
-        lock.lock();
+    if(get_name() == "Dummy Interleaver") {
+        get_lock().lock();
     }
-    dec_msg.resize(msg_len);
-    PORTABLE_ASSERT(enc_msg.size() == enc_size);
+    dec_msg.resize(get_msg_len());
+    PORTABLE_ASSERT(enc_msg.size() == encSize());
     deinterleaveBits(enc_msg, dec_msg);
-    PORTABLE_ASSERT(dec_msg.size() == msg_len);
-    if(name == "Dummy Interleaver") {
-        lock.unlock();
+    PORTABLE_ASSERT(dec_msg.size() == get_msg_len());
+    if(get_name() == "Dummy Interleaver") {
+        get_lock().unlock();
     }
 
     return dec_msg.size();
@@ -260,7 +260,7 @@ void FECInterleave::deinterleaveBits(const vector<uint8_t> &bytes_int, vector<ui
 
 FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order):
     FECInterleave(my_msg_len) {
-    name = "Convolutional Coding";
+    set_name("Convolutional Coding");
     // Set up the convolutional outer code
     this->inv_rate = inv_rate;
     this->order = order;
@@ -306,24 +306,26 @@ FECConv::FECConv(const int32_t my_msg_len, const int32_t inv_rate, const int32_t
     corr_con = correct_convolutional_create(inv_rate, order, poly);
 
     // Set up all of the other major parameters
-    msg_len = my_msg_len;
+    set_msg_len(my_msg_len);
 
     // Get the post-convolutional encoding length
-    conv_params.bits = correct_convolutional_encode_len(corr_con, msg_len);
+    conv_params.bits = correct_convolutional_encode_len(corr_con, get_msg_len());
     conv_params.bytes = ceilf(static_cast<float>(conv_params.bits)/static_cast<float>(BITS_IN_BYTE));
-    int_params.pre_bytes = conv_params.bytes;
+    get_int_params_mutable().pre_bytes = conv_params.bytes;
 
     // Set up the interleaving parameters
-    int_params.bits_f = static_cast<float>(conv_params.bytes)*BITS_IN_BYTE;
-    int_params.row_f = floorf(sqrtf(int_params.bits_f));
-    int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
-    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", int_params.row_f, int_params.col_f);
-    int_params.bits = static_cast<int32_t>(int_params.bits_f);
-    int_params.bytes = static_cast<size_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE_F));
-    int_params.row = static_cast<int32_t>(int_params.row_f);
-    int_params.col = static_cast<int32_t>(int_params.col_f);
+    get_int_params_mutable().bits_f = static_cast<float>(conv_params.bytes)*BITS_IN_BYTE;
+    get_int_params_mutable().row_f = floorf(sqrtf(get_int_params().bits_f));
+    get_int_params_mutable().col_f = ceilf(get_int_params().bits_f/get_int_params().row_f);
+    debug_printf(DBG_INFO, "Size of row is %f col is %f\r\n", get_int_params().row_f, 
+                    get_int_params().col_f);
+    get_int_params_mutable().bits = static_cast<int32_t>(get_int_params().bits_f);
+    get_int_params_mutable().bytes = 
+        static_cast<size_t>(ceilf((get_int_params().row_f*get_int_params().col_f)/BITS_IN_BYTE_F));
+    get_int_params_mutable().row = static_cast<int32_t>(get_int_params().row_f);
+    get_int_params_mutable().col = static_cast<int32_t>(get_int_params().col_f);
 
-    enc_size = int_params.bytes;
+    set_enc_size(get_int_params().bytes);
 }
 
 
@@ -391,57 +393,58 @@ void FEC::benchmark(size_t num_iters) {
 FECRSV::FECRSV(const int32_t my_msg_len, const int32_t inv_rate, const int32_t order, 
             const int32_t my_rs_corr_bytes) 
     : FECConv(my_msg_len, inv_rate, order) {
-    name = "RSV";
+    set_name("RSV");
 
     // Set up all of the other major parameters
-    msg_len = my_msg_len;
+    set_msg_len(my_msg_len);
 
     // Reed-Solomon parameters
     rs_corr_bytes = my_rs_corr_bytes;
     rs_con = correct_reed_solomon_create(correct_rs_primitive_polynomial_ccsds,
                                                 1, 1, rs_corr_bytes);
-    rs_enc_msg_size = msg_len + rs_corr_bytes;
+    rs_enc_msg_size = get_msg_len() + rs_corr_bytes;
 
     // Get the post-convolutional encoding length
-    conv_params.bits = correct_convolutional_encode_len(corr_con, rs_enc_msg_size);
-    conv_params.bytes = ceilf(static_cast<float>(conv_params.bits)/BITS_IN_BYTE_F);
-    int_params.pre_bytes = conv_params.bytes;
+    get_conv_params_mutable().bits = correct_convolutional_encode_len(get_corr_con(), rs_enc_msg_size);
+    get_conv_params_mutable().bytes = ceilf(static_cast<float>(get_conv_params().bits)/BITS_IN_BYTE_F);
+    get_int_params_mutable().pre_bytes = get_conv_params().bytes;
 
     // Set up the various other parameters
-    int_params.bits_f = static_cast<float>(conv_params.bytes*BITS_IN_BYTE);
-    int_params.row_f = floorf(sqrtf(int_params.bits_f));
-    int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
-    int_params.bits = static_cast<size_t>(int_params.bits_f);
-    int_params.bytes = static_cast<size_t>(ceilf((int_params.row_f*int_params.col_f)/BITS_IN_BYTE_F));
-    int_params.row = static_cast<size_t>(int_params.row_f);
-    int_params.col = static_cast<size_t>(int_params.col_f);
-    enc_size = int_params.bytes;
+    get_int_params_mutable().bits_f = static_cast<float>(get_conv_params().bytes*BITS_IN_BYTE);
+    get_int_params_mutable().row_f = floorf(sqrtf(get_int_params().bits_f));
+    get_int_params_mutable().col_f = ceilf(get_int_params().bits_f/get_int_params().row_f);
+    get_int_params_mutable().bits = static_cast<size_t>(get_int_params().bits_f);
+    get_int_params_mutable().bytes = 
+        static_cast<size_t>(ceilf((get_int_params().row_f*get_int_params().col_f)/BITS_IN_BYTE_F));
+    get_int_params_mutable().row = static_cast<size_t>(get_int_params().row_f);
+    get_int_params_mutable().col = static_cast<size_t>(get_int_params().col_f);
+    set_enc_size(get_int_params().bytes);
 }
 
 
 auto FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
     PORTABLE_ASSERT(msg.size() <= 256);
-    if(name == "Convolutional Coding") {
-        lock.lock();
+    if(get_name() == "Convolutional Coding") {
+        get_lock().lock();
     }
     // Convolutional encode
-    PORTABLE_ASSERT(msg.size() == msg_len);
+    PORTABLE_ASSERT(msg.size() == get_msg_len());
     vector<uint8_t> conv_msg(conv_params.bytes, 0);
     auto conv_len = static_cast<int32_t>(ceilf(static_cast<float>(correct_convolutional_encode(corr_con, msg.data(), 
             msg.size(), conv_msg.data()))/BITS_IN_BYTE_F));
     PORTABLE_ASSERT(conv_len == conv_params.bytes);
     PORTABLE_ASSERT((int32_t) conv_msg.size() == conv_params.bytes);
     // Interleave
-    vector<uint8_t> int_msg(int_params.bytes, 0);
+    vector<uint8_t> int_msg(get_int_params().bytes, 0);
     copy(conv_msg.begin(), conv_msg.end(), int_msg.begin());
     interleaveBits(conv_msg, int_msg);
-    PORTABLE_ASSERT(int_msg.size() == enc_size);
+    PORTABLE_ASSERT(int_msg.size() == encSize());
 
-    enc_msg.resize(int_params.bytes);
+    enc_msg.resize(get_int_params().bytes);
     copy(int_msg.begin(), int_msg.end(), enc_msg.begin());
-    PORTABLE_ASSERT(enc_msg.size() == enc_size);
-    if(name == "Convolutional Coding") {
-        lock.unlock();
+    PORTABLE_ASSERT(enc_msg.size() == encSize());
+    if(get_name() == "Convolutional Coding") {
+        get_lock().unlock();
     }
 
     return enc_msg.size();
@@ -450,27 +453,27 @@ auto FECConv::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> in
 
 auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
     PORTABLE_ASSERT(msg.size() <= 256);
-    if(name == "RSV") {
-        lock.lock();
+    if(get_name() == "RSV") {
+        get_lock().lock();
     }
     // Reed-Solomon encode
-    PORTABLE_ASSERT(msg.size() == msg_len);
+    PORTABLE_ASSERT(msg.size() == get_msg_len());
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
-    correct_reed_solomon_encode(rs_con, msg.data(), msg_len, rs_enc_msg.data());
+    correct_reed_solomon_encode(rs_con, msg.data(), get_msg_len(), rs_enc_msg.data());
     // Convolutional encode
-    vector<uint8_t> conv_enc_msg(conv_params.bytes, 0);
-    int32_t conv_enc_len = correct_convolutional_encode(corr_con, rs_enc_msg.data(), 
+    vector<uint8_t> conv_enc_msg(get_conv_params().bytes, 0);
+    int32_t conv_enc_len = correct_convolutional_encode(get_corr_con(), rs_enc_msg.data(), 
                             rs_enc_msg_size, conv_enc_msg.data());
-    PORTABLE_ASSERT(conv_enc_len == conv_params.bits);
-    PORTABLE_ASSERT(static_cast<int32_t>(conv_enc_msg.size()) == conv_params.bytes);
+    PORTABLE_ASSERT(conv_enc_len == get_conv_params().bits);
+    PORTABLE_ASSERT(static_cast<int32_t>(conv_enc_msg.size()) == get_conv_params().bytes);
     // Interleave
-    vector<uint8_t> int_enc_msg(enc_size, 0);
+    vector<uint8_t> int_enc_msg(encSize(), 0);
     interleaveBits(conv_enc_msg, int_enc_msg);
-	PORTABLE_ASSERT(int_enc_msg.size() == enc_size);
-    enc_msg.resize(enc_size);
+	PORTABLE_ASSERT(int_enc_msg.size() == encSize());
+    enc_msg.resize(encSize());
     copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
-    if(name == "RSV") {
-        lock.unlock();
+    if(get_name() == "RSV") {
+        get_lock().unlock();
     }
 
     return enc_msg.size();
@@ -479,21 +482,21 @@ auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int
 
 auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
     PORTABLE_ASSERT(enc_msg.size() <= 256);
-    if(name == "Convolutional Coding") {
-        lock.lock();
+    if(get_name() == "Convolutional Coding") {
+        get_lock().lock();
     }
     // Deinterleave
-	PORTABLE_ASSERT(enc_msg.size() == enc_size);
+	PORTABLE_ASSERT(enc_msg.size() == encSize());
 	vector<uint8_t> deint_msg(conv_params.bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
     PORTABLE_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
     // Convolutional decode
-    dec_msg.resize(msg_len);
+    dec_msg.resize(get_msg_len());
     int32_t dec_size = correct_convolutional_decode(corr_con, deint_msg.data(), 
                             conv_params.bits, dec_msg.data());
-    PORTABLE_ASSERT(dec_size == static_cast<int32_t>(msg_len));
-    if(name == "Convolutional Coding") {
-        lock.unlock();
+    PORTABLE_ASSERT(dec_size == static_cast<int32_t>(get_msg_len()));
+    if(get_name() == "Convolutional Coding") {
+        get_lock().unlock();
     }
 
     return dec_size;
@@ -502,27 +505,27 @@ auto FECConv::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -
 
 auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
     PORTABLE_ASSERT(enc_msg.size() <= 256);
-    if(name == "RSV") {
-        lock.lock();
+    if(get_name() == "RSV") {
+        get_lock().lock();
     }
     // Deinterleave
-    PORTABLE_ASSERT(enc_msg.size() == enc_size);
-    vector<uint8_t> deint_msg(conv_params.bytes, 0);
+    PORTABLE_ASSERT(enc_msg.size() == encSize());
+    vector<uint8_t> deint_msg(get_conv_params().bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
-    PORTABLE_ASSERT(static_cast<int32_t>(deint_msg.size()) == conv_params.bytes);
+    PORTABLE_ASSERT(static_cast<int32_t>(deint_msg.size()) == get_conv_params().bytes);
     // Convolutional decode
     vector<uint8_t> rs_enc_msg(rs_enc_msg_size, 0);
-    size_t deconv_bytes = correct_convolutional_decode(corr_con, deint_msg.data(), 
-                            conv_params.bits, rs_enc_msg.data());
+    size_t deconv_bytes = correct_convolutional_decode(get_corr_con(), deint_msg.data(), 
+                            get_conv_params().bits, rs_enc_msg.data());
     PORTABLE_ASSERT(static_cast<int32_t>(deconv_bytes) == rs_enc_msg_size);
     PORTABLE_ASSERT(static_cast<int32_t>(rs_enc_msg.size()) == rs_enc_msg_size);
     // Reed-Solomon decode
-    dec_msg.resize(msg_len);  
+    dec_msg.resize(get_msg_len());  
     correct_reed_solomon_decode(rs_con, rs_enc_msg.data(), rs_enc_msg_size, dec_msg.data());
 
-    PORTABLE_ASSERT(dec_msg.size() == msg_len);
-    if(name == "RSV") {
-        lock.unlock();
+    PORTABLE_ASSERT(dec_msg.size() == get_msg_len());
+    if(get_name() == "RSV") {
+        get_lock().unlock();
     }
 
     return dec_msg.size();
@@ -532,7 +535,7 @@ auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) ->
 FECInterleave::FECInterleave(const int32_t my_msg_len) : 
     FEC(my_msg_len) {
     PORTABLE_ASSERT(my_msg_len <= 256);
-    name = "Dummy Interleaver";
+    set_name("Dummy Interleaver");
     int_params.bits_f = NAN;
     int_params.row_f = NAN;
     int_params.col_f = NAN;
@@ -541,9 +544,9 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
     int_params.row = 0;
     int_params.col = 0;
     int_params.pre_bytes = 0;
-    msg_len = my_msg_len;
+    set_msg_len(my_msg_len);
     int_params.pre_bytes = my_msg_len;
-    int_params.bits_f = msg_len*BITS_IN_BYTE_F;
+    int_params.bits_f = get_msg_len()*BITS_IN_BYTE_F;
     int_params.row_f = floorf(sqrtf(int_params.bits_f));
     int_params.col_f = ceilf(int_params.bits_f/int_params.row_f);
     int_params.bits = static_cast<size_t>(int_params.bits_f);
@@ -552,7 +555,7 @@ FECInterleave::FECInterleave(const int32_t my_msg_len) :
     int_params.col = static_cast<size_t>(int_params.col_f);
     //printf("Parameters are pre_bytes %d, bits %f %d, row %d, col %d, bytes %d\r\n", 
     //    int_params.pre_bytes, int_params.bits_f, int_params.bits, int_params.row, int_params.col, int_params.bytes);
-    enc_size = int_params.bytes;
+    set_enc_size(int_params.bytes);
 }
 
 
@@ -561,8 +564,8 @@ static constexpr uint32_t SHIFT_TWO_BYTES = 16U;
 static constexpr uint32_t BYTE_MASK = 0x000000FF;
 auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int32_t {
     PORTABLE_ASSERT(msg.size() <= 256);
-    if(name == "RSVGolay") {
-        lock.lock();
+    if(get_name() == "RSVGolay") {
+        get_lock().lock();
     }
     uint16_t golay_msg = 0x0000;
     golay_msg |= (msg[1] & BYTE_MASK) << SHIFT_ONE_BYTE;
@@ -579,8 +582,8 @@ auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -
     golay_rsv_enc_msg[1] = (golay_enc_msg >> SHIFT_ONE_BYTE) & BYTE_MASK;
     golay_rsv_enc_msg[2] = (golay_enc_msg >> SHIFT_TWO_BYTES) & BYTE_MASK;
     enc_msg = golay_rsv_enc_msg;
-    if(name == "RSVGolay") {
-        lock.unlock();
+    if(get_name() == "RSVGolay") {
+        get_lock().unlock();
     }
 
     return enc_msg.size();
@@ -589,8 +592,8 @@ auto FECRSVGolay::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -
 
 auto FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) -> int32_t {
     PORTABLE_ASSERT(enc_msg.size() <= 256);
-    if(name == "RSVGolay") {
-        lock.lock();
+    if(get_name() == "RSVGolay") {
+        get_lock().lock();
     }
     uint32_t golay_enc_msg = 0;
     golay_enc_msg = 0x00000000;
@@ -607,8 +610,8 @@ auto FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_ms
     copy(rsv_dec_msg.begin(), rsv_dec_msg.end(), dec_msg.begin()+2);
     dec_msg[0] = (golay_msg & BYTE_MASK);
     dec_msg[1] = (golay_msg & BYTE_MASK) << SHIFT_ONE_BYTE;
-    if(name == "RSVGolay") {
-        lock.unlock();
+    if(get_name() == "RSVGolay") {
+        get_lock().unlock();
     }
 
     return dec_msg.size();
