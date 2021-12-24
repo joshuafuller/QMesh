@@ -75,7 +75,7 @@ static void create_peripherals() {
     #else // for the nRF52 board
     user_button = new DigitalIn_portable(BUTTON1);
     #endif
-    oled_i2c = new SoftI2C(MBED_CONF_APP_OLED_SDA, MBED_CONF_APP_OLED_SCL);  // SDA, SCL
+    oled_i2c = new SoftI2C(OLED_SDA, OLED_SCL);  // SDA, SCL
 }
 
 void print_stats()
@@ -192,18 +192,13 @@ auto main() -> int
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX
     sleep_portable(HALF_SECOND);
-    auto bt_ser = make_shared<KISSSerialUART>(MBED_CONF_APP_KISS_UART_TX, 
-                                            MBED_CONF_APP_KISS_UART_RX, 
-                                            string("BT"), DEBUG_PORT);
+    auto bt_ser = make_shared<KISSSerialUART>(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX */
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
     sleep_portable(HALF_SECOND);
-    auto bt_alt_ser = make_shared<KISSSerialUART>(MBED_CONF_APP_KISS_UART_TX_ALT, 
-                                                MBED_CONF_APP_KISS_UART_RX_ALT,
-                                                MBED_CONF_APP_KISS_UART_EN_ALT,
-                                                MBED_CONF_APP_KISS_UART_ST_ALT, 
-                                                string("BT-ALT"), DEBUG_PORT);
+    auto bt_alt_ser = make_shared<KISSSerialUART>(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
+                                                KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_alt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
 #if MBED_CONF_APP_HAS_BLE == 1

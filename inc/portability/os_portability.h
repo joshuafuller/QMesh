@@ -2,7 +2,7 @@
 #define OS_PORTABILITY_H
 
 #include "mbed_assert.h"
-#include <stdint.h>
+#include <stdint.h> //NOLINT
 
 #if defined(MBED_OS)
 #include "mbed_assert.h"

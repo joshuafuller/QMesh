@@ -26,9 +26,9 @@ static constexpr int QUARTER_SECOND = 250;
 static constexpr int TWENTIETH_SECOND = 50;
 
 void create_led_objects() {
-    led1 = new IndicatorLED(LED1);
-    led2 = new IndicatorLED(LED2);
-    led3 = new IndicatorLED(LED3);   
+    led1 = new IndicatorLED(LED_1);
+    led2 = new IndicatorLED(LED_2);
+    led3 = new IndicatorLED(LED_3);   
 }
 
 void IndicatorLED::blinkFn() {

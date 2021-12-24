@@ -6,6 +6,7 @@
 #include "asserts.hpp"
 #include "locking.hpp"
 #include "io_pins.hpp"
+#include "pins.hpp"
 #include "spi.hpp"
 #include "i2c.hpp"
 #include "timer.hpp"

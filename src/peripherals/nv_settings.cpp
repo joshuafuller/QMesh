@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mbed.h"
+#include "os_portability.hpp"
 #include "QSPIFBlockDevice.h"
 #include "peripherals.hpp"
 #include "LittleFileSystem.h"
@@ -49,10 +49,8 @@ QSPIFBlockDevice *bd;
 LittleFileSystem *fs;
 
 void create_nv_settings_objects() {
-    bd = new QSPIFBlockDevice(MBED_CONF_APP_QSPI_FLASH_IO0, MBED_CONF_APP_QSPI_FLASH_IO1,
-                        MBED_CONF_APP_QSPI_FLASH_IO2, MBED_CONF_APP_QSPI_FLASH_IO3, 
-                        MBED_CONF_APP_QSPI_FLASH_SCK, MBED_CONF_APP_QSPI_FLASH_CSN,
-                        0, FREQ_40_MHZ);
+    bd = new QSPIFBlockDevice(QSPI_FLASH_IO0, QSPI_FLASH_IO1, QSPI_FLASH_IO2, QSPI_FLASH_IO3, 
+                        QSPI_FLASH_SCK, QSPI_FLASH_CSN, 0, FREQ_40_MHZ);
     fs = new LittleFileSystem("fs");
 }
 

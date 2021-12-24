@@ -50,8 +50,8 @@ RadioTiming *radio_timing;
 
 
 void create_mesh_protocol_objects() {
-    retransmit_disable_in_n = new InterruptIn_portable(MBED_CONF_APP_RETRANSMIT_DIS_IN, PullUp);
-    retransmit_disable_out_n = new DigitalOut_portable(MBED_CONF_APP_RETRANSMIT_DIS_OUT);
+    retransmit_disable_in_n = new InterruptIn_portable(RETRANSMIT_DIS_IN, PullUp);
+    retransmit_disable_out_n = new DigitalOut_portable(RETRANSMIT_DIS_OUT);
     radio_timing = new RadioTiming();
 }
 
