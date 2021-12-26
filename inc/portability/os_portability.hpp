@@ -4,12 +4,14 @@
 #include "mbed.h"
 #include <cstdint>
 #include "asserts.hpp"
+#include "Callback.hpp"
 #include "locking.hpp"
 #include "io_pins.hpp"
 #include "pins.hpp"
 #include "spi.hpp"
 #include "i2c.hpp"
 #include "timer.hpp"
+#include "thread.hpp"
 
 
 #if defined(MBED_OS)
@@ -18,7 +20,6 @@ using LowPowerTicker_portable = LowPowerTicker;
 using LowPowerTimer_portable = LowPowerTimer;
 using LowPowerTimeout_portable = LowPowerTimeout;
 using Watchdog_portable = Watchdog;
-using Thread_portable = Thread;
 using EventQueue_portable = EventQueue;
 
 void special_init();

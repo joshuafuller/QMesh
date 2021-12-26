@@ -45,6 +45,48 @@
 #define LED_3 LED3
 
 #elif defined(ESP_IDF)
+#define NC -1
+#define LORA_SPI_MISO 19
+#define LORA_SPI_MOSI 27
+#define LORA_SPI_CS 18
+#define LORA_RESET 23
+#define LORA_BUSY NC
+#define LORA_DIO1 26
+#define LORA_DIO2 NC
+#define LORA_RXCTL NC
+#define LORA_TXCTL NC
+
+#define OLED_SDA 21
+#define OLED_SCL 22
+
+#define RX_INT_MON 15
+#define TX_INT_MON 35
+#define INT_TRIG_MON 32
+#define RETRANSMIT_DIS_IN 33
+#define RETRANSMIT_DIS_OUT 25
+#define RSSI_MON 14
+#define FHSS_MON 13
+
+#define QSPI_FLASH_CSN 30
+#define QSPI_FLASH_SCK 31
+#define QSPI_FLASH_IO0 32
+#define QSPI_FLASH_IO1 33
+#define QSPI_FLASH_IO2 28
+#define QSPI_FLASH_IO3 29
+
+#define KISS_UART_TX NC
+#define KISS_UART_RX NC
+#define KISS_UART_EN NC
+#define KISS_UART_ST NC
+
+#define KISS_UART_TX_ALT NC
+#define KISS_UART_RX_ALT NC
+#define KISS_UART_EN_ALT NC
+#define KISS_UART_ST_ALT NC
+
+#define LED_1 NC
+#define LED_2 NC
+#define LED_3 NC
 
 #endif
 
