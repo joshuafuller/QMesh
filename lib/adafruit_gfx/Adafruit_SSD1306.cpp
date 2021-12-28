@@ -49,11 +49,11 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
 {
     rst = 1;
     // VDD (3.3V) goes high at start, lets just chill for a ms
-    sleep_portable(1);
+    portability::sleep(1);
     // bring reset low
     rst = 0;
     // wait 10ms
-    sleep_portable(10);
+    portability::sleep(10);
     // bring out of reset
     rst = 1;
     // turn on VCC (9V?)
@@ -87,7 +87,7 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
     command(SSD1306_COMSCANDEC);
 
     command(SSD1306_SETCOMPINS);
-    command(_rawHeight == 32 ? 0x02 : 0x12);        // TODO - calculate based on _rawHieght ?
+    command(_rawHeight == 32 ? 0x02 : 0x12);        // TODO(unknown): - calculate based on _rawHieght ?
 
     command(SSD1306_SETCONTRAST);
     command(_rawHeight == 32 ? 0x8F : ((vccstate == SSD1306_EXTERNALVCC) ? 0x9F : 0xCF) );
@@ -106,12 +106,12 @@ void Adafruit_SSD1306::begin(uint8_t vccstate)
 }
 
 // Turn off the display
-void Adafruit_SSD1306::displayOff(void) {
+void Adafruit_SSD1306::displayOff() {
     command(SSD1306_DISPLAYOFF);
 }
 
 // Turn on the display
-void Adafruit_SSD1306::displayOn(void) {
+void Adafruit_SSD1306::displayOn() {
     command(SSD1306_DISPLAYON);
 }
 
@@ -151,24 +151,24 @@ void Adafruit_SSD1306::invertDisplay(bool i)
 }
 
 // Send the display buffer out to the display
-void Adafruit_SSD1306::display(void)
+void Adafruit_SSD1306::display()
 {
 	command(SSD1306_SETLOWCOLUMN | 0x0);  // low col = 0
 	command(SSD1306_SETHIGHCOLUMN | 0x0);  // hi col = 0
 	command(SSD1306_SETSTARTLINE | 0x0); // line #0
-    ThisThread::sleep_for(10);
+    portability::sleep(10);
 	sendDisplayBuffer();
     sendDisplayBuffer();
 }
 
 // Clear the display buffer. Requires a display() call at some point afterwards
-void Adafruit_SSD1306::clearDisplay(void)
+void Adafruit_SSD1306::clearDisplay()
 {
 	std::fill(buffer.begin(),buffer.end(),0);
     setTextCursor(0,0);
 }
 
-void Adafruit_SSD1306::splash(void)
+void Adafruit_SSD1306::splash()
 {
 #ifndef NO_SPLASH_ADAFRUIT
 	uint8_t adaFruitLogo[64 * 128 / 8] =

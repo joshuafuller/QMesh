@@ -3,32 +3,34 @@
 
 #include "portability/asserts.hpp"
 
+namespace portability {
+
 #if defined(MBED_OS)
 #include "mbed.h"
 
-using mutex_portable = Mutex;
-using CriticalSectionLock_portable = CriticalSectionLock;
+using mutex = rtos::Mutex;
+using CriticalSectionLock = mbed::CriticalSectionLock;
 
 #elif defined(ESP_IDF)
 #include "components/freertos/FreeRTOS-Kernel/include/freertos/semphr.h"
 
-class mutex_portable {
+class mutex {
 private:
     semaphore_handle_t handle;
 public:
-    mutex_portable() {
+    mutex() {
         handle = xSemaphoreCreateMutex();
         PORTABLE_ASSERT(handle != nullptr);
     }
 
-    ~mutex_portable() {
+    ~mutex() {
         xSemaphoreDelete(handle);
     }
 
-    mutex_portable(const mutex_portable &obj) = delete;
-    mutex_portable(const mutex_portable &&obj) = delete;
-    auto operator=(const mutex_portable &obj) -> mutex_portable & = delete;
-    auto operator=(const mutex_portable &&obj) -> mutex_portable & = delete;    
+    mutex(const mutex &obj) = delete;
+    mutex(const mutex &&obj) = delete;
+    auto operator=(const mutex &obj) -> mutex & = delete;
+    auto operator=(const mutex &&obj) -> mutex & = delete;    
 
     void lock() {
         PORTABLE_ASSERT(xSemaphoreTake(handle, portMAX_DELAY) == pdTRUE);
@@ -40,14 +42,14 @@ public:
 };
 
 
-class CriticalSectionLock_portable {
+class CriticalSectionLock {
 private:
-    static Mutex_portable *mtx;
+    static portability::mutex *mtx;
 
 public:
     CriticalSectionLock() {
         if(mtx == nullptr) {
-            mtx = new Mutex_portable();
+            mtx = new portability::mutex();
         }
         mtx->lock();
     }
@@ -60,5 +62,7 @@ public:
 #else
 #error Need to define either MBED_OS or ESP_IDF
 #endif 
+
+}  // namespace portability
 
 #endif /* LOCKING_HPP */

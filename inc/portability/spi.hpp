@@ -23,7 +23,11 @@
 
 #if defined(MBED_OS)
 #include "mbed.h"
-using PORTABLE_SPI = SPI;
+namespace portability {
+
+using SPI = mbed::SPI;
+
+} // namespace portability
 
 #elif defined(ESP_IDF)
 #include <stdlib.h>
@@ -31,6 +35,8 @@ using PORTABLE_SPI = SPI;
 #include "esp32-hal-spi.h"
 
 #define SPI_HAS_TRANSACTION
+
+namespace portability {
 
 class SPISettings
 {
@@ -42,7 +48,7 @@ public:
     uint8_t  _dataMode;
 };
 
-class SPI_portable
+class SPI
 {
 private:
     int8_t _spi_num;
@@ -91,14 +97,14 @@ private:
     uint8_t transfer(uint8_t data);
 
 public:
-    SPI_portable(uint8_t spi_bus=HSPI);
+    SPI(uint8_t spi_bus=HSPI);
 
-    SPI_portable(int8_t sck=-1, int8_t miso=-1, int8_t mosi=-1, int8_t ss=-1) :
-    SPI_portable() {
+    SPI(int8_t sck=-1, int8_t miso=-1, int8_t mosi=-1, int8_t ss=-1) :
+    SPI() {
         begin(sck, miso, mosi, ss);
     }
 
-    ~SPI_portable() {
+    ~SPI() {
         end();
     }
 
@@ -118,6 +124,8 @@ public:
 
     void unlock() { }
 };
+
+}  // namespace portability
 
 #endif
 

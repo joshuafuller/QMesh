@@ -23,7 +23,7 @@ void print_memory_info() {
 }
 
 
-extern EventQueue_portable background_queue;
+extern portability::EventQueue background_queue;
 
 static atomic<size_t> max_stack_usage;
 static atomic<size_t> max_heap_usage;

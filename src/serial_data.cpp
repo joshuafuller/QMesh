@@ -32,9 +32,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 EventMail<shared_ptr<Frame>> *tx_frame_mail, *rx_frame_mail, *nv_logger_mail;
-static mutex_portable *Frame_mutex;
-static mutex_portable *dbg_printf_mutex;
-static mutex_portable *frame_map_mtx;
+static portability::mutex *Frame_mutex;
+static portability::mutex *dbg_printf_mutex;
+static portability::mutex *frame_map_mtx;
 static mt19937 *Frame_stream_id_rng; 
 static atomic<int> Frame_last_stream_id;
 
@@ -43,9 +43,9 @@ void create_serial_data_objects() {
     tx_frame_mail = new EventMail<shared_ptr<Frame>>();
     rx_frame_mail = new EventMail<shared_ptr<Frame>>();
     nv_logger_mail = new EventMail<shared_ptr<Frame>>();
-    Frame_mutex = new mutex_portable();
-    dbg_printf_mutex = new mutex_portable();
-    frame_map_mtx = new mutex_portable();
+    Frame_mutex = new portability::mutex();
+    dbg_printf_mutex = new portability::mutex();
+    frame_map_mtx = new portability::mutex();
 }
 
 auto Frame::size() -> size_t {
@@ -388,7 +388,7 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     kiss_sers_mtx->unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
         constexpr int TWO_SEC = 2000;
-        sleep_portable(TWO_SEC);
+        portability::sleep(TWO_SEC);
         PORTABLE_ASSERT(false);
     }
     va_end(args);
@@ -438,7 +438,7 @@ auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> 
 
 
 
-extern EventQueue_portable background_queue;
+extern portability::EventQueue background_queue;
 using frag_info_t = struct {
     uint8_t tot_frames{};
     uint8_t stream_id{};

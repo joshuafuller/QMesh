@@ -33,10 +33,10 @@ private:
         LED_SOLID,
         LED_BLINK
     } led_state;
-    DigitalOut_portable *pin;
+    portability::DigitalOut *pin;
     bool blink_led;
     int blink_period;
-    EventQueue_portable *evt_queue;
+    portability::EventQueue *evt_queue;
 
 public:
     /// Function resonsible for blinking the LED.

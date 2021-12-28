@@ -13,36 +13,36 @@
 #include "timer.hpp"
 #include "thread.hpp"
 
-
+namespace portability {
 #if defined(MBED_OS)
-using Ticker_portable = Ticker;
-using LowPowerTicker_portable = LowPowerTicker;
-using LowPowerTimer_portable = LowPowerTimer;
-using LowPowerTimeout_portable = LowPowerTimeout;
-using Watchdog_portable = Watchdog;
-using EventQueue_portable = EventQueue;
+using Ticker = mbed::Ticker;
+using LowPowerTicker = mbed::LowPowerTicker;
+using LowPowerTimer = mbed::LowPowerTimer;
+using LowPowerTimeout = mbed::LowPowerTimeout;
+using Watchdog = mbed::Watchdog;
+using EventQueue = EventQueue;
 
 void special_init();
 
 template <typename T, int queue_len> 
-class Mail_portable
+class Mail
 {
 private:
-    Mail<T, queue_len> *my_mail;
+    rtos::Mail<T, queue_len> *my_mail;
 
 public:
-    Mail_portable() {
-        my_mail = new Mail<T, queue_len>();
+    Mail() {
+        my_mail = new rtos::Mail<T, queue_len>();
     }
 
-    ~Mail_portable() {
+    ~Mail() {
         delete my_mail;
     }    
 
-    Mail_portable(const Mail_portable &obj) = delete;
-    Mail_portable(const Mail_portable &&obj) = delete;
-    auto operator=(const Mail_portable &obj) -> Mail_portable & = delete;
-    auto operator=(const Mail_portable &&obj) -> Mail_portable & = delete;    
+    Mail(const Mail &obj) = delete;
+    Mail(const Mail &&obj) = delete;
+    auto operator=(const Mail &obj) -> Mail & = delete;
+    auto operator=(const Mail &&obj) -> Mail & = delete;    
 
     auto full() -> bool {
         return my_mail->full();
@@ -78,7 +78,10 @@ public:
 #error Need to define either MBED_OS or ESP_IDF
 #endif 
 
-void sleep_portable(uint32_t duration_ms);
-void wait_us_portable(uint32_t duration_us);
+void sleep(uint32_t duration_ms);
+#undef wait_us
+void wait_us(uint32_t duration_us);
+
+}  // namespace portability
 
 #endif /* OS_PORTABILITY_HPP */

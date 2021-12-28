@@ -115,7 +115,7 @@ void init_radio() {
     radio_events->rx_timeout = rx_timeout_cb;
     radio_events->rx_preamble_det = rx_preamble_det_cb;
     radio_events->fhss_change_channel = fhss_change_channel_cb;
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
     radio->init_radio(radio_events);
     debug_printf(DBG_INFO, "Radio BW is %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
     debug_printf(DBG_INFO, "Radio SF is %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
@@ -216,14 +216,14 @@ void init_radio() {
         debug_printf(DBG_WARN, "Starting continuous wave output...\r\n");
         radio->set_tx_continuous_wave(0, 0, 0);
         while(true) {
-            sleep_portable(ONE_SECOND);
+            portability::sleep(ONE_SECOND);
         }
     }
     else if(radio_cb.test_cfg.preamble_test_mode) {
         debug_printf(DBG_WARN, "Starting continuous preamble output...\r\n");
         radio->set_tx_continuous_preamble();
         while(true) {
-            sleep_portable(ONE_SECOND);
+            portability::sleep(ONE_SECOND);
         }
     }
     else if(radio_cb.test_cfg.test_fec) {

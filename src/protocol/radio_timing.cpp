@@ -21,16 +21,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "serial_data.hpp"
 #include "radio_timing.hpp"
 
-DigitalOut_portable *rx_int_mon;
-DigitalOut_portable *tx_int_mon;
-DigitalOut_portable *int_trig_mon;
-DigitalOut_portable *rssi_mon;
+portability::DigitalOut *rx_int_mon;
+portability::DigitalOut *tx_int_mon;
+portability::DigitalOut *int_trig_mon;
+portability::DigitalOut *rssi_mon;
 
 void create_radio_timing_data_objects() {
-    rx_int_mon = new DigitalOut_portable(MBED_CONF_APP_RX_INT_MON, 0);
-    tx_int_mon = new DigitalOut_portable(MBED_CONF_APP_TX_INT_MON, 0);
-    int_trig_mon = new DigitalOut_portable(MBED_CONF_APP_INT_TRIG_MON, 0);
-    rssi_mon = new DigitalOut_portable(MBED_CONF_APP_RSSI_MON, 0);
+    rx_int_mon = new portability::DigitalOut(MBED_CONF_APP_RX_INT_MON, 0);
+    tx_int_mon = new portability::DigitalOut(MBED_CONF_APP_TX_INT_MON, 0);
+    int_trig_mon = new portability::DigitalOut(MBED_CONF_APP_INT_TRIG_MON, 0);
+    rssi_mon = new portability::DigitalOut(MBED_CONF_APP_RSSI_MON, 0);
 }
 
 static constexpr float MS_IN_S = 1e3F;

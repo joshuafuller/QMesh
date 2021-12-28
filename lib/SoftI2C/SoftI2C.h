@@ -85,8 +85,8 @@ class SoftI2C {
     void stop();
     
 private:
-    DigitalInOut_portable _sda;
-    DigitalInOut_portable _scl;
+    portability::DigitalInOut _sda;
+    portability::DigitalInOut _scl;
     uint32_t delay_us;
     bool active;
 };

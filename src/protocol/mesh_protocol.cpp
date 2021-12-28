@@ -37,21 +37,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "anti_interference.hpp"
 #include "peripherals.hpp"
 
-extern EventQueue_portable *background_queue;
+extern portability::EventQueue *background_queue;
 
 static list<uint32_t> past_crc;
 static map<uint32_t, time_t> past_timestamp;
 
 volatile bool retransmit_pending = false;
-InterruptIn_portable *retransmit_disable_in_n;
-DigitalOut_portable *retransmit_disable_out_n;
+portability::InterruptIn *retransmit_disable_in_n;
+portability::DigitalOut *retransmit_disable_out_n;
 
 RadioTiming *radio_timing;
 
 
 void create_mesh_protocol_objects() {
-    retransmit_disable_in_n = new InterruptIn_portable(RETRANSMIT_DIS_IN, PullUp);
-    retransmit_disable_out_n = new DigitalOut_portable(RETRANSMIT_DIS_OUT);
+    retransmit_disable_in_n = new portability::InterruptIn(RETRANSMIT_DIS_IN, PullUp);
+    retransmit_disable_out_n = new portability::DigitalOut(RETRANSMIT_DIS_OUT);
     radio_timing = new RadioTiming();
 }
 
@@ -229,7 +229,7 @@ void mesh_protocol_fsm() {
                             rx_frame_mail->enqueue_mail_nonblocking(rx_frame_orig_sptr);
                             retransmit_disable_out_n->write(0);
                             constexpr int TWO_SECONDS = 2000;
-                            sleep_portable(radio_timing->getWaitNoWarn()/TWO_SECONDS);
+                            portability::sleep(radio_timing->getWaitNoWarn()/TWO_SECONDS);
                             if(retransmit_disable_in_n->read() != 0) {
                                 state = RETRANSMIT_PACKET;
                             }

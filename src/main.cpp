@@ -30,16 +30,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ble_serial.hpp"
 
 
-Thread_portable *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *background_thread;
-EventQueue_portable *background_queue;
+portability::Thread *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *background_thread;
+portability::EventQueue *background_queue;
 static void create_threads();
 static void create_threads() {
     constexpr int THREAD_STACK_SIZE = 4096;
-    background_queue = new EventQueue_portable();
-    mesh_protocol_thread = new Thread_portable(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
-    rx_frame_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
-    nv_log_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
-    background_thread = new Thread_portable(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+    background_queue = new portability::EventQueue();
+    mesh_protocol_thread = new portability::Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
+    rx_frame_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
+    nv_log_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
+    background_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
 } 
 
 time_t boot_timestamp;
@@ -58,7 +58,7 @@ static constexpr int I2C_FREQ = 400000;
 
 void send_status();
 
-DigitalIn_portable *user_button;
+portability::DigitalIn *user_button;
 SoftI2C *oled_i2c;
 shared_ptr<Adafruit_SSD1306_I2c> oled;
 void create_serial_data_objects();
@@ -71,9 +71,9 @@ void create_led_objects();
 static void create_peripherals();
 static void create_peripherals() {
     #ifdef USER_BUTTON
-    user_button = new DigitalIn_portable(USER_BUTTON);
+    user_button = new portability::DigitalIn(USER_BUTTON);
     #else // for the nRF52 board
-    user_button = new DigitalIn_portable(BUTTON1);
+    user_button = new portability::DigitalIn(BUTTON1);
     #endif
     oled_i2c = new SoftI2C(OLED_SDA, OLED_SCL);  // SDA, SCL
 }
@@ -119,7 +119,7 @@ static void wdt_pet() { // pet the watchdog
 // main() runs in its own thread in the OS
 auto main() -> int
 {
-    special_init();
+    portability::special_init();
     create_threads();
     create_peripherals();
     create_serial_data_objects();
@@ -138,8 +138,8 @@ auto main() -> int
 #endif
 
     // Set up the LEDs
-    sleep_portable(HALF_SECOND);
-    background_thread->start(callback(background_queue, &EventQueue_portable::dispatch_forever));
+    portability::sleep(HALF_SECOND);
+    background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
     led1->setEvtQueue(background_queue);
     led2->setEvtQueue(background_queue);
     led3->setEvtQueue(background_queue);  
@@ -158,10 +158,10 @@ auto main() -> int
     led1->LEDBlink();
     oled->printf("In rescue mode...\r\n");
     oled->display();
-	sleep_portable(ONE_SECOND);
+	portability::sleep(ONE_SECOND);
 	if(user_button != nullptr) {
 		led1->LEDFastBlink();
-		sleep_portable(ONE_SECOND);
+		portability::sleep(ONE_SECOND);
 		if(user_button != nullptr) {
 			rescue_filesystem();
 		}
@@ -173,7 +173,7 @@ auto main() -> int
     auto *push_button = new PushButton(USER_BUTTON);
 #endif
     push_button->SetQueue(*background_queue);
-    sleep_portable(ONE_SECOND);
+    portability::sleep(ONE_SECOND);
 
     // Mount the filesystem, load the configuration, log the bootup
     init_filesystem();
@@ -191,25 +191,25 @@ auto main() -> int
     Frame::seed_stream_id(radio_cb.address);
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX
-    sleep_portable(HALF_SECOND);
+    portability::sleep(HALF_SECOND);
     auto bt_ser = make_shared<KISSSerialUART>(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX */
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
-    sleep_portable(HALF_SECOND);
+    portability::sleep(HALF_SECOND);
     auto bt_alt_ser = make_shared<KISSSerialUART>(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
                                                 KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_alt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
 #if MBED_CONF_APP_HAS_BLE == 1
-    sleep_portable(HALF_SECOND);
+    portability::sleep(HALF_SECOND);
     auto ble_ser = make_shared<BLESerial>();
     //auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
     //auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
     //auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
 #endif /* MBED_CONF_APP_HAS_BLE */
     debug_printf(DBG_INFO, "Serial threads started");
-    sleep_portable(HALF_SECOND);
+    portability::sleep(HALF_SECOND);
     send_status();
 
     rx_frame_thread->start(rx_frame_ser_thread_fn);
@@ -228,9 +228,9 @@ auto main() -> int
     oled->display();
     send_status();
     led1->LEDFastBlink();
-    sleep_portable(TWO_SECONDS);
+    portability::sleep(TWO_SECONDS);
     while(stay_in_management) {
-        sleep_portable(FIVE_SECONDS);
+        portability::sleep(FIVE_SECONDS);
     }
     current_mode = system_state_t::RUNNING;
     send_status();
@@ -269,25 +269,25 @@ sleep_portable(500);
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     nv_log_thread->start(nv_log_fn);
 
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
 
     // Set up the radio
     debug_printf(DBG_INFO, "Initializing the Radio\r\n");
     init_radio();
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
     mesh_protocol_thread->start(mesh_protocol_fsm);
 
     debug_printf(DBG_INFO, "Time to chill...\r\n");
-    sleep_portable(QUARTER_SECOND);  
+    portability::sleep(QUARTER_SECOND);  
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
     background_queue->call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
                             beacon_fn);
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
  
     // Start the OLED monitoring
     background_queue->call(oled_mon_fn);
@@ -308,7 +308,7 @@ sleep_portable(500);
 
     for(;;) {
 //        print_stats();
-        sleep_portable(FIVE_SECONDS);
+        portability::sleep(FIVE_SECONDS);
     }
 }
 

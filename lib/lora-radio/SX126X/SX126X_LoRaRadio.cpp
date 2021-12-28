@@ -37,7 +37,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "serial_data.hpp"
 
 // Squash a warning about wait_ms being deprecated
-#define wait_ms(x) wait_us_portable(x*1000)
+#define wait_ms(x) portability::wait_us(x*1000)
 
 #ifdef MBED_CONF_SX126X_LORA_DRIVER_SPI_FREQUENCY
 #define SPI_FREQUENCY    MBED_CONF_SX126X_LORA_DRIVER_SPI_FREQUENCY
@@ -51,7 +51,7 @@ SPDX-License-Identifier: BSD-3-Clause
  */
 #define SIG_INTERRUPT        0x02
 
-Thread_portable *lora_irq_thread;
+portability::Thread *lora_irq_thread;
 
 /*!
  * FSK bandwidth definition
@@ -597,7 +597,7 @@ void SX126X_LoRaRadio::init_radio(radio_events_t *events, const bool locking)
     _spi.format(8, 0);
     _spi.frequency(SPI_FREQUENCY);
     // 100 us wait to settle down
-    wait_us_portable(100);
+    portability::wait_us(100);
 
     radio_reset();
 
@@ -734,12 +734,12 @@ void SX126X_LoRaRadio::wakeup(const bool locking)
     // now we should wait for the _busy line to go low
     if (_operation_mode == MODE_SLEEP) {
         _chip_select = 0;
-        wait_us_portable(100);
+        portability::wait_us(100);
         _chip_select = 1;
-        wait_us_portable(100);
+        portability::wait_us(100);
 #if 0
 #if MBED_CONF_SX126X_LORA_DRIVER_SLEEP_MODE == 1
-        wait_us_portable(3500);
+        portability::wait_us(3500);
         // whenever we wakeup from Cold sleep state, we need to perform
         // image calibration
         _force_image_calibration = true;
@@ -769,7 +769,7 @@ void SX126X_LoRaRadio::sleep(const bool locking)
     if(locking) { unlock(); }
 }
 
-uint32_t SX126X_LoRaRadio::random(const bool locking) 
+auto SX126X_LoRaRadio::random(const bool locking) -> uint32_t 
 {
     if(locking) { lock(); }
 
@@ -905,7 +905,7 @@ void SX126X_LoRaRadio::write_to_register(uint16_t addr, uint8_t *data,
 #endif /* TRACE_SX1262_SPI */
 }
 
-uint8_t SX126X_LoRaRadio::read_register(uint16_t addr)
+auto SX126X_LoRaRadio::read_register(uint16_t addr) -> uint8_t
 {
     uint8_t data;
     read_register(addr, &data, 1);
@@ -1189,7 +1189,7 @@ void SX126X_LoRaRadio::set_rx_config(const radio_modems_t modem,
         max_payload_len = 0xFF;
     }
 
-    uint8_t modem_type = (uint8_t) modem;
+    auto modem_type = static_cast<uint8_t>(modem);
 
     switch (modem_type) {
         case MODEM_FSK: {
@@ -1223,8 +1223,8 @@ void SX126X_LoRaRadio::set_rx_config(const radio_modems_t modem,
             write_to_register(REG_LR_SYNCWORDBASEADDRESS, (uint8_t *) sync_word, 8);
             set_whitening_seed(0x01FF);
 
-            _rx_timeout = (uint32_t) (symb_timeout
-                    * ((1.0 / (float) datarate) * 8.0) * 1000);
+            _rx_timeout = static_cast<uint32_t>(symb_timeout
+                    * ((1.0 / static_cast<float>(datarate)) * 8.0) * 1000);
 
             break;
         }
@@ -1941,31 +1941,26 @@ void SX126X_LoRaRadio::cad_process_detect(const bool is_false_det, const uint32_
     } else {
         vals.push_back(1);
     }
+    constexpr int MAX_NUM_VALS = 200;
     // Keep the list no bigger than 200 entries
-    while(vals.size() > 200) {
+    while(vals.size() > MAX_NUM_VALS) {
         vals.pop_front();
     }
-    if(vals.size() == 200) {
+    if(vals.size() == MAX_NUM_VALS) {
+        constexpr float MIN_DET_SUCC_RATE = 0.95F;
         float cad_det_succ_rate = static_cast<float>(accumulate(vals.begin(), vals.end(), 0))/static_cast<float>(vals.size());
-        if(cad_det_succ_rate < 0.95f) {
+        if(cad_det_succ_rate < MIN_DET_SUCC_RATE) {
             cad_det_peak_adj[freq] += 1;
             cad_det_min_adj[freq] -= 0;
             debug_printf(DBG_WARN, "cad_det_peak_adj %d is + now %d\r\n", freq, cad_det_peak_adj[freq]);
             vals.clear();
         } 
-#if 0
-        else if(cad_det_succ_rate > 0.999f) {
-            cad_det_peak_adj[freq] -= 1;
-            cad_det_min_adj[freq] += 0;
-            debug_printf(DBG_WARN, "cad_det_peak_adj %d is - now %d\r\n", freq, cad_det_peak_adj[freq]);
-            vals.clear();
+        constexpr int MAX_PEAK_ADJ = 10;
+        if(cad_det_peak_adj[freq] < -MAX_PEAK_ADJ) {
+            cad_det_peak_adj[freq] = -MAX_PEAK_ADJ;
         }
-#endif
-        if(cad_det_peak_adj[freq] < -10) {
-            cad_det_peak_adj[freq] = -10;
-        }
-        if(cad_det_peak_adj[freq] > 10) {
-            cad_det_peak_adj[freq] = 10;
+        if(cad_det_peak_adj[freq] > MAX_PEAK_ADJ) {
+            cad_det_peak_adj[freq] = MAX_PEAK_ADJ;
         }            
     }
 }

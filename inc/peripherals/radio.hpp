@@ -36,7 +36,7 @@ using nv_settings_t = struct {
 };
 
 // Main thread for working with the LoRa radio
-extern Thread_portable *radio_thread;
+extern portability::Thread *radio_thread;
 
 // Initialize the radio
 void init_radio();

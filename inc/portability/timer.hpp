@@ -3,12 +3,18 @@
 
 #if defined(MBED_OS)
 #include "mbed.h"
-using Timer_portable = Timer;
-using LowPowerTimer_portable = LowPowerTimer;
+namespace portability {
+
+using Timer = mbed::Timer;
+using LowPowerTimer = mbed::LowPowerTimer;
+
+} // namespace portability
 
 #elif defined(ESP_IDF)
 #include "esp_timer.h"
-class Timer_portable  {
+namespace portability { 
+
+class Timer {
 private:
     int64_t start_time_us{-1};
     int64_t stop_time_us{-1};
@@ -58,8 +64,9 @@ public:
     }
 };
 
-using LowPowerTimer_portable = Timer_portable;
+using LowPowerTimer = portability::Timer;
 
+} // namespace portability
 #endif
 
 #endif /* TIMER_HPP */

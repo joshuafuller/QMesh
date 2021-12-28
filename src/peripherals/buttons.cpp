@@ -23,12 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 
 //extern Thread tx_serial_thread, rx_serial_thread;
-extern Thread_portable *mesh_protocol_thread;
-extern Thread_portable *beacon_thread;
-extern Thread_portable *nv_log_thread;
-extern Thread_portable *oled_mon_thread;
-extern Thread_portable *lora_irq_thread;
-extern Thread_portable *btn_evt_thread;
+extern portability::Thread *mesh_protocol_thread;
+extern portability::Thread *beacon_thread;
+extern portability::Thread *nv_log_thread;
+extern portability::Thread *oled_mon_thread;
+extern portability::Thread *lora_irq_thread;
+extern portability::Thread *btn_evt_thread;
 
 extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 //extern UARTSerial gps_serial;
@@ -41,7 +41,7 @@ static constexpr int ONE_SECOND = 1000;
 void reboot_system() {
 	rebooting = true;
     debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
-    sleep_portable(HALF_SECOND);
+    portability::sleep(HALF_SECOND);
     NVIC_SystemReset();
 }
 
@@ -56,7 +56,7 @@ void button_fn() {
         //gps_serial.enable_input(true);
         oled->displayOn();
         debug_printf(DBG_WARN, "Rebooting in 1s so serial port will work...\r\n");
-        sleep_portable(ONE_SECOND);
+        portability::sleep(ONE_SECOND);
         reboot_system();
     }
     else {
@@ -74,10 +74,10 @@ void button_fn() {
 
 PushButton::PushButton(PinName button) {
     was_pressed = false;
-    btn = new InterruptIn_portable(button);
+    btn = new portability::InterruptIn(button);
 }
 
-void PushButton::SetQueue(EventQueue_portable &evt_queue) {
+void PushButton::SetQueue(portability::EventQueue &evt_queue) {
     btn->rise(evt_queue.event(button_fn));
 }
     

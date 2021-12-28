@@ -120,12 +120,12 @@ void testFEC() {
     fec_sptr = make_shared<FECRSV>(Frame::size());
     test_fecs.push_back(fec_sptr);
     debug_printf(DBG_INFO, "Initialized FEC objects\r\n");
-    sleep_portable(ONE_SECOND);
+    portability::sleep(ONE_SECOND);
 
     for(auto & test_fec : test_fecs) {
         debug_printf(DBG_INFO, "====================\r\n");
         debug_printf(DBG_INFO, "Now testing %s for correctness...\r\n", test_fec->getName().c_str());
-        sleep_portable(ONE_SECOND);
+        portability::sleep(ONE_SECOND);
         // Make a random string
         int fec_success = 0;
         int fec_fail = 0;
@@ -151,7 +151,7 @@ void testFEC() {
             fec_success, fec_fail);  
         debug_printf(DBG_INFO, "====================\r\n");
         debug_printf(DBG_INFO, "Now testing %s for bit error resilience...\r\n", test_fec->getName().c_str());
-        sleep_portable(ONE_SECOND);
+        portability::sleep(ONE_SECOND);
         Frame size_frame(test_fec);
         debug_printf(DBG_INFO, "Size of frame is %d\r\n", Frame::size());
         fec_success = 0;

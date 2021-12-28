@@ -44,18 +44,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "mem_trace.hpp"
 
-extern EventQueue_portable background_queue;
+extern portability::EventQueue background_queue;
 
 static constexpr int ERR_MSG_SIZE = 32;
 static constexpr int SHA256_SIZE = 32;
 
 // debug_printf() uses this vector to determine which serial ports to send out
 vector<KISSSerial *> kiss_sers;
-mutex_portable *kiss_sers_mtx;
-static mutex_portable *shared_mtx;
+portability::mutex *kiss_sers_mtx;
+static portability::mutex *shared_mtx;
 void create_kiss_serial_data_objects() {
-    kiss_sers_mtx = new mutex_portable();
-    shared_mtx = new mutex_portable();
+    kiss_sers_mtx = new portability::mutex();
+    shared_mtx = new portability::mutex();
 }
 
 static constexpr uint8_t FEND = 0xC0;
@@ -276,10 +276,10 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
         
     string rx_ser_name("RX-");
     rx_ser_name.append(portName());
-    rx_ser_thread = new Thread_portable(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
+    rx_ser_thread = new portability::Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
     string tx_ser_name("TX-");
     tx_ser_name.append(portName());
-    tx_ser_thread = new Thread_portable(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
+    tx_ser_thread = new portability::Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
 
     kiss_sers_mtx->lock();
     kiss_sers.push_back(this);
@@ -328,9 +328,9 @@ void KISSSerialUART::configure_hc05() {
     vector<char> reply_str(REPLY_STR_SIZE);
     *en_pin = 1;
     while(true) { };
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
     FILE *ser_fh = fdopen(&*ser, "rw");
     printf("testing\r\n");
     // Reset the module's configuration
@@ -339,14 +339,14 @@ void KISSSerialUART::configure_hc05() {
     printf("%s", reset_cmd.c_str());
     fgets(reply_str.data(), REPLY_STR_SIZE, ser_fh);
     printf("%s", reply_str.data());
-    sleep_portable(HALF_SECOND);
+    portability::sleep(HALF_SECOND);
     // Change the name
     string bt_name_cmd("AT+NAME=");
     bt_name_cmd.append(portName());
     bt_name_cmd.append("\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
     printf("%s", bt_name_cmd.c_str());
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
 #if 0
     string baud_cmd("AT+UART=38400,0,0,\r\n");
     fprintf(ser_fh, "%s", baud_cmd.c_str());    
@@ -355,10 +355,10 @@ void KISSSerialUART::configure_hc05() {
     //ser->set_baud(38400);
     string reboot_cmd("AT+RESET\r\n");
     fprintf(ser_fh, "%s", reboot_cmd.c_str());
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
     string init_cmd("AT+INIT\r\n");
     fprintf(ser_fh, "%s", init_cmd.c_str());
-    sleep_portable(QUARTER_SECOND);
+    portability::sleep(QUARTER_SECOND);
     *en_pin = 0;
     printf("Done with configuration\r\n");
 }
@@ -368,9 +368,9 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State
             const string &my_port_name, const ser_port_type_t ser_port_type) :
     KISSSerial(my_port_name, ser_port_type) {
     hc05 = true;
-    en_pin = new DigitalOut_portable(En);
+    en_pin = new portability::DigitalOut(En);
     *en_pin = 1;
-    state_pin = new DigitalIn_portable(State);                
+    state_pin = new portability::DigitalIn(State);                
     tx_port = tx;
     rx_port = rx;
     ser = make_shared<UARTSerial>(tx_port, rx_port, BT_BAUD_RATE);
@@ -697,7 +697,7 @@ void KISSSerial::rx_serial_thread_fn() {
             string compile_str = getFlashCompileString();
             debug_printf(DBG_INFO, "Sending %s\r\n", compile_str.c_str());
             strncpy(reply_msg->ver_msg().msg, compile_str.c_str(), sizeof(reply_msg->ver_msg().msg));
-            sleep_portable(HALF_SECOND);
+            portability::sleep(HALF_SECOND);
             tx_ser_queue.enqueue_mail(reply_msg);
         }
         if(ser_msg->type() == SerialMsg_Type_UPDATE) {

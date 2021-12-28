@@ -7,13 +7,18 @@
 
 #if defined(MBED_OS)
 #include "mbed.h"
-using DigitalIn_portable = DigitalIn;
-using DigitalOut_portable = DigitalOut;
-using DigitalInOut_portable = DigitalInOut;
-using InterruptIn_portable = InterruptIn;
+namespace portability {
 
+using DigitalIn = mbed::DigitalIn;
+using DigitalOut = mbed::DigitalOut;
+using DigitalInOut = mbed::DigitalInOut;
+using InterruptIn = mbed::InterruptIn;
+
+} // namespace portability
 #elif defined(ESP_IDF)
 #include "Arduino.h"
+namespace portability {
+
 typedef enum PinMode_ENUM { 
 
 } PinMode;
@@ -29,16 +34,16 @@ private:
     int num;
     int val;
 public:
-    DigitalOut_portable(const int pin_num, PinMode mode) { // Ignore modes
+    DigitalOut(const int pin_num, PinMode mode) { // Ignore modes
         num = pin_num;
         val = -1;
         pinMode(pin_num, OUTPUT);
     }
-    DigitalOut_portable() = delete;
-    DigitalOut_portable(const DigitalOut_portable &obj) = delete;
-    DigitalOut_portable(const DigitalOut_portable &&obj) = delete;
-    auto operator=(const DigitalOut_portable &obj) -> DigitalOut_portable & = delete;
-    auto operator=(const DigitalOut_portable &&obj) -> DigitalOut_portable & = delete;   
+    DigitalOut() = delete;
+    DigitalOut(const DigitalOut &obj) = delete;
+    DigitalOut(const DigitalOut &&obj) = delete;
+    auto operator=(const DigitalOut &obj) -> DigitalOut & = delete;
+    auto operator=(const DigitalOut &&obj) -> DigitalOut & = delete;   
     operator int() const {
         return read();
     }
@@ -65,20 +70,20 @@ public:
 };
 
 
-class DigitalIn_portable {
+class DigitalIn {
 private:
     int num;
     int val;
 public:
-    DigitalIn_portable(const int pin_num, PinMode mode) { // Ignore modes
+    DigitalIn(const int pin_num, PinMode mode) { // Ignore modes
         num = pin_num;
         pinMode(pin_num, OUTPUT);
     }
-    DigitalIn_portable() = delete;
-    DigitalIn_portable(const DigitalIn_portable &obj) = delete;
-    DigitalIn_portable(const DigitalIn_portable &&obj) = delete;
-    auto operator=(const DigitalIn_portable &obj) -> DigitalIn_portable & = delete;
-    auto operator=(const DigitalIn_portable &&obj) -> DigitalIn_portable & = delete;   
+    DigitalIn() = delete;
+    DigitalIn(const DigitalIn &obj) = delete;
+    DigitalIn(const DigitalIn &&obj) = delete;
+    auto operator=(const DigitalIn &obj) -> DigitalIn & = delete;
+    auto operator=(const DigitalIn &&obj) -> DigitalIn & = delete;   
     operator int() const {
         return read();
     }
@@ -102,6 +107,8 @@ public:
 
     void mode(PinMode mode) { }
 };
+
+} // namespace portability
 #else
 #error Need to define either MBED_OS or ESP_IDF
 #endif

@@ -12,7 +12,7 @@ class EventMail {
 private:
     static constexpr int EVENTMAIL_QUEUE_DEPTH = 32;
     atomic<int> level{};
-    Mail_portable<T, EVENTMAIL_QUEUE_DEPTH> mail;
+    portability::Mail<T, EVENTMAIL_QUEUE_DEPTH> mail;
 
 public:
     EventMail() : level(0) { }

@@ -73,7 +73,7 @@ public:
 void rescue_filesystem() {
     bd->init();
 	fs->reformat(bd);
-    sleep_portable(TWO_SEC);
+    portability::sleep(TWO_SEC);
     reboot_system();
 }
 
@@ -383,7 +383,7 @@ void load_settings_from_flash() {
         PORTABLE_ASSERT(f);
         fclose(f);
         constexpr uint32_t ONE_SECOND = 1000;
-        sleep_portable(ONE_SECOND);
+        portability::sleep(ONE_SECOND);
         reboot_system();
     }
 

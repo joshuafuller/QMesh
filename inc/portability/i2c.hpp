@@ -1,15 +1,19 @@
 #ifndef I2C_HPP
 #define I2C_HPP
 
-#define ESP_IDF
-
 #if defined(MBED_OS)
 #include "mbed.h"
+namespace portability { 
+
 class SoftI2C;
-using PORTABLE_I2C = SoftI2C;
+using I2C = SoftI2C;
+
+} // namespace portability
 
 #elif defined(ESP_IDF)
 #include "driver/i2c.h"
+
+namespace portability {
 
 #define I2C_MASTER_SCL_IO           CONFIG_I2C_MASTER_SCL      /*!< GPIO number used for I2C master clock */
 #define I2C_MASTER_SDA_IO           CONFIG_I2C_MASTER_SDA      /*!< GPIO number used for I2C master data  */
@@ -30,12 +34,12 @@ i2c_config_t conf = {
     // .clk_flags = 0,          /*!< Optional, you can use I2C_SCLK_SRC_FLAG_* flags to choose i2c source clock here. */
 };
 
-class PORTABLE_I2C {
+class I2C {
 private:
     int i2c_master_port;
     i2c_config_t cfg;
 public:
-    PORTABLE_I2C(PinName scl, PinName sda, PinName sclk, PinName ssel) {     
+    I2C(PinName scl, PinName sda, PinName sclk, PinName ssel) {     
         i2c_master_port = I2C_MASTER_NUM;
 
         cfg.mode = I2C_MODE_MASTER,
@@ -52,7 +56,7 @@ public:
                                 I2C_MASTER_TX_BUF_DISABLE, 0) == ESP_OK);
     }
 
-    ~PORTABLE_I2C() {
+    ~I2C() {
         i2c_driver_delete(i2c_master_port);
     }
  
@@ -67,6 +71,8 @@ public:
             I2C_MASTER_TIMEOUT_MS / portTICK_RATE_MS) == ESP_OK);
     }
 };
+
+} // namespace portability
 #else
 #error Need to define either MBED_OS or ESP_IDF
 #endif

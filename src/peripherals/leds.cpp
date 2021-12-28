@@ -45,7 +45,7 @@ IndicatorLED::IndicatorLED(PinName led_pin_name) {
     led_state = LED_OFF;
     blink_led = false;
     blink_period = QUARTER_SECOND;
-    pin = new DigitalOut_portable(led_pin_name);
+    pin = new portability::DigitalOut(led_pin_name);
     *pin = 0;
 }
 

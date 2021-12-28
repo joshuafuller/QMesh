@@ -5,5 +5,4 @@
 #include "cal_timer.hpp"
 #include "serial_data.hpp"
 
-
 void start_cal() { }

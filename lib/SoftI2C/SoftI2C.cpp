@@ -83,7 +83,7 @@ auto SoftI2C::read(const int ack) -> int {
         //SCL low
         _scl.write(0);
         _sda.input();
-        wait_us_portable(delay_us);
+        portability::wait_us(delay_us);
         
         //read SDA
         uint32_t retval_tmp = 0U;
@@ -91,11 +91,11 @@ auto SoftI2C::read(const int ack) -> int {
         retval_tmp |= static_cast<uint32_t>(retval);
         retval = retval_tmp;
         //retval |= static_cast<uint32_t>(_sda.read()) << i;
-        wait_us_portable(delay_us);
+        portability::wait_us(delay_us);
         
         //SCL high again
         _scl.write(1);
-        wait_us_portable(delay_us << 1U); //wait two delays
+        portability::wait_us(delay_us << 1U); //wait two delays
     }
     
     // Last cycle to set the ACK
@@ -106,10 +106,10 @@ auto SoftI2C::read(const int ack) -> int {
     } else {
         _sda.input();
     }
-    wait_us_portable(delay_us << 1U);
+    portability::wait_us(delay_us << 1U);
     
     _scl.write(1);
-    wait_us_portable(delay_us << 1U);
+    portability::wait_us(delay_us << 1U);
 
     
     return retval;
@@ -122,7 +122,7 @@ auto SoftI2C::write(const int data) -> int {
     for (int i = NUM_SHIFTS; i >= 0; i--) {
         //SCL low
         _scl.write(0);
-        wait_us_portable(delay_us);
+        portability::wait_us(delay_us);
         
         //Change SDA depending on the bit
         if ( ((static_cast<uint32_t>(data) >> static_cast<uint32_t>(i)) & 0x01U) != 0 ) {
@@ -131,24 +131,24 @@ auto SoftI2C::write(const int data) -> int {
             _sda.output();
             _sda.write(0);
         }
-        wait_us_portable(delay_us);
+        portability::wait_us(delay_us);
         
         //SCL high again
         _scl.write(1);
-        wait_us_portable(delay_us << 1U); //wait two delays
+        portability::wait_us(delay_us << 1U); //wait two delays
     }
     
     // Last cycle to get the ACK
     _scl.write(0);
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     
     _sda.input();
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     
     _scl.write(1);
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     int retval = ~static_cast<uint32_t>(_sda.read()); //Read the ack
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     
     return retval;
 }
@@ -159,14 +159,14 @@ void SoftI2C::start() {
         _sda.input();
         _scl.output();
         _scl.write(0);
-        wait_us_portable(delay_us << 1U);
+        portability::wait_us(delay_us << 1U);
         _scl.write(1);
-        wait_us_portable(delay_us << 1U);
+        portability::wait_us(delay_us << 1U);
     }
     // Pull SDA low
     _sda.output();
     _sda.write(0);
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     active = true;
 }
 
@@ -176,11 +176,11 @@ void SoftI2C::stop() {
     _scl.write(0);
     _sda.output();
     _sda.write(0);
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     _scl.input();
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     _sda.input();
-    wait_us_portable(delay_us);
+    portability::wait_us(delay_us);
     
     active = false;
 }
