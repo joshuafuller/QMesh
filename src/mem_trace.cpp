@@ -65,6 +65,7 @@ void start_max_memory_usage() {
     max_heap_usage = 0;
     static constexpr int TENTH_SECOND = 100;
     static constexpr int TEN_SECONDS = 10000;
-    background_queue.call_every(TENTH_SECOND, track_memory_info);
-    background_queue.call_every(TEN_SECONDS, print_max_memory_usage);
+    #warning FIX THIS
+    //background_queue.call_every(TENTH_SECOND, track_memory_info);
+    //background_queue.call_every(TEN_SECONDS, print_max_memory_usage);
 }

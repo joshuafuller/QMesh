@@ -157,7 +157,7 @@ static void write_default_cfg() {
     radio_cb.radio_cfg.type = RadioCfg_Type_LORA;
     //radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
     radio_cb.radio_cfg.frequencies_count = 1;
-    //radio_cb.radio_cfg.frequency = RADIO_FREQUENCY;
+    radio_cb.radio_cfg.frequencies[0] = RADIO_FREQUENCY;
     radio_cb.radio_cfg.tx_power = RADIO_POWER;
     constexpr float TWO_MS_US = 2000.F;
     radio_cb.radio_cfg.tcxo_time_us = TWO_MS_US;
@@ -273,9 +273,9 @@ void load_settings_from_flash() {
         }
         debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
         uint32_t lora_bw = radio_cb.radio_cfg.lora_cfg.bw;
-        constexpr uint32_t BW_125KHZ = 7;
-        constexpr uint32_t BW_250KHZ = 8;
-        constexpr uint32_t BW_500KHZ = 9;
+        constexpr uint32_t BW_125KHZ = 0;
+        constexpr uint32_t BW_250KHZ = 1;
+        constexpr uint32_t BW_500KHZ = 2;
         if(lora_bw != BW_125KHZ && lora_bw != BW_250KHZ && lora_bw != BW_500KHZ) {
             throw ParamException("Incorrect LoRa BW");
         }
@@ -375,6 +375,7 @@ void load_settings_from_flash() {
         radio_cb.valid = true;
     } 
     catch(const ParamException &param_except) {
+        printf("%s\r\n", param_except.what());
         debug_printf(DBG_WARN, "%s\r\n", param_except.what());
         debug_printf(DBG_WARN, "Now erasing current config, writing the default config, and rebooting\r\n");
         fclose(f);
