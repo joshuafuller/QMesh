@@ -81,6 +81,8 @@ auto AntiInterferenceWalsh::timingOffset() -> uint8_t {
 
 auto AntiInterferenceWalsh::freqOffset() -> int32_t {
     int32_t ret_val = static_cast<int32_t>(walsh_sequence[getTTL()].freq_off) - freq_range_adj;
+    PORTABLE_ASSERT(freq_range_noerr.first != -1);
+    PORTABLE_ASSERT(freq_range_noerr.second != -1);
     if(ret_val < freq_range_noerr.first) {
         ret_val = freq_range_noerr.first;
     }

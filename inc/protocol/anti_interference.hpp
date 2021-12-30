@@ -18,7 +18,7 @@ using namespace std;
 
 class AntiInterference {
 private:
-    std::pair<int32_t, int32_t> freq_range;
+    std::pair<int32_t, int32_t> freq_range{-1, -1};
     int num_timing_offsets;
     int cur_seed;
     int max_pwr_diff;

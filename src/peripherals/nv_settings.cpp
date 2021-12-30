@@ -108,6 +108,7 @@ static void print_dir(const string &base_str) {
 
 void init_filesystem() {
     debug_printf(DBG_INFO, "Now mounting the block device\r\n");
+    PORTABLE_ASSERT(bd);
     int err = bd->init();
     debug_printf(DBG_INFO, "bd.init -> %d  \r\n", err);
     debug_printf(DBG_INFO, "bd size: %llu\n",         bd->size());
@@ -115,6 +116,7 @@ void init_filesystem() {
     debug_printf(DBG_INFO, "bd program size: %llu\n", bd->get_program_size());
     debug_printf(DBG_INFO, "bd erase size: %llu\n",   bd->get_erase_size());
     debug_printf(DBG_INFO, "Now mounting the filesystem...\r\n");
+    PORTABLE_ASSERT(fs);
     err = fs->mount(bd);
     debug_printf(DBG_WARN, "%s\r\n", (err != 0 ? "Fail :(" : "OK"));
     if(err != 0) {

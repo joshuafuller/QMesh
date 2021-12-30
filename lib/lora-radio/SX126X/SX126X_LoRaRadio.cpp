@@ -1657,19 +1657,22 @@ void SX126X_LoRaRadio::set_modulation_params(const modulation_params_t *const pa
         set_modem(params->modem_type);
     }
 
+    constexpr uint8_t BYTE_MASK = 0xFFUL;
+    constexpr uint32_t SHIFT_TWO_BYTES = 16UL;
+    constexpr uint32_t SHIFT_ONE_BYTE = 8UL;
     switch (params->modem_type) {
         case MODEM_FSK:
             n = 8;
-            temp = static_cast<uint32_t>(32 * ((float) XTAL_FREQ / static_cast<float>(params->params.gfsk.bit_rate)));
-            buf[0] = (temp >> 16) & 0xFF;
-            buf[1] = (temp >> 8) & 0xFF;
-            buf[2] = temp & 0xFF;
+            temp = static_cast<uint32_t>(32 * (static_cast<float>(XTAL_FREQ) / static_cast<float>(params->params.gfsk.bit_rate)));
+            buf[0] = (temp >> SHIFT_TWO_BYTES) & BYTE_MASK;
+            buf[1] = (temp >> SHIFT_ONE_BYTE) & BYTE_MASK;
+            buf[2] = temp & BYTE_MASK;
             buf[3] = params->params.gfsk.modulation_shaping;
             buf[4] = params->params.gfsk.bandwidth;
-            temp = static_cast<uint32_t>(static_cast<float>(params->params.gfsk.fdev) / (float) FREQ_STEP);
-            buf[5] = (temp >> 16) & 0xFF;
-            buf[6] = (temp >> 8) & 0xFF;
-            buf[7] = (temp & 0xFF);
+            temp = static_cast<uint32_t>(static_cast<float>(params->params.gfsk.fdev) / static_cast<float>(FREQ_STEP));
+            buf[5] = (temp >> SHIFT_TWO_BYTES) & BYTE_MASK;
+            buf[6] = (temp >> SHIFT_ONE_BYTE) & BYTE_MASK;
+            buf[7] = (temp & BYTE_MASK);
             write_opmode_command(RADIO_SET_MODULATIONPARAMS, buf, n);
             break;
 
@@ -1755,14 +1758,16 @@ void SX126X_LoRaRadio::set_packet_params(const packet_params_t *const packet_par
     }
 
     // Inverted IQ workaround
-    if(_active_modem == MODEM_LORA && packet_params->params.lora.invert_IQ) {
-        uint8_t val = read_register(0x0736);
-        val &= 0xFB;
-        write_to_register(0x0736, val);
+    constexpr uint16_t INVERT_IQ_REG = 0x0736;
+    constexpr uint8_t INVERT_IQ_MASK = 0xFBUL;
+    if(_active_modem == MODEM_LORA && (packet_params->params.lora.invert_IQ != 0UL)) {
+        uint8_t val = read_register(INVERT_IQ_REG);
+        val &= INVERT_IQ_MASK;
+        write_to_register(INVERT_IQ_REG, val);
     } else {
-        uint8_t val = read_register(0x0736);
-        val |= 0x04;
-        write_to_register(0x0736, val);
+        uint8_t val = read_register(INVERT_IQ_REG);
+        val |= 0x04UL;
+        write_to_register(INVERT_IQ_REG, val);
     }
 
     switch (packet_params->modem_type) {
