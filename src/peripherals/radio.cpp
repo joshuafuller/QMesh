@@ -89,6 +89,16 @@ static auto compute_fhss_preamble() -> uint32_t {
     float sym_time_us = sym_time_s*US_IN_MS*MS_IN_S;
     int tcxo_settling_sym = static_cast<int>(ceilf(radio_cb.radio_cfg.tcxo_time_us/sym_time_us));
     constexpr int SF_TABLE_ADJ = 7;
+    PORTABLE_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
+    PORTABLE_ASSERT(radio_cb.radio_cfg.lora_cfg.bw == 0 || 
+                    radio_cb.radio_cfg.lora_cfg.bw == 1 ||
+                    radio_cb.radio_cfg.lora_cfg.bw == 2);
+    PORTABLE_ASSERT(radio_cb.radio_cfg.lora_cfg.sf == 7 || 
+                    radio_cb.radio_cfg.lora_cfg.sf == 8 ||
+                    radio_cb.radio_cfg.lora_cfg.sf == 9 ||
+                    radio_cb.radio_cfg.lora_cfg.sf == 10 || 
+                    radio_cb.radio_cfg.lora_cfg.sf == 11 ||
+                    radio_cb.radio_cfg.lora_cfg.sf == 12);
     lora_cad_params_t lora_cad_params = cad_params[radio_cb.radio_cfg.lora_cfg.bw][radio_cb.radio_cfg.lora_cfg.sf-SF_TABLE_ADJ]; //NOLINT
     constexpr int CAD_PADDING = 1;
     int cad_sym = lora_cad_params.num_sym + CAD_PADDING;
