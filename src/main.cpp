@@ -159,10 +159,10 @@ auto main() -> int
     oled->printf("In rescue mode...\r\n");
     oled->display();
 	portability::sleep(ONE_SECOND);
-	if(user_button != nullptr) {
+	if(*user_button != 0) {
 		led1->LEDFastBlink();
 		portability::sleep(ONE_SECOND);
-		if(user_button != nullptr) {
+		if(*user_button != 0) {
 			rescue_filesystem();
 		}
 	}
