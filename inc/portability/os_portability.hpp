@@ -12,6 +12,8 @@
 #include "i2c.hpp"
 #include "timer.hpp"
 #include "thread.hpp"
+#include "fs.hpp"
+
 
 namespace portability {
 #if defined(MBED_OS)

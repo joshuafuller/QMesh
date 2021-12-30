@@ -24,11 +24,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif /* TEST_FEC */
 #include "params.hpp"
 #ifndef TEST_FEC
-#include "LittleFileSystem.h"
-#include "QSPIFBlockDevice.h"
+#include "os_portability.hpp"
 
-extern QSPIFBlockDevice *bd;
-extern LittleFileSystem *fs;
+extern portability::BlockDevice *bd;
+extern portability::FileSystem *fs;
 #endif /* TEST_FEC */
 
 void nv_log_fn();

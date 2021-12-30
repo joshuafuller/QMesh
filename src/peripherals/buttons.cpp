@@ -33,18 +33,8 @@ extern portability::Thread *btn_evt_thread;
 extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 //extern UARTSerial gps_serial;
 
-volatile bool rebooting = false;
-
-static constexpr int HALF_SECOND = 500;
+//static constexpr int HALF_SECOND = 500;
 static constexpr int ONE_SECOND = 1000;
-
-void reboot_system() {
-	rebooting = true;
-    debug_printf(DBG_INFO, "Now rebooting the system...\r\n");
-    portability::sleep(HALF_SECOND);
-    NVIC_SystemReset();
-}
-
 
 void button_thread_fn();
 void button_fn() {

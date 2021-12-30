@@ -17,9 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "os_portability.hpp"
-#include "QSPIFBlockDevice.h"
 #include "peripherals.hpp"
-#include "LittleFileSystem.h"
 #include "serial_data.hpp"
 #include "nv_settings.hpp"
 #include "voice_msg.hpp"
@@ -45,13 +43,13 @@ static constexpr int FREQ_40_MHZ = 40000000;
 static constexpr int NUM_LOGFILES = 11;
 static constexpr int MAX_LOGFILE_SIZE = 1e6;
 
-QSPIFBlockDevice *bd;
-LittleFileSystem *fs;
+portability::BlockDevice *bd;
+portability::FileSystem *fs;
 
 void create_nv_settings_objects() {
-    bd = new QSPIFBlockDevice(QSPI_FLASH_IO0, QSPI_FLASH_IO1, QSPI_FLASH_IO2, QSPI_FLASH_IO3, 
+    bd = new portability::BlockDevice(QSPI_FLASH_IO0, QSPI_FLASH_IO1, QSPI_FLASH_IO2, QSPI_FLASH_IO3, 
                         QSPI_FLASH_SCK, QSPI_FLASH_CSN, 0, FREQ_40_MHZ);
-    fs = new LittleFileSystem("fs");
+    fs = new portability::FileSystem("fs");
 }
 
 //extern UARTSerial gps_serial;
