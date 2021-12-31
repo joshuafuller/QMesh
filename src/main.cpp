@@ -204,14 +204,14 @@ auto main() -> int
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX
     portability::sleep(HALF_SECOND);
-    auto bt_ser = make_shared<KISSSerialUART>(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
-    PORTABLE_ASSERT(bt_ser);
+    //auto bt_ser = make_shared<KISSSerialUART>(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
+    //PORTABLE_ASSERT(bt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX */
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
     portability::sleep(HALF_SECOND);
-    auto bt_alt_ser = make_shared<KISSSerialUART>(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
-                                                KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
-    PORTABLE_ASSERT(bt_alt_ser);
+    //auto bt_alt_ser = make_shared<KISSSerialUART>(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
+    //                                            KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
+    //PORTABLE_ASSERT(bt_alt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
 #if MBED_CONF_APP_HAS_BLE == 1
     portability::sleep(HALF_SECOND);

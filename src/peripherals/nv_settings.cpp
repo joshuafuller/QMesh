@@ -242,152 +242,82 @@ void load_settings_from_flash() {
     PORTABLE_ASSERT(ser_msg->type() == SerialMsg_Type_CONFIG);
     PORTABLE_ASSERT(ser_msg->has_sys_cfg());
     radio_cb = ser_msg->sys_cfg();
-    try {
-        debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
-        debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
-        constexpr int MAX_ADDR = 31;
-        if(radio_cb.address > MAX_ADDR) {
-            throw ParamException("Address needs to be between 0 and 31");
-        }
-        PORTABLE_ASSERT(radio_cb.has_radio_cfg);
-        if(!radio_cb.has_radio_cfg) {
-            throw ParamException("Missing radio_cfg");
-        }
-        constexpr int MAX_FREQUENCY_COUNT = 8;
-        if(radio_cb.radio_cfg.frequencies_count <= 0 || 
-            radio_cb.radio_cfg.frequencies_count > MAX_FREQUENCY_COUNT) {
-            throw ParamException("Incorrect number of frequencies");
-        }
-        for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
-            debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]); //NOLINT
-            constexpr int MIN_FREQ = 400e6;
-            constexpr int MAX_FREQ = 500e6;     
-            if(radio_cb.radio_cfg.frequencies[i] < MIN_FREQ ||  //NOLINT
-                radio_cb.radio_cfg.frequencies[i] > MAX_FREQ) { //NOLINT
-                throw ParamException("Incorrect frequency");
-            }
-        }
-        PORTABLE_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
-        if(!radio_cb.radio_cfg.has_lora_cfg) {
-            throw ParamException("Missing LoRa config");
-        }
-        debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
-        uint32_t lora_bw = radio_cb.radio_cfg.lora_cfg.bw;
-        constexpr uint32_t BW_125KHZ = 0;
-        constexpr uint32_t BW_250KHZ = 1;
-        constexpr uint32_t BW_500KHZ = 2;
-        if(lora_bw != BW_125KHZ && lora_bw != BW_250KHZ && lora_bw != BW_500KHZ) {
-            throw ParamException("Incorrect LoRa BW");
-        }
-        debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
-        uint32_t lora_cr = radio_cb.radio_cfg.lora_cfg.cr;
-        if(lora_cr != 0 && lora_cr != 1 && lora_cr != 2 && lora_cr != 3 && lora_cr != 4) {
-            throw ParamException("Incorrect LoRa CR");
-        }
-        uint32_t lora_sf = radio_cb.radio_cfg.lora_cfg.sf;
-        constexpr uint32_t SF_5 = 5;
-        constexpr uint32_t SF_6 = 6;
-        constexpr uint32_t SF_7 = 7;
-        constexpr uint32_t SF_8 = 8;
-        constexpr uint32_t SF_9 = 9;
-        constexpr uint32_t SF_10 = 10;
-        constexpr uint32_t SF_11 = 11;
-        constexpr uint32_t SF_12 = 12;
-        if(lora_sf != SF_5 && lora_sf != SF_6 && lora_sf != SF_7 && lora_sf != SF_8 
-            && lora_sf != SF_9 && lora_sf != SF_10 && lora_sf != SF_11 && lora_sf != SF_12) {
-            throw ParamException("Incorrect LoRa SF");        
-        }
-        debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
-        constexpr uint32_t MAX_PREAMBLE_LEN = 128;
-        if(radio_cb.radio_cfg.lora_cfg.preamble_length > MAX_PREAMBLE_LEN) {
-            throw ParamException("Preamble is too long");
-        }
-        debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb.radio_cfg.lora_cfg.preamble_length);
-        PORTABLE_ASSERT(radio_cb.has_net_cfg);
-        if(!radio_cb.has_net_cfg) {
-            throw ParamException("Missing net_cfg");
-        }
-        debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb.net_cfg.beacon_msg);
-        constexpr uint32_t MAX_BEACON_MSG_LEN = 64;
-        if(strlen(radio_cb.net_cfg.beacon_msg) > MAX_BEACON_MSG_LEN) {
-            throw ParamException("Beacon message is too long");
-        }
-        if(strlen(radio_cb.net_cfg.beacon_msg) < 1) {
-            throw ParamException("Beacon message is too short");
-        }
-        constexpr uint32_t ONE_HOUR = 3600;
-        debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb.net_cfg.beacon_interval);
-        if(radio_cb.net_cfg.beacon_interval > ONE_HOUR) {
-            throw ParamException("Beacon interval needs to be at least once an hour");
-        }
-        if(radio_cb.net_cfg.beacon_interval < 1) {
-            throw ParamException("Beacon interval needs to be at one second");
-        }
-        constexpr uint32_t MAX_PLD_LEN = 128;
-        debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
-        if(radio_cb.net_cfg.pld_len > MAX_PLD_LEN) {
-            throw ParamException("Payload cannot be more than 128 bytes");
-        } 
-        if(radio_cb.net_cfg.pld_len < 1) {
-            throw ParamException("Payload must be at least one byte long");
-        }
-        constexpr uint32_t MAX_TIMING_OFFSETS = 16;
-        debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", 
-                    radio_cb.net_cfg.num_offsets);
-        if(radio_cb.net_cfg.num_offsets > MAX_TIMING_OFFSETS) {
-            throw ParamException("More than 16 timing offsets is probably pointless");
-        }
-        debug_printf(DBG_INFO, "Has a GPS: %d\r\n", static_cast<int>(radio_cb.gps_en));
-        // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
-        //  anything else from occurring and leading to weird crashes
-        PORTABLE_ASSERT(radio_cb.has_fec_cfg);
-        if(!radio_cb.has_fec_cfg) {
-            throw ParamException("Missing fec_cfg");
-        }
-        constexpr uint32_t ALLOWED_CONV_RATE = 2;
-        PORTABLE_ASSERT(radio_cb.fec_cfg.conv_rate == ALLOWED_CONV_RATE);
-        if(radio_cb.fec_cfg.conv_rate != ALLOWED_CONV_RATE) {
-            throw ParamException("Only convolutional rate of 2 is supported");
-        }
-        constexpr uint32_t ALLOWED_CONV_ORDER = 7;
-        PORTABLE_ASSERT(radio_cb.fec_cfg.conv_order == ALLOWED_CONV_ORDER);
-        if(radio_cb.fec_cfg.conv_order != ALLOWED_CONV_ORDER) {
-            throw ParamException("Only convolutional K=7 is supported");
-        }
-        // Voice parameters
-        PORTABLE_ASSERT(VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate));
-        if(!VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate)) {
-            throw ParamException("Invalid codec2 bitrate");
-        }
-        PORTABLE_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
-        if(radio_cb.net_cfg.voice_frames_per_frame != 4) {
-            throw ParamException("Invalid number of voice frames per frame");
-        }
-        constexpr int32_t MAX_RS_ROOTS = 16;
-        if(radio_cb.fec_cfg.rs_num_roots < 4 || radio_cb.fec_cfg.rs_num_roots > MAX_RS_ROOTS) {
-            throw ParamException("Invalid number of Reed-Solomon bytes");
-        }
-        constexpr int MAX_TX_POWER_DBM = 22;
-        if(radio_cb.radio_cfg.tx_power > MAX_TX_POWER_DBM || radio_cb.radio_cfg.tx_power < 0) {
-            throw ParamException("Transmit power is out of range");
-        }
-        radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
-        radio_cb.valid = true;
-    } 
-    catch(const ParamException &param_except) {
-        printf("%s\r\n", param_except.what());
-        debug_printf(DBG_WARN, "%s\r\n", param_except.what());
-        debug_printf(DBG_WARN, "Now erasing current config, writing the default config, and rebooting\r\n");
-        fclose(f);
-        write_default_cfg();
-        f = fopen("/fs/settings.bin", "re");
-        PORTABLE_ASSERT(f);
-        fclose(f);
-        constexpr uint32_t ONE_SECOND = 1000;
-        portability::sleep(ONE_SECOND);
-        reboot_system();
+    debug_printf(DBG_INFO, "Mode: %d\r\n", radio_cb.mode);
+    debug_printf(DBG_INFO, "Address: %d\r\n", radio_cb.address);
+    constexpr int MAX_ADDR = 31;
+    PORTABLE_ASSERT(radio_cb.address <= MAX_ADDR);
+    PORTABLE_ASSERT(radio_cb.has_radio_cfg);
+    constexpr int MAX_FREQUENCY_COUNT = 8;
+    PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies_count > 0);
+    PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies_count <= MAX_FREQUENCY_COUNT);
+    for(int i = 0; i < radio_cb.radio_cfg.frequencies_count; i++) {
+        debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]); //NOLINT
+        constexpr int MIN_FREQ = 400e6;
+        constexpr int MAX_FREQ = 500e6; 
+        PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies[i] >= MIN_FREQ);
+        PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies[i] <= MAX_FREQ);    
     }
-
+    PORTABLE_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
+    debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
+    uint32_t lora_bw = radio_cb.radio_cfg.lora_cfg.bw;
+    constexpr uint32_t BW_125KHZ = 0;
+    constexpr uint32_t BW_250KHZ = 1;
+    constexpr uint32_t BW_500KHZ = 2;
+    PORTABLE_ASSERT(lora_bw == BW_125KHZ || lora_bw == BW_250KHZ || lora_bw == BW_500KHZ);
+    debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
+    uint32_t lora_cr = radio_cb.radio_cfg.lora_cfg.cr;
+    PORTABLE_ASSERT(lora_cr == 0 || lora_cr == 1 || lora_cr == 2 || lora_cr == 3 || lora_cr != 4);
+    uint32_t lora_sf = radio_cb.radio_cfg.lora_cfg.sf;
+    constexpr uint32_t SF_5 = 5;
+    constexpr uint32_t SF_6 = 6;
+    constexpr uint32_t SF_7 = 7;
+    constexpr uint32_t SF_8 = 8;
+    constexpr uint32_t SF_9 = 9;
+    constexpr uint32_t SF_10 = 10;
+    constexpr uint32_t SF_11 = 11;
+    constexpr uint32_t SF_12 = 12;
+    PORTABLE_ASSERT(lora_sf == SF_5 || lora_sf == SF_6 || lora_sf == SF_7 || lora_sf == SF_8 
+            || lora_sf == SF_9 || lora_sf == SF_10 || lora_sf == SF_11 || lora_sf == SF_12);
+    debug_printf(DBG_INFO, "SF: %d\r\n", radio_cb.radio_cfg.lora_cfg.sf);
+    constexpr uint32_t MAX_PREAMBLE_LEN = 128;
+    PORTABLE_ASSERT(radio_cb.radio_cfg.lora_cfg.preamble_length <= MAX_PREAMBLE_LEN);
+    debug_printf(DBG_INFO, "Preamble Length: %d\r\n", radio_cb.radio_cfg.lora_cfg.preamble_length);
+    PORTABLE_ASSERT(radio_cb.has_net_cfg);
+    debug_printf(DBG_INFO, "Beacon Message: %s\r\n", radio_cb.net_cfg.beacon_msg);
+    constexpr uint32_t MAX_BEACON_MSG_LEN = 64;
+    PORTABLE_ASSERT(strlen(radio_cb.net_cfg.beacon_msg) <= MAX_BEACON_MSG_LEN);
+    PORTABLE_ASSERT(strlen(radio_cb.net_cfg.beacon_msg) >= 1);
+    constexpr uint32_t ONE_HOUR = 3600;
+    debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb.net_cfg.beacon_interval);
+    PORTABLE_ASSERT(radio_cb.net_cfg.beacon_interval <= ONE_HOUR);
+    PORTABLE_ASSERT(radio_cb.net_cfg.beacon_interval >= 1);
+    constexpr uint32_t MAX_PLD_LEN = 128;
+    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
+    PORTABLE_ASSERT(radio_cb.net_cfg.pld_len <= MAX_PLD_LEN);
+    PORTABLE_ASSERT(radio_cb.net_cfg.pld_len >= 1);
+    constexpr uint32_t MAX_TIMING_OFFSETS = 16;
+    debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", radio_cb.net_cfg.num_offsets);
+    PORTABLE_ASSERT(radio_cb.net_cfg.num_offsets <= MAX_TIMING_OFFSETS);
+    debug_printf(DBG_INFO, "Has a GPS: %d\r\n", static_cast<int>(radio_cb.gps_en));
+    // Since really only 1/2 rate, constraint length=7 convolutional code works, we want to block 
+    //  anything else from occurring and leading to weird crashes
+    PORTABLE_ASSERT(radio_cb.has_fec_cfg);
+    constexpr uint32_t ALLOWED_CONV_RATE = 2;
+    PORTABLE_ASSERT(radio_cb.fec_cfg.conv_rate == ALLOWED_CONV_RATE);
+    constexpr uint32_t ALLOWED_CONV_ORDER = 7;
+    PORTABLE_ASSERT(radio_cb.fec_cfg.conv_order == ALLOWED_CONV_ORDER);
+    // Voice parameters
+    PORTABLE_ASSERT(VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate));
+    PORTABLE_ASSERT(VoiceMsgProcessor::valid_bitrate(radio_cb.net_cfg.codec2_bitrate));
+    PORTABLE_ASSERT(radio_cb.net_cfg.voice_frames_per_frame == 4);
+    constexpr int32_t MAX_RS_ROOTS = 16;
+    PORTABLE_ASSERT(radio_cb.fec_cfg.rs_num_roots >= 4);
+    PORTABLE_ASSERT(radio_cb.fec_cfg.rs_num_roots <= MAX_RS_ROOTS);
+    constexpr int MAX_TX_POWER_DBM = 22;
+    PORTABLE_ASSERT(radio_cb.radio_cfg.tx_power <= MAX_TX_POWER_DBM);
+    PORTABLE_ASSERT(radio_cb.radio_cfg.tx_power >= 0);
+    radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
+    radio_cb.valid = true;
 
 #if 0
     // Check if low-power mode is set. If so, delete the UART

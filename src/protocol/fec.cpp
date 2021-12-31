@@ -469,7 +469,7 @@ auto FECRSV::encode(const vector<uint8_t> &msg, vector<uint8_t> &enc_msg) -> int
     // Interleave
     vector<uint8_t> int_enc_msg(encSize(), 0);
     interleaveBits(conv_enc_msg, int_enc_msg);
-	PORTABLE_ASSERT(int_enc_msg.size() == encSize());
+	PORTABLE_ASSERT(int_enc_msg.size() == FECRSV::encSize());
     enc_msg.resize(encSize());
     copy(int_enc_msg.begin(), int_enc_msg.end(), enc_msg.begin());
     if(get_name() == "RSV") {
