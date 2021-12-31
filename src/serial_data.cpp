@@ -31,21 +31,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "voice_msg.hpp"
 
 
-EventMail<shared_ptr<Frame>> *tx_frame_mail, *rx_frame_mail, *nv_logger_mail;
-static portability::mutex *Frame_mutex;
-static portability::mutex *dbg_printf_mutex;
-static portability::mutex *frame_map_mtx;
-static mt19937 *Frame_stream_id_rng; 
+EventMail<shared_ptr<Frame>> *tx_frame_mail = nullptr;
+EventMail<shared_ptr<Frame>> *rx_frame_mail = nullptr;
+EventMail<shared_ptr<Frame>> *nv_logger_mail = nullptr;
+static portability::mutex *Frame_mutex = nullptr;
+static portability::mutex *dbg_printf_mutex = nullptr;
+static portability::mutex *frame_map_mtx = nullptr;
+static mt19937 *Frame_stream_id_rng = nullptr; 
 static atomic<int> Frame_last_stream_id;
 
 void create_serial_data_objects() {
-    Frame_stream_id_rng = new mt19937(); //NOLINT
-    tx_frame_mail = new EventMail<shared_ptr<Frame>>();
-    rx_frame_mail = new EventMail<shared_ptr<Frame>>();
-    nv_logger_mail = new EventMail<shared_ptr<Frame>>();
     Frame_mutex = new portability::mutex();
+    PORTABLE_ASSERT(Frame_mutex != nullptr);
     dbg_printf_mutex = new portability::mutex();
+    PORTABLE_ASSERT(dbg_printf_mutex != nullptr);
     frame_map_mtx = new portability::mutex();
+    PORTABLE_ASSERT(frame_map_mtx != nullptr);
+    Frame_stream_id_rng = new mt19937(); //NOLINT
+    PORTABLE_ASSERT(Frame_stream_id_rng != nullptr);
+    tx_frame_mail = new EventMail<shared_ptr<Frame>>();
+    PORTABLE_ASSERT(tx_frame_mail != nullptr);
+    rx_frame_mail = new EventMail<shared_ptr<Frame>>();
+    PORTABLE_ASSERT(rx_frame_mail != nullptr);
+    nv_logger_mail = new EventMail<shared_ptr<Frame>>();
+    PORTABLE_ASSERT(nv_logger_mail != nullptr);
 }
 
 auto Frame::size() -> size_t {
@@ -305,9 +314,11 @@ auto Frame::getKISSMaxSize() -> size_t {
 
 auto Frame::createStreamID() -> uint8_t {
     uniform_int_distribution<uint8_t> timing_off_dist(0, MAX_UINT8_VAL); 
+    PORTABLE_ASSERT(Frame_mutex != nullptr);
     Frame_mutex->lock();
     uint8_t new_stream_id = 0;
     do {
+        PORTABLE_ASSERT(Frame_stream_id_rng != nullptr);
         new_stream_id = timing_off_dist(*Frame_stream_id_rng);
     } while(new_stream_id == Frame_last_stream_id);
     Frame_last_stream_id = new_stream_id;
@@ -349,6 +360,7 @@ void Frame::prettyPrint(const enum DBG_TYPES dbg_type) {
 
 
 auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
+    PORTABLE_ASSERT(dbg_printf_mutex != nullptr);
     dbg_printf_mutex->lock();
     vector<char> tmp_str(DbgMsg_size);
     va_list args;
@@ -379,7 +391,8 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     auto ser_msg_sptr = make_shared<SerMsg>();
     ser_msg_sptr->type(SerialMsg_Type_DEBUG_MSG);
     snprintf(ser_msg_sptr->dbg_msg().msg, sizeof(ser_msg_sptr->dbg_msg().msg), 
-                "[+] %s -- %s", msg_type.c_str(), tmp_str.data());   
+                "[+] %s -- %s", msg_type.c_str(), tmp_str.data());  
+    PORTABLE_ASSERT(kiss_sers_mtx != nullptr); 
     kiss_sers_mtx->lock();
     for(auto & kiss_ser : kiss_sers) {
         auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
@@ -426,6 +439,7 @@ auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> 
     }
     auto ser_msg_sptr = shared_ptr<SerMsg>();
     strncpy(ser_msg_sptr->dbg_msg().msg, tmp_str.data(), sizeof(ser_msg_sptr->dbg_msg().msg));
+    PORTABLE_ASSERT(kiss_sers_mtx != nullptr);
     kiss_sers_mtx->lock();
     for(auto & kiss_ser : kiss_sers) {
         auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);

@@ -30,11 +30,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ble_serial.hpp"
 
 
-portability::Thread *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *background_thread;
-portability::EventQueue *background_queue;
+portability::Thread *mesh_protocol_thread = nullptr;
+portability::Thread *rx_frame_thread = nullptr;
+portability::Thread *nv_log_thread = nullptr;
+portability::Thread *background_thread = nullptr;
+portability::EventQueue *background_queue = nullptr;
 static void create_threads();
 static void create_threads() {
-    constexpr int THREAD_STACK_SIZE = 8192;
+    constexpr int THREAD_STACK_SIZE = 4096;
     background_queue = new portability::EventQueue();
     mesh_protocol_thread = new portability::Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
     rx_frame_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
@@ -58,8 +61,8 @@ static constexpr int I2C_FREQ = 400000;
 
 void send_status();
 
-portability::DigitalIn *user_button;
-SoftI2C *oled_i2c;
+portability::DigitalIn *user_button = nullptr;
+SoftI2C *oled_i2c = nullptr;
 shared_ptr<Adafruit_SSD1306_I2c> oled;
 void create_serial_data_objects();
 void create_kiss_serial_data_objects();
@@ -120,15 +123,15 @@ static void wdt_pet() { // pet the watchdog
 auto main() -> int
 {
     portability::special_init();
-    create_threads();
-    create_peripherals();
-    create_serial_data_objects();
     create_kiss_serial_data_objects();
+    create_threads();
+    create_serial_data_objects();
     create_radio_timing_data_objects();
     create_nv_settings_objects();
     create_radio_objects();
     create_mesh_protocol_objects();
     create_led_objects();
+    create_peripherals();
     start_cal();
     time(&boot_timestamp);
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
@@ -139,11 +142,18 @@ auto main() -> int
 
     // Set up the LEDs
     portability::sleep(HALF_SECOND);
-    background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
+    PORTABLE_ASSERT(background_thread != nullptr);
+    PORTABLE_ASSERT(background_queue != nullptr);
+    osStatus stat = background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
+    PORTABLE_ASSERT(stat == osOK);
+    PORTABLE_ASSERT(led1 != nullptr);
     led1->setEvtQueue(background_queue);
+    PORTABLE_ASSERT(led2 != nullptr);
     led2->setEvtQueue(background_queue);
+    PORTABLE_ASSERT(led3 != nullptr);
     led3->setEvtQueue(background_queue);  
 
+    PORTABLE_ASSERT(oled_i2c != nullptr);
     oled_i2c->frequency(I2C_FREQ);
     oled_i2c->start();
     
@@ -159,6 +169,7 @@ auto main() -> int
     oled->printf("In rescue mode...\r\n");
     oled->display();
 	portability::sleep(ONE_SECOND);
+    PORTABLE_ASSERT(user_button != nullptr);
 	if(*user_button != 0) {
 		led1->LEDFastBlink();
 		portability::sleep(ONE_SECOND);
@@ -172,6 +183,7 @@ auto main() -> int
 #else
     auto *push_button = new PushButton(USER_BUTTON);
 #endif
+    PORTABLE_ASSERT(push_button != nullptr);
     push_button->SetQueue(*background_queue);
     portability::sleep(ONE_SECOND);
 
@@ -212,12 +224,14 @@ auto main() -> int
     portability::sleep(HALF_SECOND);
     send_status();
 
-    rx_frame_thread->start(rx_frame_ser_thread_fn);
+    stat = rx_frame_thread->start(rx_frame_ser_thread_fn);
+    PORTABLE_ASSERT(stat == osOK);
 
     // Start up the GPS code
 #if 0
     if(radio_cb.gps_en) {
-        gps_thread.start(gpsd_thread_fn);
+        stat = gps_thread.start(gpsd_thread_fn);
+        PORTABLE_ASSERT(stat == osOK);
     }
 #endif
 
@@ -267,7 +281,9 @@ sleep_portable(500);
 #endif
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
-    nv_log_thread->start(nv_log_fn);
+    PORTABLE_ASSERT(nv_log_thread != nullptr);
+    stat = nv_log_thread->start(nv_log_fn);
+    PORTABLE_ASSERT(stat == osOK);
 
     portability::sleep(QUARTER_SECOND);
 
@@ -278,13 +294,16 @@ sleep_portable(500);
 
     // Start the mesh protocol thread
     debug_printf(DBG_INFO, "Starting the mesh protocol thread\r\n");
-    mesh_protocol_thread->start(mesh_protocol_fsm);
+    PORTABLE_ASSERT(mesh_protocol_thread != nullptr);
+    stat = mesh_protocol_thread->start(mesh_protocol_fsm);
+    PORTABLE_ASSERT(stat == osOK);
 
     debug_printf(DBG_INFO, "Time to chill...\r\n");
     portability::sleep(QUARTER_SECOND);  
 
     // Start the beacon thread
     debug_printf(DBG_INFO, "Starting the beacon\r\n");
+    PORTABLE_ASSERT(background_queue != nullptr);
     background_queue->call_every(static_cast<int>(radio_cb.net_cfg.beacon_interval*ONE_SECOND), 
                             beacon_fn);
     portability::sleep(QUARTER_SECOND);

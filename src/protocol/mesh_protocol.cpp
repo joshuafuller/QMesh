@@ -160,11 +160,13 @@ void mesh_protocol_fsm() {
     auto initial_timer = make_shared<Timer>();
     initial_timer->reset();
     initial_timer->start();
+    PORTABLE_ASSERT(radio_timing != nullptr);
     radio_timing->setTimer(initial_timer);
     radio_timing->waitFullSlots(1); // Change this to be zero once we know zero works
     for(;;) {
         debug_printf(DBG_INFO, "--------------------\r\n");
-        //print_memory_info();
+        print_memory_info();
+        PORTABLE_ASSERT(radio != nullptr);
         switch(state) {
             case WAIT_FOR_EVENT:
                 retransmit_disable_out_n->write(1);

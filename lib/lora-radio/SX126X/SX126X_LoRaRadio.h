@@ -498,7 +498,7 @@ private:
 
     // Components to poll the RSSI to implement soft decoding
     atomic<bool> collect_rssi;
-    Thread soft_dec_thread;
+    portability::Thread soft_dec_thread;
     shared_ptr<list<pair<uint32_t, uint8_t> > > rssi_list_sptr;
 
     // Components to implement frequency hopping
