@@ -280,10 +280,6 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
     string tx_ser_name("TX-");
     tx_ser_name.append(portName());
     tx_ser_thread = new portability::Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
-
-    kiss_sers_mtx->lock();
-    kiss_sers.push_back(this);
-    kiss_sers_mtx->unlock();
 }
 
 
@@ -298,6 +294,10 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
     hc05 = false;
 
     startThreads();
+
+    kiss_sers_mtx->lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx->unlock();
 }
 
 
@@ -318,6 +318,10 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
     hc05 = false;
 
     startThreads();
+
+    kiss_sers_mtx->lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx->unlock();
 }
 
 
@@ -382,6 +386,10 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State
     //configure_hc05();
 
     startThreads();
+
+    kiss_sers_mtx->lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx->unlock();
 }
 
 

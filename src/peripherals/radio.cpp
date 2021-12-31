@@ -47,6 +47,9 @@ static radio_events_t *radio_events;
 EventMail<shared_ptr<RadioEvent>> *unified_radio_evt_mail, *tx_radio_evt_mail;
 
 void create_radio_objects() {
+    radio_events = new radio_events_t();
+    unified_radio_evt_mail = new EventMail<shared_ptr<RadioEvent>>();
+    tx_radio_evt_mail = new EventMail<shared_ptr<RadioEvent>>();
     radio = new SX126X_LoRaRadio(MBED_CONF_APP_LORA_SPI_MOSI, // PinName mosi
                                     MBED_CONF_APP_LORA_SPI_MISO, // PinName miso
                                     MBED_CONF_APP_LORA_SPI_SCLK, // PinName sclk
@@ -59,9 +62,6 @@ void create_radio_objects() {
                                     MBED_CONF_APP_LORA_RESET,  // PinName nrst
                                     MBED_CONF_APP_LORA_BUSY,   // PinName busy,
                                     NC); 
-    radio_events = new radio_events_t();
-    unified_radio_evt_mail = new EventMail<shared_ptr<RadioEvent>>();
-    tx_radio_evt_mail = new EventMail<shared_ptr<RadioEvent>>();
 }
 
 // Prototypes for the callbacks

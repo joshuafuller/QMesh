@@ -34,7 +34,7 @@ portability::Thread *mesh_protocol_thread, *rx_frame_thread, *nv_log_thread, *ba
 portability::EventQueue *background_queue;
 static void create_threads();
 static void create_threads() {
-    constexpr int THREAD_STACK_SIZE = 4096;
+    constexpr int THREAD_STACK_SIZE = 8192;
     background_queue = new portability::EventQueue();
     mesh_protocol_thread = new portability::Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
     rx_frame_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames

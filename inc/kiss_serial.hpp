@@ -113,7 +113,7 @@ public:
     void kissExtended(const bool val) { kiss_extended = val; }
     void startThreads() {
         tx_ser_thread->start(callback(this, &KISSSerial::tx_serial_thread_fn));
-        rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
+        //rx_ser_thread->start(callback(this, &KISSSerial::rx_serial_thread_fn));
     }
     auto pserRd() -> shared_ptr<PseudoSerial> * {
         return &pser_rd;

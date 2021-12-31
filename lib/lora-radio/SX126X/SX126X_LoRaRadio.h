@@ -361,7 +361,7 @@ private:
     portability::DigitalOut _pwr_ctl;
 
     // Interrupt controls
-    portability::InterruptIn _dio1_ctl;;
+    portability::InterruptIn _dio1_ctl;
 
     // module busy control
     portability::DigitalIn _busy;
