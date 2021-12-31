@@ -124,6 +124,26 @@ auto main() -> int
 {
     portability::special_init();
     create_kiss_serial_data_objects();
+    // Start the serial handler threads
+#ifdef MBED_CONF_APP_KISS_UART_TX
+    portability::sleep(HALF_SECOND);
+    auto *bt_ser = new KISSSerialUART(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
+    PORTABLE_ASSERT(bt_ser);
+#endif /* MBED_CONF_APP_KISS_UART_TX */
+#ifdef MBED_CONF_APP_KISS_UART_TX_ALT
+    portability::sleep(HALF_SECOND);
+    auto *bt_alt_ser = new KISSSerialUART(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
+                                                KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
+    PORTABLE_ASSERT(bt_alt_ser);
+#endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
+#if MBED_CONF_APP_HAS_BLE == 1
+    portability::sleep(HALF_SECOND);
+    auto ble_ser = make_shared<BLESerial>();
+    //auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
+    //auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
+    //auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
+#endif /* MBED_CONF_APP_HAS_BLE */
+
     create_threads();
     create_serial_data_objects();
     create_radio_timing_data_objects();
@@ -201,25 +221,7 @@ auto main() -> int
     }
 
     Frame::seed_stream_id(radio_cb.address);
-    // Start the serial handler threads
-#ifdef MBED_CONF_APP_KISS_UART_TX
-    portability::sleep(HALF_SECOND);
-    //auto bt_ser = make_shared<KISSSerialUART>(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
-    //PORTABLE_ASSERT(bt_ser);
-#endif /* MBED_CONF_APP_KISS_UART_TX */
-#ifdef MBED_CONF_APP_KISS_UART_TX_ALT
-    portability::sleep(HALF_SECOND);
-    //auto bt_alt_ser = make_shared<KISSSerialUART>(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
-    //                                            KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
-    //PORTABLE_ASSERT(bt_alt_ser);
-#endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
-#if MBED_CONF_APP_HAS_BLE == 1
-    portability::sleep(HALF_SECOND);
-    auto ble_ser = make_shared<BLESerial>();
-    //auto ble_aprs_ser = make_shared<KISSSerialBLE>(string("BLE-APRS"), APRS_PORT);
-    //auto ble_voice_ser = make_shared<KISSSerialBLE>(string("BLE-VOICE"), VOICE_PORT);
-    //auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
-#endif /* MBED_CONF_APP_HAS_BLE */
+
     debug_printf(DBG_INFO, "Serial threads started");
     portability::sleep(HALF_SECOND);
     send_status();

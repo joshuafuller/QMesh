@@ -133,7 +133,7 @@ public:
 class KISSSerialUART : public KISSSerial { 
 private:
     PinName tx_port, rx_port;
-    shared_ptr<UARTSerial> ser;
+    UARTSerial *ser;
     bool hc05;
     bool using_stdio;
     DigitalOut *en_pin;

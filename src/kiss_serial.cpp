@@ -310,10 +310,10 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
     state_pin = nullptr;
     tx_port = tx;
     rx_port = rx;
-    ser = make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE);
+    ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
     PORTABLE_ASSERT(ser);
-    *pserRd() = make_shared<UARTPseudoSerial>(*ser, true);
-    *pserWr() = make_shared<UARTPseudoSerial>(*ser, false);
+    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
     using_stdio = false;
     hc05 = false;
 
@@ -377,9 +377,9 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State
     state_pin = new portability::DigitalIn(State);                
     tx_port = tx;
     rx_port = rx;
-    ser = make_shared<UARTSerial>(tx_port, rx_port, BT_BAUD_RATE);
-    *pserRd() = make_shared<UARTPseudoSerial>(*ser, true);
-    *pserWr() = make_shared<UARTPseudoSerial>(*ser, false);
+    ser = new UARTSerial(tx_port, rx_port, BT_BAUD_RATE);
+    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
     PORTABLE_ASSERT(ser);
     using_stdio = false;
 

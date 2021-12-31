@@ -395,8 +395,8 @@ auto debug_printf(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> int {
     PORTABLE_ASSERT(kiss_sers_mtx != nullptr); 
     kiss_sers_mtx->lock();
     for(auto & kiss_ser : kiss_sers) {
-        auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
-        kiss_ser->enqueue_msg(ser_msg_sptr_en);
+        //auto ser_msg_sptr_en = make_shared<SerMsg>(*ser_msg_sptr);
+        kiss_ser->enqueue_msg(ser_msg_sptr);
     }
     kiss_sers_mtx->unlock();
     if(dbg_type == DBG_ERR) { // Make DEBUG_ERR events throw an asssert
