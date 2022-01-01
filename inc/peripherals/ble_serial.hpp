@@ -74,7 +74,7 @@ public:
 };
 
 
-extern EventQueue background_queue;
+extern EventQueue *background_queue;
 
 class BLESerial {
 private:

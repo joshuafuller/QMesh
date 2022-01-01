@@ -44,7 +44,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Adafruit_SSD1306.h"
 #include "mem_trace.hpp"
 
-extern portability::EventQueue background_queue;
+extern portability::EventQueue *background_queue;
 
 static constexpr int ERR_MSG_SIZE = 32;
 static constexpr int SHA256_SIZE = 32;
@@ -55,7 +55,9 @@ portability::mutex *kiss_sers_mtx;
 static portability::mutex *shared_mtx;
 void create_kiss_serial_data_objects() {
     kiss_sers_mtx = new portability::mutex();
+    PORTABLE_ASSERT(kiss_sers_mtx != nullptr);
     shared_mtx = new portability::mutex();
+    PORTABLE_ASSERT(shared_mtx != nullptr);
 }
 
 static constexpr uint8_t FEND = 0xC0;
@@ -276,7 +278,7 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
         
     string rx_ser_name("RX-");
     rx_ser_name.append(portName());
-    rx_ser_thread = new portability::Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, rx_ser_name.c_str());
+    rx_ser_thread = new portability::Thread(osPriorityNormal, SER_THREAD_STACK_SIZE*2, nullptr, rx_ser_name.c_str());
     string tx_ser_name("TX-");
     tx_ser_name.append(portName());
     tx_ser_thread = new portability::Thread(osPriorityNormal, SER_THREAD_STACK_SIZE, nullptr, tx_ser_name.c_str());
@@ -836,12 +838,12 @@ void KISSSerial::rx_serial_thread_fn() {
         } else if(ser_msg->type() == SerialMsg_Type_EXIT_KISS_MODE) {
             shared_mtx->lock();
             kiss_extended = true;
-            background_queue.call(oled_mon_fn);
+            background_queue->call(oled_mon_fn);
             shared_mtx->unlock();
         } else if(ser_msg->type() == SerialMsg_Type_ENTER_KISS_MODE) {
             shared_mtx->lock();
             kiss_extended = false;
-            background_queue.call(oled_mon_fn);
+            background_queue->call(oled_mon_fn);
             shared_mtx->unlock();
         } else if(ser_msg->type() == SerialMsg_Type_GET_CONFIG) {
             auto out_msg_sptr = make_shared<SerMsg>();

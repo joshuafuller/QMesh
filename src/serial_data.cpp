@@ -452,7 +452,7 @@ auto debug_printf_clean(const enum DBG_TYPES dbg_type, const char *fmt, ...) -> 
 
 
 
-extern portability::EventQueue background_queue;
+extern portability::EventQueue *background_queue;
 using frag_info_t = struct {
     uint8_t tot_frames{};
     uint8_t stream_id{};
@@ -500,7 +500,7 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
             elem.second.frags.push_back(frag);
             frag_map.insert(elem);
             constexpr int THIRTY_SEC = 30000;
-            background_queue.call_in(THIRTY_SEC, &purge_frag_map_entry, frag->stream_id, elem.second.tag);
+            background_queue->call_in(THIRTY_SEC, &purge_frag_map_entry, frag->stream_id, elem.second.tag);
         } else {
             iter->second.frags.push_back(frag);
         }

@@ -35,14 +35,26 @@ portability::Thread *rx_frame_thread = nullptr;
 portability::Thread *nv_log_thread = nullptr;
 portability::Thread *background_thread = nullptr;
 portability::EventQueue *background_queue = nullptr;
+
+static void create_background_queue();
+static void create_background_queue() {
+    constexpr int THREAD_STACK_SIZE = 4096;
+    background_queue = new portability::EventQueue();    
+    background_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+    PORTABLE_ASSERT(background_thread != nullptr);
+    PORTABLE_ASSERT(background_queue != nullptr);
+    osStatus stat = background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
+    PORTABLE_ASSERT(stat == osOK);
+}
+
 static void create_threads();
 static void create_threads() {
     constexpr int THREAD_STACK_SIZE = 4096;
-    background_queue = new portability::EventQueue();
+    //background_queue = new portability::EventQueue();
     mesh_protocol_thread = new portability::Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
     rx_frame_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
     nv_log_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
-    background_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+    //background_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
 } 
 
 time_t boot_timestamp;
@@ -123,19 +135,35 @@ static void wdt_pet() { // pet the watchdog
 auto main() -> int
 {
     portability::special_init();
+    create_background_queue();
+    create_serial_data_objects();
     create_kiss_serial_data_objects();
+    create_radio_objects();
+
+    create_threads();
+    create_radio_timing_data_objects();
+    create_nv_settings_objects();
+    create_mesh_protocol_objects();
+    create_led_objects();
+    create_peripherals();
+
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX
     portability::sleep(HALF_SECOND);
     auto *bt_ser = new KISSSerialUART(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX */
+
+#if 0
 #ifdef MBED_CONF_APP_KISS_UART_TX_ALT
     portability::sleep(HALF_SECOND);
     auto *bt_alt_ser = new KISSSerialUART(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
                                                 KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
     PORTABLE_ASSERT(bt_alt_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
+#endif
+
+
 #if MBED_CONF_APP_HAS_BLE == 1
     portability::sleep(HALF_SECOND);
     auto ble_ser = make_shared<BLESerial>();
@@ -144,14 +172,6 @@ auto main() -> int
     //auto ble_dbg_ser = make_shared<KISSSerialBLE>(string("BLE-DBG"), DEBUG_PORT);
 #endif /* MBED_CONF_APP_HAS_BLE */
 
-    create_threads();
-    create_serial_data_objects();
-    create_radio_timing_data_objects();
-    create_nv_settings_objects();
-    create_radio_objects();
-    create_mesh_protocol_objects();
-    create_led_objects();
-    create_peripherals();
     start_cal();
     time(&boot_timestamp);
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
@@ -162,10 +182,10 @@ auto main() -> int
 
     // Set up the LEDs
     portability::sleep(HALF_SECOND);
-    PORTABLE_ASSERT(background_thread != nullptr);
-    PORTABLE_ASSERT(background_queue != nullptr);
-    osStatus stat = background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
-    PORTABLE_ASSERT(stat == osOK);
+    //PORTABLE_ASSERT(background_thread != nullptr);
+    //PORTABLE_ASSERT(background_queue != nullptr);
+    //osStatus stat = background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
+    //PORTABLE_ASSERT(stat == osOK);
     PORTABLE_ASSERT(led1 != nullptr);
     led1->setEvtQueue(background_queue);
     PORTABLE_ASSERT(led2 != nullptr);
@@ -226,7 +246,7 @@ auto main() -> int
     portability::sleep(HALF_SECOND);
     send_status();
 
-    stat = rx_frame_thread->start(rx_frame_ser_thread_fn);
+    osStatus stat = rx_frame_thread->start(rx_frame_ser_thread_fn);
     PORTABLE_ASSERT(stat == osOK);
 
     // Start up the GPS code
