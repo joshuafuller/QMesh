@@ -29,6 +29,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "USBSerial.h"
 #include "ble_serial.hpp"
 
+static constexpr int TENTH_SECOND = 100; //NOLINT
+static constexpr int QUARTER_SECOND = 250;
+static constexpr int HALF_SECOND = 500;
+static constexpr int ONE_SECOND = 1000;
+static constexpr int TWO_SECONDS = 2000;
+static constexpr int FIVE_SECONDS = 5000;
+static constexpr int I2C_FREQ = 400000;
 
 portability::Thread *mesh_protocol_thread = nullptr;
 portability::Thread *rx_frame_thread = nullptr;
@@ -57,19 +64,30 @@ static void create_threads() {
     //background_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
 } 
 
+
+static void setup_uarts();
+static void setup_uarts() {
+    // Start the serial handler threads
+#ifdef MBED_CONF_APP_KISS_UART_TX
+    portability::sleep(HALF_SECOND);
+    auto *bt_ser = new KISSSerialUART(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
+    PORTABLE_ASSERT(bt_ser);
+#endif /* MBED_CONF_APP_KISS_UART_TX */
+
+#if 0
+#ifdef MBED_CONF_APP_KISS_UART_TX_ALT
+    portability::sleep(HALF_SECOND);
+    auto *bt_alt_ser = new KISSSerialUART(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
+                                                KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
+    PORTABLE_ASSERT(bt_alt_ser);
+#endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
+#endif
+}
+
 time_t boot_timestamp;
 
 system_state_t current_mode = system_state_t::BOOTING;
 atomic<bool> stay_in_management(false);
-
-static constexpr int TENTH_SECOND = 100; //NOLINT
-static constexpr int QUARTER_SECOND = 250;
-static constexpr int HALF_SECOND = 500;
-static constexpr int ONE_SECOND = 1000;
-static constexpr int TWO_SECONDS = 2000;
-static constexpr int FIVE_SECONDS = 5000;
-static constexpr int I2C_FREQ = 400000;
-
 
 void send_status();
 
@@ -147,23 +165,6 @@ auto main() -> int
     create_led_objects();
     create_peripherals();
 
-    // Start the serial handler threads
-#ifdef MBED_CONF_APP_KISS_UART_TX
-    portability::sleep(HALF_SECOND);
-    auto *bt_ser = new KISSSerialUART(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
-    PORTABLE_ASSERT(bt_ser);
-#endif /* MBED_CONF_APP_KISS_UART_TX */
-
-#if 0
-#ifdef MBED_CONF_APP_KISS_UART_TX_ALT
-    portability::sleep(HALF_SECOND);
-    auto *bt_alt_ser = new KISSSerialUART(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
-                                                KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
-    PORTABLE_ASSERT(bt_alt_ser);
-#endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
-#endif
-
-
 #if MBED_CONF_APP_HAS_BLE == 1
     portability::sleep(HALF_SECOND);
     auto ble_ser = make_shared<BLESerial>();
@@ -174,10 +175,12 @@ auto main() -> int
 
     start_cal();
     time(&boot_timestamp);
+#if 0
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
     Watchdog &wdt = Watchdog::get_instance();
     wdt.start();
     wdt_pet();
+#endif
 #endif
 
     // Set up the LEDs
@@ -241,6 +244,8 @@ auto main() -> int
     }
 
     Frame::seed_stream_id(radio_cb.address);
+
+    setup_uarts();
 
     debug_printf(DBG_INFO, "Serial threads started");
     portability::sleep(HALF_SECOND);
@@ -343,7 +348,7 @@ sleep_portable(500);
 #endif
 
     debug_printf(DBG_INFO, "Starting the memory usage tracker\r\n");
-    start_max_memory_usage();
+    //start_max_memory_usage();
 
     debug_printf(DBG_INFO, "Started everything\r\n");
 

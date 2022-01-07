@@ -291,10 +291,6 @@ void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Beacon Interval: %d\r\n", radio_cb.net_cfg.beacon_interval);
     PORTABLE_ASSERT(radio_cb.net_cfg.beacon_interval <= ONE_HOUR);
     PORTABLE_ASSERT(radio_cb.net_cfg.beacon_interval >= 1);
-    constexpr uint32_t MAX_PLD_LEN = 128;
-    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
-    PORTABLE_ASSERT(radio_cb.net_cfg.pld_len <= MAX_PLD_LEN);
-    PORTABLE_ASSERT(radio_cb.net_cfg.pld_len >= 1);
     constexpr uint32_t MAX_TIMING_OFFSETS = 16;
     debug_printf(DBG_INFO, "Number of timing offset increments: %d\r\n", radio_cb.net_cfg.num_offsets);
     PORTABLE_ASSERT(radio_cb.net_cfg.num_offsets <= MAX_TIMING_OFFSETS);
@@ -317,6 +313,10 @@ void load_settings_from_flash() {
     PORTABLE_ASSERT(radio_cb.radio_cfg.tx_power <= MAX_TX_POWER_DBM);
     PORTABLE_ASSERT(radio_cb.radio_cfg.tx_power >= 0);
     radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
+    constexpr uint32_t MAX_PLD_LEN = 128;
+    debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
+    PORTABLE_ASSERT(radio_cb.net_cfg.pld_len <= MAX_PLD_LEN);
+    PORTABLE_ASSERT(radio_cb.net_cfg.pld_len >= 1);
     radio_cb.valid = true;
 
 #if 0

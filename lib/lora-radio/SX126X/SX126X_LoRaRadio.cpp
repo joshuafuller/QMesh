@@ -169,6 +169,7 @@ void SX126X_LoRaRadio::rf_irq_task()
 void SX126X_LoRaRadio::dio1_irq_isr()
 {
     fhss_mon_sig = static_cast<int>(fhss_mon_sig == 0);
+    #warning investigate whether we really need this critical section lock
     CriticalSectionLock lock;
     // Start timing the duration since the packet was receive
     cur_tmr->start();
@@ -1380,7 +1381,8 @@ void SX126X_LoRaRadio::send(const uint8_t *const buffer, const uint8_t size, con
 }
 
 void SX126X_LoRaRadio::dangle_timeout_handler() {
-    CriticalSectionLock lock;
+    #warning Make sure this is the right thing to do
+    //CriticalSectionLock lock;
     _chip_select = 1;
     *tx_int_mon = 1;
     *rx_int_mon = 0;
@@ -1445,7 +1447,8 @@ void SX126X_LoRaRadio::receive_sel(const bool locking) {
     PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies_count > 0);
     if(radio_cb.radio_cfg.frequencies_count == 1) {
         radio->rx_hop_frequency(); 
-        receive(locking);
+        #warning check this to see if it's correct
+        receive_cad_rx(locking);
     } else {
         radio->rx_hop_frequency(); 
         receive_cad_rx(locking);

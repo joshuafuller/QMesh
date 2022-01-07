@@ -27,7 +27,7 @@ import binascii
 import crcmod
 from threading import Thread, Lock
 import socket
-from Bleak import BleakClient
+#from Bleak import BleakClient
 
 
 ser = None
