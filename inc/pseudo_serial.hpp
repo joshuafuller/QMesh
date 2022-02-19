@@ -34,9 +34,10 @@ public:
     UARTPseudoSerial(UARTPseudoSerial &&) = delete;
     auto operator=(const UARTPseudoSerial &) -> UARTPseudoSerial & = delete; 	
 
-    explicit UARTPseudoSerial(UARTSerial *ser, const bool read) {
-        f_rd = nullptr;
-        f_wr = nullptr;
+    explicit UARTPseudoSerial(UARTSerial *ser, const bool read) :
+        f_rd(nullptr),
+        f_wr(nullptr)
+    {
         if(read) {
             f_rd = fdopen(ser, "r");
             PORTABLE_ASSERT(f_rd != nullptr);
@@ -63,10 +64,9 @@ private:
     FILE *f_rd, *f_wr;
 public:
 
-    explicit FilePseudoSerial(FILE *f) {
-        f_rd = f;
-        f_wr = f;
-    }
+    explicit FilePseudoSerial(FILE *f) :
+        f_rd(f),
+        f_wr(f) { }
 
     auto putc(const int val) -> int override {
         return fputc(val, f_wr);

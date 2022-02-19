@@ -273,6 +273,7 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
     pser_wr = nullptr;
     past_log_msg.clear();
     kiss_extended = true;
+    logfile_names = vector<string>();
         
     string rx_ser_name("RX-");
     rx_ser_name.append(portName());
