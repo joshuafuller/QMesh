@@ -72,7 +72,7 @@ static constexpr uint8_t EXITKISS = 0xFF;
 static auto compare_frame_crc(const vector<uint8_t> &buf) -> bool;
 static auto compute_frame_crc(const vector<uint8_t> &buf) -> crc_t; 
 
-static DataMsg data_msg_zero = DataMsg_init_zero;
+static const DataMsg data_msg_zero = DataMsg_init_zero;
 
 auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
@@ -273,8 +273,6 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
     pser_wr = nullptr;
     past_log_msg.clear();
     kiss_extended = true;
-    port_type = ser_port_type;
-    port_name = my_port_name;
         
     string rx_ser_name("RX-");
     rx_ser_name.append(portName());
@@ -286,15 +284,14 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
 
 
 KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t ser_port_type) :
-    KISSSerial(my_port_name, ser_port_type) {
-    tx_port = NC;
-    rx_port = NC;
-    en_pin = nullptr;
-    ser = nullptr;
-    state_pin = nullptr;
-    using_stdio = true;
-    hc05 = false;
-
+    KISSSerial(my_port_name, ser_port_type),
+    tx_port(NC),
+    rx_port(NC),
+    ser(nullptr),
+    hc05(false),
+    using_stdio(true),
+    en_pin(nullptr),
+    state_pin(nullptr) {
     startThreads();
 
     kiss_sers_mtx->lock();
@@ -307,12 +304,12 @@ static constexpr uint32_t SER_BAUD_RATE = 230400;
 static constexpr uint32_t BT_BAUD_RATE = 38400;
 KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_name, 
                         const ser_port_type_t ser_port_type) :
-    KISSSerial(my_port_name, ser_port_type) {
-    en_pin = nullptr;
-    state_pin = nullptr;
-    tx_port = tx;
-    rx_port = rx;
-    ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
+        KISSSerial(my_port_name, ser_port_type), 
+        tx_port(tx),
+        rx_port(rx),
+        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        en_pin(nullptr),
+        state_pin(nullptr) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
     *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
@@ -372,14 +369,13 @@ void KISSSerialUART::configure_hc05() {
 
 KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State,
             const string &my_port_name, const ser_port_type_t ser_port_type) :
-    KISSSerial(my_port_name, ser_port_type) {
-    hc05 = true;
-    en_pin = new portability::DigitalOut(En);
-    *en_pin = 1;
-    state_pin = new portability::DigitalIn(State);                
-    tx_port = tx;
-    rx_port = rx;
-    ser = new UARTSerial(tx_port, rx_port, BT_BAUD_RATE);
+            KISSSerial(my_port_name, ser_port_type),
+            tx_port(tx),
+            rx_port(rx),
+            ser(new UARTSerial(tx_port, rx_port, BT_BAUD_RATE)),
+            hc05(true),
+            en_pin(new portability::DigitalOut(En)),
+            state_pin(new portability::DigitalIn(State)) {
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
     *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
     PORTABLE_ASSERT(ser);
