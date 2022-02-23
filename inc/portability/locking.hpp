@@ -12,7 +12,8 @@ using mutex = rtos::Mutex;
 using CriticalSectionLock = mbed::CriticalSectionLock;
 
 #elif defined(ESP_IDF)
-#include "components/freertos/FreeRTOS-Kernel/include/freertos/semphr.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 class mutex {
 private:

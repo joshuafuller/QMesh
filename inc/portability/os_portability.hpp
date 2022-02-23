@@ -1,7 +1,9 @@
 #ifndef OS_PORTABILITY_HPP
 #define OS_PORTABILITY_HPP
 
+#if defined(MBED_OS)
 #include "mbed.h"
+#endif /* MBED_OS */
 #include <cstdint>
 #include "asserts.hpp"
 #include "Callback.hpp"

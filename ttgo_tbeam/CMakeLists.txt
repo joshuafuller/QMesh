@@ -5,4 +5,6 @@
 cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+include_directories(../inc)
+include_directories(../inc/portability)
 project(ttgo_tbeam)
