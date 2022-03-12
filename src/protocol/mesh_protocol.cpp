@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <atomic>
 #include <sstream>
 #include "Adafruit_SSD1306.h"
-#include "LoRaRadio.h"
+#include "LoRaRadio_qmesh.h"
 #include "mesh_protocol.hpp"
 #include "radio_timing.hpp"
 #include "radio.hpp"

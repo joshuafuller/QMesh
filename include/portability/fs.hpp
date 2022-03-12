@@ -5,8 +5,8 @@
 
 #if defined(MBED_OS)
 #include "mbed.h"
-#include "LittleFileSystem.h"
-#include "QSPIFBlockDevice.h"
+#include <LittleFileSystem.h>
+#include <QSPIFBlockDevice.h>
 namespace portability {
     using FileSystem = ::LittleFileSystem;
     using BlockDevice = ::QSPIFBlockDevice;

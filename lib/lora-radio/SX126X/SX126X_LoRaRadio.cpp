@@ -638,7 +638,7 @@ void SX126X_LoRaRadio::cold_start_wakeup(const bool locking)
     set_buffer_base_addr(0x00, 0x00);
 
 #ifdef USES_TCXO
-    caliberation_params_t calib_param;
+    calibration_params_t calib_param;
     constexpr float US_PER_UNIT = 15.625F;
     PORTABLE_ASSERT(radio_cb.valid);
     uint32_t tcxo_time = ceilf(radio_cb.radio_cfg.tcxo_time_us / US_PER_UNIT);

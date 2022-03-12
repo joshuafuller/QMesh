@@ -1,7 +1,7 @@
 #ifndef LOCKING_HPP
 #define LOCKING_HPP
 
-#include "portability/asserts.hpp"
+#include "asserts.hpp"
 
 namespace portability {
 

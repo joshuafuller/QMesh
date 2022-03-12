@@ -8,7 +8,7 @@
 #ifndef MBED_LORA_RADIO_DRV_SX126X_SX126X_DS_H_
 #define MBED_LORA_RADIO_DRV_SX126X_SX126X_DS_H_
 
-#include "LoRaRadio.h"
+#include "LoRaRadio_qmesh.h"
 /*!
  * \brief Provides the frequency of the chip running on the radio and the frequency step
  *
@@ -163,7 +163,7 @@ typedef union {
 
     uint8_t value;
 
-} caliberation_params_t;
+} calibration_params_t;
 
 /*!
  * \brief Represents the possible radio system error states

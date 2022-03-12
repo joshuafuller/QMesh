@@ -1,7 +1,7 @@
 #ifndef IO_PINS_HPP
 #define IO_PINS_HPP
 
-#include "portability/asserts.hpp"
+#include "asserts.hpp"
 
 #define ESP_IDF
 

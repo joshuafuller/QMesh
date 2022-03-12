@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "lorawan/LoRaRadio.h"
+#include "LoRaRadio_qmesh.h"
 #include "params.hpp"
 
 #ifndef APP_LORA_RADIO_HELPER_H_
