@@ -4,48 +4,44 @@
             "help": "Which radio to use (options: SX1272,SX1276,SX126X)",
             "value": "SX126X"
         },
-        "main_stack_size":     { "value": 8192 },
-        "lora-spi-mosi":       { "value": "D11" },
-        "lora-spi-miso":       { "value": "D12" },
-        "lora-spi-sclk":       { "value": "D13" },
-        "lora-cs":             { "value": "D10" },  
-        "lora-reset":          { "value": "D3" },
-        "lora-busy":           { "value": "D2" },
-        "lora-dio1":           { "value": "D5" },
-        "lora-dio2":           { "value": "D4" },
-        "lora-txctl":          { "value": "D6" },
-        "lora-rxctl":          { "value": "D7" },
+        "main_stack_size":          { "value" : 8192 },
+        "lora-spi-mosi":            { "value" : "D11" },
+        "lora-spi-miso":            { "value" : "D12" },
+        "lora-spi-sclk":            { "value" : "D13" },
+        "lora-cs":                  { "value" : "D10" },  
+        "lora-reset":               { "value" : "D3" },
+        "lora-busy":                { "value" : "D2" },
+        "lora-dio1":                { "value" : "D5" },
+        "lora-dio2":                { "value" : "D4" },
+        "lora-txctl":               { "value" : "D6" },
+        "lora-rxctl":               { "value" : "D7" },
 
-        "qspi-flash-csn":      { "value": "PB_6"},
-        "qspi-flash-sck":      { "value": "PB_2"},
-        "qspi-flash-io0":      { "value": "PD_11"},
-        "qspi-flash-io1":      { "value": "PD_12"},
-        "qspi-flash-io2":      { "value": "PE_2"},
-        "qspi-flash-io3":      { "value": "PD_13"},
+        "qspi-flash-csn":           { "value" : "PB_6"} ,
+        "qspi-flash-sck":           { "value" : "PB_2"} ,
+        "qspi-flash-io0":           { "value" : "PD_11" },
+        "qspi-flash-io1":           { "value" : "PD_12" },
+        "qspi-flash-io2":           { "value" : "PE_2" },
+        "qspi-flash-io3":           { "value" : "PD_13" },
 
-        "kiss_uart_tx":        { "value": "NC"},
-        "kiss_uart_rx":        { "value": "NC"},
-        "kiss_uart_en":        { "value": "NC"},
-        "kiss_uart_st":        { "value": "NC"},
+        "kiss_uart_tx_esp32_0":     { "value" : "PF_7" },
+        "kiss_uart_rx_esp32_0":     { "value" : "PF_6" },
 
-        "kiss_uart_tx_alt":    { "value": "NC"},
-        "kiss_uart_rx_alt":    { "value": "NC"},
-        "kiss_uart_en_alt":    { "value": "NC"},
-        "kiss_uart_st_alt":    { "value": "NC"},
+        "kiss_uart_tx_esp32_1":     { "value" : "PD_1" },
+        "kiss_uart_rx_esp32_1":     { "value" : "PD_0" },
 
-        "has_watchdog":        { "value": "1"},
-        "has_ble":             { "value": "0"},
+        "has_watchdog":             { "value" : "1" },
+        "has_ble":                  { "value" : "0" },
 
-        "oled-sda":            { "value": "NC"},
-        "oled-scl":            { "value": "NC"},
+        "oled-sda":                 { "value" : "NC" },
+        "oled-scl":                 { "value" : "NC" },
 
-        "rx_int_mon":          { "value": "PD_0"},
-        "tx_int_mon":          { "value": "PD_1"},
-        "int_trig_mon":        { "value": "PG_0"},
-        "retransmit_dis_in":   { "value": "PE_7"},
-        "retransmit_dis_out":  { "value": "PE_8"},
-        "rssi_mon":            { "value": "PF_15"},
-        "fhss_mon":            { "value": "PE_0"}
+        "rx_int_mon":               { "value" : "PD_0" },
+        "tx_int_mon":               { "value" : "PD_1" },
+        "int_trig_mon":             { "value" : "PG_0" },
+        "retransmit_dis_in":        { "value" : "PE_7" },
+        "retransmit_dis_out":       { "value" : "PE_8" },
+        "rssi_mon":                 { "value" : "PF_15" },
+        "fhss_mon":                 { "value" : "PE_0" }
     },
     "target_overrides": {
         "*": {
@@ -104,20 +100,16 @@
             "target.bootloader_img": "bootloader/bootloader_h743.bin",
             "target.clock_source": "USE_PLL_HSE_EXTC",
 
-            "oled-sda":            "PB_8",
-            "oled-scl":            "PB_9",
+            "oled-sda":                 "PB_8",
+            "oled-scl":                 "PB_9",
 
-            "kiss_uart_tx":        "PF_7",
-            "kiss_uart_rx":        "PF_6",
-            "kiss_uart_en":        "PC_13",
-            "kiss_uart_st":        "PC_14",
+            "kiss_uart_tx_esp32_0":     "PF_7",
+            "kiss_uart_rx_esp32_0":     "PF_6",
 
-            "kiss_uart_tx_alt":    "PD_1",
-            "kiss_uart_rx_alt":    "PD_0",
-            "kiss_uart_en_alt":    "PG_1",
-            "kiss_uart_st_alt":    "PF_9",
+            "kiss_uart_tx_esp32_1":     "PD_1",
+            "kiss_uart_rx_esp32_1":     "PD_0",
 
-            "qspi-flash-csn":      "PG_6"
+            "qspi-flash-csn":           "PG_6"
         }
     },
     "macros": ["MBED_CPU_STATS_ENABLED=1", "MBED_OS=1"]

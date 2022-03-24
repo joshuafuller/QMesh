@@ -68,20 +68,19 @@ static void create_threads() {
 static void setup_uarts();
 static void setup_uarts() {
     // Start the serial handler threads
-#ifdef MBED_CONF_APP_KISS_UART_TX
+#ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_0
     portability::sleep(HALF_SECOND);
-    auto *bt_ser = new KISSSerialUART(KISS_UART_TX, KISS_UART_RX, string("BT"), DEBUG_PORT);
-    PORTABLE_ASSERT(bt_ser);
-#endif /* MBED_CONF_APP_KISS_UART_TX */
+    auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
+                    string("ESP32_0"), BT, DEBUG_PORT);
+    PORTABLE_ASSERT(esp32_0_ser);
+#endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_0 */
 
-#if 0
-#ifdef MBED_CONF_APP_KISS_UART_TX_ALT
+#ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_1
     portability::sleep(HALF_SECOND);
-    auto *bt_alt_ser = new KISSSerialUART(KISS_UART_TX_ALT, KISS_UART_RX_ALT, KISS_UART_EN_ALT,
-                                                KISS_UART_ST_ALT, string("BT-ALT"), DEBUG_PORT);
-    PORTABLE_ASSERT(bt_alt_ser);
-#endif /* MBED_CONF_APP_KISS_UART_TX_ALT */
-#endif
+    auto *esp32_1_ser = new KISSSerialUART(KISS_UART_TX_ESP32_1, KISS_UART_RX_ESP32_1, 
+                    string("ESP32_1"), WIFI, DEBUG_PORT);
+    PORTABLE_ASSERT(esp32_1_ser);
+#endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */
 }
 
 time_t boot_timestamp;
@@ -185,10 +184,6 @@ auto main() -> int
 
     // Set up the LEDs
     portability::sleep(HALF_SECOND);
-    //PORTABLE_ASSERT(background_thread != nullptr);
-    //PORTABLE_ASSERT(background_queue != nullptr);
-    //osStatus stat = background_thread->start(callback(background_queue, &portability::EventQueue::dispatch_forever));
-    //PORTABLE_ASSERT(stat == osOK);
     PORTABLE_ASSERT(led1 != nullptr);
     led1->setEvtQueue(background_queue);
     PORTABLE_ASSERT(led2 != nullptr);

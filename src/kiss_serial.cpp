@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -289,7 +289,7 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
     tx_port(NC),
     rx_port(NC),
     ser(nullptr),
-    hc05(false),
+    esp32_bt(false),
     using_stdio(true),
     en_pin(nullptr),
     state_pin(nullptr) {
@@ -302,8 +302,8 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
 
 
 static constexpr uint32_t SER_BAUD_RATE = 230400;
-static constexpr uint32_t BT_BAUD_RATE = 38400;
-KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_name, 
+static constexpr uint32_t BT_BAUD_RATE = 115200;
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_name, esp32_cfg_t esp32_cfg,
                         const ser_port_type_t ser_port_type) :
         KISSSerial(my_port_name, ser_port_type), 
         tx_port(tx),
@@ -315,7 +315,11 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
     *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
     using_stdio = false;
-    hc05 = false;
+    esp32_bt = esp32_cfg != BT;
+
+    if(esp32_bt) {
+        configure_esp32_bt(my_port_name);
+    }
 
     startThreads();
 
@@ -327,68 +331,37 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
 
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int HALF_SECOND = 500;
+static constexpr int ONE_SECOND = 1000;
 static constexpr int REPLY_STR_SIZE = 64;
-void KISSSerialUART::configure_hc05() {
+static constexpr int BT_NAME_MAX_LEN = 8;
+void KISSSerialUART::configure_esp32_bt(const string &esp32_bt_name) {
+    PORTABLE_ASSERT(esp32_bt_name.size() <= BT_NAME_MAX_LEN);
     vector<char> reply_str(REPLY_STR_SIZE);
-    *en_pin = 1;
-    while(true) { };
     portability::sleep(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
     portability::sleep(QUARTER_SECOND);
     FILE *ser_fh = fdopen(&*ser, "rw");
-    printf("testing\r\n");
-    // Reset the module's configuration
-    string reset_cmd("AT+ORGL\r\n");
-    fprintf(ser_fh, "%s", reset_cmd.c_str());
-    printf("%s", reset_cmd.c_str());
-    fgets(reply_str.data(), REPLY_STR_SIZE, ser_fh);
-    printf("%s", reply_str.data());
-    portability::sleep(HALF_SECOND);
-    // Change the name
-    string bt_name_cmd("AT+NAME=");
-    bt_name_cmd.append(portName());
-    bt_name_cmd.append("\r\n");
+    // Set the ESP32 to Bluetooth Classic, and init the SPP
+    string bt_classic_cmd("AT+BTINIT=1\r\n");
+    fprintf(ser_fh, "%s", bt_classic_cmd.c_str());
+    string bt_spp_cmd("AT+BTSPPINIT=2\r\n");
+    fprintf(ser_fh, "%s", bt_spp_cmd.c_str()); 
+    // Set the ESP32 name
+    string bt_name_cmd("AT+BTNAME=\"");
+    bt_name_cmd.append(esp32_bt_name);
+    bt_name_cmd.append("\"\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
-    printf("%s", bt_name_cmd.c_str());
-    portability::sleep(QUARTER_SECOND);
-#if 0
-    string baud_cmd("AT+UART=38400,0,0,\r\n");
-    fprintf(ser_fh, "%s", baud_cmd.c_str());    
-    sleep_portable(QUARTER_SECOND);
-#endif
-    //ser->set_baud(38400);
-    string reboot_cmd("AT+RESET\r\n");
-    fprintf(ser_fh, "%s", reboot_cmd.c_str());
-    portability::sleep(QUARTER_SECOND);
-    string init_cmd("AT+INIT\r\n");
-    fprintf(ser_fh, "%s", init_cmd.c_str());
-    portability::sleep(QUARTER_SECOND);
-    *en_pin = 0;
+    // Set connection params
+    string bt_scanmode_cmd("AT+BTSCANMODE=2\r\n");
+    fprintf(ser_fh, "%s", bt_scanmode_cmd.c_str());
+    string bt_sec_cmd("AT+BTSECPARAM=3,1,\"0000\"\r\n");
+    fprintf(ser_fh, "%s", bt_sec_cmd.c_str());
+    // Enter passthrough mode
+    string bt_enter_spp_cmd("AT+BTSPPSEND\r\n");
+    fprintf(ser_fh, "%s", bt_enter_spp_cmd.c_str());    
+
+    fclose(ser_fh);
     printf("Done with configuration\r\n");
-}
-
-
-KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName En, PinName State,
-            const string &my_port_name, const ser_port_type_t ser_port_type) :
-            KISSSerial(my_port_name, ser_port_type),
-            tx_port(tx),
-            rx_port(rx),
-            ser(new UARTSerial(tx_port, rx_port, BT_BAUD_RATE)),
-            hc05(true),
-            en_pin(new portability::DigitalOut(En)),
-            state_pin(new portability::DigitalIn(State)) {
-    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
-    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
-    PORTABLE_ASSERT(ser);
-    using_stdio = false;
-
-    //configure_hc05();
-
-    startThreads();
-
-    kiss_sers_mtx->lock();
-    kiss_sers.push_back(this);
-    kiss_sers_mtx->unlock();
 }
 
 
@@ -422,6 +395,14 @@ KISSSerial::~KISSSerial() {
 
 
 KISSSerialUART::~KISSSerialUART() {
+    if(esp32_bt) {
+        FILE *ser_fh = fdopen(&*ser, "rw");
+        portability::sleep(QUARTER_SECOND);
+        string bt_leave_passthrough_cmd("+++\r\n");
+        fprintf(ser_fh, "%s", bt_leave_passthrough_cmd.c_str());
+        portability::sleep(ONE_SECOND);
+
+    }
     delete en_pin;
     delete state_pin;
 }

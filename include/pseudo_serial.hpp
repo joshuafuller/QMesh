@@ -10,6 +10,7 @@
 #include <fstream>
 #include <deque>
 #include <memory>
+#include <atomic>
 
 
 class PseudoSerial {
@@ -59,6 +60,100 @@ public:
 };
 
 
+class ESP32WiFiPseudoSerial : public PseudoSerial {
+private:
+    static constexpr int RX_BUF_SIZE = 128;
+    static constexpr int MAX_NUM_CMDS = 16;
+    static constexpr uint8_t KISS_FEND = 0xC0;
+    FILE *f_rd, *f_wr;
+    vector<uint8_t> outbuf;
+    Thread *rx_thread;
+    Mail<char, RX_BUF_SIZE> *rx_data;
+    using BT_CMDS = enum { BT_NULL, BT_SEND_RDY };
+    Mail<BT_CMDS, MAX_NUM_CMDS> *bt_cmds;
+    atomic<bool> in_passthrough;
+    atomic<bool> bt_connected;
+
+    /// Parses the incoming characters and puts them into data 
+    /// and command buffers
+    void parser_thread_fn() {
+
+    }
+
+public:
+
+    ~ESP32WiFiPseudoSerial() {
+        rx_thread->join();
+        delete rx_thread;
+        fclose(f_rd);
+        fclose(f_wr);
+    }
+
+    ESP32WiFiPseudoSerial(const ESP32WiFiPseudoSerial &obj) = delete;
+    auto operator= (ESP32WiFiPseudoSerial &&) -> ESP32WiFiPseudoSerial & = delete;
+    ESP32WiFiPseudoSerial(ESP32WiFiPseudoSerial &&) = delete;
+    auto operator=(const ESP32WiFiPseudoSerial &) -> ESP32WiFiPseudoSerial & = delete; 	
+
+    explicit ESP32WiFiPseudoSerial(UARTSerial *ser, const bool read) :
+        f_rd(nullptr),
+        f_wr(nullptr)
+    {
+        rx_data = new Mail<char, RX_BUF_SIZE>();
+        bt_cmds = new Mail<BT_CMDS, MAX_NUM_CMDS>();
+        if(read) {
+            f_rd = fdopen(ser, "r");
+            PORTABLE_ASSERT(f_rd != nullptr);
+        } else {
+            f_wr = fdopen(ser, "w");
+            PORTABLE_ASSERT(f_wr != nullptr);
+        }
+    }
+
+    auto putc(const int val) -> int override {
+        outbuf.push_back(val);
+        if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
+            // Put us into passthrough mode
+            if(!bt_connected) {
+                outbuf.clear();
+            }
+            while(!in_passthrough && bt_connected) {
+                if(fprintf(f_wr, "AT+BTSPPSEND\r\n") == EOF) {
+                    return EOF;
+                }
+                osEvent evt = bt_cmds->get(osWaitForever);
+                BT_CMDS bt_cmd = BT_NULL;
+                if(evt.status == osEventMail) {
+                    auto *val = static_cast<BT_CMDS *>(evt.value.p);
+                    bt_cmd = *val;
+                }  
+                if(bt_cmd == BT_SEND_RDY) {
+                    in_passthrough = true;
+                } else {
+                    return EOF;
+                }
+            }
+            for(uint8_t & it : outbuf) {
+                if(fputc(it, f_wr) == EOF) {
+                    outbuf.clear();
+                    return EOF;
+                }
+            }
+            outbuf.clear();
+        }
+        return fputc(val, f_wr);
+    }
+
+    auto getc() -> int override {
+        osEvent evt = rx_data->get(osWaitForever);
+        if(evt.status == osEventMail) {
+            char *val = static_cast<char *>(evt.value.p);
+            return *val;
+        }  
+        return EOF;
+    }
+};
+
+
 class FilePseudoSerial : public PseudoSerial {
 private:
     FILE *f_rd, *f_wr;
@@ -82,6 +177,13 @@ using ser_port_type_t = enum ser_port_type_enum {
     DEBUG_PORT, // both types of traffic
     VOICE_PORT, // voice/streaming only
     APRS_PORT   // data/telemetry only  
+};
+
+
+using esp32_cfg_t = enum esp32_cfg_enum {
+    NONE,
+    BT,
+    WIFI
 };
 
 

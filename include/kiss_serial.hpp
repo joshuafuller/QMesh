@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -134,18 +134,18 @@ class KISSSerialUART : public KISSSerial {
 private:
     PinName tx_port, rx_port;
     UARTSerial *ser;
-    bool hc05;
+    bool esp32_bt;
     bool using_stdio;
     DigitalOut *en_pin;
     DigitalIn *state_pin;
 
-    void configure_hc05();
+   void configure_esp32_bt(const string &esp32_bt_name);
 
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerialUART(PinName tx, PinName Rx, const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerialUART(PinName tx, PinName Rx, PinName En, PinName State,
-                const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName Rx, const string &my_port_name, esp32_cfg_t esp32_cfg,
+                    ser_port_type_t ser_port_type);
+    
     ~KISSSerialUART();
     KISSSerialUART(const KISSSerialUART &) = delete;
     auto operator=(const KISSSerialUART &) -> KISSSerialUART& = delete;
