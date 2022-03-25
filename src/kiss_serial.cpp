@@ -290,6 +290,8 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
     rx_port(NC),
     ser(nullptr),
     esp32_bt(false),
+    esp32_wifi_ap(false),
+    esp32_wifi_sta(false),
     using_stdio(true),
     en_pin(nullptr),
     state_pin(nullptr) {
@@ -308,6 +310,8 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
         KISSSerial(my_port_name, ser_port_type), 
         tx_port(tx),
         rx_port(rx),
+        esp32_wifi_sta(false),
+        esp32_wifi_ap(false),
         ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
         en_pin(nullptr),
         state_pin(nullptr) {
@@ -315,10 +319,40 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_nam
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
     *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
     using_stdio = false;
-    esp32_bt = esp32_cfg != BT;
+    PORTABLE_ASSERT(esp32_cfg != BT);
+    esp32_bt = esp32_cfg == BT;
 
     if(esp32_bt) {
         configure_esp32_bt(my_port_name);
+    } 
+
+    startThreads();
+
+    kiss_sers_mtx->lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx->unlock();
+}
+
+
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &ssid, const string &pwd, 
+                        esp32_cfg_t esp32_cfg, const ser_port_type_t ser_port_type) :
+        KISSSerial(ssid, ser_port_type), 
+        tx_port(tx),
+        rx_port(rx),
+        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        en_pin(nullptr),
+        state_pin(nullptr) {
+    PORTABLE_ASSERT(ser);
+    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
+    using_stdio = false;
+    PORTABLE_ASSERT(esp32_bt == BT);
+    esp32_bt = esp32_cfg == BT;
+    esp32_wifi_ap = esp32_cfg == WIFI_AP;
+    esp32_wifi_sta = esp32_cfg == WIFI_STA;
+
+    if(esp32_wifi_ap) {
+        configure_esp32_wifi_ap(ssid, pwd);
     }
 
     startThreads();
@@ -336,7 +370,6 @@ static constexpr int REPLY_STR_SIZE = 64;
 static constexpr int BT_NAME_MAX_LEN = 8;
 void KISSSerialUART::configure_esp32_bt(const string &esp32_bt_name) {
     PORTABLE_ASSERT(esp32_bt_name.size() <= BT_NAME_MAX_LEN);
-    vector<char> reply_str(REPLY_STR_SIZE);
     portability::sleep(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
     portability::sleep(QUARTER_SECOND);
@@ -359,6 +392,61 @@ void KISSSerialUART::configure_esp32_bt(const string &esp32_bt_name) {
     // Enter passthrough mode
     string bt_enter_spp_cmd("AT+BTSPPSEND\r\n");
     fprintf(ser_fh, "%s", bt_enter_spp_cmd.c_str());    
+
+    fclose(ser_fh);
+    printf("Done with configuration\r\n");
+}
+
+
+static constexpr int SSID_MAX_LEN = 8;
+void KISSSerialUART::configure_esp32_wifi_ap(const string &ssid, const string &pwd) {
+    PORTABLE_ASSERT(ssid.size() <= SSID_MAX_LEN);
+    portability::sleep(QUARTER_SECOND);
+    ser->set_baud(BT_BAUD_RATE);
+    portability::sleep(QUARTER_SECOND);
+    FILE *ser_fh = fdopen(&*ser, "rw");
+    // Set the Wi-Fi mode to SoftAP+STA mode
+    string wifi_mode_cmd("AT+CWMODE=3\r\n");
+    fprintf(ser_fh, "%s", wifi_mode_cmd.c_str());
+    // Set the ESP SoftAP params
+    string wifi_softap_cmd("AT+CWSAP=");
+    wifi_softap_cmd.append(ssid);
+    wifi_softap_cmd.append(",");
+    wifi_softap_cmd.append(pwd);
+    wifi_softap_cmd.append(",");
+    wifi_softap_cmd.append("6"); // Just use Channel 6 for now
+    wifi_softap_cmd.append(",");
+    wifi_softap_cmd.append("0"); // Open; no encryption
+    wifi_softap_cmd.append(",");
+    wifi_softap_cmd.append("1"); // Only allow one station to connect
+    wifi_softap_cmd.append(",");
+    wifi_softap_cmd.append("0"); // Broadcast SSID
+    wifi_softap_cmd.append("\r\n");
+    fprintf(ser_fh, "%s", wifi_softap_cmd.c_str());
+    // Set the IP configuration of the ESP SoftAP
+    string wifi_ip_cmd(R"("192.168.10.1","192.168.10.1","255.255.255.0")");
+    wifi_ip_cmd.append("\r\n");
+    fprintf(ser_fh, "%s", wifi_ip_cmd.c_str());
+    // Setup and enable mDNS
+    string wifi_mdns_cmd("AT+MDNS=1,\"QMesh-");
+    wifi_mdns_cmd.append(ssid);
+    wifi_mdns_cmd.append("\",\"_iot\",8080\r\n");
+    fprintf(ser_fh, "%s", wifi_mdns_cmd.c_str());
+    // Setup the DHCP server
+    string wifi_dhcp_cmd("AT+CWDHCP=1,2\r\n");
+    fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
+    string wifi_dhcp_ip_range("AT+CWDHCPS=1,3,\"192.168.10.10\",\"192.168.10.20\"\r\n");
+    fprintf(ser_fh, "%s", wifi_dhcp_ip_range.c_str());
+
+    // Enable only a single server connection
+    string wifi_conn_mux_cmd("AT+CIPMUX=1\r\n");
+    fprintf(ser_fh, "%s", wifi_conn_mux_cmd.c_str());
+    // Allow only one connection to the TCP server
+    string wifi_tcp_maxconn_cmd("AT+CIPSERVERMAXCONN=1\r\n");
+    fprintf(ser_fh, "%s", wifi_tcp_maxconn_cmd.c_str());
+    // Set up a TCP server
+    string wifi_tcp_srvr_cmd("AT+CIPSERVER=1,80\r\n");
+    fprintf(ser_fh, "%s", wifi_tcp_srvr_cmd.c_str());   
 
     fclose(ser_fh);
     printf("Done with configuration\r\n");

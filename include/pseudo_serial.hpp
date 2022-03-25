@@ -183,7 +183,8 @@ using ser_port_type_t = enum ser_port_type_enum {
 using esp32_cfg_t = enum esp32_cfg_enum {
     NONE,
     BT,
-    WIFI
+    WIFI_AP,
+    WIFI_STA,
 };
 
 

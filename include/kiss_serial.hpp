@@ -135,16 +135,22 @@ private:
     PinName tx_port, rx_port;
     UARTSerial *ser;
     bool esp32_bt;
+    bool esp32_wifi_ap;
+    bool esp32_wifi_sta;
     bool using_stdio;
     DigitalOut *en_pin;
     DigitalIn *state_pin;
 
-   void configure_esp32_bt(const string &esp32_bt_name);
+    void configure_esp32_bt(const string &esp32_bt_name);
+    void configure_esp32_wifi_ap(const string &ssid, const string &pwd);
+    void configure_esp32_wifi_sta(const string &ssid, const string &pwd);
 
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
     KISSSerialUART(PinName tx, PinName Rx, const string &my_port_name, esp32_cfg_t esp32_cfg,
                     ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName rx, const string &ssid, const string &pwd, 
+                    esp32_cfg_t esp32_cfg, ser_port_type_t ser_port_type);
     
     ~KISSSerialUART();
     KISSSerialUART(const KISSSerialUART &) = delete;
