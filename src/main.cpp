@@ -78,7 +78,7 @@ static void setup_uarts() {
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_1
     portability::sleep(HALF_SECOND);
     auto *esp32_1_ser = new KISSSerialUART(KISS_UART_TX_ESP32_1, KISS_UART_RX_ESP32_1, 
-                    string("ESP32_1"), WIFI_AP, DEBUG_PORT);
+                    string("ESP32_1"), string("password"), WIFI_AP, DEBUG_PORT);
     PORTABLE_ASSERT(esp32_1_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */
 }

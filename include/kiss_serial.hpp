@@ -142,8 +142,7 @@ private:
     DigitalIn *state_pin;
 
     void configure_esp32_bt(const string &esp32_bt_name);
-    void configure_esp32_wifi_ap(const string &ssid, const string &pwd);
-    void configure_esp32_wifi_sta(const string &ssid, const string &pwd);
+    void configure_esp32_wifi(const string &ssid, const string &pwd, bool isAP);
 
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
