@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ portability::Thread *nv_log_thread = nullptr;
 portability::Thread *background_thread = nullptr;
 portability::EventQueue *background_queue = nullptr;
 
+
 static void create_background_queue();
 static void create_background_queue() {
     constexpr int THREAD_STACK_SIZE = 4096;
@@ -67,18 +68,22 @@ static void create_threads() {
 
 static void setup_uarts();
 static void setup_uarts() {
+    PORTABLE_ASSERT(radio_cb.valid);
+    PORTABLE_ASSERT(radio_cb.has_esp_cfg_msg);
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_0
     portability::sleep(HALF_SECOND);
+    PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp0);
     auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
-                    string("ESP32_0"), BT, DEBUG_PORT);
+                    radio_cb.esp_cfg_msg.esp0, DEBUG_PORT);
     PORTABLE_ASSERT(esp32_0_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_0 */
 
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_1
     portability::sleep(HALF_SECOND);
+    PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp1);
     auto *esp32_1_ser = new KISSSerialUART(KISS_UART_TX_ESP32_1, KISS_UART_RX_ESP32_1, 
-                    string("ESP32_1"), string("password"), WIFI_AP, DEBUG_PORT);
+                    radio_cb.esp_cfg_msg.esp1, DEBUG_PORT);
     PORTABLE_ASSERT(esp32_1_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */
 }
@@ -141,7 +146,8 @@ void print_stats()
 
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
 constexpr uint32_t WDT_TIMEOUT_MS = 6000;
-static void wdt_pet() { // pet the watchdog
+// pet the watchdog
+static void wdt_pet() { //NOLINT
     Watchdog::get_instance().kick();
     background_queue->call_in(WDT_TIMEOUT_MS/2, wdt_pet);
 }

@@ -72,6 +72,12 @@ PB_BIND(UpdateMsg, UpdateMsg, 8)
 PB_BIND(IntParamsMsg, IntParamsMsg, AUTO)
 
 
+PB_BIND(ESP32CfgSubMsg, ESP32CfgSubMsg, 2)
+
+
+PB_BIND(ESP32CfgMsg, ESP32CfgMsg, 2)
+
+
 
 
 

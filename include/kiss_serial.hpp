@@ -16,19 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef JSON_SERIAL_HPP
-#define JSON_SERIAL_HPP
-
-/* 
-    This code exists to allow data to go across the serial port as JSON-formatted
-    data. Doing so allows for different types of data (frames, debug messages, 
-    configuration commands) to use the same UART simultaneously, while keeping
-    all data being conveyed as at least somewhat-readable using just a serial 
-    terminal application.
-
-    To facilitate readability within a terminal application, any binary data is 
-    encoded as Base64.
-*/
+#ifndef KISS_SERIAL_HPP
+#define KISS_SERIAL_HPP
 
 #ifndef TEST_FEC
 #include "mbed.h"
@@ -132,24 +121,18 @@ public:
 
 class KISSSerialUART : public KISSSerial { 
 private:
+    ESP32CfgSubMsg cfg;
+    bool isESP32;
     PinName tx_port, rx_port;
     UARTSerial *ser;
-    bool esp32_bt;
-    bool esp32_wifi_ap;
-    bool esp32_wifi_sta;
     bool using_stdio;
-    DigitalOut *en_pin;
-    DigitalIn *state_pin;
 
-    void configure_esp32_bt(const string &esp32_bt_name);
-    void configure_esp32_wifi(const string &ssid, const string &pwd, bool isAP);
+    void configure_esp32_bt();
+    void configure_esp32_wifi();
 
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerialUART(PinName tx, PinName Rx, const string &my_port_name, esp32_cfg_t esp32_cfg,
-                    ser_port_type_t ser_port_type);
-    KISSSerialUART(PinName tx, PinName rx, const string &ssid, const string &pwd, 
-                    esp32_cfg_t esp32_cfg, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName rx, ESP32CfgSubMsg &my_cfg, ser_port_type_t ser_port_type);
     
     ~KISSSerialUART();
     KISSSerialUART(const KISSSerialUART &) = delete;
@@ -188,4 +171,4 @@ extern Mutex *kiss_sers_mtx;
 extern vector<KISSSerial *> kiss_sers;
 
 
-#endif /* JSON_SERIAL_HPP */
+#endif /* KISS_SERIAL_HPP */

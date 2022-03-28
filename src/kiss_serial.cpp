@@ -284,17 +284,15 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
 }
 
 
+static constexpr ESP32CfgSubMsg ESP32CfgSubMsg_zero = ESP32CfgSubMsg_init_zero;
 KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t ser_port_type) :
     KISSSerial(my_port_name, ser_port_type),
+    cfg(ESP32CfgSubMsg_zero),
+    isESP32(false),
     tx_port(NC),
     rx_port(NC),
     ser(nullptr),
-    esp32_bt(false),
-    esp32_wifi_ap(false),
-    esp32_wifi_sta(false),
-    using_stdio(true),
-    en_pin(nullptr),
-    state_pin(nullptr) {
+    using_stdio(true) {
     startThreads();
 
     kiss_sers_mtx->lock();
@@ -305,56 +303,22 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
 
 static constexpr uint32_t SER_BAUD_RATE = 230400;
 static constexpr uint32_t BT_BAUD_RATE = 115200;
-KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &my_port_name, esp32_cfg_t esp32_cfg,
-                        const ser_port_type_t ser_port_type) :
-        KISSSerial(my_port_name, ser_port_type), 
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, ESP32CfgSubMsg &my_cfg, 
+    const ser_port_type_t ser_port_type) :
+        KISSSerial(cfg.ser_name, ser_port_type), 
+        cfg(my_cfg),
+        isESP32(true),
         tx_port(tx),
         rx_port(rx),
-        esp32_wifi_sta(false),
-        esp32_wifi_ap(false),
-        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
-        en_pin(nullptr),
-        state_pin(nullptr) {
+        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
     *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
     using_stdio = false;
-    PORTABLE_ASSERT(esp32_cfg != BT);
-    esp32_bt = esp32_cfg == BT;
-
-    if(esp32_bt) {
-        configure_esp32_bt(my_port_name);
-    } 
-
-    startThreads();
-
-    kiss_sers_mtx->lock();
-    kiss_sers.push_back(this);
-    kiss_sers_mtx->unlock();
-}
-
-
-KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const string &ssid, const string &pwd, 
-                        esp32_cfg_t esp32_cfg, const ser_port_type_t ser_port_type) :
-        KISSSerial(ssid, ser_port_type), 
-        tx_port(tx),
-        rx_port(rx),
-        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
-        en_pin(nullptr),
-        state_pin(nullptr) {
-    PORTABLE_ASSERT(ser);
-    PORTABLE_ASSERT(esp32_bt == BT);
-    esp32_bt = esp32_cfg == BT;
-    esp32_wifi_ap = esp32_cfg == WIFI_AP;
-    esp32_wifi_sta = esp32_cfg == WIFI_STA;
-    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
-    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
-    using_stdio = false;
-
-    if(esp32_wifi_ap) {
-        configure_esp32_wifi(ssid, pwd, true);
-    } else if(esp32_wifi_sta) {
-        configure_esp32_wifi(ssid, pwd, false);
+    if(my_cfg.isBT) {
+        configure_esp32_bt();
+    } else {
+        configure_esp32_wifi();
     }
 
     startThreads();
@@ -369,8 +333,8 @@ static constexpr int QUARTER_SECOND = 250;
 static constexpr int HALF_SECOND = 500;
 static constexpr int ONE_SECOND = 1000;
 static constexpr int BT_NAME_MAX_LEN = 8;
-void KISSSerialUART::configure_esp32_bt(const string &esp32_bt_name) {
-    PORTABLE_ASSERT(esp32_bt_name.size() <= BT_NAME_MAX_LEN);
+void KISSSerialUART::configure_esp32_bt() {
+    PORTABLE_ASSERT(string(cfg.bt_name).size() <= BT_NAME_MAX_LEN);
     portability::sleep(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
     portability::sleep(QUARTER_SECOND);
@@ -382,13 +346,17 @@ void KISSSerialUART::configure_esp32_bt(const string &esp32_bt_name) {
     fprintf(ser_fh, "%s", bt_spp_cmd.c_str()); 
     // Set the ESP32 name
     string bt_name_cmd("AT+BTNAME=\"");
-    bt_name_cmd.append(esp32_bt_name);
+    bt_name_cmd.append(cfg.bt_name);
     bt_name_cmd.append("\"\r\n");
     fprintf(ser_fh, "%s", bt_name_cmd.c_str());
     // Set connection params
     string bt_scanmode_cmd("AT+BTSCANMODE=2\r\n");
     fprintf(ser_fh, "%s", bt_scanmode_cmd.c_str());
-    string bt_sec_cmd("AT+BTSECPARAM=3,1,\"0000\"\r\n");
+    string bt_sec_cmd("AT+BTSECPARAM=3,1,");
+    bt_sec_cmd.append("\"");
+    bt_sec_cmd.append(cfg.bt_pin);
+    bt_sec_cmd.append("\"");
+    bt_sec_cmd.append("\r\n");
     fprintf(ser_fh, "%s", bt_sec_cmd.c_str());
     // Enter passthrough mode
     string bt_enter_spp_cmd("AT+BTSPPSEND\r\n");
@@ -400,23 +368,25 @@ void KISSSerialUART::configure_esp32_bt(const string &esp32_bt_name) {
 
 
 static constexpr int SSID_MAX_LEN = 8;
-void KISSSerialUART::configure_esp32_wifi(const string &ssid, const string &pwd, const bool isAP) {
-    PORTABLE_ASSERT(ssid.size() <= SSID_MAX_LEN);
+static constexpr int PASS_MAX_LEN = 32;
+void KISSSerialUART::configure_esp32_wifi() {
+    PORTABLE_ASSERT(string(cfg.ssid).size() <= SSID_MAX_LEN);
+    PORTABLE_ASSERT(string(cfg.pass).size() <= PASS_MAX_LEN);
     portability::sleep(QUARTER_SECOND);
     ser->set_baud(BT_BAUD_RATE);
     portability::sleep(QUARTER_SECOND);
     FILE *ser_fh = fdopen(&*ser, "rw");
-    if(isAP) {
+    if(cfg.isAP) {
         // Set the Wi-Fi mode to SoftAP+STA mode
         string wifi_mode_cmd("AT+CWMODE=3\r\n");
         fprintf(ser_fh, "%s", wifi_mode_cmd.c_str());
         // Set the ESP SoftAP params
         string wifi_softap_cmd("AT+CWSAP=");
-        wifi_softap_cmd.append(ssid);
+        wifi_softap_cmd.append(cfg.ssid);
         wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append(pwd);
+        wifi_softap_cmd.append(cfg.pass);
         wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append("6"); // Just use Channel 6 for now
+        wifi_softap_cmd.append(cfg.wifi_chan); // Just use Channel 6 for now
         wifi_softap_cmd.append(",");
         wifi_softap_cmd.append("0"); // Open; no encryption
         wifi_softap_cmd.append(",");
@@ -431,13 +401,19 @@ void KISSSerialUART::configure_esp32_wifi(const string &ssid, const string &pwd,
         fprintf(ser_fh, "%s", wifi_ip_cmd.c_str());
         // Setup and enable mDNS
         string wifi_mdns_cmd("AT+MDNS=1,\"QMesh-");
-        wifi_mdns_cmd.append(ssid);
+        wifi_mdns_cmd.append(cfg.ssid);
         wifi_mdns_cmd.append("\",\"_iot\",8080\r\n");
         fprintf(ser_fh, "%s", wifi_mdns_cmd.c_str());
         // Setup the DHCP server
         string wifi_dhcp_cmd("AT+CWDHCP=1,2\r\n");
         fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
-        string wifi_dhcp_ip_range("AT+CWDHCPS=1,3,\"192.168.10.10\",\"192.168.10.20\"\r\n");
+        string wifi_dhcp_ip_range("AT+CWDHCPS=1,3,");
+        wifi_dhcp_ip_range.append("\"");
+        wifi_dhcp_ip_range.append(cfg.dhcp_range_lo);
+        wifi_dhcp_ip_range.append("\"");
+        wifi_dhcp_ip_range.append(",\"");
+        wifi_dhcp_ip_range.append(cfg.dhcp_range_hi);
+        wifi_dhcp_ip_range.append("\"\r\n");
         fprintf(ser_fh, "%s", wifi_dhcp_ip_range.c_str());
     } else {
         // Enable DHCP
@@ -445,14 +421,14 @@ void KISSSerialUART::configure_esp32_wifi(const string &ssid, const string &pwd,
         fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
         // Setup and enable mDNS
         string wifi_mdns_cmd("AT+MDNS=1,\"QMesh-");
-        wifi_mdns_cmd.append(ssid);
+        wifi_mdns_cmd.append(cfg.ssid);
         wifi_mdns_cmd.append("\",\"_iot\",8080\r\n");
         fprintf(ser_fh, "%s", wifi_mdns_cmd.c_str()); 
         // Connect to the AP
         string wifi_conn_ap_cmd("AT+CWJAP=");
-        wifi_conn_ap_cmd.append(ssid);
+        wifi_conn_ap_cmd.append(cfg.ssid);
         wifi_conn_ap_cmd.append(",");
-        wifi_conn_ap_cmd.append(pwd);
+        wifi_conn_ap_cmd.append(cfg.pass);
         wifi_conn_ap_cmd.append("\r\n");
         fprintf(ser_fh, "%s", wifi_conn_ap_cmd.c_str());
     }
@@ -460,7 +436,13 @@ void KISSSerialUART::configure_esp32_wifi(const string &ssid, const string &pwd,
     // Setup a UDP server to transmit/receive on a multicast IP address
     string wifi_conn_mux_cmd("AT+CIPMUX=0\r\n");
     fprintf(ser_fh, "%s", wifi_conn_mux_cmd.c_str());
-    string wifi_udp_srvr_cmd("AT+CIPSTART=224.0.0.0,1000,1002,0\r\n");
+    string wifi_udp_srvr_cmd("AT+CIPSTART=");
+    wifi_udp_srvr_cmd.append(cfg.multicast_addr);
+    wifi_udp_srvr_cmd.append(",");
+    wifi_udp_srvr_cmd.append(cfg.remote_port);
+    wifi_udp_srvr_cmd.append(",");
+    wifi_udp_srvr_cmd.append(cfg.local_port);
+    wifi_udp_srvr_cmd.append(",0\r\n");
     fprintf(ser_fh, "%s", wifi_udp_srvr_cmd.c_str());
 
     // Enter passthrough mode
@@ -503,7 +485,7 @@ KISSSerial::~KISSSerial() {
 
 
 KISSSerialUART::~KISSSerialUART() {
-    if(esp32_bt || esp32_wifi_ap || esp32_wifi_sta) {
+    if(isESP32) {
         FILE *ser_fh = fdopen(&*ser, "rw");
         portability::sleep(QUARTER_SECOND);
         string bt_leave_passthrough_cmd("+++\r\n");
@@ -511,8 +493,6 @@ KISSSerialUART::~KISSSerialUART() {
         portability::sleep(ONE_SECOND);
     } 
     delete ser;
-    delete en_pin;
-    delete state_pin;
 }
 
 

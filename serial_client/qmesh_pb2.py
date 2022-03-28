@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0bqmesh.proto\x1a\x0cnanopb.proto\"\\\n\x07LoraCfg\x12\n\n\x02\x62w\x18\x01 \x01(\r\x12\n\n\x02\x63r\x18\x02 \x01(\r\x12\n\n\x02sf\x18\x03 \x01(\r\x12\x17\n\x0fpreamble_length\x18\x04 \x01(\r\x12\x14\n\x0c\x66hss_pre_len\x18\x05 \x01(\r\"M\n\x07TestCfg\x12\x14\n\x0c\x63w_test_mode\x18\x01 \x01(\x08\x12\x1a\n\x12preamble_test_mode\x18\x02 \x01(\x08\x12\x10\n\x08test_fec\x18\x03 \x01(\x08\"\xa4\x01\n\x06\x46\x45\x43\x43\x66g\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.FECCfg.Type\x12\x11\n\tconv_rate\x18\x02 \x01(\x05\x12\x12\n\nconv_order\x18\x03 \x01(\x05\x12\x14\n\x0crs_num_roots\x18\x04 \x01(\x05\"A\n\x04Type\x12\x08\n\x04NONE\x10\x00\x12\x0e\n\nINTERLEAVE\x10\x01\x12\x08\n\x04\x43ONV\x10\x02\x12\x07\n\x03RSV\x10\x03\x12\x0c\n\x08RSVGOLAY\x10\x04\"\xa3\x01\n\x08RadioCfg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.RadioCfg.Type\x12\x1a\n\x0b\x66requencies\x18\x02 \x03(\x05\x42\x05\x92?\x02\x10\x10\x12\x10\n\x08tx_power\x18\x03 \x01(\x05\x12\x1a\n\x08lora_cfg\x18\x04 \x01(\x0b\x32\x08.LoraCfg\x12\x14\n\x0ctcxo_time_us\x18\x05 \x01(\x02\"\x19\n\x04Type\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\"\xdb\x01\n\x06NetCfg\x12\x1a\n\nbeacon_msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x02 \x01(\r\x12\x13\n\x0bnum_offsets\x18\x03 \x01(\r\x12\x0f\n\x07pld_len\x18\x04 \x01(\r\x12\x14\n\x0c\x66ull_pkt_len\x18\x05 \x01(\r\x12\x13\n\x0bwalsh_codes\x18\x06 \x01(\x08\x12\x13\n\x0binvert_bits\x18\x07 \x01(\x08\x12\x1e\n\x16voice_frames_per_frame\x18\x08 \x01(\r\x12\x16\n\x0e\x63odec2_bitrate\x18\t \x01(\r\"\xd2\x02\n\tSysCfgMsg\x12\x1d\n\x04mode\x18\x01 \x01(\x0e\x32\x0f.SysCfgMsg.Mode\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\r\x12\x1c\n\tradio_cfg\x18\x03 \x01(\x0b\x32\t.RadioCfg\x12\x1a\n\x08test_cfg\x18\x04 \x01(\x0b\x32\x08.TestCfg\x12\x18\n\x07\x66\x65\x63_cfg\x18\x05 \x01(\x0b\x32\x07.FECCfg\x12\x18\n\x07net_cfg\x18\x06 \x01(\x0b\x32\x07.NetCfg\x12\x0e\n\x06gps_en\x18\x07 \x01(\x08\x12\x16\n\x0elog_packets_en\x18\x08 \x01(\x08\x12\x13\n\x0b\x62oot_log_en\x18\t \x01(\x08\x12\x19\n\x11watchdog_timer_en\x18\n \x01(\x08\x12\r\n\x05valid\x18\x0b \x01(\x08\"@\n\x04Mode\x12\n\n\x06NORMAL\x10\x00\x12\x0e\n\nMODE_RESET\x10\x01\x12\x0f\n\x0bMODE_SILENT\x10\x02\x12\x0b\n\x07TESTING\x10\x03\"\x1b\n\x0b\x43lockSetMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\x81\x03\n\tStatusMsg\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.StatusMsg.Status\x12\x0f\n\x07tx_full\x18\x02 \x01(\x08\x12\x0c\n\x04time\x18\x03 \x01(\r\x12\x0f\n\x07oled_on\x18\x04 \x01(\x08\x12\x14\n\x0ctotal_rx_pkt\x18\x05 \x01(\r\x12\x19\n\x11total_rx_corr_pkt\x18\x06 \x01(\r\x12\x14\n\x0ctotal_tx_pkt\x18\x07 \x01(\r\x12\x14\n\x0clast_rx_rssi\x18\x08 \x01(\r\x12\x13\n\x0blast_rx_snr\x18\t \x01(\r\x12\x11\n\theap_size\x18\n \x01(\r\x12\x16\n\x0epeak_mem_usage\x18\x0b \x01(\r\x12\x1d\n\x15radio_out_queue_level\x18\x0c \x01(\r\x12\x18\n\x10missed_deadlines\x18\r \x01(\r\x12\x17\n\x0ftotal_deadlines\x18\x0e \x01(\r\"2\n\x06Status\x12\x0b\n\x07\x42OOTING\x10\x00\x12\x0e\n\nMANAGEMENT\x10\x01\x12\x0b\n\x07RUNNING\x10\x02\"\x1d\n\x06\x44\x62gMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\x1d\n\x0cSerialCRCMsg\x12\r\n\x05\x63rc32\x18\x01 \x01(\r\"=\n\nBootLogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x11\n\tboot_time\x18\x02 \x01(\r\x12\r\n\x05\x63ount\x18\x03 \x01(\r\"1\n\x06GPSMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0b\n\x03lat\x18\x02 \x01(\x02\x12\x0b\n\x03lon\x18\x03 \x01(\x02\"\xde\x01\n\x06LogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x11\n\ttimestamp\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x0b\n\x03ttl\x18\x05 \x01(\r\x12\x11\n\tstream_id\x18\x06 \x01(\r\x12\x0c\n\x04rssi\x18\x07 \x01(\x11\x12\x0b\n\x03snr\x18\x08 \x01(\x11\x12\x0f\n\x07rx_size\x18\t \x01(\x05\x12\x10\n\x08\x63omp_crc\x18\n \x01(\r\x12\x0b\n\x03\x63rc\x18\x0b \x01(\r\x12\x0e\n\x06uptime\x18\x0c \x01(\r\x12\x18\n\x07gps_msg\x18\r \x01(\x0b\x32\x07.GPSMsg\"\x17\n\x07TimeMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\xdd\x08\n\tSerialMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.SerialMsg.Type\x12\r\n\x05retry\x18\x02 \x01(\x08\x12\"\n\x07sys_cfg\x18\x03 \x01(\x0b\x32\n.SysCfgMsgB\x05\x92?\x02\x18\x04\x12&\n\tclock_set\x18\x04 \x01(\x0b\x32\x0c.ClockSetMsgB\x05\x92?\x02\x18\x04\x12!\n\x06status\x18\x05 \x01(\x0b\x32\n.StatusMsgB\x05\x92?\x02\x18\x04\x12\x1f\n\x07\x64\x62g_msg\x18\x06 \x01(\x0b\x32\x07.DbgMsgB\x05\x92?\x02\x18\x04\x12\x1f\n\x07log_msg\x18\x07 \x01(\x0b\x32\x07.LogMsgB\x05\x92?\x02\x18\x04\x12(\n\x0c\x62oot_log_msg\x18\x08 \x01(\x0b\x32\x0b.BootLogMsgB\x05\x92?\x02\x18\x04\x12!\n\x08\x64\x61ta_msg\x18\t \x01(\x0b\x32\x08.DataMsgB\x05\x92?\x02\x18\x04\x12#\n\terror_msg\x18\n \x01(\x0b\x32\t.ErrorMsgB\x05\x92?\x02\x18\x04\x12!\n\x08time_msg\x18\x0b \x01(\x0b\x32\x08.TimeMsgB\x05\x92?\x02\x18\x04\x12+\n\nupdate_msg\x18\x0c \x01(\x0b\x32\n.UpdateMsgB\x0b\x92?\x02\x18\x04\x92?\x03\xa0\x01\x04\x12#\n\x07ver_msg\x18\r \x01(\x0b\x32\x0b.VersionMsgB\x05\x92?\x02\x18\x04\x12,\n\x0eint_params_msg\x18\x0e \x01(\x0b\x32\r.IntParamsMsgB\x05\x92?\x02\x18\x04\x12.\n\x0fvoice_frame_msg\x18\x0f \x01(\x0b\x32\x0e.VoiceFrameMsgB\x05\x92?\x02\x18\x04\x12\x1f\n\x07\x61\x63k_msg\x18\x10 \x01(\x0b\x32\x07.AckMsgB\x05\x92?\x02\x18\x04\"\x82\x04\n\x04Type\x12\x0e\n\nGET_CONFIG\x10\x00\x12\x0e\n\nSET_CONFIG\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\r\n\tCLOCK_SET\x10\x04\x12\n\n\x06STATUS\x10\x05\x12\x0e\n\nGET_STATUS\x10\x06\x12\x0f\n\x0bSTAY_IN_MGT\x10\x07\x12\r\n\tDEBUG_MSG\x10\x08\x12\n\n\x06REBOOT\x10\t\x12\x0e\n\nERASE_LOGS\x10\n\x12\x13\n\x0f\x45RASE_BOOT_LOGS\x10\x0b\x12\r\n\tERASE_CFG\x10\x0c\x12\x0c\n\x08READ_LOG\x10\r\x12\x12\n\x0eREAD_LOG_RETRY\x10\x0e\x12\r\n\tREPLY_LOG\x10\x0f\x12\x11\n\rREAD_BOOT_LOG\x10\x10\x12\x17\n\x13READ_BOOT_LOG_RETRY\x10\x11\x12\x12\n\x0eREPLY_BOOT_LOG\x10\x12\x12\x0b\n\x07\x43RC_ERR\x10\x13\x12\x0c\n\x08SET_TIME\x10\x14\x12\x07\n\x03\x41\x43K\x10\x15\x12\x07\n\x03\x45RR\x10\x16\x12\x13\n\x0f\x45NTER_KISS_MODE\x10\x17\x12\x12\n\x0e\x45XIT_KISS_MODE\x10\x18\x12\x0c\n\x08\x42OOT_LOG\x10\x19\x12\x07\n\x03LOG\x10\x1a\x12\n\n\x06UPDATE\x10\x1b\x12\x0b\n\x07VERSION\x10\x1c\x12\x10\n\x0cTURN_OLED_ON\x10\x1d\x12\x11\n\rTURN_OLED_OFF\x10\x1e\x12\x0e\n\nINT_PARAMS\x10\x1f\x12\r\n\tVOICE_MSG\x10 :\x06\x92?\x03\xa0\x01\x08\"\'\n\x06\x41\x63kMsg\x12\x1d\n\x15radio_out_queue_level\x18\x01 \x01(\r\"!\n\nVersionMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x01\"a\n\x08\x45rrorMsg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.ErrorMsg.Type\x12\x13\n\x03msg\x18\x02 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\"\n\x04Type\x12\x0b\n\x07\x43RC_ERR\x10\x00\x12\r\n\tOTHER_ERR\x10\x01\"\xc5\x02\n\x07\x44\x61taMsg\x12\x1b\n\x04type\x18\x01 \x01(\x0e\x32\r.DataMsg.Type\x12\x11\n\tstream_id\x18\x02 \x01(\r\x12\x0b\n\x03ttl\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x12\n\nsym_offset\x18\x05 \x01(\r\x12\x17\n\x07payload\x18\x06 \x01(\x0c\x42\x06\x92?\x03\x08\x80\x04\x12\x0b\n\x03\x63rc\x18\x07 \x01(\r\x12\r\n\x05voice\x18\x08 \x01(\x08\x12\x16\n\x0ekiss_cur_frame\x18\t \x01(\r\x12\x17\n\x0fkiss_tot_frames\x18\n \x01(\r\x12\x16\n\x0ekiss_stream_id\x18\x0b \x01(\r\x12\x11\n\tredundant\x18\x0c \x01(\x08\"H\n\x04Type\x12\x06\n\x02TX\x10\x00\x12\x06\n\x02RX\x10\x01\x12\n\n\x06KISSTX\x10\x02\x12\n\n\x06KISSRX\x10\x03\x12\x0b\n\x07VOICETX\x10\x04\x12\x0b\n\x07VOICERX\x10\x05\"N\n\rVoiceFrameMsg\x12\x11\n\tsize_bits\x18\x01 \x01(\r\x12\x12\n\nend_stream\x18\x02 \x01(\x08\x12\x16\n\x07payload\x18\x03 \x01(\x0c\x42\x05\x92?\x02\x08 \"\xfd\x01\n\tUpdateMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.UpdateMsg.Type\x12\x0f\n\x07pkt_cnt\x18\x02 \x01(\x05\x12\x14\n\x04path\x18\x03 \x01(\tB\x06\x92?\x03\x08\x80\x01\x12\x13\n\x03pld\x18\x04 \x01(\x0c\x42\x06\x92?\x03\x08\x80 \x12\x19\n\nsha256_pkt\x18\x05 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nsha256_upd\x18\x06 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nerr_reason\x18\x07 \x01(\tB\x05\x92?\x02\x08 \"<\n\x04Type\x12\t\n\x05\x46IRST\x10\x00\x12\x08\n\x04LAST\x10\x01\x12\n\n\x06MIDDLE\x10\x02\x12\x07\n\x03\x41\x43K\x10\x03\x12\n\n\x06\x41\x43KERR\x10\x04:\x06\x92?\x03\xa0\x01\x08\"]\n\x0cIntParamsMsg\x12\x13\n\x0b\x66req_wobble\x18\x01 \x01(\x05\x12\x0f\n\x07\x63hannel\x18\x02 \x01(\x05\x12\x13\n\x0btime_offset\x18\x03 \x01(\x05\x12\x12\n\npwr_offset\x18\x04 \x01(\x05\x62\x06proto3')
+  serialized_pb=_b('\n\x0bqmesh.proto\x1a\x0cnanopb.proto\"\\\n\x07LoraCfg\x12\n\n\x02\x62w\x18\x01 \x01(\r\x12\n\n\x02\x63r\x18\x02 \x01(\r\x12\n\n\x02sf\x18\x03 \x01(\r\x12\x17\n\x0fpreamble_length\x18\x04 \x01(\r\x12\x14\n\x0c\x66hss_pre_len\x18\x05 \x01(\r\"M\n\x07TestCfg\x12\x14\n\x0c\x63w_test_mode\x18\x01 \x01(\x08\x12\x1a\n\x12preamble_test_mode\x18\x02 \x01(\x08\x12\x10\n\x08test_fec\x18\x03 \x01(\x08\"\xa4\x01\n\x06\x46\x45\x43\x43\x66g\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.FECCfg.Type\x12\x11\n\tconv_rate\x18\x02 \x01(\x05\x12\x12\n\nconv_order\x18\x03 \x01(\x05\x12\x14\n\x0crs_num_roots\x18\x04 \x01(\x05\"A\n\x04Type\x12\x08\n\x04NONE\x10\x00\x12\x0e\n\nINTERLEAVE\x10\x01\x12\x08\n\x04\x43ONV\x10\x02\x12\x07\n\x03RSV\x10\x03\x12\x0c\n\x08RSVGOLAY\x10\x04\"\xa3\x01\n\x08RadioCfg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.RadioCfg.Type\x12\x1a\n\x0b\x66requencies\x18\x02 \x03(\x05\x42\x05\x92?\x02\x10\x10\x12\x10\n\x08tx_power\x18\x03 \x01(\x05\x12\x1a\n\x08lora_cfg\x18\x04 \x01(\x0b\x32\x08.LoraCfg\x12\x14\n\x0ctcxo_time_us\x18\x05 \x01(\x02\"\x19\n\x04Type\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\"\xdb\x01\n\x06NetCfg\x12\x1a\n\nbeacon_msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\x12\x17\n\x0f\x62\x65\x61\x63on_interval\x18\x02 \x01(\r\x12\x13\n\x0bnum_offsets\x18\x03 \x01(\r\x12\x0f\n\x07pld_len\x18\x04 \x01(\r\x12\x14\n\x0c\x66ull_pkt_len\x18\x05 \x01(\r\x12\x13\n\x0bwalsh_codes\x18\x06 \x01(\x08\x12\x13\n\x0binvert_bits\x18\x07 \x01(\x08\x12\x1e\n\x16voice_frames_per_frame\x18\x08 \x01(\r\x12\x16\n\x0e\x63odec2_bitrate\x18\t \x01(\r\"\xf5\x02\n\tSysCfgMsg\x12\x1d\n\x04mode\x18\x01 \x01(\x0e\x32\x0f.SysCfgMsg.Mode\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\r\x12\x1c\n\tradio_cfg\x18\x03 \x01(\x0b\x32\t.RadioCfg\x12\x1a\n\x08test_cfg\x18\x04 \x01(\x0b\x32\x08.TestCfg\x12\x18\n\x07\x66\x65\x63_cfg\x18\x05 \x01(\x0b\x32\x07.FECCfg\x12\x18\n\x07net_cfg\x18\x06 \x01(\x0b\x32\x07.NetCfg\x12!\n\x0b\x65sp_cfg_msg\x18\x07 \x01(\x0b\x32\x0c.ESP32CfgMsg\x12\x0e\n\x06gps_en\x18\x08 \x01(\x08\x12\x16\n\x0elog_packets_en\x18\t \x01(\x08\x12\x13\n\x0b\x62oot_log_en\x18\n \x01(\x08\x12\x19\n\x11watchdog_timer_en\x18\x0b \x01(\x08\x12\r\n\x05valid\x18\x0c \x01(\x08\"@\n\x04Mode\x12\n\n\x06NORMAL\x10\x00\x12\x0e\n\nMODE_RESET\x10\x01\x12\x0f\n\x0bMODE_SILENT\x10\x02\x12\x0b\n\x07TESTING\x10\x03\"\x1b\n\x0b\x43lockSetMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\x81\x03\n\tStatusMsg\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.StatusMsg.Status\x12\x0f\n\x07tx_full\x18\x02 \x01(\x08\x12\x0c\n\x04time\x18\x03 \x01(\r\x12\x0f\n\x07oled_on\x18\x04 \x01(\x08\x12\x14\n\x0ctotal_rx_pkt\x18\x05 \x01(\r\x12\x19\n\x11total_rx_corr_pkt\x18\x06 \x01(\r\x12\x14\n\x0ctotal_tx_pkt\x18\x07 \x01(\r\x12\x14\n\x0clast_rx_rssi\x18\x08 \x01(\r\x12\x13\n\x0blast_rx_snr\x18\t \x01(\r\x12\x11\n\theap_size\x18\n \x01(\r\x12\x16\n\x0epeak_mem_usage\x18\x0b \x01(\r\x12\x1d\n\x15radio_out_queue_level\x18\x0c \x01(\r\x12\x18\n\x10missed_deadlines\x18\r \x01(\r\x12\x17\n\x0ftotal_deadlines\x18\x0e \x01(\r\"2\n\x06Status\x12\x0b\n\x07\x42OOTING\x10\x00\x12\x0e\n\nMANAGEMENT\x10\x01\x12\x0b\n\x07RUNNING\x10\x02\"\x1d\n\x06\x44\x62gMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\x1d\n\x0cSerialCRCMsg\x12\r\n\x05\x63rc32\x18\x01 \x01(\r\"=\n\nBootLogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x11\n\tboot_time\x18\x02 \x01(\r\x12\r\n\x05\x63ount\x18\x03 \x01(\r\"1\n\x06GPSMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0b\n\x03lat\x18\x02 \x01(\x02\x12\x0b\n\x03lon\x18\x03 \x01(\x02\"\xde\x01\n\x06LogMsg\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x11\n\ttimestamp\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x0b\n\x03ttl\x18\x05 \x01(\r\x12\x11\n\tstream_id\x18\x06 \x01(\r\x12\x0c\n\x04rssi\x18\x07 \x01(\x11\x12\x0b\n\x03snr\x18\x08 \x01(\x11\x12\x0f\n\x07rx_size\x18\t \x01(\x05\x12\x10\n\x08\x63omp_crc\x18\n \x01(\r\x12\x0b\n\x03\x63rc\x18\x0b \x01(\r\x12\x0e\n\x06uptime\x18\x0c \x01(\r\x12\x18\n\x07gps_msg\x18\r \x01(\x0b\x32\x07.GPSMsg\"\x17\n\x07TimeMsg\x12\x0c\n\x04time\x18\x01 \x01(\r\"\xdd\x08\n\tSerialMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.SerialMsg.Type\x12\r\n\x05retry\x18\x02 \x01(\x08\x12\"\n\x07sys_cfg\x18\x03 \x01(\x0b\x32\n.SysCfgMsgB\x05\x92?\x02\x18\x04\x12&\n\tclock_set\x18\x04 \x01(\x0b\x32\x0c.ClockSetMsgB\x05\x92?\x02\x18\x04\x12!\n\x06status\x18\x05 \x01(\x0b\x32\n.StatusMsgB\x05\x92?\x02\x18\x04\x12\x1f\n\x07\x64\x62g_msg\x18\x06 \x01(\x0b\x32\x07.DbgMsgB\x05\x92?\x02\x18\x04\x12\x1f\n\x07log_msg\x18\x07 \x01(\x0b\x32\x07.LogMsgB\x05\x92?\x02\x18\x04\x12(\n\x0c\x62oot_log_msg\x18\x08 \x01(\x0b\x32\x0b.BootLogMsgB\x05\x92?\x02\x18\x04\x12!\n\x08\x64\x61ta_msg\x18\t \x01(\x0b\x32\x08.DataMsgB\x05\x92?\x02\x18\x04\x12#\n\terror_msg\x18\n \x01(\x0b\x32\t.ErrorMsgB\x05\x92?\x02\x18\x04\x12!\n\x08time_msg\x18\x0b \x01(\x0b\x32\x08.TimeMsgB\x05\x92?\x02\x18\x04\x12+\n\nupdate_msg\x18\x0c \x01(\x0b\x32\n.UpdateMsgB\x0b\x92?\x02\x18\x04\x92?\x03\xa0\x01\x04\x12#\n\x07ver_msg\x18\r \x01(\x0b\x32\x0b.VersionMsgB\x05\x92?\x02\x18\x04\x12,\n\x0eint_params_msg\x18\x0e \x01(\x0b\x32\r.IntParamsMsgB\x05\x92?\x02\x18\x04\x12.\n\x0fvoice_frame_msg\x18\x0f \x01(\x0b\x32\x0e.VoiceFrameMsgB\x05\x92?\x02\x18\x04\x12\x1f\n\x07\x61\x63k_msg\x18\x10 \x01(\x0b\x32\x07.AckMsgB\x05\x92?\x02\x18\x04\"\x82\x04\n\x04Type\x12\x0e\n\nGET_CONFIG\x10\x00\x12\x0e\n\nSET_CONFIG\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\r\n\tCLOCK_SET\x10\x04\x12\n\n\x06STATUS\x10\x05\x12\x0e\n\nGET_STATUS\x10\x06\x12\x0f\n\x0bSTAY_IN_MGT\x10\x07\x12\r\n\tDEBUG_MSG\x10\x08\x12\n\n\x06REBOOT\x10\t\x12\x0e\n\nERASE_LOGS\x10\n\x12\x13\n\x0f\x45RASE_BOOT_LOGS\x10\x0b\x12\r\n\tERASE_CFG\x10\x0c\x12\x0c\n\x08READ_LOG\x10\r\x12\x12\n\x0eREAD_LOG_RETRY\x10\x0e\x12\r\n\tREPLY_LOG\x10\x0f\x12\x11\n\rREAD_BOOT_LOG\x10\x10\x12\x17\n\x13READ_BOOT_LOG_RETRY\x10\x11\x12\x12\n\x0eREPLY_BOOT_LOG\x10\x12\x12\x0b\n\x07\x43RC_ERR\x10\x13\x12\x0c\n\x08SET_TIME\x10\x14\x12\x07\n\x03\x41\x43K\x10\x15\x12\x07\n\x03\x45RR\x10\x16\x12\x13\n\x0f\x45NTER_KISS_MODE\x10\x17\x12\x12\n\x0e\x45XIT_KISS_MODE\x10\x18\x12\x0c\n\x08\x42OOT_LOG\x10\x19\x12\x07\n\x03LOG\x10\x1a\x12\n\n\x06UPDATE\x10\x1b\x12\x0b\n\x07VERSION\x10\x1c\x12\x10\n\x0cTURN_OLED_ON\x10\x1d\x12\x11\n\rTURN_OLED_OFF\x10\x1e\x12\x0e\n\nINT_PARAMS\x10\x1f\x12\r\n\tVOICE_MSG\x10 :\x06\x92?\x03\xa0\x01\x08\"\'\n\x06\x41\x63kMsg\x12\x1d\n\x15radio_out_queue_level\x18\x01 \x01(\r\"!\n\nVersionMsg\x12\x13\n\x03msg\x18\x01 \x01(\tB\x06\x92?\x03\x08\x80\x01\"a\n\x08\x45rrorMsg\x12\x1c\n\x04type\x18\x01 \x01(\x0e\x32\x0e.ErrorMsg.Type\x12\x13\n\x03msg\x18\x02 \x01(\tB\x06\x92?\x03\x08\x80\x02\"\"\n\x04Type\x12\x0b\n\x07\x43RC_ERR\x10\x00\x12\r\n\tOTHER_ERR\x10\x01\"\xc5\x02\n\x07\x44\x61taMsg\x12\x1b\n\x04type\x18\x01 \x01(\x0e\x32\r.DataMsg.Type\x12\x11\n\tstream_id\x18\x02 \x01(\r\x12\x0b\n\x03ttl\x18\x03 \x01(\r\x12\x0e\n\x06sender\x18\x04 \x01(\r\x12\x12\n\nsym_offset\x18\x05 \x01(\r\x12\x17\n\x07payload\x18\x06 \x01(\x0c\x42\x06\x92?\x03\x08\x80\x04\x12\x0b\n\x03\x63rc\x18\x07 \x01(\r\x12\r\n\x05voice\x18\x08 \x01(\x08\x12\x16\n\x0ekiss_cur_frame\x18\t \x01(\r\x12\x17\n\x0fkiss_tot_frames\x18\n \x01(\r\x12\x16\n\x0ekiss_stream_id\x18\x0b \x01(\r\x12\x11\n\tredundant\x18\x0c \x01(\x08\"H\n\x04Type\x12\x06\n\x02TX\x10\x00\x12\x06\n\x02RX\x10\x01\x12\n\n\x06KISSTX\x10\x02\x12\n\n\x06KISSRX\x10\x03\x12\x0b\n\x07VOICETX\x10\x04\x12\x0b\n\x07VOICERX\x10\x05\"N\n\rVoiceFrameMsg\x12\x11\n\tsize_bits\x18\x01 \x01(\r\x12\x12\n\nend_stream\x18\x02 \x01(\x08\x12\x16\n\x07payload\x18\x03 \x01(\x0c\x42\x05\x92?\x02\x08 \"\xfd\x01\n\tUpdateMsg\x12\x1d\n\x04type\x18\x01 \x01(\x0e\x32\x0f.UpdateMsg.Type\x12\x0f\n\x07pkt_cnt\x18\x02 \x01(\x05\x12\x14\n\x04path\x18\x03 \x01(\tB\x06\x92?\x03\x08\x80\x01\x12\x13\n\x03pld\x18\x04 \x01(\x0c\x42\x06\x92?\x03\x08\x80 \x12\x19\n\nsha256_pkt\x18\x05 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nsha256_upd\x18\x06 \x01(\x0c\x42\x05\x92?\x02\x08 \x12\x19\n\nerr_reason\x18\x07 \x01(\tB\x05\x92?\x02\x08 \"<\n\x04Type\x12\t\n\x05\x46IRST\x10\x00\x12\x08\n\x04LAST\x10\x01\x12\n\n\x06MIDDLE\x10\x02\x12\x07\n\x03\x41\x43K\x10\x03\x12\n\n\x06\x41\x43KERR\x10\x04:\x06\x92?\x03\xa0\x01\x08\"]\n\x0cIntParamsMsg\x12\x13\n\x0b\x66req_wobble\x18\x01 \x01(\x05\x12\x0f\n\x07\x63hannel\x18\x02 \x01(\x05\x12\x13\n\x0btime_offset\x18\x03 \x01(\x05\x12\x12\n\npwr_offset\x18\x04 \x01(\x05\"\x9b\x03\n\x0e\x45SP32CfgSubMsg\x12\x0c\n\x04isBT\x18\x01 \x01(\x08\x12\x0c\n\x04isAP\x18\x02 \x01(\x08\x12\x17\n\x08ser_name\x18\x03 \x01(\tB\x05\x92?\x02\x08 \x12\x16\n\x07\x62t_name\x18\x04 \x01(\tB\x05\x92?\x02\x08 \x12\x15\n\x06\x62t_pin\x18\x05 \x01(\tB\x05\x92?\x02\x08 \x12\x18\n\twifi_chan\x18\x06 \x01(\tB\x05\x92?\x02\x08 \x12\x13\n\x04ssid\x18\x07 \x01(\tB\x05\x92?\x02\x08 \x12\x13\n\x04pass\x18\x08 \x01(\tB\x05\x92?\x02\x08 \x12\x16\n\x07ip_addr\x18\t \x01(\tB\x05\x92?\x02\x08 \x12\x1b\n\x0cgateway_addr\x18\n \x01(\tB\x05\x92?\x02\x08 \x12\x1a\n\x0bsubnet_addr\x18\x0b \x01(\tB\x05\x92?\x02\x08 \x12\x1c\n\rdhcp_range_lo\x18\x0c \x01(\tB\x05\x92?\x02\x08 \x12\x1c\n\rdhcp_range_hi\x18\r \x01(\tB\x05\x92?\x02\x08 \x12\x1d\n\x0emulticast_addr\x18\x0e \x01(\tB\x05\x92?\x02\x08 \x12\x19\n\nlocal_port\x18\x0f \x01(\tB\x05\x92?\x02\x08 \x12\x1a\n\x0bremote_port\x18\x10 \x01(\tB\x05\x92?\x02\x08 \"K\n\x0b\x45SP32CfgMsg\x12\x1d\n\x04\x65sp0\x18\x01 \x01(\x0b\x32\x0f.ESP32CfgSubMsg\x12\x1d\n\x04\x65sp1\x18\x02 \x01(\x0b\x32\x0f.ESP32CfgSubMsgb\x06proto3')
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,])
 
@@ -107,8 +107,8 @@ _SYSCFGMSG_MODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1032,
-  serialized_end=1096,
+  serialized_start=1067,
+  serialized_end=1131,
 )
 _sym_db.RegisterEnumDescriptor(_SYSCFGMSG_MODE)
 
@@ -133,8 +133,8 @@ _STATUSMSG_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1463,
-  serialized_end=1513,
+  serialized_start=1498,
+  serialized_end=1548,
 )
 _sym_db.RegisterEnumDescriptor(_STATUSMSG_STATUS)
 
@@ -279,8 +279,8 @@ _SERIALMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2537,
-  serialized_end=3051,
+  serialized_start=2572,
+  serialized_end=3086,
 )
 _sym_db.RegisterEnumDescriptor(_SERIALMSG_TYPE)
 
@@ -301,8 +301,8 @@ _ERRORMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3200,
-  serialized_end=3234,
+  serialized_start=3235,
+  serialized_end=3269,
 )
 _sym_db.RegisterEnumDescriptor(_ERRORMSG_TYPE)
 
@@ -339,8 +339,8 @@ _DATAMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3490,
-  serialized_end=3562,
+  serialized_start=3525,
+  serialized_end=3597,
 )
 _sym_db.RegisterEnumDescriptor(_DATAMSG_TYPE)
 
@@ -373,8 +373,8 @@ _UPDATEMSG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3830,
-  serialized_end=3890,
+  serialized_start=3865,
+  serialized_end=3925,
 )
 _sym_db.RegisterEnumDescriptor(_UPDATEMSG_TYPE)
 
@@ -733,36 +733,43 @@ _SYSCFGMSG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='gps_en', full_name='SysCfgMsg.gps_en', index=6,
-      number=7, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='esp_cfg_msg', full_name='SysCfgMsg.esp_cfg_msg', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='log_packets_en', full_name='SysCfgMsg.log_packets_en', index=7,
+      name='gps_en', full_name='SysCfgMsg.gps_en', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='boot_log_en', full_name='SysCfgMsg.boot_log_en', index=8,
+      name='log_packets_en', full_name='SysCfgMsg.log_packets_en', index=8,
       number=9, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='watchdog_timer_en', full_name='SysCfgMsg.watchdog_timer_en', index=9,
+      name='boot_log_en', full_name='SysCfgMsg.boot_log_en', index=9,
       number=10, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='valid', full_name='SysCfgMsg.valid', index=10,
+      name='watchdog_timer_en', full_name='SysCfgMsg.watchdog_timer_en', index=10,
       number=11, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='valid', full_name='SysCfgMsg.valid', index=11,
+      number=12, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -781,7 +788,7 @@ _SYSCFGMSG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=758,
-  serialized_end=1096,
+  serialized_end=1131,
 )
 
 
@@ -811,8 +818,8 @@ _CLOCKSETMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1098,
-  serialized_end=1125,
+  serialized_start=1133,
+  serialized_end=1160,
 )
 
 
@@ -934,8 +941,8 @@ _STATUSMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1128,
-  serialized_end=1513,
+  serialized_start=1163,
+  serialized_end=1548,
 )
 
 
@@ -965,8 +972,8 @@ _DBGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1515,
-  serialized_end=1544,
+  serialized_start=1550,
+  serialized_end=1579,
 )
 
 
@@ -996,8 +1003,8 @@ _SERIALCRCMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1546,
-  serialized_end=1575,
+  serialized_start=1581,
+  serialized_end=1610,
 )
 
 
@@ -1041,8 +1048,8 @@ _BOOTLOGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1577,
-  serialized_end=1638,
+  serialized_start=1612,
+  serialized_end=1673,
 )
 
 
@@ -1086,8 +1093,8 @@ _GPSMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1640,
-  serialized_end=1689,
+  serialized_start=1675,
+  serialized_end=1724,
 )
 
 
@@ -1201,8 +1208,8 @@ _LOGMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1692,
-  serialized_end=1914,
+  serialized_start=1727,
+  serialized_end=1949,
 )
 
 
@@ -1232,8 +1239,8 @@ _TIMEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1916,
-  serialized_end=1939,
+  serialized_start=1951,
+  serialized_end=1974,
 )
 
 
@@ -1369,8 +1376,8 @@ _SERIALMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1942,
-  serialized_end=3059,
+  serialized_start=1977,
+  serialized_end=3094,
 )
 
 
@@ -1400,8 +1407,8 @@ _ACKMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3061,
-  serialized_end=3100,
+  serialized_start=3096,
+  serialized_end=3135,
 )
 
 
@@ -1431,8 +1438,8 @@ _VERSIONMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3102,
-  serialized_end=3135,
+  serialized_start=3137,
+  serialized_end=3170,
 )
 
 
@@ -1470,8 +1477,8 @@ _ERRORMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3137,
-  serialized_end=3234,
+  serialized_start=3172,
+  serialized_end=3269,
 )
 
 
@@ -1579,8 +1586,8 @@ _DATAMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3237,
-  serialized_end=3562,
+  serialized_start=3272,
+  serialized_end=3597,
 )
 
 
@@ -1624,8 +1631,8 @@ _VOICEFRAMEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3564,
-  serialized_end=3642,
+  serialized_start=3599,
+  serialized_end=3677,
 )
 
 
@@ -1698,8 +1705,8 @@ _UPDATEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3645,
-  serialized_end=3898,
+  serialized_start=3680,
+  serialized_end=3933,
 )
 
 
@@ -1750,8 +1757,182 @@ _INTPARAMSMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3900,
-  serialized_end=3993,
+  serialized_start=3935,
+  serialized_end=4028,
+)
+
+
+_ESP32CFGSUBMSG = _descriptor.Descriptor(
+  name='ESP32CfgSubMsg',
+  full_name='ESP32CfgSubMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='isBT', full_name='ESP32CfgSubMsg.isBT', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='isAP', full_name='ESP32CfgSubMsg.isAP', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ser_name', full_name='ESP32CfgSubMsg.ser_name', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='bt_name', full_name='ESP32CfgSubMsg.bt_name', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='bt_pin', full_name='ESP32CfgSubMsg.bt_pin', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='wifi_chan', full_name='ESP32CfgSubMsg.wifi_chan', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ssid', full_name='ESP32CfgSubMsg.ssid', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pass', full_name='ESP32CfgSubMsg.pass', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ip_addr', full_name='ESP32CfgSubMsg.ip_addr', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='gateway_addr', full_name='ESP32CfgSubMsg.gateway_addr', index=9,
+      number=10, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='subnet_addr', full_name='ESP32CfgSubMsg.subnet_addr', index=10,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dhcp_range_lo', full_name='ESP32CfgSubMsg.dhcp_range_lo', index=11,
+      number=12, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dhcp_range_hi', full_name='ESP32CfgSubMsg.dhcp_range_hi', index=12,
+      number=13, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='multicast_addr', full_name='ESP32CfgSubMsg.multicast_addr', index=13,
+      number=14, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='local_port', full_name='ESP32CfgSubMsg.local_port', index=14,
+      number=15, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='remote_port', full_name='ESP32CfgSubMsg.remote_port', index=15,
+      number=16, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=_b('\222?\002\010 '), file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4031,
+  serialized_end=4442,
+)
+
+
+_ESP32CFGMSG = _descriptor.Descriptor(
+  name='ESP32CfgMsg',
+  full_name='ESP32CfgMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='esp0', full_name='ESP32CfgMsg.esp0', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='esp1', full_name='ESP32CfgMsg.esp1', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4444,
+  serialized_end=4519,
 )
 
 _FECCFG.fields_by_name['type'].enum_type = _FECCFG_TYPE
@@ -1764,6 +1945,7 @@ _SYSCFGMSG.fields_by_name['radio_cfg'].message_type = _RADIOCFG
 _SYSCFGMSG.fields_by_name['test_cfg'].message_type = _TESTCFG
 _SYSCFGMSG.fields_by_name['fec_cfg'].message_type = _FECCFG
 _SYSCFGMSG.fields_by_name['net_cfg'].message_type = _NETCFG
+_SYSCFGMSG.fields_by_name['esp_cfg_msg'].message_type = _ESP32CFGMSG
 _SYSCFGMSG_MODE.containing_type = _SYSCFGMSG
 _STATUSMSG.fields_by_name['status'].enum_type = _STATUSMSG_STATUS
 _STATUSMSG_STATUS.containing_type = _STATUSMSG
@@ -1790,6 +1972,8 @@ _DATAMSG.fields_by_name['type'].enum_type = _DATAMSG_TYPE
 _DATAMSG_TYPE.containing_type = _DATAMSG
 _UPDATEMSG.fields_by_name['type'].enum_type = _UPDATEMSG_TYPE
 _UPDATEMSG_TYPE.containing_type = _UPDATEMSG
+_ESP32CFGMSG.fields_by_name['esp0'].message_type = _ESP32CFGSUBMSG
+_ESP32CFGMSG.fields_by_name['esp1'].message_type = _ESP32CFGSUBMSG
 DESCRIPTOR.message_types_by_name['LoraCfg'] = _LORACFG
 DESCRIPTOR.message_types_by_name['TestCfg'] = _TESTCFG
 DESCRIPTOR.message_types_by_name['FECCfg'] = _FECCFG
@@ -1812,6 +1996,8 @@ DESCRIPTOR.message_types_by_name['DataMsg'] = _DATAMSG
 DESCRIPTOR.message_types_by_name['VoiceFrameMsg'] = _VOICEFRAMEMSG
 DESCRIPTOR.message_types_by_name['UpdateMsg'] = _UPDATEMSG
 DESCRIPTOR.message_types_by_name['IntParamsMsg'] = _INTPARAMSMSG
+DESCRIPTOR.message_types_by_name['ESP32CfgSubMsg'] = _ESP32CFGSUBMSG
+DESCRIPTOR.message_types_by_name['ESP32CfgMsg'] = _ESP32CFGMSG
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 LoraCfg = _reflection.GeneratedProtocolMessageType('LoraCfg', (_message.Message,), dict(
@@ -1968,6 +2154,20 @@ IntParamsMsg = _reflection.GeneratedProtocolMessageType('IntParamsMsg', (_messag
   ))
 _sym_db.RegisterMessage(IntParamsMsg)
 
+ESP32CfgSubMsg = _reflection.GeneratedProtocolMessageType('ESP32CfgSubMsg', (_message.Message,), dict(
+  DESCRIPTOR = _ESP32CFGSUBMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:ESP32CfgSubMsg)
+  ))
+_sym_db.RegisterMessage(ESP32CfgSubMsg)
+
+ESP32CfgMsg = _reflection.GeneratedProtocolMessageType('ESP32CfgMsg', (_message.Message,), dict(
+  DESCRIPTOR = _ESP32CFGMSG,
+  __module__ = 'qmesh_pb2'
+  # @@protoc_insertion_point(class_scope:ESP32CfgMsg)
+  ))
+_sym_db.RegisterMessage(ESP32CfgMsg)
+
 
 _RADIOCFG.fields_by_name['frequencies']._options = None
 _NETCFG.fields_by_name['beacon_msg']._options = None
@@ -1997,4 +2197,18 @@ _UPDATEMSG.fields_by_name['sha256_pkt']._options = None
 _UPDATEMSG.fields_by_name['sha256_upd']._options = None
 _UPDATEMSG.fields_by_name['err_reason']._options = None
 _UPDATEMSG._options = None
+_ESP32CFGSUBMSG.fields_by_name['ser_name']._options = None
+_ESP32CFGSUBMSG.fields_by_name['bt_name']._options = None
+_ESP32CFGSUBMSG.fields_by_name['bt_pin']._options = None
+_ESP32CFGSUBMSG.fields_by_name['wifi_chan']._options = None
+_ESP32CFGSUBMSG.fields_by_name['ssid']._options = None
+_ESP32CFGSUBMSG.fields_by_name['pass']._options = None
+_ESP32CFGSUBMSG.fields_by_name['ip_addr']._options = None
+_ESP32CFGSUBMSG.fields_by_name['gateway_addr']._options = None
+_ESP32CFGSUBMSG.fields_by_name['subnet_addr']._options = None
+_ESP32CFGSUBMSG.fields_by_name['dhcp_range_lo']._options = None
+_ESP32CFGSUBMSG.fields_by_name['dhcp_range_hi']._options = None
+_ESP32CFGSUBMSG.fields_by_name['multicast_addr']._options = None
+_ESP32CFGSUBMSG.fields_by_name['local_port']._options = None
+_ESP32CFGSUBMSG.fields_by_name['remote_port']._options = None
 # @@protoc_insertion_point(module_scope)

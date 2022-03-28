@@ -1,5 +1,5 @@
 #!/bin/bash
-nanopb_generator.py -I . -D . qmesh.proto
+nanopb_generator.py -I . -D . qmesh.proto 
 mv qmesh.pb.c ../src/protocol/
 mv qmesh.pb.h ../include/
 protoc qmesh.proto --python_out=./ --java_out=./

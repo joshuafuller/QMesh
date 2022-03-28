@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "serial_msg.hpp"
 #include "pseudo_serial.hpp"
 #include "Adafruit_SSD1306.h"
+#include <lwip/inet.h>
 
 
 static constexpr int SIX_SECONDS = 6;
@@ -197,6 +198,43 @@ static void write_default_cfg() {
     radio_cb.test_cfg.preamble_test_mode = false;
     radio_cb.test_cfg.test_fec = false;
 
+    radio_cb.has_esp_cfg_msg = true;
+    radio_cb.esp_cfg_msg.has_esp0 = true;
+    radio_cb.esp_cfg_msg.esp0.isBT = true;
+    radio_cb.esp_cfg_msg.esp0.isAP = false;
+    static constexpr int ESP_CFG_STR_MAX_LEN = 32;
+    strncpy(radio_cb.esp_cfg_msg.esp0.ser_name, "QMesh-Serial0", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.bt_name, "QMesh-BT0", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.bt_pin, "0000", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.ip_addr, "192.168.10.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.gateway_addr, "192.168.10.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.subnet_addr, "192.168.10.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.dhcp_range_lo, "192.168.10.30", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.dhcp_range_hi, "192.168.10.40", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.ssid, "QMesh-AP0", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.pass, "password", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.multicast_addr, "224.0.0.0", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.local_port, "1002", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.remote_port, "1000", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.wifi_chan, "6", ESP_CFG_STR_MAX_LEN);
+    radio_cb.esp_cfg_msg.has_esp1 = true;
+    radio_cb.esp_cfg_msg.esp1.isBT = true;
+    radio_cb.esp_cfg_msg.esp1.isAP = false;
+    strncpy(radio_cb.esp_cfg_msg.esp1.ser_name, "QMesh-Serial1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.bt_name, "QMesh-BT1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.bt_pin, "0000", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.ip_addr, "192.168.20.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.gateway_addr, "192.168.20.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.subnet_addr, "192.168.20.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.dhcp_range_lo, "192.168.20.30", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.dhcp_range_hi, "192.168.20.40", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.ssid, "QMesh-AP1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.pass, "password", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.multicast_addr, "224.0.0.1", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.local_port, "1002", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.remote_port, "1000", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.wifi_chan, "6", ESP_CFG_STR_MAX_LEN);
+
     radio_cb.gps_en = false;
 
     radio_cb.watchdog_timer_en = false;
@@ -254,8 +292,8 @@ void load_settings_from_flash() {
         debug_printf(DBG_INFO, "Frequency %d: %d\r\n", i, radio_cb.radio_cfg.frequencies[i]); //NOLINT
         constexpr int MIN_FREQ = 400e6;
         constexpr int MAX_FREQ = 500e6; 
-        PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies[i] >= MIN_FREQ);
-        PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies[i] <= MAX_FREQ);    
+        PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies[i] >= MIN_FREQ); //NOLINT
+        PORTABLE_ASSERT(radio_cb.radio_cfg.frequencies[i] <= MAX_FREQ); //NOLINT
     }
     PORTABLE_ASSERT(radio_cb.radio_cfg.has_lora_cfg);
     debug_printf(DBG_INFO, "BW: %d\r\n", radio_cb.radio_cfg.lora_cfg.bw);
@@ -317,6 +355,60 @@ void load_settings_from_flash() {
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
     PORTABLE_ASSERT(radio_cb.net_cfg.pld_len <= MAX_PLD_LEN);
     PORTABLE_ASSERT(radio_cb.net_cfg.pld_len >= 1);
+
+    PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.ser_name).empty());
+    if(radio_cb.esp_cfg_msg.esp0.isBT) {
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.bt_name).empty());
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.bt_pin).empty());
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.bt_pin).size() <= 8); 
+    } else {
+        struct in_addr inp{};
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.ip_addr, &inp) == 1); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.gateway_addr, &inp) == 1); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.subnet_addr, &inp) == 1); 
+        if(radio_cb.esp_cfg_msg.esp0.isAP) {
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_lo, &inp) == 1); 
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_hi, &inp) == 1); 
+        }
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.ssid).empty());    
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.pass).empty());
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.multicast_addr, &inp) == 1); 
+        string test_port_addr0(radio_cb.esp_cfg_msg.esp0.multicast_addr);
+        test_port_addr0.append(":");
+        test_port_addr0.append(radio_cb.esp_cfg_msg.esp0.remote_port);
+        PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) == 1); 
+        string test_port_addr1(radio_cb.esp_cfg_msg.esp0.multicast_addr);
+        test_port_addr1.append(":");
+        test_port_addr1.append(radio_cb.esp_cfg_msg.esp0.local_port);
+        PORTABLE_ASSERT(inet_aton(test_port_addr1.c_str(), &inp) == 1); 
+    }
+    PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.ser_name).empty());
+    if(radio_cb.esp_cfg_msg.esp1.isBT) {
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.bt_name).empty());
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.bt_pin).empty());
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.bt_pin).size() <= 8); 
+    } else {
+        struct in_addr inp{};
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.ip_addr, &inp) == 1); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.gateway_addr, &inp) == 1);
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.subnet_addr, &inp) == 1);
+        if(radio_cb.esp_cfg_msg.esp0.isAP) {
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_lo, &inp) == 1);
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_hi, &inp) == 1);
+        }
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.ssid).empty());    
+        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.pass).empty());
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.multicast_addr, &inp) == 1);
+        string test_port_addr0(radio_cb.esp_cfg_msg.esp1.multicast_addr);
+        test_port_addr0.append(":");
+        test_port_addr0.append(radio_cb.esp_cfg_msg.esp1.remote_port);
+        PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) == 1);
+        string test_port_addr1(radio_cb.esp_cfg_msg.esp1.multicast_addr);
+        test_port_addr1.append(":");
+        test_port_addr1.append(radio_cb.esp_cfg_msg.esp1.local_port);
+        PORTABLE_ASSERT(inet_aton(test_port_addr1.c_str(), &inp) == 1);   
+    }
+
     radio_cb.valid = true;
 
 #if 0

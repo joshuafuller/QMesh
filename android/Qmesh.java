@@ -4398,27 +4398,40 @@ public final class Qmesh {
     Qmesh.NetCfgOrBuilder getNetCfgOrBuilder();
 
     /**
-     * <code>bool gps_en = 7;</code>
+     * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+     */
+    boolean hasEspCfgMsg();
+    /**
+     * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+     */
+    Qmesh.ESP32CfgMsg getEspCfgMsg();
+    /**
+     * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+     */
+    Qmesh.ESP32CfgMsgOrBuilder getEspCfgMsgOrBuilder();
+
+    /**
+     * <code>bool gps_en = 8;</code>
      */
     boolean getGpsEn();
 
     /**
-     * <code>bool log_packets_en = 8;</code>
+     * <code>bool log_packets_en = 9;</code>
      */
     boolean getLogPacketsEn();
 
     /**
-     * <code>bool boot_log_en = 9;</code>
+     * <code>bool boot_log_en = 10;</code>
      */
     boolean getBootLogEn();
 
     /**
-     * <code>bool watchdog_timer_en = 10;</code>
+     * <code>bool watchdog_timer_en = 11;</code>
      */
     boolean getWatchdogTimerEn();
 
     /**
-     * <code>bool valid = 11;</code>
+     * <code>bool valid = 12;</code>
      */
     boolean getValid();
   }
@@ -4531,27 +4544,40 @@ public final class Qmesh {
 
               break;
             }
-            case 56: {
+            case 58: {
+              Qmesh.ESP32CfgMsg.Builder subBuilder = null;
+              if (espCfgMsg_ != null) {
+                subBuilder = espCfgMsg_.toBuilder();
+              }
+              espCfgMsg_ = input.readMessage(Qmesh.ESP32CfgMsg.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(espCfgMsg_);
+                espCfgMsg_ = subBuilder.buildPartial();
+              }
 
-              gpsEn_ = input.readBool();
               break;
             }
             case 64: {
 
-              logPacketsEn_ = input.readBool();
+              gpsEn_ = input.readBool();
               break;
             }
             case 72: {
 
-              bootLogEn_ = input.readBool();
+              logPacketsEn_ = input.readBool();
               break;
             }
             case 80: {
 
-              watchdogTimerEn_ = input.readBool();
+              bootLogEn_ = input.readBool();
               break;
             }
             case 88: {
+
+              watchdogTimerEn_ = input.readBool();
+              break;
+            }
+            case 96: {
 
               valid_ = input.readBool();
               break;
@@ -4814,46 +4840,67 @@ public final class Qmesh {
       return getNetCfg();
     }
 
-    public static final int GPS_EN_FIELD_NUMBER = 7;
+    public static final int ESP_CFG_MSG_FIELD_NUMBER = 7;
+    private Qmesh.ESP32CfgMsg espCfgMsg_;
+    /**
+     * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+     */
+    public boolean hasEspCfgMsg() {
+      return espCfgMsg_ != null;
+    }
+    /**
+     * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+     */
+    public Qmesh.ESP32CfgMsg getEspCfgMsg() {
+      return espCfgMsg_ == null ? Qmesh.ESP32CfgMsg.getDefaultInstance() : espCfgMsg_;
+    }
+    /**
+     * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+     */
+    public Qmesh.ESP32CfgMsgOrBuilder getEspCfgMsgOrBuilder() {
+      return getEspCfgMsg();
+    }
+
+    public static final int GPS_EN_FIELD_NUMBER = 8;
     private boolean gpsEn_;
     /**
-     * <code>bool gps_en = 7;</code>
+     * <code>bool gps_en = 8;</code>
      */
     public boolean getGpsEn() {
       return gpsEn_;
     }
 
-    public static final int LOG_PACKETS_EN_FIELD_NUMBER = 8;
+    public static final int LOG_PACKETS_EN_FIELD_NUMBER = 9;
     private boolean logPacketsEn_;
     /**
-     * <code>bool log_packets_en = 8;</code>
+     * <code>bool log_packets_en = 9;</code>
      */
     public boolean getLogPacketsEn() {
       return logPacketsEn_;
     }
 
-    public static final int BOOT_LOG_EN_FIELD_NUMBER = 9;
+    public static final int BOOT_LOG_EN_FIELD_NUMBER = 10;
     private boolean bootLogEn_;
     /**
-     * <code>bool boot_log_en = 9;</code>
+     * <code>bool boot_log_en = 10;</code>
      */
     public boolean getBootLogEn() {
       return bootLogEn_;
     }
 
-    public static final int WATCHDOG_TIMER_EN_FIELD_NUMBER = 10;
+    public static final int WATCHDOG_TIMER_EN_FIELD_NUMBER = 11;
     private boolean watchdogTimerEn_;
     /**
-     * <code>bool watchdog_timer_en = 10;</code>
+     * <code>bool watchdog_timer_en = 11;</code>
      */
     public boolean getWatchdogTimerEn() {
       return watchdogTimerEn_;
     }
 
-    public static final int VALID_FIELD_NUMBER = 11;
+    public static final int VALID_FIELD_NUMBER = 12;
     private boolean valid_;
     /**
-     * <code>bool valid = 11;</code>
+     * <code>bool valid = 12;</code>
      */
     public boolean getValid() {
       return valid_;
@@ -4891,20 +4938,23 @@ public final class Qmesh {
       if (netCfg_ != null) {
         output.writeMessage(6, getNetCfg());
       }
+      if (espCfgMsg_ != null) {
+        output.writeMessage(7, getEspCfgMsg());
+      }
       if (gpsEn_ != false) {
-        output.writeBool(7, gpsEn_);
+        output.writeBool(8, gpsEn_);
       }
       if (logPacketsEn_ != false) {
-        output.writeBool(8, logPacketsEn_);
+        output.writeBool(9, logPacketsEn_);
       }
       if (bootLogEn_ != false) {
-        output.writeBool(9, bootLogEn_);
+        output.writeBool(10, bootLogEn_);
       }
       if (watchdogTimerEn_ != false) {
-        output.writeBool(10, watchdogTimerEn_);
+        output.writeBool(11, watchdogTimerEn_);
       }
       if (valid_ != false) {
-        output.writeBool(11, valid_);
+        output.writeBool(12, valid_);
       }
       unknownFields.writeTo(output);
     }
@@ -4939,25 +4989,29 @@ public final class Qmesh {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(6, getNetCfg());
       }
+      if (espCfgMsg_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, getEspCfgMsg());
+      }
       if (gpsEn_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(7, gpsEn_);
+          .computeBoolSize(8, gpsEn_);
       }
       if (logPacketsEn_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(8, logPacketsEn_);
+          .computeBoolSize(9, logPacketsEn_);
       }
       if (bootLogEn_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(9, bootLogEn_);
+          .computeBoolSize(10, bootLogEn_);
       }
       if (watchdogTimerEn_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(10, watchdogTimerEn_);
+          .computeBoolSize(11, watchdogTimerEn_);
       }
       if (valid_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(11, valid_);
+          .computeBoolSize(12, valid_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -4997,6 +5051,11 @@ public final class Qmesh {
       if (hasNetCfg()) {
         result = result && getNetCfg()
             .equals(other.getNetCfg());
+      }
+      result = result && (hasEspCfgMsg() == other.hasEspCfgMsg());
+      if (hasEspCfgMsg()) {
+        result = result && getEspCfgMsg()
+            .equals(other.getEspCfgMsg());
       }
       result = result && (getGpsEn()
           == other.getGpsEn());
@@ -5038,6 +5097,10 @@ public final class Qmesh {
       if (hasNetCfg()) {
         hash = (37 * hash) + NET_CFG_FIELD_NUMBER;
         hash = (53 * hash) + getNetCfg().hashCode();
+      }
+      if (hasEspCfgMsg()) {
+        hash = (37 * hash) + ESP_CFG_MSG_FIELD_NUMBER;
+        hash = (53 * hash) + getEspCfgMsg().hashCode();
       }
       hash = (37 * hash) + GPS_EN_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -5215,6 +5278,12 @@ public final class Qmesh {
           netCfg_ = null;
           netCfgBuilder_ = null;
         }
+        if (espCfgMsgBuilder_ == null) {
+          espCfgMsg_ = null;
+        } else {
+          espCfgMsg_ = null;
+          espCfgMsgBuilder_ = null;
+        }
         gpsEn_ = false;
 
         logPacketsEn_ = false;
@@ -5272,6 +5341,11 @@ public final class Qmesh {
           result.netCfg_ = netCfg_;
         } else {
           result.netCfg_ = netCfgBuilder_.build();
+        }
+        if (espCfgMsgBuilder_ == null) {
+          result.espCfgMsg_ = espCfgMsg_;
+        } else {
+          result.espCfgMsg_ = espCfgMsgBuilder_.build();
         }
         result.gpsEn_ = gpsEn_;
         result.logPacketsEn_ = logPacketsEn_;
@@ -5343,6 +5417,9 @@ public final class Qmesh {
         }
         if (other.hasNetCfg()) {
           mergeNetCfg(other.getNetCfg());
+        }
+        if (other.hasEspCfgMsg()) {
+          mergeEspCfgMsg(other.getEspCfgMsg());
         }
         if (other.getGpsEn() != false) {
           setGpsEn(other.getGpsEn());
@@ -5927,15 +6004,132 @@ public final class Qmesh {
         return netCfgBuilder_;
       }
 
+      private Qmesh.ESP32CfgMsg espCfgMsg_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.ESP32CfgMsg, Qmesh.ESP32CfgMsg.Builder, Qmesh.ESP32CfgMsgOrBuilder> espCfgMsgBuilder_;
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public boolean hasEspCfgMsg() {
+        return espCfgMsgBuilder_ != null || espCfgMsg_ != null;
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Qmesh.ESP32CfgMsg getEspCfgMsg() {
+        if (espCfgMsgBuilder_ == null) {
+          return espCfgMsg_ == null ? Qmesh.ESP32CfgMsg.getDefaultInstance() : espCfgMsg_;
+        } else {
+          return espCfgMsgBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Builder setEspCfgMsg(Qmesh.ESP32CfgMsg value) {
+        if (espCfgMsgBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          espCfgMsg_ = value;
+          onChanged();
+        } else {
+          espCfgMsgBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Builder setEspCfgMsg(
+          Qmesh.ESP32CfgMsg.Builder builderForValue) {
+        if (espCfgMsgBuilder_ == null) {
+          espCfgMsg_ = builderForValue.build();
+          onChanged();
+        } else {
+          espCfgMsgBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Builder mergeEspCfgMsg(Qmesh.ESP32CfgMsg value) {
+        if (espCfgMsgBuilder_ == null) {
+          if (espCfgMsg_ != null) {
+            espCfgMsg_ =
+              Qmesh.ESP32CfgMsg.newBuilder(espCfgMsg_).mergeFrom(value).buildPartial();
+          } else {
+            espCfgMsg_ = value;
+          }
+          onChanged();
+        } else {
+          espCfgMsgBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Builder clearEspCfgMsg() {
+        if (espCfgMsgBuilder_ == null) {
+          espCfgMsg_ = null;
+          onChanged();
+        } else {
+          espCfgMsg_ = null;
+          espCfgMsgBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Qmesh.ESP32CfgMsg.Builder getEspCfgMsgBuilder() {
+        
+        onChanged();
+        return getEspCfgMsgFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      public Qmesh.ESP32CfgMsgOrBuilder getEspCfgMsgOrBuilder() {
+        if (espCfgMsgBuilder_ != null) {
+          return espCfgMsgBuilder_.getMessageOrBuilder();
+        } else {
+          return espCfgMsg_ == null ?
+              Qmesh.ESP32CfgMsg.getDefaultInstance() : espCfgMsg_;
+        }
+      }
+      /**
+       * <code>.ESP32CfgMsg esp_cfg_msg = 7;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.ESP32CfgMsg, Qmesh.ESP32CfgMsg.Builder, Qmesh.ESP32CfgMsgOrBuilder> 
+          getEspCfgMsgFieldBuilder() {
+        if (espCfgMsgBuilder_ == null) {
+          espCfgMsgBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              Qmesh.ESP32CfgMsg, Qmesh.ESP32CfgMsg.Builder, Qmesh.ESP32CfgMsgOrBuilder>(
+                  getEspCfgMsg(),
+                  getParentForChildren(),
+                  isClean());
+          espCfgMsg_ = null;
+        }
+        return espCfgMsgBuilder_;
+      }
+
       private boolean gpsEn_ ;
       /**
-       * <code>bool gps_en = 7;</code>
+       * <code>bool gps_en = 8;</code>
        */
       public boolean getGpsEn() {
         return gpsEn_;
       }
       /**
-       * <code>bool gps_en = 7;</code>
+       * <code>bool gps_en = 8;</code>
        */
       public Builder setGpsEn(boolean value) {
         
@@ -5944,7 +6138,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool gps_en = 7;</code>
+       * <code>bool gps_en = 8;</code>
        */
       public Builder clearGpsEn() {
         
@@ -5955,13 +6149,13 @@ public final class Qmesh {
 
       private boolean logPacketsEn_ ;
       /**
-       * <code>bool log_packets_en = 8;</code>
+       * <code>bool log_packets_en = 9;</code>
        */
       public boolean getLogPacketsEn() {
         return logPacketsEn_;
       }
       /**
-       * <code>bool log_packets_en = 8;</code>
+       * <code>bool log_packets_en = 9;</code>
        */
       public Builder setLogPacketsEn(boolean value) {
         
@@ -5970,7 +6164,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool log_packets_en = 8;</code>
+       * <code>bool log_packets_en = 9;</code>
        */
       public Builder clearLogPacketsEn() {
         
@@ -5981,13 +6175,13 @@ public final class Qmesh {
 
       private boolean bootLogEn_ ;
       /**
-       * <code>bool boot_log_en = 9;</code>
+       * <code>bool boot_log_en = 10;</code>
        */
       public boolean getBootLogEn() {
         return bootLogEn_;
       }
       /**
-       * <code>bool boot_log_en = 9;</code>
+       * <code>bool boot_log_en = 10;</code>
        */
       public Builder setBootLogEn(boolean value) {
         
@@ -5996,7 +6190,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool boot_log_en = 9;</code>
+       * <code>bool boot_log_en = 10;</code>
        */
       public Builder clearBootLogEn() {
         
@@ -6007,13 +6201,13 @@ public final class Qmesh {
 
       private boolean watchdogTimerEn_ ;
       /**
-       * <code>bool watchdog_timer_en = 10;</code>
+       * <code>bool watchdog_timer_en = 11;</code>
        */
       public boolean getWatchdogTimerEn() {
         return watchdogTimerEn_;
       }
       /**
-       * <code>bool watchdog_timer_en = 10;</code>
+       * <code>bool watchdog_timer_en = 11;</code>
        */
       public Builder setWatchdogTimerEn(boolean value) {
         
@@ -6022,7 +6216,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool watchdog_timer_en = 10;</code>
+       * <code>bool watchdog_timer_en = 11;</code>
        */
       public Builder clearWatchdogTimerEn() {
         
@@ -6033,13 +6227,13 @@ public final class Qmesh {
 
       private boolean valid_ ;
       /**
-       * <code>bool valid = 11;</code>
+       * <code>bool valid = 12;</code>
        */
       public boolean getValid() {
         return valid_;
       }
       /**
-       * <code>bool valid = 11;</code>
+       * <code>bool valid = 12;</code>
        */
       public Builder setValid(boolean value) {
         
@@ -6048,7 +6242,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool valid = 11;</code>
+       * <code>bool valid = 12;</code>
        */
       public Builder clearValid() {
         
@@ -21307,6 +21501,3266 @@ public final class Qmesh {
 
   }
 
+  public interface ESP32CfgSubMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ESP32CfgSubMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>bool isBT = 1;</code>
+     */
+    boolean getIsBT();
+
+    /**
+     * <code>bool isAP = 2;</code>
+     */
+    boolean getIsAP();
+
+    /**
+     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getSerName();
+    /**
+     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getSerNameBytes();
+
+    /**
+     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getBtName();
+    /**
+     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getBtNameBytes();
+
+    /**
+     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getBtPin();
+    /**
+     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getBtPinBytes();
+
+    /**
+     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getWifiChan();
+    /**
+     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getWifiChanBytes();
+
+    /**
+     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getSsid();
+    /**
+     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getSsidBytes();
+
+    /**
+     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getPass();
+    /**
+     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getPassBytes();
+
+    /**
+     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getIpAddr();
+    /**
+     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getIpAddrBytes();
+
+    /**
+     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getGatewayAddr();
+    /**
+     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getGatewayAddrBytes();
+
+    /**
+     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getSubnetAddr();
+    /**
+     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getSubnetAddrBytes();
+
+    /**
+     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getDhcpRangeLo();
+    /**
+     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getDhcpRangeLoBytes();
+
+    /**
+     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getDhcpRangeHi();
+    /**
+     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getDhcpRangeHiBytes();
+
+    /**
+     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getMulticastAddr();
+    /**
+     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getMulticastAddrBytes();
+
+    /**
+     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getLocalPort();
+    /**
+     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getLocalPortBytes();
+
+    /**
+     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     */
+    java.lang.String getRemotePort();
+    /**
+     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     */
+    com.google.protobuf.ByteString
+        getRemotePortBytes();
+  }
+  /**
+   * Protobuf type {@code ESP32CfgSubMsg}
+   */
+  public  static final class ESP32CfgSubMsg extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ESP32CfgSubMsg)
+      ESP32CfgSubMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ESP32CfgSubMsg.newBuilder() to construct.
+    private ESP32CfgSubMsg(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ESP32CfgSubMsg() {
+      isBT_ = false;
+      isAP_ = false;
+      serName_ = "";
+      btName_ = "";
+      btPin_ = "";
+      wifiChan_ = "";
+      ssid_ = "";
+      pass_ = "";
+      ipAddr_ = "";
+      gatewayAddr_ = "";
+      subnetAddr_ = "";
+      dhcpRangeLo_ = "";
+      dhcpRangeHi_ = "";
+      multicastAddr_ = "";
+      localPort_ = "";
+      remotePort_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ESP32CfgSubMsg(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              isBT_ = input.readBool();
+              break;
+            }
+            case 16: {
+
+              isAP_ = input.readBool();
+              break;
+            }
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              serName_ = s;
+              break;
+            }
+            case 34: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              btName_ = s;
+              break;
+            }
+            case 42: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              btPin_ = s;
+              break;
+            }
+            case 50: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              wifiChan_ = s;
+              break;
+            }
+            case 58: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              ssid_ = s;
+              break;
+            }
+            case 66: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              pass_ = s;
+              break;
+            }
+            case 74: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              ipAddr_ = s;
+              break;
+            }
+            case 82: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              gatewayAddr_ = s;
+              break;
+            }
+            case 90: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              subnetAddr_ = s;
+              break;
+            }
+            case 98: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              dhcpRangeLo_ = s;
+              break;
+            }
+            case 106: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              dhcpRangeHi_ = s;
+              break;
+            }
+            case 114: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              multicastAddr_ = s;
+              break;
+            }
+            case 122: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              localPort_ = s;
+              break;
+            }
+            case 130: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              remotePort_ = s;
+              break;
+            }
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Qmesh.internal_static_ESP32CfgSubMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Qmesh.internal_static_ESP32CfgSubMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Qmesh.ESP32CfgSubMsg.class, Qmesh.ESP32CfgSubMsg.Builder.class);
+    }
+
+    public static final int ISBT_FIELD_NUMBER = 1;
+    private boolean isBT_;
+    /**
+     * <code>bool isBT = 1;</code>
+     */
+    public boolean getIsBT() {
+      return isBT_;
+    }
+
+    public static final int ISAP_FIELD_NUMBER = 2;
+    private boolean isAP_;
+    /**
+     * <code>bool isAP = 2;</code>
+     */
+    public boolean getIsAP() {
+      return isAP_;
+    }
+
+    public static final int SER_NAME_FIELD_NUMBER = 3;
+    private volatile java.lang.Object serName_;
+    /**
+     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getSerName() {
+      java.lang.Object ref = serName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        serName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getSerNameBytes() {
+      java.lang.Object ref = serName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        serName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int BT_NAME_FIELD_NUMBER = 4;
+    private volatile java.lang.Object btName_;
+    /**
+     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getBtName() {
+      java.lang.Object ref = btName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        btName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getBtNameBytes() {
+      java.lang.Object ref = btName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        btName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int BT_PIN_FIELD_NUMBER = 5;
+    private volatile java.lang.Object btPin_;
+    /**
+     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getBtPin() {
+      java.lang.Object ref = btPin_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        btPin_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getBtPinBytes() {
+      java.lang.Object ref = btPin_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        btPin_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int WIFI_CHAN_FIELD_NUMBER = 6;
+    private volatile java.lang.Object wifiChan_;
+    /**
+     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getWifiChan() {
+      java.lang.Object ref = wifiChan_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        wifiChan_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getWifiChanBytes() {
+      java.lang.Object ref = wifiChan_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        wifiChan_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SSID_FIELD_NUMBER = 7;
+    private volatile java.lang.Object ssid_;
+    /**
+     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getSsid() {
+      java.lang.Object ref = ssid_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        ssid_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getSsidBytes() {
+      java.lang.Object ref = ssid_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        ssid_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PASS_FIELD_NUMBER = 8;
+    private volatile java.lang.Object pass_;
+    /**
+     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getPass() {
+      java.lang.Object ref = pass_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        pass_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getPassBytes() {
+      java.lang.Object ref = pass_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        pass_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int IP_ADDR_FIELD_NUMBER = 9;
+    private volatile java.lang.Object ipAddr_;
+    /**
+     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getIpAddr() {
+      java.lang.Object ref = ipAddr_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        ipAddr_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getIpAddrBytes() {
+      java.lang.Object ref = ipAddr_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        ipAddr_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int GATEWAY_ADDR_FIELD_NUMBER = 10;
+    private volatile java.lang.Object gatewayAddr_;
+    /**
+     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getGatewayAddr() {
+      java.lang.Object ref = gatewayAddr_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        gatewayAddr_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getGatewayAddrBytes() {
+      java.lang.Object ref = gatewayAddr_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        gatewayAddr_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SUBNET_ADDR_FIELD_NUMBER = 11;
+    private volatile java.lang.Object subnetAddr_;
+    /**
+     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getSubnetAddr() {
+      java.lang.Object ref = subnetAddr_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        subnetAddr_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getSubnetAddrBytes() {
+      java.lang.Object ref = subnetAddr_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        subnetAddr_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int DHCP_RANGE_LO_FIELD_NUMBER = 12;
+    private volatile java.lang.Object dhcpRangeLo_;
+    /**
+     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getDhcpRangeLo() {
+      java.lang.Object ref = dhcpRangeLo_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        dhcpRangeLo_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getDhcpRangeLoBytes() {
+      java.lang.Object ref = dhcpRangeLo_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        dhcpRangeLo_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int DHCP_RANGE_HI_FIELD_NUMBER = 13;
+    private volatile java.lang.Object dhcpRangeHi_;
+    /**
+     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getDhcpRangeHi() {
+      java.lang.Object ref = dhcpRangeHi_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        dhcpRangeHi_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getDhcpRangeHiBytes() {
+      java.lang.Object ref = dhcpRangeHi_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        dhcpRangeHi_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int MULTICAST_ADDR_FIELD_NUMBER = 14;
+    private volatile java.lang.Object multicastAddr_;
+    /**
+     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getMulticastAddr() {
+      java.lang.Object ref = multicastAddr_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        multicastAddr_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getMulticastAddrBytes() {
+      java.lang.Object ref = multicastAddr_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        multicastAddr_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int LOCAL_PORT_FIELD_NUMBER = 15;
+    private volatile java.lang.Object localPort_;
+    /**
+     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getLocalPort() {
+      java.lang.Object ref = localPort_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        localPort_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getLocalPortBytes() {
+      java.lang.Object ref = localPort_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        localPort_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int REMOTE_PORT_FIELD_NUMBER = 16;
+    private volatile java.lang.Object remotePort_;
+    /**
+     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     */
+    public java.lang.String getRemotePort() {
+      java.lang.Object ref = remotePort_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        remotePort_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     */
+    public com.google.protobuf.ByteString
+        getRemotePortBytes() {
+      java.lang.Object ref = remotePort_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        remotePort_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (isBT_ != false) {
+        output.writeBool(1, isBT_);
+      }
+      if (isAP_ != false) {
+        output.writeBool(2, isAP_);
+      }
+      if (!getSerNameBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, serName_);
+      }
+      if (!getBtNameBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, btName_);
+      }
+      if (!getBtPinBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, btPin_);
+      }
+      if (!getWifiChanBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, wifiChan_);
+      }
+      if (!getSsidBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, ssid_);
+      }
+      if (!getPassBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, pass_);
+      }
+      if (!getIpAddrBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, ipAddr_);
+      }
+      if (!getGatewayAddrBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, gatewayAddr_);
+      }
+      if (!getSubnetAddrBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 11, subnetAddr_);
+      }
+      if (!getDhcpRangeLoBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 12, dhcpRangeLo_);
+      }
+      if (!getDhcpRangeHiBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 13, dhcpRangeHi_);
+      }
+      if (!getMulticastAddrBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 14, multicastAddr_);
+      }
+      if (!getLocalPortBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 15, localPort_);
+      }
+      if (!getRemotePortBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 16, remotePort_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (isBT_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, isBT_);
+      }
+      if (isAP_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, isAP_);
+      }
+      if (!getSerNameBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, serName_);
+      }
+      if (!getBtNameBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, btName_);
+      }
+      if (!getBtPinBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, btPin_);
+      }
+      if (!getWifiChanBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, wifiChan_);
+      }
+      if (!getSsidBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, ssid_);
+      }
+      if (!getPassBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, pass_);
+      }
+      if (!getIpAddrBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, ipAddr_);
+      }
+      if (!getGatewayAddrBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, gatewayAddr_);
+      }
+      if (!getSubnetAddrBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, subnetAddr_);
+      }
+      if (!getDhcpRangeLoBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, dhcpRangeLo_);
+      }
+      if (!getDhcpRangeHiBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, dhcpRangeHi_);
+      }
+      if (!getMulticastAddrBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(14, multicastAddr_);
+      }
+      if (!getLocalPortBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, localPort_);
+      }
+      if (!getRemotePortBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(16, remotePort_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Qmesh.ESP32CfgSubMsg)) {
+        return super.equals(obj);
+      }
+      Qmesh.ESP32CfgSubMsg other = (Qmesh.ESP32CfgSubMsg) obj;
+
+      boolean result = true;
+      result = result && (getIsBT()
+          == other.getIsBT());
+      result = result && (getIsAP()
+          == other.getIsAP());
+      result = result && getSerName()
+          .equals(other.getSerName());
+      result = result && getBtName()
+          .equals(other.getBtName());
+      result = result && getBtPin()
+          .equals(other.getBtPin());
+      result = result && getWifiChan()
+          .equals(other.getWifiChan());
+      result = result && getSsid()
+          .equals(other.getSsid());
+      result = result && getPass()
+          .equals(other.getPass());
+      result = result && getIpAddr()
+          .equals(other.getIpAddr());
+      result = result && getGatewayAddr()
+          .equals(other.getGatewayAddr());
+      result = result && getSubnetAddr()
+          .equals(other.getSubnetAddr());
+      result = result && getDhcpRangeLo()
+          .equals(other.getDhcpRangeLo());
+      result = result && getDhcpRangeHi()
+          .equals(other.getDhcpRangeHi());
+      result = result && getMulticastAddr()
+          .equals(other.getMulticastAddr());
+      result = result && getLocalPort()
+          .equals(other.getLocalPort());
+      result = result && getRemotePort()
+          .equals(other.getRemotePort());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + ISBT_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsBT());
+      hash = (37 * hash) + ISAP_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsAP());
+      hash = (37 * hash) + SER_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getSerName().hashCode();
+      hash = (37 * hash) + BT_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getBtName().hashCode();
+      hash = (37 * hash) + BT_PIN_FIELD_NUMBER;
+      hash = (53 * hash) + getBtPin().hashCode();
+      hash = (37 * hash) + WIFI_CHAN_FIELD_NUMBER;
+      hash = (53 * hash) + getWifiChan().hashCode();
+      hash = (37 * hash) + SSID_FIELD_NUMBER;
+      hash = (53 * hash) + getSsid().hashCode();
+      hash = (37 * hash) + PASS_FIELD_NUMBER;
+      hash = (53 * hash) + getPass().hashCode();
+      hash = (37 * hash) + IP_ADDR_FIELD_NUMBER;
+      hash = (53 * hash) + getIpAddr().hashCode();
+      hash = (37 * hash) + GATEWAY_ADDR_FIELD_NUMBER;
+      hash = (53 * hash) + getGatewayAddr().hashCode();
+      hash = (37 * hash) + SUBNET_ADDR_FIELD_NUMBER;
+      hash = (53 * hash) + getSubnetAddr().hashCode();
+      hash = (37 * hash) + DHCP_RANGE_LO_FIELD_NUMBER;
+      hash = (53 * hash) + getDhcpRangeLo().hashCode();
+      hash = (37 * hash) + DHCP_RANGE_HI_FIELD_NUMBER;
+      hash = (53 * hash) + getDhcpRangeHi().hashCode();
+      hash = (37 * hash) + MULTICAST_ADDR_FIELD_NUMBER;
+      hash = (53 * hash) + getMulticastAddr().hashCode();
+      hash = (37 * hash) + LOCAL_PORT_FIELD_NUMBER;
+      hash = (53 * hash) + getLocalPort().hashCode();
+      hash = (37 * hash) + REMOTE_PORT_FIELD_NUMBER;
+      hash = (53 * hash) + getRemotePort().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.ESP32CfgSubMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Qmesh.ESP32CfgSubMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ESP32CfgSubMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ESP32CfgSubMsg)
+        Qmesh.ESP32CfgSubMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Qmesh.internal_static_ESP32CfgSubMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Qmesh.internal_static_ESP32CfgSubMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Qmesh.ESP32CfgSubMsg.class, Qmesh.ESP32CfgSubMsg.Builder.class);
+      }
+
+      // Construct using Qmesh.ESP32CfgSubMsg.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        isBT_ = false;
+
+        isAP_ = false;
+
+        serName_ = "";
+
+        btName_ = "";
+
+        btPin_ = "";
+
+        wifiChan_ = "";
+
+        ssid_ = "";
+
+        pass_ = "";
+
+        ipAddr_ = "";
+
+        gatewayAddr_ = "";
+
+        subnetAddr_ = "";
+
+        dhcpRangeLo_ = "";
+
+        dhcpRangeHi_ = "";
+
+        multicastAddr_ = "";
+
+        localPort_ = "";
+
+        remotePort_ = "";
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Qmesh.internal_static_ESP32CfgSubMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public Qmesh.ESP32CfgSubMsg getDefaultInstanceForType() {
+        return Qmesh.ESP32CfgSubMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Qmesh.ESP32CfgSubMsg build() {
+        Qmesh.ESP32CfgSubMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Qmesh.ESP32CfgSubMsg buildPartial() {
+        Qmesh.ESP32CfgSubMsg result = new Qmesh.ESP32CfgSubMsg(this);
+        result.isBT_ = isBT_;
+        result.isAP_ = isAP_;
+        result.serName_ = serName_;
+        result.btName_ = btName_;
+        result.btPin_ = btPin_;
+        result.wifiChan_ = wifiChan_;
+        result.ssid_ = ssid_;
+        result.pass_ = pass_;
+        result.ipAddr_ = ipAddr_;
+        result.gatewayAddr_ = gatewayAddr_;
+        result.subnetAddr_ = subnetAddr_;
+        result.dhcpRangeLo_ = dhcpRangeLo_;
+        result.dhcpRangeHi_ = dhcpRangeHi_;
+        result.multicastAddr_ = multicastAddr_;
+        result.localPort_ = localPort_;
+        result.remotePort_ = remotePort_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Qmesh.ESP32CfgSubMsg) {
+          return mergeFrom((Qmesh.ESP32CfgSubMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Qmesh.ESP32CfgSubMsg other) {
+        if (other == Qmesh.ESP32CfgSubMsg.getDefaultInstance()) return this;
+        if (other.getIsBT() != false) {
+          setIsBT(other.getIsBT());
+        }
+        if (other.getIsAP() != false) {
+          setIsAP(other.getIsAP());
+        }
+        if (!other.getSerName().isEmpty()) {
+          serName_ = other.serName_;
+          onChanged();
+        }
+        if (!other.getBtName().isEmpty()) {
+          btName_ = other.btName_;
+          onChanged();
+        }
+        if (!other.getBtPin().isEmpty()) {
+          btPin_ = other.btPin_;
+          onChanged();
+        }
+        if (!other.getWifiChan().isEmpty()) {
+          wifiChan_ = other.wifiChan_;
+          onChanged();
+        }
+        if (!other.getSsid().isEmpty()) {
+          ssid_ = other.ssid_;
+          onChanged();
+        }
+        if (!other.getPass().isEmpty()) {
+          pass_ = other.pass_;
+          onChanged();
+        }
+        if (!other.getIpAddr().isEmpty()) {
+          ipAddr_ = other.ipAddr_;
+          onChanged();
+        }
+        if (!other.getGatewayAddr().isEmpty()) {
+          gatewayAddr_ = other.gatewayAddr_;
+          onChanged();
+        }
+        if (!other.getSubnetAddr().isEmpty()) {
+          subnetAddr_ = other.subnetAddr_;
+          onChanged();
+        }
+        if (!other.getDhcpRangeLo().isEmpty()) {
+          dhcpRangeLo_ = other.dhcpRangeLo_;
+          onChanged();
+        }
+        if (!other.getDhcpRangeHi().isEmpty()) {
+          dhcpRangeHi_ = other.dhcpRangeHi_;
+          onChanged();
+        }
+        if (!other.getMulticastAddr().isEmpty()) {
+          multicastAddr_ = other.multicastAddr_;
+          onChanged();
+        }
+        if (!other.getLocalPort().isEmpty()) {
+          localPort_ = other.localPort_;
+          onChanged();
+        }
+        if (!other.getRemotePort().isEmpty()) {
+          remotePort_ = other.remotePort_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        Qmesh.ESP32CfgSubMsg parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (Qmesh.ESP32CfgSubMsg) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private boolean isBT_ ;
+      /**
+       * <code>bool isBT = 1;</code>
+       */
+      public boolean getIsBT() {
+        return isBT_;
+      }
+      /**
+       * <code>bool isBT = 1;</code>
+       */
+      public Builder setIsBT(boolean value) {
+        
+        isBT_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool isBT = 1;</code>
+       */
+      public Builder clearIsBT() {
+        
+        isBT_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean isAP_ ;
+      /**
+       * <code>bool isAP = 2;</code>
+       */
+      public boolean getIsAP() {
+        return isAP_;
+      }
+      /**
+       * <code>bool isAP = 2;</code>
+       */
+      public Builder setIsAP(boolean value) {
+        
+        isAP_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool isAP = 2;</code>
+       */
+      public Builder clearIsAP() {
+        
+        isAP_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object serName_ = "";
+      /**
+       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getSerName() {
+        java.lang.Object ref = serName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          serName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getSerNameBytes() {
+        java.lang.Object ref = serName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          serName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSerName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        serName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearSerName() {
+        
+        serName_ = getDefaultInstance().getSerName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSerNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        serName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object btName_ = "";
+      /**
+       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getBtName() {
+        java.lang.Object ref = btName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          btName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getBtNameBytes() {
+        java.lang.Object ref = btName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          btName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       */
+      public Builder setBtName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        btName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearBtName() {
+        
+        btName_ = getDefaultInstance().getBtName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       */
+      public Builder setBtNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        btName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object btPin_ = "";
+      /**
+       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getBtPin() {
+        java.lang.Object ref = btPin_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          btPin_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getBtPinBytes() {
+        java.lang.Object ref = btPin_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          btPin_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       */
+      public Builder setBtPin(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        btPin_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearBtPin() {
+        
+        btPin_ = getDefaultInstance().getBtPin();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       */
+      public Builder setBtPinBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        btPin_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object wifiChan_ = "";
+      /**
+       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getWifiChan() {
+        java.lang.Object ref = wifiChan_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          wifiChan_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getWifiChanBytes() {
+        java.lang.Object ref = wifiChan_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          wifiChan_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       */
+      public Builder setWifiChan(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        wifiChan_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearWifiChan() {
+        
+        wifiChan_ = getDefaultInstance().getWifiChan();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       */
+      public Builder setWifiChanBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        wifiChan_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object ssid_ = "";
+      /**
+       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getSsid() {
+        java.lang.Object ref = ssid_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          ssid_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getSsidBytes() {
+        java.lang.Object ref = ssid_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          ssid_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSsid(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        ssid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearSsid() {
+        
+        ssid_ = getDefaultInstance().getSsid();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSsidBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        ssid_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object pass_ = "";
+      /**
+       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getPass() {
+        java.lang.Object ref = pass_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          pass_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getPassBytes() {
+        java.lang.Object ref = pass_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          pass_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       */
+      public Builder setPass(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        pass_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearPass() {
+        
+        pass_ = getDefaultInstance().getPass();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       */
+      public Builder setPassBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        pass_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object ipAddr_ = "";
+      /**
+       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getIpAddr() {
+        java.lang.Object ref = ipAddr_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          ipAddr_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getIpAddrBytes() {
+        java.lang.Object ref = ipAddr_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          ipAddr_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       */
+      public Builder setIpAddr(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        ipAddr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearIpAddr() {
+        
+        ipAddr_ = getDefaultInstance().getIpAddr();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       */
+      public Builder setIpAddrBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        ipAddr_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object gatewayAddr_ = "";
+      /**
+       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getGatewayAddr() {
+        java.lang.Object ref = gatewayAddr_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          gatewayAddr_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getGatewayAddrBytes() {
+        java.lang.Object ref = gatewayAddr_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          gatewayAddr_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       */
+      public Builder setGatewayAddr(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        gatewayAddr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearGatewayAddr() {
+        
+        gatewayAddr_ = getDefaultInstance().getGatewayAddr();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       */
+      public Builder setGatewayAddrBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        gatewayAddr_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object subnetAddr_ = "";
+      /**
+       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getSubnetAddr() {
+        java.lang.Object ref = subnetAddr_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          subnetAddr_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getSubnetAddrBytes() {
+        java.lang.Object ref = subnetAddr_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          subnetAddr_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSubnetAddr(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        subnetAddr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearSubnetAddr() {
+        
+        subnetAddr_ = getDefaultInstance().getSubnetAddr();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSubnetAddrBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        subnetAddr_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object dhcpRangeLo_ = "";
+      /**
+       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getDhcpRangeLo() {
+        java.lang.Object ref = dhcpRangeLo_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          dhcpRangeLo_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getDhcpRangeLoBytes() {
+        java.lang.Object ref = dhcpRangeLo_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          dhcpRangeLo_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       */
+      public Builder setDhcpRangeLo(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        dhcpRangeLo_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearDhcpRangeLo() {
+        
+        dhcpRangeLo_ = getDefaultInstance().getDhcpRangeLo();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       */
+      public Builder setDhcpRangeLoBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        dhcpRangeLo_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object dhcpRangeHi_ = "";
+      /**
+       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getDhcpRangeHi() {
+        java.lang.Object ref = dhcpRangeHi_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          dhcpRangeHi_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getDhcpRangeHiBytes() {
+        java.lang.Object ref = dhcpRangeHi_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          dhcpRangeHi_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       */
+      public Builder setDhcpRangeHi(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        dhcpRangeHi_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearDhcpRangeHi() {
+        
+        dhcpRangeHi_ = getDefaultInstance().getDhcpRangeHi();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       */
+      public Builder setDhcpRangeHiBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        dhcpRangeHi_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object multicastAddr_ = "";
+      /**
+       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getMulticastAddr() {
+        java.lang.Object ref = multicastAddr_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          multicastAddr_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getMulticastAddrBytes() {
+        java.lang.Object ref = multicastAddr_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          multicastAddr_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       */
+      public Builder setMulticastAddr(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        multicastAddr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearMulticastAddr() {
+        
+        multicastAddr_ = getDefaultInstance().getMulticastAddr();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       */
+      public Builder setMulticastAddrBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        multicastAddr_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object localPort_ = "";
+      /**
+       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getLocalPort() {
+        java.lang.Object ref = localPort_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          localPort_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getLocalPortBytes() {
+        java.lang.Object ref = localPort_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          localPort_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder setLocalPort(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        localPort_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearLocalPort() {
+        
+        localPort_ = getDefaultInstance().getLocalPort();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       */
+      public Builder setLocalPortBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        localPort_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object remotePort_ = "";
+      /**
+       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       */
+      public java.lang.String getRemotePort() {
+        java.lang.Object ref = remotePort_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          remotePort_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       */
+      public com.google.protobuf.ByteString
+          getRemotePortBytes() {
+        java.lang.Object ref = remotePort_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          remotePort_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       */
+      public Builder setRemotePort(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        remotePort_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearRemotePort() {
+        
+        remotePort_ = getDefaultInstance().getRemotePort();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       */
+      public Builder setRemotePortBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        remotePort_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ESP32CfgSubMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:ESP32CfgSubMsg)
+    private static final Qmesh.ESP32CfgSubMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Qmesh.ESP32CfgSubMsg();
+    }
+
+    public static Qmesh.ESP32CfgSubMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ESP32CfgSubMsg>
+        PARSER = new com.google.protobuf.AbstractParser<ESP32CfgSubMsg>() {
+      @java.lang.Override
+      public ESP32CfgSubMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ESP32CfgSubMsg(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ESP32CfgSubMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ESP32CfgSubMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Qmesh.ESP32CfgSubMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ESP32CfgMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ESP32CfgMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+     */
+    boolean hasEsp0();
+    /**
+     * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+     */
+    Qmesh.ESP32CfgSubMsg getEsp0();
+    /**
+     * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+     */
+    Qmesh.ESP32CfgSubMsgOrBuilder getEsp0OrBuilder();
+
+    /**
+     * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+     */
+    boolean hasEsp1();
+    /**
+     * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+     */
+    Qmesh.ESP32CfgSubMsg getEsp1();
+    /**
+     * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+     */
+    Qmesh.ESP32CfgSubMsgOrBuilder getEsp1OrBuilder();
+  }
+  /**
+   * Protobuf type {@code ESP32CfgMsg}
+   */
+  public  static final class ESP32CfgMsg extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ESP32CfgMsg)
+      ESP32CfgMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ESP32CfgMsg.newBuilder() to construct.
+    private ESP32CfgMsg(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ESP32CfgMsg() {
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ESP32CfgMsg(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              Qmesh.ESP32CfgSubMsg.Builder subBuilder = null;
+              if (esp0_ != null) {
+                subBuilder = esp0_.toBuilder();
+              }
+              esp0_ = input.readMessage(Qmesh.ESP32CfgSubMsg.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(esp0_);
+                esp0_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+              Qmesh.ESP32CfgSubMsg.Builder subBuilder = null;
+              if (esp1_ != null) {
+                subBuilder = esp1_.toBuilder();
+              }
+              esp1_ = input.readMessage(Qmesh.ESP32CfgSubMsg.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(esp1_);
+                esp1_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Qmesh.internal_static_ESP32CfgMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Qmesh.internal_static_ESP32CfgMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Qmesh.ESP32CfgMsg.class, Qmesh.ESP32CfgMsg.Builder.class);
+    }
+
+    public static final int ESP0_FIELD_NUMBER = 1;
+    private Qmesh.ESP32CfgSubMsg esp0_;
+    /**
+     * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+     */
+    public boolean hasEsp0() {
+      return esp0_ != null;
+    }
+    /**
+     * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+     */
+    public Qmesh.ESP32CfgSubMsg getEsp0() {
+      return esp0_ == null ? Qmesh.ESP32CfgSubMsg.getDefaultInstance() : esp0_;
+    }
+    /**
+     * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+     */
+    public Qmesh.ESP32CfgSubMsgOrBuilder getEsp0OrBuilder() {
+      return getEsp0();
+    }
+
+    public static final int ESP1_FIELD_NUMBER = 2;
+    private Qmesh.ESP32CfgSubMsg esp1_;
+    /**
+     * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+     */
+    public boolean hasEsp1() {
+      return esp1_ != null;
+    }
+    /**
+     * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+     */
+    public Qmesh.ESP32CfgSubMsg getEsp1() {
+      return esp1_ == null ? Qmesh.ESP32CfgSubMsg.getDefaultInstance() : esp1_;
+    }
+    /**
+     * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+     */
+    public Qmesh.ESP32CfgSubMsgOrBuilder getEsp1OrBuilder() {
+      return getEsp1();
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (esp0_ != null) {
+        output.writeMessage(1, getEsp0());
+      }
+      if (esp1_ != null) {
+        output.writeMessage(2, getEsp1());
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (esp0_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getEsp0());
+      }
+      if (esp1_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getEsp1());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Qmesh.ESP32CfgMsg)) {
+        return super.equals(obj);
+      }
+      Qmesh.ESP32CfgMsg other = (Qmesh.ESP32CfgMsg) obj;
+
+      boolean result = true;
+      result = result && (hasEsp0() == other.hasEsp0());
+      if (hasEsp0()) {
+        result = result && getEsp0()
+            .equals(other.getEsp0());
+      }
+      result = result && (hasEsp1() == other.hasEsp1());
+      if (hasEsp1()) {
+        result = result && getEsp1()
+            .equals(other.getEsp1());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasEsp0()) {
+        hash = (37 * hash) + ESP0_FIELD_NUMBER;
+        hash = (53 * hash) + getEsp0().hashCode();
+      }
+      if (hasEsp1()) {
+        hash = (37 * hash) + ESP1_FIELD_NUMBER;
+        hash = (53 * hash) + getEsp1().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Qmesh.ESP32CfgMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.ESP32CfgMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Qmesh.ESP32CfgMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ESP32CfgMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ESP32CfgMsg)
+        Qmesh.ESP32CfgMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Qmesh.internal_static_ESP32CfgMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Qmesh.internal_static_ESP32CfgMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Qmesh.ESP32CfgMsg.class, Qmesh.ESP32CfgMsg.Builder.class);
+      }
+
+      // Construct using Qmesh.ESP32CfgMsg.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        if (esp0Builder_ == null) {
+          esp0_ = null;
+        } else {
+          esp0_ = null;
+          esp0Builder_ = null;
+        }
+        if (esp1Builder_ == null) {
+          esp1_ = null;
+        } else {
+          esp1_ = null;
+          esp1Builder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Qmesh.internal_static_ESP32CfgMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public Qmesh.ESP32CfgMsg getDefaultInstanceForType() {
+        return Qmesh.ESP32CfgMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Qmesh.ESP32CfgMsg build() {
+        Qmesh.ESP32CfgMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Qmesh.ESP32CfgMsg buildPartial() {
+        Qmesh.ESP32CfgMsg result = new Qmesh.ESP32CfgMsg(this);
+        if (esp0Builder_ == null) {
+          result.esp0_ = esp0_;
+        } else {
+          result.esp0_ = esp0Builder_.build();
+        }
+        if (esp1Builder_ == null) {
+          result.esp1_ = esp1_;
+        } else {
+          result.esp1_ = esp1Builder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Qmesh.ESP32CfgMsg) {
+          return mergeFrom((Qmesh.ESP32CfgMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Qmesh.ESP32CfgMsg other) {
+        if (other == Qmesh.ESP32CfgMsg.getDefaultInstance()) return this;
+        if (other.hasEsp0()) {
+          mergeEsp0(other.getEsp0());
+        }
+        if (other.hasEsp1()) {
+          mergeEsp1(other.getEsp1());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        Qmesh.ESP32CfgMsg parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (Qmesh.ESP32CfgMsg) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private Qmesh.ESP32CfgSubMsg esp0_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.ESP32CfgSubMsg, Qmesh.ESP32CfgSubMsg.Builder, Qmesh.ESP32CfgSubMsgOrBuilder> esp0Builder_;
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public boolean hasEsp0() {
+        return esp0Builder_ != null || esp0_ != null;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Qmesh.ESP32CfgSubMsg getEsp0() {
+        if (esp0Builder_ == null) {
+          return esp0_ == null ? Qmesh.ESP32CfgSubMsg.getDefaultInstance() : esp0_;
+        } else {
+          return esp0Builder_.getMessage();
+        }
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Builder setEsp0(Qmesh.ESP32CfgSubMsg value) {
+        if (esp0Builder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          esp0_ = value;
+          onChanged();
+        } else {
+          esp0Builder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Builder setEsp0(
+          Qmesh.ESP32CfgSubMsg.Builder builderForValue) {
+        if (esp0Builder_ == null) {
+          esp0_ = builderForValue.build();
+          onChanged();
+        } else {
+          esp0Builder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Builder mergeEsp0(Qmesh.ESP32CfgSubMsg value) {
+        if (esp0Builder_ == null) {
+          if (esp0_ != null) {
+            esp0_ =
+              Qmesh.ESP32CfgSubMsg.newBuilder(esp0_).mergeFrom(value).buildPartial();
+          } else {
+            esp0_ = value;
+          }
+          onChanged();
+        } else {
+          esp0Builder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Builder clearEsp0() {
+        if (esp0Builder_ == null) {
+          esp0_ = null;
+          onChanged();
+        } else {
+          esp0_ = null;
+          esp0Builder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Qmesh.ESP32CfgSubMsg.Builder getEsp0Builder() {
+        
+        onChanged();
+        return getEsp0FieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      public Qmesh.ESP32CfgSubMsgOrBuilder getEsp0OrBuilder() {
+        if (esp0Builder_ != null) {
+          return esp0Builder_.getMessageOrBuilder();
+        } else {
+          return esp0_ == null ?
+              Qmesh.ESP32CfgSubMsg.getDefaultInstance() : esp0_;
+        }
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp0 = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.ESP32CfgSubMsg, Qmesh.ESP32CfgSubMsg.Builder, Qmesh.ESP32CfgSubMsgOrBuilder> 
+          getEsp0FieldBuilder() {
+        if (esp0Builder_ == null) {
+          esp0Builder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              Qmesh.ESP32CfgSubMsg, Qmesh.ESP32CfgSubMsg.Builder, Qmesh.ESP32CfgSubMsgOrBuilder>(
+                  getEsp0(),
+                  getParentForChildren(),
+                  isClean());
+          esp0_ = null;
+        }
+        return esp0Builder_;
+      }
+
+      private Qmesh.ESP32CfgSubMsg esp1_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.ESP32CfgSubMsg, Qmesh.ESP32CfgSubMsg.Builder, Qmesh.ESP32CfgSubMsgOrBuilder> esp1Builder_;
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public boolean hasEsp1() {
+        return esp1Builder_ != null || esp1_ != null;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Qmesh.ESP32CfgSubMsg getEsp1() {
+        if (esp1Builder_ == null) {
+          return esp1_ == null ? Qmesh.ESP32CfgSubMsg.getDefaultInstance() : esp1_;
+        } else {
+          return esp1Builder_.getMessage();
+        }
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Builder setEsp1(Qmesh.ESP32CfgSubMsg value) {
+        if (esp1Builder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          esp1_ = value;
+          onChanged();
+        } else {
+          esp1Builder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Builder setEsp1(
+          Qmesh.ESP32CfgSubMsg.Builder builderForValue) {
+        if (esp1Builder_ == null) {
+          esp1_ = builderForValue.build();
+          onChanged();
+        } else {
+          esp1Builder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Builder mergeEsp1(Qmesh.ESP32CfgSubMsg value) {
+        if (esp1Builder_ == null) {
+          if (esp1_ != null) {
+            esp1_ =
+              Qmesh.ESP32CfgSubMsg.newBuilder(esp1_).mergeFrom(value).buildPartial();
+          } else {
+            esp1_ = value;
+          }
+          onChanged();
+        } else {
+          esp1Builder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Builder clearEsp1() {
+        if (esp1Builder_ == null) {
+          esp1_ = null;
+          onChanged();
+        } else {
+          esp1_ = null;
+          esp1Builder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Qmesh.ESP32CfgSubMsg.Builder getEsp1Builder() {
+        
+        onChanged();
+        return getEsp1FieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      public Qmesh.ESP32CfgSubMsgOrBuilder getEsp1OrBuilder() {
+        if (esp1Builder_ != null) {
+          return esp1Builder_.getMessageOrBuilder();
+        } else {
+          return esp1_ == null ?
+              Qmesh.ESP32CfgSubMsg.getDefaultInstance() : esp1_;
+        }
+      }
+      /**
+       * <code>.ESP32CfgSubMsg esp1 = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.ESP32CfgSubMsg, Qmesh.ESP32CfgSubMsg.Builder, Qmesh.ESP32CfgSubMsgOrBuilder> 
+          getEsp1FieldBuilder() {
+        if (esp1Builder_ == null) {
+          esp1Builder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              Qmesh.ESP32CfgSubMsg, Qmesh.ESP32CfgSubMsg.Builder, Qmesh.ESP32CfgSubMsgOrBuilder>(
+                  getEsp1(),
+                  getParentForChildren(),
+                  isClean());
+          esp1_ = null;
+        }
+        return esp1Builder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ESP32CfgMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:ESP32CfgMsg)
+    private static final Qmesh.ESP32CfgMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Qmesh.ESP32CfgMsg();
+    }
+
+    public static Qmesh.ESP32CfgMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ESP32CfgMsg>
+        PARSER = new com.google.protobuf.AbstractParser<ESP32CfgMsg>() {
+      @java.lang.Override
+      public ESP32CfgMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ESP32CfgMsg(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ESP32CfgMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ESP32CfgMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Qmesh.ESP32CfgMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_LoraCfg_descriptor;
   private static final 
@@ -21417,6 +24871,16 @@ public final class Qmesh {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_IntParamsMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_ESP32CfgSubMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_ESP32CfgSubMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_ESP32CfgMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_ESP32CfgMsg_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -21444,89 +24908,102 @@ public final class Qmesh {
       "\013num_offsets\030\003 \001(\r\022\017\n\007pld_len\030\004 \001(\r\022\024\n\014f" +
       "ull_pkt_len\030\005 \001(\r\022\023\n\013walsh_codes\030\006 \001(\010\022\023" +
       "\n\013invert_bits\030\007 \001(\010\022\036\n\026voice_frames_per_" +
-      "frame\030\010 \001(\r\022\026\n\016codec2_bitrate\030\t \001(\r\"\322\002\n\t" +
+      "frame\030\010 \001(\r\022\026\n\016codec2_bitrate\030\t \001(\r\"\365\002\n\t" +
       "SysCfgMsg\022\035\n\004mode\030\001 \001(\0162\017.SysCfgMsg.Mode" +
       "\022\017\n\007address\030\002 \001(\r\022\034\n\tradio_cfg\030\003 \001(\0132\t.R" +
       "adioCfg\022\032\n\010test_cfg\030\004 \001(\0132\010.TestCfg\022\030\n\007f" +
       "ec_cfg\030\005 \001(\0132\007.FECCfg\022\030\n\007net_cfg\030\006 \001(\0132\007" +
-      ".NetCfg\022\016\n\006gps_en\030\007 \001(\010\022\026\n\016log_packets_e" +
-      "n\030\010 \001(\010\022\023\n\013boot_log_en\030\t \001(\010\022\031\n\021watchdog" +
-      "_timer_en\030\n \001(\010\022\r\n\005valid\030\013 \001(\010\"@\n\004Mode\022\n" +
-      "\n\006NORMAL\020\000\022\016\n\nMODE_RESET\020\001\022\017\n\013MODE_SILEN" +
-      "T\020\002\022\013\n\007TESTING\020\003\"\033\n\013ClockSetMsg\022\014\n\004time\030" +
-      "\001 \001(\r\"\201\003\n\tStatusMsg\022!\n\006status\030\001 \001(\0162\021.St" +
-      "atusMsg.Status\022\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030" +
-      "\003 \001(\r\022\017\n\007oled_on\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005" +
-      " \001(\r\022\031\n\021total_rx_corr_pkt\030\006 \001(\r\022\024\n\014total" +
-      "_tx_pkt\030\007 \001(\r\022\024\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013l" +
-      "ast_rx_snr\030\t \001(\r\022\021\n\theap_size\030\n \001(\r\022\026\n\016p" +
-      "eak_mem_usage\030\013 \001(\r\022\035\n\025radio_out_queue_l" +
-      "evel\030\014 \001(\r\022\030\n\020missed_deadlines\030\r \001(\r\022\027\n\017" +
-      "total_deadlines\030\016 \001(\r\"2\n\006Status\022\013\n\007BOOTI" +
-      "NG\020\000\022\016\n\nMANAGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006Dbg" +
-      "Msg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg" +
-      "\022\r\n\005crc32\030\001 \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030\001" +
-      " \001(\010\022\021\n\tboot_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1" +
-      "\n\006GPSMsg\022\r\n\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003" +
-      "lon\030\003 \001(\002\"\336\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005c" +
-      "ount\030\002 \001(\r\022\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender\030" +
-      "\004 \001(\r\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n" +
-      "\004rssi\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(" +
-      "\005\022\020\n\010comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006upti" +
-      "me\030\014 \001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007Ti" +
-      "meMsg\022\014\n\004time\030\001 \001(\r\"\335\010\n\tSerialMsg\022\035\n\004typ" +
-      "e\030\001 \001(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010\022" +
-      "\"\n\007sys_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tc" +
-      "lock_set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006s" +
-      "tatus\030\005 \001(\0132\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_ms" +
-      "g\030\006 \001(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\013" +
-      "2\007.LogMsgB\005\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132\013" +
-      ".BootLogMsgB\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010.D" +
-      "ataMsgB\005\222?\002\030\004\022#\n\terror_msg\030\n \001(\0132\t.Error" +
-      "MsgB\005\222?\002\030\004\022!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB\005" +
-      "\222?\002\030\004\022+\n\nupdate_msg\030\014 \001(\0132\n.UpdateMsgB\013\222" +
-      "?\002\030\004\222?\003\240\001\004\022#\n\007ver_msg\030\r \001(\0132\013.VersionMsg" +
-      "B\005\222?\002\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntPar" +
-      "amsMsgB\005\222?\002\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016" +
-      ".VoiceFrameMsgB\005\222?\002\030\004\022\037\n\007ack_msg\030\020 \001(\0132\007" +
-      ".AckMsgB\005\222?\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CONFIG\020\000\022" +
-      "\016\n\nSET_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n" +
-      "\tCLOCK_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006" +
-      "\022\017\n\013STAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBO" +
-      "OT\020\t\022\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020" +
-      "\013\022\r\n\tERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_L" +
-      "OG_RETRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_L" +
-      "OG\020\020\022\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_B" +
-      "OOT_LOG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003" +
-      "ACK\020\025\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016E" +
-      "XIT_KISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n" +
-      "\n\006UPDATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020" +
-      "\035\022\021\n\rTURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS\020\037\022\r\n\t" +
-      "VOICE_MSG\020 :\006\222?\003\240\001\010\"\'\n\006AckMsg\022\035\n\025radio_o" +
-      "ut_queue_level\030\001 \001(\r\"!\n\nVersionMsg\022\023\n\003ms" +
-      "g\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type\030\001 \001(" +
-      "\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"" +
-      "\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"\305\002\n\007D" +
-      "ataMsg\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type\022\021\n\ts" +
-      "tream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sender\030\004 " +
-      "\001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030\006 \001(\014" +
-      "B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016" +
-      "kiss_cur_frame\030\t \001(\r\022\027\n\017kiss_tot_frames\030" +
-      "\n \001(\r\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tredunda" +
-      "nt\030\014 \001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISS" +
-      "TX\020\002\022\n\n\006KISSRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VOICERX" +
-      "\020\005\"N\n\rVoiceFrameMsg\022\021\n\tsize_bits\030\001 \001(\r\022\022" +
-      "\n\nend_stream\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014B\005\222?\002" +
-      "\010 \"\375\001\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.UpdateM" +
-      "sg.Type\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 \001(\tB\006" +
-      "\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha256_pk" +
-      "t\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B\005\222?\002\010" +
-      " \022\031\n\nerr_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005" +
-      "FIRST\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n" +
-      "\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022\023\n\013fr" +
-      "eq_wobble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n\013time" +
-      "_offset\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005b\006proto" +
-      "3"
+      ".NetCfg\022!\n\013esp_cfg_msg\030\007 \001(\0132\014.ESP32CfgM" +
+      "sg\022\016\n\006gps_en\030\010 \001(\010\022\026\n\016log_packets_en\030\t \001" +
+      "(\010\022\023\n\013boot_log_en\030\n \001(\010\022\031\n\021watchdog_time" +
+      "r_en\030\013 \001(\010\022\r\n\005valid\030\014 \001(\010\"@\n\004Mode\022\n\n\006NOR" +
+      "MAL\020\000\022\016\n\nMODE_RESET\020\001\022\017\n\013MODE_SILENT\020\002\022\013" +
+      "\n\007TESTING\020\003\"\033\n\013ClockSetMsg\022\014\n\004time\030\001 \001(\r" +
+      "\"\201\003\n\tStatusMsg\022!\n\006status\030\001 \001(\0162\021.StatusM" +
+      "sg.Status\022\017\n\007tx_full\030\002 \001(\010\022\014\n\004time\030\003 \001(\r" +
+      "\022\017\n\007oled_on\030\004 \001(\010\022\024\n\014total_rx_pkt\030\005 \001(\r\022" +
+      "\031\n\021total_rx_corr_pkt\030\006 \001(\r\022\024\n\014total_tx_p" +
+      "kt\030\007 \001(\r\022\024\n\014last_rx_rssi\030\010 \001(\r\022\023\n\013last_r" +
+      "x_snr\030\t \001(\r\022\021\n\theap_size\030\n \001(\r\022\026\n\016peak_m" +
+      "em_usage\030\013 \001(\r\022\035\n\025radio_out_queue_level\030" +
+      "\014 \001(\r\022\030\n\020missed_deadlines\030\r \001(\r\022\027\n\017total" +
+      "_deadlines\030\016 \001(\r\"2\n\006Status\022\013\n\007BOOTING\020\000\022" +
+      "\016\n\nMANAGEMENT\020\001\022\013\n\007RUNNING\020\002\"\035\n\006DbgMsg\022\023" +
+      "\n\003msg\030\001 \001(\tB\006\222?\003\010\200\002\"\035\n\014SerialCRCMsg\022\r\n\005c" +
+      "rc32\030\001 \001(\r\"=\n\nBootLogMsg\022\r\n\005valid\030\001 \001(\010\022" +
+      "\021\n\tboot_time\030\002 \001(\r\022\r\n\005count\030\003 \001(\r\"1\n\006GPS" +
+      "Msg\022\r\n\005valid\030\001 \001(\010\022\013\n\003lat\030\002 \001(\002\022\013\n\003lon\030\003" +
+      " \001(\002\"\336\001\n\006LogMsg\022\r\n\005valid\030\001 \001(\010\022\r\n\005count\030" +
+      "\002 \001(\r\022\021\n\ttimestamp\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r" +
+      "\022\013\n\003ttl\030\005 \001(\r\022\021\n\tstream_id\030\006 \001(\r\022\014\n\004rssi" +
+      "\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(\005\022\020\n\010" +
+      "comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006uptime\030\014 " +
+      "\001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007TimeMsg" +
+      "\022\014\n\004time\030\001 \001(\r\"\335\010\n\tSerialMsg\022\035\n\004type\030\001 \001" +
+      "(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010\022\"\n\007sy" +
+      "s_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tclock_" +
+      "set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006status" +
+      "\030\005 \001(\0132\n.StatusMsgB\005\222?\002\030\004\022\037\n\007dbg_msg\030\006 \001" +
+      "(\0132\007.DbgMsgB\005\222?\002\030\004\022\037\n\007log_msg\030\007 \001(\0132\007.Lo" +
+      "gMsgB\005\222?\002\030\004\022(\n\014boot_log_msg\030\010 \001(\0132\013.Boot" +
+      "LogMsgB\005\222?\002\030\004\022!\n\010data_msg\030\t \001(\0132\010.DataMs" +
+      "gB\005\222?\002\030\004\022#\n\terror_msg\030\n \001(\0132\t.ErrorMsgB\005" +
+      "\222?\002\030\004\022!\n\010time_msg\030\013 \001(\0132\010.TimeMsgB\005\222?\002\030\004" +
+      "\022+\n\nupdate_msg\030\014 \001(\0132\n.UpdateMsgB\013\222?\002\030\004\222" +
+      "?\003\240\001\004\022#\n\007ver_msg\030\r \001(\0132\013.VersionMsgB\005\222?\002" +
+      "\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntParamsMs" +
+      "gB\005\222?\002\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016.Voic" +
+      "eFrameMsgB\005\222?\002\030\004\022\037\n\007ack_msg\030\020 \001(\0132\007.AckM" +
+      "sgB\005\222?\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CONFIG\020\000\022\016\n\nSE" +
+      "T_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOC" +
+      "K_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013S" +
+      "TAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022" +
+      "\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\t" +
+      "ERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_LOG_RE" +
+      "TRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022" +
+      "\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_BOOT_L" +
+      "OG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025" +
+      "\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016EXIT_K" +
+      "ISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPD" +
+      "ATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\r" +
+      "TURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS\020\037\022\r\n\tVOICE" +
+      "_MSG\020 :\006\222?\003\240\001\010\"\'\n\006AckMsg\022\035\n\025radio_out_qu" +
+      "eue_level\030\001 \001(\r\"!\n\nVersionMsg\022\023\n\003msg\030\001 \001" +
+      "(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type\030\001 \001(\0162\016.E" +
+      "rrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"\n\004Typ" +
+      "e\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"\305\002\n\007DataMs" +
+      "g\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type\022\021\n\tstream" +
+      "_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\022" +
+      "\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030\006 \001(\014B\006\222?\003" +
+      "\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016kiss_" +
+      "cur_frame\030\t \001(\r\022\027\n\017kiss_tot_frames\030\n \001(\r" +
+      "\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tredundant\030\014 " +
+      "\001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISSTX\020\002\022" +
+      "\n\n\006KISSRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VOICERX\020\005\"N\n" +
+      "\rVoiceFrameMsg\022\021\n\tsize_bits\030\001 \001(\r\022\022\n\nend" +
+      "_stream\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014B\005\222?\002\010 \"\375\001" +
+      "\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.UpdateMsg.Ty" +
+      "pe\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 \001(\tB\006\222?\003\010\200" +
+      "\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha256_pkt\030\005 \001" +
+      "(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B\005\222?\002\010 \022\031\n\n" +
+      "err_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005FIRST" +
+      "\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006ACK" +
+      "ERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022\023\n\013freq_wo" +
+      "bble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n\013time_offs" +
+      "et\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005\"\233\003\n\016ESP32Cf" +
+      "gSubMsg\022\014\n\004isBT\030\001 \001(\010\022\014\n\004isAP\030\002 \001(\010\022\027\n\010s" +
+      "er_name\030\003 \001(\tB\005\222?\002\010 \022\026\n\007bt_name\030\004 \001(\tB\005\222" +
+      "?\002\010 \022\025\n\006bt_pin\030\005 \001(\tB\005\222?\002\010 \022\030\n\twifi_chan" +
+      "\030\006 \001(\tB\005\222?\002\010 \022\023\n\004ssid\030\007 \001(\tB\005\222?\002\010 \022\023\n\004pa" +
+      "ss\030\010 \001(\tB\005\222?\002\010 \022\026\n\007ip_addr\030\t \001(\tB\005\222?\002\010 \022" +
+      "\033\n\014gateway_addr\030\n \001(\tB\005\222?\002\010 \022\032\n\013subnet_a" +
+      "ddr\030\013 \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_lo\030\014 \001(\tB" +
+      "\005\222?\002\010 \022\034\n\rdhcp_range_hi\030\r \001(\tB\005\222?\002\010 \022\035\n\016" +
+      "multicast_addr\030\016 \001(\tB\005\222?\002\010 \022\031\n\nlocal_por" +
+      "t\030\017 \001(\tB\005\222?\002\010 \022\032\n\013remote_port\030\020 \001(\tB\005\222?\002" +
+      "\010 \"K\n\013ESP32CfgMsg\022\035\n\004esp0\030\001 \001(\0132\017.ESP32C" +
+      "fgSubMsg\022\035\n\004esp1\030\002 \001(\0132\017.ESP32CfgSubMsgb" +
+      "\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -21576,7 +25053,7 @@ public final class Qmesh {
     internal_static_SysCfgMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SysCfgMsg_descriptor,
-        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", "Valid", });
+        new java.lang.String[] { "Mode", "Address", "RadioCfg", "TestCfg", "FecCfg", "NetCfg", "EspCfgMsg", "GpsEn", "LogPacketsEn", "BootLogEn", "WatchdogTimerEn", "Valid", });
     internal_static_ClockSetMsg_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_ClockSetMsg_fieldAccessorTable = new
@@ -21673,6 +25150,18 @@ public final class Qmesh {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_IntParamsMsg_descriptor,
         new java.lang.String[] { "FreqWobble", "Channel", "TimeOffset", "PwrOffset", });
+    internal_static_ESP32CfgSubMsg_descriptor =
+      getDescriptor().getMessageTypes().get(22);
+    internal_static_ESP32CfgSubMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_ESP32CfgSubMsg_descriptor,
+        new java.lang.String[] { "IsBT", "IsAP", "SerName", "BtName", "BtPin", "WifiChan", "Ssid", "Pass", "IpAddr", "GatewayAddr", "SubnetAddr", "DhcpRangeLo", "DhcpRangeHi", "MulticastAddr", "LocalPort", "RemotePort", });
+    internal_static_ESP32CfgMsg_descriptor =
+      getDescriptor().getMessageTypes().get(23);
+    internal_static_ESP32CfgMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_ESP32CfgMsg_descriptor,
+        new java.lang.String[] { "Esp0", "Esp1", });
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();
     registry.add(fi.kapsi.koti.jpa.nanopb.Nanopb.nanopb);

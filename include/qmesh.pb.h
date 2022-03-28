@@ -133,6 +133,25 @@ typedef struct _DbgMsg {
     char msg[256];
 } DbgMsg;
 
+typedef struct _ESP32CfgSubMsg {
+    bool isBT;
+    bool isAP;
+    char ser_name[32];
+    char bt_name[32];
+    char bt_pin[32];
+    char wifi_chan[32];
+    char ssid[32];
+    char pass[32];
+    char ip_addr[32];
+    char gateway_addr[32];
+    char subnet_addr[32];
+    char dhcp_range_lo[32];
+    char dhcp_range_hi[32];
+    char multicast_addr[32];
+    char local_port[32];
+    char remote_port[32];
+} ESP32CfgSubMsg;
+
 typedef struct _ErrorMsg {
     ErrorMsg_Type type;
     char msg[256];
@@ -252,6 +271,13 @@ typedef struct _VoiceFrameMsg {
     VoiceFrameMsg_payload_t payload;
 } VoiceFrameMsg;
 
+typedef struct _ESP32CfgMsg {
+    bool has_esp0;
+    ESP32CfgSubMsg esp0;
+    bool has_esp1;
+    ESP32CfgSubMsg esp1;
+} ESP32CfgMsg;
+
 typedef struct _LogMsg {
     bool valid;
     uint32_t count;
@@ -290,6 +316,8 @@ typedef struct _SysCfgMsg {
     FECCfg fec_cfg;
     bool has_net_cfg;
     NetCfg net_cfg;
+    bool has_esp_cfg_msg;
+    ESP32CfgMsg esp_cfg_msg;
     bool gps_en;
     bool log_packets_en;
     bool boot_log_en;
@@ -338,7 +366,7 @@ typedef struct _SysCfgMsg {
 #define FECCfg_init_default                      {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_default                    {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_default, 0}
 #define NetCfg_init_default                      {"", 0, 0, 0, 0, 0, 0, 0, 0}
-#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, 0, 0, 0, 0, 0}
+#define SysCfgMsg_init_default                   {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_default, false, TestCfg_init_default, false, FECCfg_init_default, false, NetCfg_init_default, false, ESP32CfgMsg_init_default, 0, 0, 0, 0, 0}
 #define ClockSetMsg_init_default                 {0}
 #define StatusMsg_init_default                   {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_default                      {""}
@@ -355,12 +383,14 @@ typedef struct _SysCfgMsg {
 #define VoiceFrameMsg_init_default               {0, 0, {0, {0}}}
 #define UpdateMsg_init_default                   {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define IntParamsMsg_init_default                {0, 0, 0, 0}
+#define ESP32CfgSubMsg_init_default              {0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
+#define ESP32CfgMsg_init_default                 {false, ESP32CfgSubMsg_init_default, false, ESP32CfgSubMsg_init_default}
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
 #define RadioCfg_init_zero                       {_RadioCfg_Type_MIN, 0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, false, LoraCfg_init_zero, 0}
 #define NetCfg_init_zero                         {"", 0, 0, 0, 0, 0, 0, 0, 0}
-#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, 0, 0, 0, 0, 0}
+#define SysCfgMsg_init_zero                      {_SysCfgMsg_Mode_MIN, 0, false, RadioCfg_init_zero, false, TestCfg_init_zero, false, FECCfg_init_zero, false, NetCfg_init_zero, false, ESP32CfgMsg_init_zero, 0, 0, 0, 0, 0}
 #define ClockSetMsg_init_zero                    {0}
 #define StatusMsg_init_zero                      {_StatusMsg_Status_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define DbgMsg_init_zero                         {""}
@@ -377,6 +407,8 @@ typedef struct _SysCfgMsg {
 #define VoiceFrameMsg_init_zero                  {0, 0, {0, {0}}}
 #define UpdateMsg_init_zero                      {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define IntParamsMsg_init_zero                   {0, 0, 0, 0}
+#define ESP32CfgSubMsg_init_zero                 {0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
+#define ESP32CfgMsg_init_zero                    {false, ESP32CfgSubMsg_init_zero, false, ESP32CfgSubMsg_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define AckMsg_radio_out_queue_level_tag         1
@@ -397,6 +429,22 @@ typedef struct _SysCfgMsg {
 #define DataMsg_kiss_stream_id_tag               11
 #define DataMsg_redundant_tag                    12
 #define DbgMsg_msg_tag                           1
+#define ESP32CfgSubMsg_isBT_tag                  1
+#define ESP32CfgSubMsg_isAP_tag                  2
+#define ESP32CfgSubMsg_ser_name_tag              3
+#define ESP32CfgSubMsg_bt_name_tag               4
+#define ESP32CfgSubMsg_bt_pin_tag                5
+#define ESP32CfgSubMsg_wifi_chan_tag             6
+#define ESP32CfgSubMsg_ssid_tag                  7
+#define ESP32CfgSubMsg_pass_tag                  8
+#define ESP32CfgSubMsg_ip_addr_tag               9
+#define ESP32CfgSubMsg_gateway_addr_tag          10
+#define ESP32CfgSubMsg_subnet_addr_tag           11
+#define ESP32CfgSubMsg_dhcp_range_lo_tag         12
+#define ESP32CfgSubMsg_dhcp_range_hi_tag         13
+#define ESP32CfgSubMsg_multicast_addr_tag        14
+#define ESP32CfgSubMsg_local_port_tag            15
+#define ESP32CfgSubMsg_remote_port_tag           16
 #define ErrorMsg_type_tag                        1
 #define ErrorMsg_msg_tag                         2
 #define FECCfg_type_tag                          1
@@ -470,6 +518,8 @@ typedef struct _SysCfgMsg {
 #define VoiceFrameMsg_size_bits_tag              1
 #define VoiceFrameMsg_end_stream_tag             2
 #define VoiceFrameMsg_payload_tag                3
+#define ESP32CfgMsg_esp0_tag                     1
+#define ESP32CfgMsg_esp1_tag                     2
 #define LogMsg_valid_tag                         1
 #define LogMsg_count_tag                         2
 #define LogMsg_timestamp_tag                     3
@@ -494,11 +544,12 @@ typedef struct _SysCfgMsg {
 #define SysCfgMsg_test_cfg_tag                   4
 #define SysCfgMsg_fec_cfg_tag                    5
 #define SysCfgMsg_net_cfg_tag                    6
-#define SysCfgMsg_gps_en_tag                     7
-#define SysCfgMsg_log_packets_en_tag             8
-#define SysCfgMsg_boot_log_en_tag                9
-#define SysCfgMsg_watchdog_timer_en_tag          10
-#define SysCfgMsg_valid_tag                      11
+#define SysCfgMsg_esp_cfg_msg_tag                7
+#define SysCfgMsg_gps_en_tag                     8
+#define SysCfgMsg_log_packets_en_tag             9
+#define SysCfgMsg_boot_log_en_tag                10
+#define SysCfgMsg_watchdog_timer_en_tag          11
+#define SysCfgMsg_valid_tag                      12
 
 /* Struct field encoding specification for nanopb */
 #define LoraCfg_FIELDLIST(X, a) \
@@ -555,17 +606,19 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  radio_cfg,         3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  test_cfg,          4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  fec_cfg,           5) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  net_cfg,           6) \
-X(a, STATIC,   SINGULAR, BOOL,     gps_en,            7) \
-X(a, STATIC,   SINGULAR, BOOL,     log_packets_en,    8) \
-X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,       9) \
-X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  10) \
-X(a, STATIC,   SINGULAR, BOOL,     valid,            11)
+X(a, STATIC,   OPTIONAL, MESSAGE,  esp_cfg_msg,       7) \
+X(a, STATIC,   SINGULAR, BOOL,     gps_en,            8) \
+X(a, STATIC,   SINGULAR, BOOL,     log_packets_en,    9) \
+X(a, STATIC,   SINGULAR, BOOL,     boot_log_en,      10) \
+X(a, STATIC,   SINGULAR, BOOL,     watchdog_timer_en,  11) \
+X(a, STATIC,   SINGULAR, BOOL,     valid,            12)
 #define SysCfgMsg_CALLBACK NULL
 #define SysCfgMsg_DEFAULT NULL
 #define SysCfgMsg_radio_cfg_MSGTYPE RadioCfg
 #define SysCfgMsg_test_cfg_MSGTYPE TestCfg
 #define SysCfgMsg_fec_cfg_MSGTYPE FECCfg
 #define SysCfgMsg_net_cfg_MSGTYPE NetCfg
+#define SysCfgMsg_esp_cfg_msg_MSGTYPE ESP32CfgMsg
 
 #define ClockSetMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   time,              1)
@@ -729,6 +782,34 @@ X(a, STATIC,   SINGULAR, INT32,    pwr_offset,        4)
 #define IntParamsMsg_CALLBACK NULL
 #define IntParamsMsg_DEFAULT NULL
 
+#define ESP32CfgSubMsg_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     isBT,              1) \
+X(a, STATIC,   SINGULAR, BOOL,     isAP,              2) \
+X(a, STATIC,   SINGULAR, STRING,   ser_name,          3) \
+X(a, STATIC,   SINGULAR, STRING,   bt_name,           4) \
+X(a, STATIC,   SINGULAR, STRING,   bt_pin,            5) \
+X(a, STATIC,   SINGULAR, STRING,   wifi_chan,         6) \
+X(a, STATIC,   SINGULAR, STRING,   ssid,              7) \
+X(a, STATIC,   SINGULAR, STRING,   pass,              8) \
+X(a, STATIC,   SINGULAR, STRING,   ip_addr,           9) \
+X(a, STATIC,   SINGULAR, STRING,   gateway_addr,     10) \
+X(a, STATIC,   SINGULAR, STRING,   subnet_addr,      11) \
+X(a, STATIC,   SINGULAR, STRING,   dhcp_range_lo,    12) \
+X(a, STATIC,   SINGULAR, STRING,   dhcp_range_hi,    13) \
+X(a, STATIC,   SINGULAR, STRING,   multicast_addr,   14) \
+X(a, STATIC,   SINGULAR, STRING,   local_port,       15) \
+X(a, STATIC,   SINGULAR, STRING,   remote_port,      16)
+#define ESP32CfgSubMsg_CALLBACK NULL
+#define ESP32CfgSubMsg_DEFAULT NULL
+
+#define ESP32CfgMsg_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  esp0,              1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  esp1,              2)
+#define ESP32CfgMsg_CALLBACK NULL
+#define ESP32CfgMsg_DEFAULT NULL
+#define ESP32CfgMsg_esp0_MSGTYPE ESP32CfgSubMsg
+#define ESP32CfgMsg_esp1_MSGTYPE ESP32CfgSubMsg
+
 extern const pb_msgdesc_t LoraCfg_msg;
 extern const pb_msgdesc_t TestCfg_msg;
 extern const pb_msgdesc_t FECCfg_msg;
@@ -751,6 +832,8 @@ extern const pb_msgdesc_t DataMsg_msg;
 extern const pb_msgdesc_t VoiceFrameMsg_msg;
 extern const pb_msgdesc_t UpdateMsg_msg;
 extern const pb_msgdesc_t IntParamsMsg_msg;
+extern const pb_msgdesc_t ESP32CfgSubMsg_msg;
+extern const pb_msgdesc_t ESP32CfgMsg_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define LoraCfg_fields &LoraCfg_msg
@@ -775,6 +858,8 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define VoiceFrameMsg_fields &VoiceFrameMsg_msg
 #define UpdateMsg_fields &UpdateMsg_msg
 #define IntParamsMsg_fields &IntParamsMsg_msg
+#define ESP32CfgSubMsg_fields &ESP32CfgSubMsg_msg
+#define ESP32CfgMsg_fields &ESP32CfgMsg_msg
 
 /* Maximum encoded size of messages (where known) */
 #define LoraCfg_size                             30
@@ -782,7 +867,7 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define FECCfg_size                              35
 #define RadioCfg_size                            226
 #define NetCfg_size                              298
-#define SysCfgMsg_size                           593
+#define SysCfgMsg_size                           1536
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           72
 #define DbgMsg_size                              258
@@ -799,6 +884,8 @@ extern const pb_msgdesc_t IntParamsMsg_msg;
 #define VoiceFrameMsg_size                       42
 #define UpdateMsg_size                           4343
 #define IntParamsMsg_size                        44
+#define ESP32CfgSubMsg_size                      467
+#define ESP32CfgMsg_size                         940
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -1,3 +1,21 @@
+/*
+QMesh
+Copyright (C) 2022 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "serial_msg.hpp"
 
 static constexpr SerialMsg serialmsg_init_zero = SerialMsg_init_zero;
@@ -54,7 +72,7 @@ auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
         check_and_init_assign(&(serial_msg.time_msg), serialmsg.serial_msg.time_msg);
         check_and_init_assign(&(serial_msg.int_params_msg), serialmsg.serial_msg.int_params_msg);
         check_and_init_assign(&(serial_msg.voice_frame_msg), serialmsg.serial_msg.voice_frame_msg);  
-        check_and_init_assign(&(serial_msg.ack_msg), serialmsg.serial_msg.ack_msg);           
+        check_and_init_assign(&(serial_msg.ack_msg), serialmsg.serial_msg.ack_msg);         
     }
     return *this; 
 }

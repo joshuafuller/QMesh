@@ -45,7 +45,7 @@
     },
     "target_overrides": {
         "*": {
-            "target.features_add": ["STORAGE"],
+            "target.features_add": ["STORAGE", "LWIP"],
             "target.components_add": ["SPIF", "QSPIF"],
             "platform.stdio-convert-newlines": true,
             "platform.stdio-baud-rate": 230400,
