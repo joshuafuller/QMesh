@@ -329,6 +329,26 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, ESP32CfgSubMsg &my_cfg,
 }
 
 
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const ser_port_type_t ser_port_type) :
+        KISSSerial(cfg.ser_name, ser_port_type), 
+        cfg(ESP32CfgSubMsg_zero),
+        isESP32(false),
+        tx_port(tx),
+        rx_port(rx),
+        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)) {
+    PORTABLE_ASSERT(ser);
+    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
+    using_stdio = false;
+
+    startThreads();
+
+    kiss_sers_mtx->lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx->unlock();
+}
+
+
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int HALF_SECOND = 500;
 static constexpr int ONE_SECOND = 1000;

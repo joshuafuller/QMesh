@@ -35,3 +35,38 @@ invert_bits: true
 # codec2 stuff
 voice_frames_per_frame: 4
 codec2_bitrate: 700
+# Settings for the ESP32 modules
+esp0_isbt: true
+esp0_isap: false
+esp0_ser_name: bt0
+esp0_bt_name: QMesh-BT0
+esp0_bt_pin: 0000
+esp0_wifi_chan: 6
+esp0_ssid: QMesh-WiFi0
+esp0_pass: password
+esp0_ip_addr: 192.168.10.1
+esp0_gateway_addr: 192.168.10.1
+esp0_subnet_addr: 255.255.255.0
+esp0_dhcp_range_lo: 192.168.10.10
+esp0_dhcp_range_hi: 192.168.10.50
+esp0_multicast_addr: 224.0.0.0
+esp0_local_port: 1000
+esp0_remote_port: 1002
+
+esp1_isbt: true
+esp1_isap: false
+esp1_ser_name: bt1
+esp1_bt_name: QMesh-BT1
+esp1_bt_pin: 0000
+esp1_wifi_chan: 6
+esp1_ssid: QMesh-WiFi1
+esp1_pass: password
+esp1_ip_addr: 192.168.20.1
+esp1_gateway_addr: 192.168.20.1
+esp1_subnet_addr: 255.255.255.0
+esp1_dhcp_range_lo: 192.168.20.10
+esp1_dhcp_range_hi: 192.168.20.50
+esp1_multicast_addr: 224.0.0.1
+esp1_local_port: 1000
+esp1_remote_port: 1002
+

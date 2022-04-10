@@ -71,6 +71,13 @@ static void setup_uarts() {
     PORTABLE_ASSERT(radio_cb.valid);
     PORTABLE_ASSERT(radio_cb.has_esp_cfg_msg);
     // Start the serial handler threads
+#ifdef MBED_CONF_APP_DEBUG_UART_TX
+    portability::sleep(HALF_SECOND);
+    auto *debug_ser = new KISSSerialUART(MBED_CONF_APP_DEBUG_UART_TX, MBED_CONF_APP_DEBUG_UART_RX, 
+                                DEBUG_PORT);
+    PORTABLE_ASSERT(debug_ser);
+#endif /* MBED_CONF_APP_DEBUG_UART_TX */
+
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_0
     portability::sleep(HALF_SECOND);
     PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp0);

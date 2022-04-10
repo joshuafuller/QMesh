@@ -23,6 +23,9 @@
         "qspi-flash-io2":           { "value" : "PE_2" },
         "qspi-flash-io3":           { "value" : "PD_13" },
 
+        "debug_uart_tx":            { "value" : "PC_12" },
+        "debug_uart_rx":            { "value" : "PD_2" },
+
         "kiss_uart_tx_esp32_0":     { "value" : "PF_7" },
         "kiss_uart_rx_esp32_0":     { "value" : "PF_6" },
 
@@ -102,6 +105,9 @@
 
             "oled-sda":                 "PB_8",
             "oled-scl":                 "PB_9",
+
+            "debug_uart_tx":            "PC_12",
+            "debug_uart_rx":            "PD_2",
 
             "kiss_uart_tx_esp32_0":     "PF_7",
             "kiss_uart_rx_esp32_0":     "PF_6",

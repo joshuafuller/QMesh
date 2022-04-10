@@ -133,6 +133,7 @@ private:
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
     KISSSerialUART(PinName tx, PinName rx, ESP32CfgSubMsg &my_cfg, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName rx, ser_port_type_t ser_port_type);
     
     ~KISSSerialUART();
     KISSSerialUART(const KISSSerialUART &) = delete;

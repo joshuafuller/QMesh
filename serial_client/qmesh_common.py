@@ -40,6 +40,40 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['log_boot'] = ser_msg.sys_cfg.boot_log_en
     cfg_dict['watchdog_timer_en'] = ser_msg.sys_cfg.watchdog_timer_en
 
+    cfg_dict['esp0_isbt'] = ser_msg.esp_cfg_msg.esp0.isBT
+    cfg_dict['esp0_isap'] = ser_msg.esp_cfg_msg.esp0.isAP
+    cfg_dict['esp0_ser_name'] = ser_msg.esp_cfg_msg.esp0.ser_name
+    cfg_dict['esp0_bt_name'] = ser_msg.esp_cfg_msg.esp0.bt_name
+    cfg_dict['esp0_bt_pin'] = ser_msg.esp_cfg_msg.esp0.bt_pin
+    cfg_dict['esp0_wifi_chan'] = ser_msg.esp_cfg_msg.esp0.wifi_chan
+    cfg_dict['esp0_ssid'] = ser_msg.esp_cfg_msg.esp0.ssid
+    cfg_dict['esp0_pass'] = ser_msg.esp_cfg_msg.esp0.pass
+    cfg_dict['esp0_ip_addr'] = ser_msg.esp_cfg_msg.esp0.ip_addr
+    cfg_dict['esp0_gateway_addr'] = ser_msg.esp_cfg_msg.esp0.gateway_addr
+    cfg_dict['esp0_subnet_addr'] = ser_msg.esp_cfg_msg.esp0.subnet_addr
+    cfg_dict['esp0_dhcp_range_lo'] = ser_msg.esp_cfg_msg.esp0.dhcp_range_lo
+    cfg_dict['esp0_dhcp_range_hi'] = ser_msg.esp_cfg_msg.esp0.dhcp_range_hi
+    cfg_dict['esp0_multicast_addr'] = ser_msg.esp_cfg_msg.esp0.multicast_addr
+    cfg_dict['esp0_local_port'] = ser_msg.esp_cfg_msg.esp0.local_port
+    cfg_dict['esp0_remote_port'] = ser_msg.esp_cfg_msg.esp0.remote_port
+
+    cfg_dict['esp1_isbt'] = ser_msg.esp_cfg_msg.esp1.isBT
+    cfg_dict['esp1_isap'] = ser_msg.esp_cfg_msg.esp1.isAP
+    cfg_dict['esp1_ser_name'] = ser_msg.esp_cfg_msg.esp1.ser_name
+    cfg_dict['esp1_bt_name'] = ser_msg.esp_cfg_msg.esp1.bt_name
+    cfg_dict['esp1_bt_pin'] = ser_msg.esp_cfg_msg.esp1.bt_pin
+    cfg_dict['esp1_wifi_chan'] = ser_msg.esp_cfg_msg.esp1.wifi_chan
+    cfg_dict['esp1_ssid'] = ser_msg.esp_cfg_msg.esp1.ssid
+    cfg_dict['esp1_pass'] = ser_msg.esp_cfg_msg.esp1.pass
+    cfg_dict['esp1_ip_addr'] = ser_msg.esp_cfg_msg.esp1.ip_addr
+    cfg_dict['esp1_gateway_addr'] = ser_msg.esp_cfg_msg.esp1.gateway_addr
+    cfg_dict['esp1_subnet_addr'] = ser_msg.esp_cfg_msg.esp1.subnet_addr
+    cfg_dict['esp1_dhcp_range_lo'] = ser_msg.esp_cfg_msg.esp1.dhcp_range_lo
+    cfg_dict['esp1_dhcp_range_hi'] = ser_msg.esp_cfg_msg.esp1.dhcp_range_hi
+    cfg_dict['esp1_multicast_addr'] = ser_msg.esp_cfg_msg.esp1.multicast_addr
+    cfg_dict['esp1_local_port'] = ser_msg.esp_cfg_msg.esp1.local_port
+    cfg_dict['esp1_remote_port'] = ser_msg.esp_cfg_msg.esp1.remote_port
+
     yaml_str = yaml.dump(cfg_dict)
     f = open(yaml_file_path, 'w')
     f.write(yaml_str)
@@ -95,6 +129,43 @@ def print_cfg_msg(ser_msg):
     print("\tWatchdog Timer Enabled: %s" % (sys_cfg.watchdog_timer_en))
     print("\tWalsh Codes Enabled: %s" % (sys_cfg.net_cfg.walsh_codes))
     print("\tInvert Bits: %s" % (sys_cfg.net_cfg.invert_bits))
+    print("\tESP32 CONFIG:")
+    esp_cfg = sys_cfg.esp_cfg
+    print("\t\tESP0:")
+    print("\t\t\tIs Bluetooth: %s" % (esp_cfg.esp0_isbt))
+    print("\t\t\tIs AP: %s" % (esp_cfg.esp0_isap))
+    print("\t\t\tSerial Name: %s" % (esp_cfg.esp0_ser_name))
+    print("\t\t\tBluetooth Name: %s" % (esp_cfg.esp0_bt_name))
+    print("\t\t\tBluetooth PIN: %s" % (esp_cfg.esp0_bt_pin))
+    print("\t\t\tWi-Fi Channel: %s" % (esp_cfg.esp0_wifi_chan))
+    print("\t\t\tWi-Fi SSID: %s" % (esp_cfg.esp0_ssid))
+    print("\t\t\tWi-Fi Password: %s" % (esp_cfg.esp0_pass))
+    print("\t\t\tIP Address: %s" % (esp_cfg.esp0_ip_addr))
+    print("\t\t\tGateway IP Address: %s" % (esp_cfg.esp0_gateway_addr))
+    print("\t\t\tSubnet IP Address: %s" % (esp_cfg.esp0_subnet_addr))
+    print("\t\t\tDHCP Range Low IP Address: %s" % (esp_cfg.esp0_dhcp_range_lo))
+    print("\t\t\tDHCP Range High IP Address: %s" % (esp_cfg.esp0_dhcp_range_hi))
+    print("\t\t\tMulticast IP Address: %s" % (esp_cfg.esp0_multicast_addr))
+    print("\t\t\tLocal Port: %s" % (esp_cfg.esp0_local_port))
+    print("\t\t\tRemote Port: %s" % (esp_cfg.esp0_remote_port))
+
+    print("\t\tESP1:")
+    print("\t\t\tIs Bluetooth: %s" % (esp_cfg.esp1_isbt))
+    print("\t\t\tIs AP: %s" % (esp_cfg.esp1_isap))
+    print("\t\t\tSerial Name: %s" % (esp_cfg.esp1_ser_name))
+    print("\t\t\tBluetooth Name: %s" % (esp_cfg.esp1_bt_name))
+    print("\t\t\tBluetooth PIN: %s" % (esp_cfg.esp1_bt_pin))
+    print("\t\t\tWi-Fi Channel: %s" % (esp_cfg.esp1_wifi_chan))
+    print("\t\t\tWi-Fi SSID: %s" % (esp_cfg.esp1_ssid))
+    print("\t\t\tWi-Fi Password: %s" % (esp_cfg.esp1_pass))
+    print("\t\t\tIP Address: %s" % (esp_cfg.esp1_ip_addr))
+    print("\t\t\tGateway IP Address: %s" % (esp_cfg.esp1_gateway_addr))
+    print("\t\t\tSubnet IP Address: %s" % (esp_cfg.esp1_subnet_addr))
+    print("\t\t\tDHCP Range Low IP Address: %s" % (esp_cfg.esp1_dhcp_range_lo))
+    print("\t\t\tDHCP Range High IP Address: %s" % (esp_cfg.esp1_dhcp_range_hi))
+    print("\t\t\tMulticast IP Address: %s" % (esp_cfg.esp1_multicast_addr))
+    print("\t\t\tLocal Port: %s" % (esp_cfg.esp1_local_port))
+    print("\t\t\tRemote Port: %s" % (esp_cfg.esp1_remote_port))
 
 
 def publish_msg(ser_msg):
