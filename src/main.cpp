@@ -82,6 +82,7 @@ static void setup_uarts() {
     portability::sleep(HALF_SECOND);
     PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp0);
     auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
+                    KISS_UART_RST_ESP32_0, KISS_UART_CTS_ESP32_0, KISS_UART_RTS_ESP32_0, 
                     radio_cb.esp_cfg_msg.esp0, DEBUG_PORT);
     PORTABLE_ASSERT(esp32_0_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_0 */
@@ -90,6 +91,7 @@ static void setup_uarts() {
     portability::sleep(HALF_SECOND);
     PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp1);
     auto *esp32_1_ser = new KISSSerialUART(KISS_UART_TX_ESP32_1, KISS_UART_RX_ESP32_1, 
+                    KISS_UART_RST_ESP32_1, KISS_UART_CTS_ESP32_1, KISS_UART_RTS_ESP32_1, 
                     radio_cb.esp_cfg_msg.esp1, DEBUG_PORT);
     PORTABLE_ASSERT(esp32_1_ser);
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */

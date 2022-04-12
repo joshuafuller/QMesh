@@ -123,16 +123,22 @@ class KISSSerialUART : public KISSSerial {
 private:
     ESP32CfgSubMsg cfg;
     bool isESP32;
-    PinName tx_port, rx_port;
+    PinName tx_port, rx_port, cts_port, rts_port;
+    DigitalInOut esp32_rst;
     UARTSerial *ser;
     bool using_stdio;
+    bool flow_control;
 
     void configure_esp32_bt();
     void configure_esp32_wifi();
+    void set_uart_flow_ctl(FILE *ser_fh);
 
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
-    KISSSerialUART(PinName tx, PinName rx, ESP32CfgSubMsg &my_cfg, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName rx, PinName rst, ESP32CfgSubMsg &my_cfg, 
+                    ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts,
+                    ESP32CfgSubMsg &my_cfg, ser_port_type_t ser_port_type);
     KISSSerialUART(PinName tx, PinName rx, ser_port_type_t ser_port_type);
     
     ~KISSSerialUART();

@@ -28,9 +28,15 @@
 
         "kiss_uart_tx_esp32_0":     { "value" : "PF_7" },
         "kiss_uart_rx_esp32_0":     { "value" : "PF_6" },
+        "kiss_uart_rts_esp32_0":    { "value" : "PF_8" },
+        "kiss_uart_cts_esp32_0":    { "value" : "PF_9" },
+        "kiss_uart_rst_esp32_0":    { "value" : "PG_1" },
 
         "kiss_uart_tx_esp32_1":     { "value" : "PD_1" },
         "kiss_uart_rx_esp32_1":     { "value" : "PD_0" },
+        "kiss_uart_rts_esp32_1":    { "value" : "PA_15" },
+        "kiss_uart_cts_esp32_1":    { "value" : "PB_0" }, 
+        "kiss_uart_rst_esp32_1":    { "value" : "PC_1" }, 
 
         "has_watchdog":             { "value" : "1" },
         "has_ble":                  { "value" : "0" },
@@ -111,9 +117,15 @@
 
             "kiss_uart_tx_esp32_0":     "PF_7",
             "kiss_uart_rx_esp32_0":     "PF_6",
+            "kiss_uart_rts_esp32_0":    "PF_8",
+            "kiss_uart_cts_esp32_0":    "PF_9",
+            "kiss_uart_rst_esp32_0":    "PG_1",
 
             "kiss_uart_tx_esp32_1":     "PD_1",
             "kiss_uart_rx_esp32_1":     "PD_0",
+            "kiss_uart_rts_esp32_1":    "PA_15",
+            "kiss_uart_cts_esp32_1":    "PB_0",  
+            "kiss_uart_rst_esp32_1":    "PC_1",           
 
             "qspi-flash-csn":           "PG_6"
         }
