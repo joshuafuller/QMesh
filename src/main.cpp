@@ -74,6 +74,7 @@ static void setup_uarts() {
 #ifdef MBED_CONF_APP_DEBUG_UART_TX
     portability::sleep(HALF_SECOND);
     auto *debug_ser = new KISSSerialUART(MBED_CONF_APP_DEBUG_UART_TX, MBED_CONF_APP_DEBUG_UART_RX, 
+                                MBED_CONF_APP_DEBUG_UART_CTS, MBED_CONF_APP_DEBUG_UART_RTS,
                                 DEBUG_PORT);
     PORTABLE_ASSERT(debug_ser);
 #endif /* MBED_CONF_APP_DEBUG_UART_TX */

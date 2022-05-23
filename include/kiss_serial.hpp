@@ -135,6 +135,7 @@ private:
 
 public:
     KISSSerialUART(const string &my_port_name, ser_port_type_t ser_port_type);
+    KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts, ser_port_type_t ser_port_type);
     KISSSerialUART(PinName tx, PinName rx, PinName rst, ESP32CfgSubMsg &my_cfg, 
                     ser_port_type_t ser_port_type);
     KISSSerialUART(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts,

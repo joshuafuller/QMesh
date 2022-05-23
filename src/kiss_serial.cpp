@@ -392,6 +392,36 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const ser_port_type_t ser
 }
 
 
+KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts, 
+            ser_port_type_t ser_port_type) :
+        KISSSerial(cfg.ser_name, ser_port_type), 
+        cfg(ESP32CfgSubMsg_zero),
+        isESP32(false),
+        tx_port(tx),
+        rx_port(rx),
+        cts_port(cts),
+        rts_port(rts),
+        esp32_rst(DigitalInOut(NC)),
+        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        flow_control(true) {
+    PORTABLE_ASSERT(ser);
+    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
+    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
+    using_stdio = false;
+    FILE *ser_fh = fdopen(&*ser, "rw");
+    PORTABLE_ASSERT(ser_fh != nullptr);
+    if(flow_control) {
+        set_uart_flow_ctl(ser_fh);
+    }
+    fclose(ser_fh);
+    startThreads();
+
+    kiss_sers_mtx->lock();
+    kiss_sers.push_back(this);
+    kiss_sers_mtx->unlock();
+}
+
+
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int HALF_SECOND = 500;
 static constexpr int ONE_SECOND = 1000;
@@ -424,6 +454,7 @@ void KISSSerialUART::configure_esp32_bt() {
     ser->set_baud(BT_BAUD_RATE);
     portability::sleep(QUARTER_SECOND);
     FILE *ser_fh = fdopen(&*ser, "rw");
+    PORTABLE_ASSERT(ser_fh != nullptr);
     if(flow_control) {
         set_uart_flow_ctl(ser_fh);
     }
@@ -471,6 +502,7 @@ void KISSSerialUART::configure_esp32_wifi() {
     ser->set_baud(BT_BAUD_RATE);
     portability::sleep(QUARTER_SECOND);
     FILE *ser_fh = fdopen(&*ser, "rw");
+    PORTABLE_ASSERT(ser_fh != nullptr);
     if(flow_control) {
         set_uart_flow_ctl(ser_fh);
     }
@@ -585,6 +617,7 @@ KISSSerial::~KISSSerial() {
 KISSSerialUART::~KISSSerialUART() {
     if(isESP32) {
         FILE *ser_fh = fdopen(&*ser, "rw");
+        PORTABLE_ASSERT(ser_fh != nullptr);
         portability::sleep(QUARTER_SECOND);
         string bt_leave_passthrough_cmd("+++\r\n");
         fprintf(ser_fh, "%s", bt_leave_passthrough_cmd.c_str());

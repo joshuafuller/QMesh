@@ -25,6 +25,8 @@
 
         "debug_uart_tx":            { "value" : "PC_12" },
         "debug_uart_rx":            { "value" : "PD_2" },
+        "debug_uart_cts":           { "value" : "PC_9" },
+        "debug_uart_rts":           { "value" : "PC_8" },
 
         "kiss_uart_tx_esp32_0":     { "value" : "PF_7" },
         "kiss_uart_rx_esp32_0":     { "value" : "PF_6" },
