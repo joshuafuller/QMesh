@@ -87,6 +87,10 @@ public:
     auto voice_frame_msg() -> VoiceFrameMsg&;
     auto has_ack_msg() const -> bool;
     auto ack_msg() -> AckMsg&;   
+    auto has_sethw_msg() const -> bool;
+    auto sethw_msg() -> SetHWMsg&;
+    auto has_sigrpt_msg() const -> bool;
+    auto sigrpt_msg() -> SigRptMsg&;
 };
 
 #endif /* SERIAL_MSG_HPP */

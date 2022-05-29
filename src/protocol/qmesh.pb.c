@@ -78,6 +78,12 @@ PB_BIND(ESP32CfgSubMsg, ESP32CfgSubMsg, 2)
 PB_BIND(ESP32CfgMsg, ESP32CfgMsg, 2)
 
 
+PB_BIND(SetHWMsg, SetHWMsg, AUTO)
+
+
+PB_BIND(SigRptMsg, SigRptMsg, AUTO)
+
+
 
 
 

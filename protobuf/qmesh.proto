@@ -177,6 +177,8 @@ message SerialMsg {
     TURN_OLED_OFF = 30;
     INT_PARAMS = 31;
     VOICE_MSG = 32;
+    SETHW = 33;
+    SIGRPT = 34;
   }
   Type type = 1;
   bool retry = 2;
@@ -195,6 +197,8 @@ message SerialMsg {
   IntParamsMsg int_params_msg = 14 [(nanopb).type = FT_POINTER];
   VoiceFrameMsg voice_frame_msg = 15 [(nanopb).type = FT_POINTER];
   AckMsg ack_msg = 16 [(nanopb).type = FT_POINTER];
+  SetHWMsg sethw_msg = 17 [(nanopb).type = FT_POINTER];
+  SigRptMsg sigrpt_msg = 18 [(nanopb).type = FT_POINTER];
 }
 
 message AckMsg {
@@ -291,3 +295,19 @@ message ESP32CfgMsg {
   ESP32CfgSubMsg esp0 = 1;
   ESP32CfgSubMsg esp1 = 2;
 }
+
+message SetHWMsg {
+  uint32 freq = 1;
+  uint32 bw = 2;
+  uint32 sf = 3;
+  uint32 cr = 4;
+  uint32 pwr = 5;
+  uint32 sync = 6;
+  uint32 crc = 7;
+}
+
+message SigRptMsg {
+  int32 rssi = 1;
+  int32 snr = 2;  // snr * 100
+}
+

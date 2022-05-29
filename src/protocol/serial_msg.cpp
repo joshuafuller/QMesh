@@ -33,6 +33,8 @@ static constexpr TimeMsg timemsg_init_zero = TimeMsg_init_zero;
 static constexpr IntParamsMsg intparamsmsg_init_zero = IntParamsMsg_init_zero;
 static constexpr VoiceFrameMsg voiceframemsg_init_zero = VoiceFrameMsg_init_zero;
 static constexpr AckMsg ackmsg_init_zero = AckMsg_init_zero;
+static constexpr SetHWMsg sethwmsg_init_zero = SetHWMsg_init_zero;
+static constexpr SigRptMsg sigrptmsg_init_zero = SigRptMsg_init_zero;
 
 SerMsg::SerMsg() : serial_msg(serialmsg_init_zero) { }
 
@@ -53,6 +55,8 @@ SerMsg::SerMsg(const SerMsg &serialmsg) : serial_msg(serialmsg_init_zero) {
     check_and_init_assign(&(serial_msg.int_params_msg), serialmsg.serial_msg.int_params_msg);    
     check_and_init_assign(&(serial_msg.voice_frame_msg), serialmsg.serial_msg.voice_frame_msg);    
     check_and_init_assign(&(serial_msg.ack_msg), serialmsg.serial_msg.ack_msg); 
+    check_and_init_assign(&(serial_msg.sethw_msg), serialmsg.serial_msg.sethw_msg); 
+    check_and_init_assign(&(serial_msg.sigrpt_msg), serialmsg.serial_msg.sigrpt_msg); 
 }
 
 auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
@@ -72,7 +76,9 @@ auto SerMsg::operator=(const SerMsg &serialmsg) -> SerMsg & {
         check_and_init_assign(&(serial_msg.time_msg), serialmsg.serial_msg.time_msg);
         check_and_init_assign(&(serial_msg.int_params_msg), serialmsg.serial_msg.int_params_msg);
         check_and_init_assign(&(serial_msg.voice_frame_msg), serialmsg.serial_msg.voice_frame_msg);  
-        check_and_init_assign(&(serial_msg.ack_msg), serialmsg.serial_msg.ack_msg);         
+        check_and_init_assign(&(serial_msg.ack_msg), serialmsg.serial_msg.ack_msg);   
+        check_and_init_assign(&(serial_msg.sethw_msg), serialmsg.serial_msg.sethw_msg);    
+        check_and_init_assign(&(serial_msg.sigrpt_msg), serialmsg.serial_msg.sigrpt_msg);          
     }
     return *this; 
 }
@@ -92,6 +98,8 @@ void SerMsg::clear() {
     delete serial_msg.int_params_msg;
     delete serial_msg.voice_frame_msg;
     delete serial_msg.ack_msg;
+    delete serial_msg.sethw_msg;
+    delete serial_msg.sigrpt_msg;
     serial_msg = serialmsg_init_zero;
 }
 
@@ -110,6 +118,8 @@ SerMsg::~SerMsg() {
     delete serial_msg.int_params_msg;
     delete serial_msg.voice_frame_msg;
     delete serial_msg.ack_msg;
+    delete serial_msg.sethw_msg;
+    delete serial_msg.sigrpt_msg;
 }
 
 auto SerMsg::size() const -> size_t {
@@ -157,6 +167,12 @@ auto SerMsg::size() const -> size_t {
     if(serial_msg.ack_msg != nullptr) {
         acc += AckMsg_size;
     }
+    if(serial_msg.sethw_msg != nullptr) {
+        acc += SetHWMsg_size;
+    }
+    if(serial_msg.sigrpt_msg != nullptr) {
+        acc += SigRptMsg_size;
+    }
     return acc;
 }
 
@@ -177,6 +193,8 @@ auto SerMsg::maxSize() -> size_t {
     acc += IntParamsMsg_size;
     acc += VoiceFrameMsg_size;
     acc += AckMsg_size;
+    acc += SetHWMsg_size;
+    acc += SigRptMsg_size;
     return acc;
 }
 
@@ -320,4 +338,22 @@ auto SerMsg::has_ack_msg() const -> bool {
 auto SerMsg::ack_msg() -> AckMsg& {
     check_and_init(&(serial_msg.ack_msg), ackmsg_init_zero);
     return *(serial_msg.ack_msg);
+}
+
+auto SerMsg::has_sethw_msg() const -> bool {
+    return !(serial_msg.sethw_msg == nullptr);
+}
+
+auto SerMsg::sethw_msg() -> SetHWMsg& {
+    check_and_init(&(serial_msg.sethw_msg), sethwmsg_init_zero);
+    return *(serial_msg.sethw_msg);
+}
+
+auto SerMsg::has_sigrpt_msg() const -> bool {
+    return !(serial_msg.sigrpt_msg == nullptr);
+}
+
+auto SerMsg::sigrpt_msg() -> SigRptMsg& {
+    check_and_init(&(serial_msg.sigrpt_msg), sigrptmsg_init_zero);
+    return *(serial_msg.sigrpt_msg);
 }

@@ -73,7 +73,9 @@ typedef enum _SerialMsg_Type {
     SerialMsg_Type_TURN_OLED_ON = 29,
     SerialMsg_Type_TURN_OLED_OFF = 30,
     SerialMsg_Type_INT_PARAMS = 31,
-    SerialMsg_Type_VOICE_MSG = 32
+    SerialMsg_Type_VOICE_MSG = 32,
+    SerialMsg_Type_SETHW = 33,
+    SerialMsg_Type_SIGRPT = 34
 } SerialMsg_Type;
 
 typedef enum _ErrorMsg_Type {
@@ -218,7 +220,24 @@ typedef struct _SerialMsg {
     struct _IntParamsMsg *int_params_msg;
     struct _VoiceFrameMsg *voice_frame_msg;
     struct _AckMsg *ack_msg;
+    struct _SetHWMsg *sethw_msg;
+    struct _SigRptMsg *sigrpt_msg;
 } SerialMsg;
+
+typedef struct _SetHWMsg {
+    uint32_t freq;
+    uint32_t bw;
+    uint32_t sf;
+    uint32_t cr;
+    uint32_t pwr;
+    uint32_t sync;
+    uint32_t crc;
+} SetHWMsg;
+
+typedef struct _SigRptMsg {
+    int32_t rssi;
+    int32_t snr;
+} SigRptMsg;
 
 typedef struct _StatusMsg {
     StatusMsg_Status status;
@@ -344,8 +363,8 @@ typedef struct _SysCfgMsg {
 #define _StatusMsg_Status_ARRAYSIZE ((StatusMsg_Status)(StatusMsg_Status_RUNNING+1))
 
 #define _SerialMsg_Type_MIN SerialMsg_Type_GET_CONFIG
-#define _SerialMsg_Type_MAX SerialMsg_Type_VOICE_MSG
-#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_VOICE_MSG+1))
+#define _SerialMsg_Type_MAX SerialMsg_Type_SIGRPT
+#define _SerialMsg_Type_ARRAYSIZE ((SerialMsg_Type)(SerialMsg_Type_SIGRPT+1))
 
 #define _ErrorMsg_Type_MIN ErrorMsg_Type_CRC_ERR
 #define _ErrorMsg_Type_MAX ErrorMsg_Type_OTHER_ERR
@@ -375,7 +394,7 @@ typedef struct _SysCfgMsg {
 #define GPSMsg_init_default                      {0, 0, 0}
 #define LogMsg_init_default                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_default}
 #define TimeMsg_init_default                     {0}
-#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define SerialMsg_init_default                   {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 #define AckMsg_init_default                      {0}
 #define VersionMsg_init_default                  {""}
 #define ErrorMsg_init_default                    {_ErrorMsg_Type_MIN, ""}
@@ -385,6 +404,8 @@ typedef struct _SysCfgMsg {
 #define IntParamsMsg_init_default                {0, 0, 0, 0}
 #define ESP32CfgSubMsg_init_default              {0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
 #define ESP32CfgMsg_init_default                 {false, ESP32CfgSubMsg_init_default, false, ESP32CfgSubMsg_init_default}
+#define SetHWMsg_init_default                    {0, 0, 0, 0, 0, 0, 0}
+#define SigRptMsg_init_default                   {0, 0}
 #define LoraCfg_init_zero                        {0, 0, 0, 0, 0}
 #define TestCfg_init_zero                        {0, 0, 0}
 #define FECCfg_init_zero                         {_FECCfg_Type_MIN, 0, 0, 0}
@@ -399,7 +420,7 @@ typedef struct _SysCfgMsg {
 #define GPSMsg_init_zero                         {0, 0, 0}
 #define LogMsg_init_zero                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, GPSMsg_init_zero}
 #define TimeMsg_init_zero                        {0}
-#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define SerialMsg_init_zero                      {_SerialMsg_Type_MIN, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 #define AckMsg_init_zero                         {0}
 #define VersionMsg_init_zero                     {""}
 #define ErrorMsg_init_zero                       {_ErrorMsg_Type_MIN, ""}
@@ -409,6 +430,8 @@ typedef struct _SysCfgMsg {
 #define IntParamsMsg_init_zero                   {0, 0, 0, 0}
 #define ESP32CfgSubMsg_init_zero                 {0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
 #define ESP32CfgMsg_init_zero                    {false, ESP32CfgSubMsg_init_zero, false, ESP32CfgSubMsg_init_zero}
+#define SetHWMsg_init_zero                       {0, 0, 0, 0, 0, 0, 0}
+#define SigRptMsg_init_zero                      {0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define AckMsg_radio_out_queue_level_tag         1
@@ -489,6 +512,17 @@ typedef struct _SysCfgMsg {
 #define SerialMsg_int_params_msg_tag             14
 #define SerialMsg_voice_frame_msg_tag            15
 #define SerialMsg_ack_msg_tag                    16
+#define SerialMsg_sethw_msg_tag                  17
+#define SerialMsg_sigrpt_msg_tag                 18
+#define SetHWMsg_freq_tag                        1
+#define SetHWMsg_bw_tag                          2
+#define SetHWMsg_sf_tag                          3
+#define SetHWMsg_cr_tag                          4
+#define SetHWMsg_pwr_tag                         5
+#define SetHWMsg_sync_tag                        6
+#define SetHWMsg_crc_tag                         7
+#define SigRptMsg_rssi_tag                       1
+#define SigRptMsg_snr_tag                        2
 #define StatusMsg_status_tag                     1
 #define StatusMsg_tx_full_tag                    2
 #define StatusMsg_time_tag                       3
@@ -706,7 +740,9 @@ X(a, POINTER,  OPTIONAL, MESSAGE,  update_msg,       12) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  ver_msg,          13) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  int_params_msg,   14) \
 X(a, POINTER,  OPTIONAL, MESSAGE,  voice_frame_msg,  15) \
-X(a, POINTER,  OPTIONAL, MESSAGE,  ack_msg,          16)
+X(a, POINTER,  OPTIONAL, MESSAGE,  ack_msg,          16) \
+X(a, POINTER,  OPTIONAL, MESSAGE,  sethw_msg,        17) \
+X(a, POINTER,  OPTIONAL, MESSAGE,  sigrpt_msg,       18)
 #define SerialMsg_CALLBACK NULL
 #define SerialMsg_DEFAULT NULL
 #define SerialMsg_sys_cfg_MSGTYPE SysCfgMsg
@@ -723,6 +759,8 @@ X(a, POINTER,  OPTIONAL, MESSAGE,  ack_msg,          16)
 #define SerialMsg_int_params_msg_MSGTYPE IntParamsMsg
 #define SerialMsg_voice_frame_msg_MSGTYPE VoiceFrameMsg
 #define SerialMsg_ack_msg_MSGTYPE AckMsg
+#define SerialMsg_sethw_msg_MSGTYPE SetHWMsg
+#define SerialMsg_sigrpt_msg_MSGTYPE SigRptMsg
 
 #define AckMsg_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   radio_out_queue_level,   1)
@@ -810,6 +848,23 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  esp1,              2)
 #define ESP32CfgMsg_esp0_MSGTYPE ESP32CfgSubMsg
 #define ESP32CfgMsg_esp1_MSGTYPE ESP32CfgSubMsg
 
+#define SetHWMsg_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   freq,              1) \
+X(a, STATIC,   SINGULAR, UINT32,   bw,                2) \
+X(a, STATIC,   SINGULAR, UINT32,   sf,                3) \
+X(a, STATIC,   SINGULAR, UINT32,   cr,                4) \
+X(a, STATIC,   SINGULAR, UINT32,   pwr,               5) \
+X(a, STATIC,   SINGULAR, UINT32,   sync,              6) \
+X(a, STATIC,   SINGULAR, UINT32,   crc,               7)
+#define SetHWMsg_CALLBACK NULL
+#define SetHWMsg_DEFAULT NULL
+
+#define SigRptMsg_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, INT32,    rssi,              1) \
+X(a, STATIC,   SINGULAR, INT32,    snr,               2)
+#define SigRptMsg_CALLBACK NULL
+#define SigRptMsg_DEFAULT NULL
+
 extern const pb_msgdesc_t LoraCfg_msg;
 extern const pb_msgdesc_t TestCfg_msg;
 extern const pb_msgdesc_t FECCfg_msg;
@@ -834,6 +889,8 @@ extern const pb_msgdesc_t UpdateMsg_msg;
 extern const pb_msgdesc_t IntParamsMsg_msg;
 extern const pb_msgdesc_t ESP32CfgSubMsg_msg;
 extern const pb_msgdesc_t ESP32CfgMsg_msg;
+extern const pb_msgdesc_t SetHWMsg_msg;
+extern const pb_msgdesc_t SigRptMsg_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define LoraCfg_fields &LoraCfg_msg
@@ -860,6 +917,8 @@ extern const pb_msgdesc_t ESP32CfgMsg_msg;
 #define IntParamsMsg_fields &IntParamsMsg_msg
 #define ESP32CfgSubMsg_fields &ESP32CfgSubMsg_msg
 #define ESP32CfgMsg_fields &ESP32CfgMsg_msg
+#define SetHWMsg_fields &SetHWMsg_msg
+#define SigRptMsg_fields &SigRptMsg_msg
 
 /* Maximum encoded size of messages (where known) */
 #define LoraCfg_size                             30
@@ -886,6 +945,8 @@ extern const pb_msgdesc_t ESP32CfgMsg_msg;
 #define IntParamsMsg_size                        44
 #define ESP32CfgSubMsg_size                      467
 #define ESP32CfgMsg_size                         940
+#define SetHWMsg_size                            42
+#define SigRptMsg_size                           22
 
 #ifdef __cplusplus
 } /* extern "C" */

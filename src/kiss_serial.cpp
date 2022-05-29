@@ -65,7 +65,10 @@ static constexpr uint8_t FESC = 0xDB;
 static constexpr uint8_t TFEND = 0xDC;
 static constexpr uint8_t TFESC = 0xDD;
 static constexpr uint8_t SETHW = 0x06;
+static constexpr uint8_t SIGRPT = 0x07;
+static constexpr uint8_t REBOOT = 0x08;
 static constexpr uint8_t DATAPKT = 0x00;
+static constexpr uint8_t QMPKT = 0x0A;
 static constexpr uint8_t EXITKISS = 0xFF;
 //static constexpr size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
 
@@ -77,6 +80,7 @@ static const DataMsg data_msg_zero = DataMsg_init_zero;
 auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
     bool kiss_extended = false;
+    uint8_t kiss_type = 0;
     // Get past the first delimiter(s)
     for(;;) {
         int cur_byte = ps.getc();
@@ -89,14 +93,35 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
             constexpr uint32_t LOWER_NIBBLE = 0x0F;
             uint32_t cur_byte_u32 = static_cast<uint32_t>(cur_byte) & LOWER_NIBBLE;
             if(cur_byte_u32 == SETHW) {
-                kiss_extended = true;
+                kiss_extended = false;
+                kiss_type = SETHW;
                 break;
             } 
             if(cur_byte_u32 == DATAPKT) {
                 kiss_extended = false;
+                kiss_type = DATAPKT;
                 break;
             } 
+            if(cur_byte_u32 == QMPKT) {
+                kiss_extended = true;
+                kiss_type = QMPKT;
+                break;
+            }
+            if(cur_byte_u32 == SIGRPT) {
+                kiss_extended = false;
+                kiss_type = SIGRPT;
+                break;
+            }
+            if(cur_byte_u32 == REBOOT) {
+                kiss_extended = false;
+                kiss_type = REBOOT;
+                static constexpr int ONE_SECOND = 1000;
+                portability::sleep(ONE_SECOND);
+                reboot_system();
+            }
             if(cur_byte_u32 == EXITKISS) {
+                kiss_extended = false;
+                kiss_type = REBOOT;
                 ser_msg.clear();
                 ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
                 return READ_SUCCESS;
@@ -138,11 +163,55 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
             return DECODE_SER_MSG_ERR;
         }
     } else {
-        ser_msg.clear();;
-        ser_msg.type(SerialMsg_Type_DATA);
-        ser_msg.data_msg().type = DataMsg_Type_KISSTX;
-        ser_msg.data_msg().payload.size = buf.size();
-        memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());
+        if(kiss_type == DATAPKT) {
+            ser_msg.clear();
+            ser_msg.type(SerialMsg_Type_DATA);
+            ser_msg.data_msg().type = DataMsg_Type_KISSTX;
+            ser_msg.data_msg().payload.size = buf.size();
+            memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());
+        } else if(kiss_type == SETHW) {
+            ser_msg.clear();
+            ser_msg.type(SerialMsg_Type_SETHW);
+            static constexpr int SETHW_SIZE = 17;
+            PORTABLE_ASSERT(buf.size() == SETHW_SIZE);
+            // KISS SetHardware 6
+            struct SetHardware {
+                uint32_t freq;
+                uint32_t bw;
+                uint16_t sf;
+                uint16_t cr;
+                uint16_t pwr;
+                uint16_t sync;
+                uint8_t crc;
+            } __attribute__((packed)) set_hardware{};
+            PORTABLE_ASSERT(sizeof(SetHardware) == SETHW_SIZE);
+            memcpy(&set_hardware, buf.data(), buf.size());
+            // Values are big-endian, change them to little-endian for the STM32
+            ser_msg.sethw_msg().freq = __builtin_bswap32(set_hardware.freq);
+            ser_msg.sethw_msg().bw = __builtin_bswap32(set_hardware.bw);
+            ser_msg.sethw_msg().sf = __builtin_bswap16(set_hardware.sf);
+            ser_msg.sethw_msg().cr = __builtin_bswap16(set_hardware.cr);
+            ser_msg.sethw_msg().pwr = __builtin_bswap16(set_hardware.pwr);
+            ser_msg.sethw_msg().sync = __builtin_bswap16(set_hardware.sync);
+            ser_msg.sethw_msg().crc = set_hardware.crc;
+        } else if(kiss_type == SIGRPT) {
+            ser_msg.clear();
+            ser_msg.type(SerialMsg_Type_SIGRPT);
+            static constexpr int SIGRPT_SIZE = 4;
+            PORTABLE_ASSERT(buf.size() == SIGRPT_SIZE);
+            // KISS command 7
+            struct SignalReport {
+                int16_t rssi;
+                int16_t snr;  // snr * 100
+            } __attribute__((packed)) signal_report{};
+            PORTABLE_ASSERT(sizeof(SignalReport) == SIGRPT_SIZE);
+            memcpy(&signal_report, buf.data(), buf.size());
+            // Values are big-endian, change them to little-endian for the STM32
+            ser_msg.sigrpt_msg().rssi = __builtin_bswap16(signal_report.rssi);
+            ser_msg.sigrpt_msg().snr = __builtin_bswap16(signal_report.snr);
+        } else {
+            PORTABLE_ASSERT(false);
+        }
     }
     return READ_SUCCESS;
 }
@@ -153,15 +222,49 @@ auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_data_msg) ->
     // If we're not doing KISS, we want to send the whole serialized protobuf message.
     // OTOH, if we're doing KISS, we just want to send back the payload.
     if(!kiss_data_msg) {
-        vector<uint8_t> buf(SerMsg::maxSize()+sizeof(crc_t));
-        pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
-        if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
-            return ENCODE_SER_MSG_ERR;
+        if(ser_msg.type() == SerialMsg_Type_SETHW) {
+            // KISS SetHardware 6
+            struct SetHardware {
+                uint32_t freq;
+                uint32_t bw;
+                uint16_t sf;
+                uint16_t cr;
+                uint16_t pwr;
+                uint16_t sync;
+                uint8_t crc;
+            } __attribute__((packed)) set_hardware{};
+            vector<uint8_t> buf(sizeof(SetHardware));
+            // Values are big-endian, change them from little-endian for the STM32
+            set_hardware.freq = __builtin_bswap32(ser_msg.sethw_msg().freq);
+            set_hardware.bw = __builtin_bswap32(ser_msg.sethw_msg().bw);
+            set_hardware.sf = __builtin_bswap16(ser_msg.sethw_msg().sf);
+            set_hardware.cr = __builtin_bswap16(ser_msg.sethw_msg().cr);
+            set_hardware.pwr = __builtin_bswap16(ser_msg.sethw_msg().pwr);
+            set_hardware.sync = __builtin_bswap16(ser_msg.sethw_msg().sync);
+            set_hardware.crc = ser_msg.sethw_msg().crc;
+            memcpy(buf.data(), &set_hardware, buf.size());
+        } else if(ser_msg.type() == SerialMsg_Type_SIGRPT) {
+            // KISS command 7
+            struct SignalReport {
+                int16_t rssi;
+                int16_t snr;  // snr * 100
+            } __attribute__((packed)) signal_report{};
+            vector<uint8_t> buf(sizeof(SignalReport));
+            // Values are big-endian, change them from little-endian for the STM32
+            signal_report.rssi = __builtin_bswap16(ser_msg.sigrpt_msg().rssi);
+            signal_report.snr = __builtin_bswap16(ser_msg.sigrpt_msg().snr);
+            memcpy(buf.data(), &signal_report, buf.size());            
+        } else {
+            vector<uint8_t> buf(SerMsg::maxSize()+sizeof(crc_t));
+            pb_ostream_t stream = pb_ostream_from_buffer(buf.data(), buf.size()); 
+            if(!pb_encode(&stream, SerialMsg_fields, &ser_msg)) {
+                return ENCODE_SER_MSG_ERR;
+            }
+            comb_buf.resize(stream.bytes_written+sizeof(crc_t));
+            memcpy(comb_buf.data(), buf.data(), stream.bytes_written);
+            crc_t crc = compute_frame_crc(vector<uint8_t>(comb_buf.begin(), comb_buf.begin()+stream.bytes_written));
+            memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t)); //NOLINT
         }
-        comb_buf.resize(stream.bytes_written+sizeof(crc_t));
-        memcpy(comb_buf.data(), buf.data(), stream.bytes_written);
-        crc_t crc = compute_frame_crc(vector<uint8_t>(comb_buf.begin(), comb_buf.begin()+stream.bytes_written));
-        memcpy(comb_buf.data()+stream.bytes_written, &crc, sizeof(crc_t)); //NOLINT
     } else {
         comb_buf.resize(ser_msg.data_msg().payload.size);
         memcpy(comb_buf.data(), ser_msg.data_msg().payload.bytes, ser_msg.data_msg().payload.size);
@@ -170,7 +273,13 @@ auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_data_msg) ->
     // Make it into a KISS frame and write it out
     if(ps.putc(FEND) == EOF) { return WRITE_SER_MSG_ERR; }
     if(!kiss_data_msg) {
-        if(ps.putc(SETHW) == EOF) { return WRITE_SER_MSG_ERR; }
+        if(ser_msg.type() == SerialMsg_Type_SETHW) {
+            if(ps.putc(SETHW) == EOF) { return WRITE_SER_MSG_ERR; }
+        } else if(ser_msg.type() == SerialMsg_Type_SIGRPT) {
+            if(ps.putc(SIGRPT) == EOF) { return WRITE_SER_MSG_ERR; }            
+        } else {
+            if(ps.putc(QMPKT) == EOF) { return WRITE_SER_MSG_ERR; }
+        }
     } else {
         if(ps.putc(DATAPKT) == EOF) { return WRITE_SER_MSG_ERR; }  
     }
@@ -860,6 +969,12 @@ void KISSSerial::rx_serial_thread_fn() {
                 tx_ser_queue.enqueue_mail(reply_msg);
             }
             continue;
+        }
+        if(ser_msg->type() == SerialMsg_Type_SETHW) {
+            debug_printf(DBG_INFO, "Received a SETHW request\r\n");
+        }
+        if(ser_msg->type() == SerialMsg_Type_SIGRPT) {
+            debug_printf(DBG_INFO, "Received a SIGRPT message\r\n");
         }
         if(ser_msg->type() == SerialMsg_Type_TURN_OLED_OFF) {
             debug_printf(DBG_INFO, "Received a request to turn OFF the OLED display\r\n");

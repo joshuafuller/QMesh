@@ -12491,6 +12491,32 @@ public final class Qmesh {
      * <code>.AckMsg ack_msg = 16 [(.nanopb) = { ... }</code>
      */
     Qmesh.AckMsgOrBuilder getAckMsgOrBuilder();
+
+    /**
+     * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+     */
+    boolean hasSethwMsg();
+    /**
+     * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+     */
+    Qmesh.SetHWMsg getSethwMsg();
+    /**
+     * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+     */
+    Qmesh.SetHWMsgOrBuilder getSethwMsgOrBuilder();
+
+    /**
+     * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+     */
+    boolean hasSigrptMsg();
+    /**
+     * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+     */
+    Qmesh.SigRptMsg getSigrptMsg();
+    /**
+     * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+     */
+    Qmesh.SigRptMsgOrBuilder getSigrptMsgOrBuilder();
   }
   /**
    * Protobuf type {@code SerialMsg}
@@ -12726,6 +12752,32 @@ public final class Qmesh {
 
               break;
             }
+            case 138: {
+              Qmesh.SetHWMsg.Builder subBuilder = null;
+              if (sethwMsg_ != null) {
+                subBuilder = sethwMsg_.toBuilder();
+              }
+              sethwMsg_ = input.readMessage(Qmesh.SetHWMsg.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(sethwMsg_);
+                sethwMsg_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 146: {
+              Qmesh.SigRptMsg.Builder subBuilder = null;
+              if (sigrptMsg_ != null) {
+                subBuilder = sigrptMsg_.toBuilder();
+              }
+              sigrptMsg_ = input.readMessage(Qmesh.SigRptMsg.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(sigrptMsg_);
+                sigrptMsg_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
             default: {
               if (!parseUnknownFieldProto3(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -12895,6 +12947,14 @@ public final class Qmesh {
        * <code>VOICE_MSG = 32;</code>
        */
       VOICE_MSG(32),
+      /**
+       * <code>SETHW = 33;</code>
+       */
+      SETHW(33),
+      /**
+       * <code>SIGRPT = 34;</code>
+       */
+      SIGRPT(34),
       UNRECOGNIZED(-1),
       ;
 
@@ -13030,6 +13090,14 @@ public final class Qmesh {
        * <code>VOICE_MSG = 32;</code>
        */
       public static final int VOICE_MSG_VALUE = 32;
+      /**
+       * <code>SETHW = 33;</code>
+       */
+      public static final int SETHW_VALUE = 33;
+      /**
+       * <code>SIGRPT = 34;</code>
+       */
+      public static final int SIGRPT_VALUE = 34;
 
 
       public final int getNumber() {
@@ -13083,6 +13151,8 @@ public final class Qmesh {
           case 30: return TURN_OLED_OFF;
           case 31: return INT_PARAMS;
           case 32: return VOICE_MSG;
+          case 33: return SETHW;
+          case 34: return SIGRPT;
           default: return null;
         }
       }
@@ -13455,6 +13525,48 @@ public final class Qmesh {
       return getAckMsg();
     }
 
+    public static final int SETHW_MSG_FIELD_NUMBER = 17;
+    private Qmesh.SetHWMsg sethwMsg_;
+    /**
+     * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+     */
+    public boolean hasSethwMsg() {
+      return sethwMsg_ != null;
+    }
+    /**
+     * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+     */
+    public Qmesh.SetHWMsg getSethwMsg() {
+      return sethwMsg_ == null ? Qmesh.SetHWMsg.getDefaultInstance() : sethwMsg_;
+    }
+    /**
+     * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+     */
+    public Qmesh.SetHWMsgOrBuilder getSethwMsgOrBuilder() {
+      return getSethwMsg();
+    }
+
+    public static final int SIGRPT_MSG_FIELD_NUMBER = 18;
+    private Qmesh.SigRptMsg sigrptMsg_;
+    /**
+     * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+     */
+    public boolean hasSigrptMsg() {
+      return sigrptMsg_ != null;
+    }
+    /**
+     * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+     */
+    public Qmesh.SigRptMsg getSigrptMsg() {
+      return sigrptMsg_ == null ? Qmesh.SigRptMsg.getDefaultInstance() : sigrptMsg_;
+    }
+    /**
+     * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+     */
+    public Qmesh.SigRptMsgOrBuilder getSigrptMsgOrBuilder() {
+      return getSigrptMsg();
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -13516,6 +13628,12 @@ public final class Qmesh {
       }
       if (ackMsg_ != null) {
         output.writeMessage(16, getAckMsg());
+      }
+      if (sethwMsg_ != null) {
+        output.writeMessage(17, getSethwMsg());
+      }
+      if (sigrptMsg_ != null) {
+        output.writeMessage(18, getSigrptMsg());
       }
       unknownFields.writeTo(output);
     }
@@ -13589,6 +13707,14 @@ public final class Qmesh {
       if (ackMsg_ != null) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(16, getAckMsg());
+      }
+      if (sethwMsg_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(17, getSethwMsg());
+      }
+      if (sigrptMsg_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(18, getSigrptMsg());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -13679,6 +13805,16 @@ public final class Qmesh {
         result = result && getAckMsg()
             .equals(other.getAckMsg());
       }
+      result = result && (hasSethwMsg() == other.hasSethwMsg());
+      if (hasSethwMsg()) {
+        result = result && getSethwMsg()
+            .equals(other.getSethwMsg());
+      }
+      result = result && (hasSigrptMsg() == other.hasSigrptMsg());
+      if (hasSigrptMsg()) {
+        result = result && getSigrptMsg()
+            .equals(other.getSigrptMsg());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -13750,6 +13886,14 @@ public final class Qmesh {
       if (hasAckMsg()) {
         hash = (37 * hash) + ACK_MSG_FIELD_NUMBER;
         hash = (53 * hash) + getAckMsg().hashCode();
+      }
+      if (hasSethwMsg()) {
+        hash = (37 * hash) + SETHW_MSG_FIELD_NUMBER;
+        hash = (53 * hash) + getSethwMsg().hashCode();
+      }
+      if (hasSigrptMsg()) {
+        hash = (37 * hash) + SIGRPT_MSG_FIELD_NUMBER;
+        hash = (53 * hash) + getSigrptMsg().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -13972,6 +14116,18 @@ public final class Qmesh {
           ackMsg_ = null;
           ackMsgBuilder_ = null;
         }
+        if (sethwMsgBuilder_ == null) {
+          sethwMsg_ = null;
+        } else {
+          sethwMsg_ = null;
+          sethwMsgBuilder_ = null;
+        }
+        if (sigrptMsgBuilder_ == null) {
+          sigrptMsg_ = null;
+        } else {
+          sigrptMsg_ = null;
+          sigrptMsgBuilder_ = null;
+        }
         return this;
       }
 
@@ -14070,6 +14226,16 @@ public final class Qmesh {
         } else {
           result.ackMsg_ = ackMsgBuilder_.build();
         }
+        if (sethwMsgBuilder_ == null) {
+          result.sethwMsg_ = sethwMsg_;
+        } else {
+          result.sethwMsg_ = sethwMsgBuilder_.build();
+        }
+        if (sigrptMsgBuilder_ == null) {
+          result.sigrptMsg_ = sigrptMsg_;
+        } else {
+          result.sigrptMsg_ = sigrptMsgBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -14165,6 +14331,12 @@ public final class Qmesh {
         }
         if (other.hasAckMsg()) {
           mergeAckMsg(other.getAckMsg());
+        }
+        if (other.hasSethwMsg()) {
+          mergeSethwMsg(other.getSethwMsg());
+        }
+        if (other.hasSigrptMsg()) {
+          mergeSigrptMsg(other.getSigrptMsg());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -15902,6 +16074,240 @@ public final class Qmesh {
           ackMsg_ = null;
         }
         return ackMsgBuilder_;
+      }
+
+      private Qmesh.SetHWMsg sethwMsg_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.SetHWMsg, Qmesh.SetHWMsg.Builder, Qmesh.SetHWMsgOrBuilder> sethwMsgBuilder_;
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public boolean hasSethwMsg() {
+        return sethwMsgBuilder_ != null || sethwMsg_ != null;
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.SetHWMsg getSethwMsg() {
+        if (sethwMsgBuilder_ == null) {
+          return sethwMsg_ == null ? Qmesh.SetHWMsg.getDefaultInstance() : sethwMsg_;
+        } else {
+          return sethwMsgBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSethwMsg(Qmesh.SetHWMsg value) {
+        if (sethwMsgBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          sethwMsg_ = value;
+          onChanged();
+        } else {
+          sethwMsgBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSethwMsg(
+          Qmesh.SetHWMsg.Builder builderForValue) {
+        if (sethwMsgBuilder_ == null) {
+          sethwMsg_ = builderForValue.build();
+          onChanged();
+        } else {
+          sethwMsgBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Builder mergeSethwMsg(Qmesh.SetHWMsg value) {
+        if (sethwMsgBuilder_ == null) {
+          if (sethwMsg_ != null) {
+            sethwMsg_ =
+              Qmesh.SetHWMsg.newBuilder(sethwMsg_).mergeFrom(value).buildPartial();
+          } else {
+            sethwMsg_ = value;
+          }
+          onChanged();
+        } else {
+          sethwMsgBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearSethwMsg() {
+        if (sethwMsgBuilder_ == null) {
+          sethwMsg_ = null;
+          onChanged();
+        } else {
+          sethwMsg_ = null;
+          sethwMsgBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.SetHWMsg.Builder getSethwMsgBuilder() {
+        
+        onChanged();
+        return getSethwMsgFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.SetHWMsgOrBuilder getSethwMsgOrBuilder() {
+        if (sethwMsgBuilder_ != null) {
+          return sethwMsgBuilder_.getMessageOrBuilder();
+        } else {
+          return sethwMsg_ == null ?
+              Qmesh.SetHWMsg.getDefaultInstance() : sethwMsg_;
+        }
+      }
+      /**
+       * <code>.SetHWMsg sethw_msg = 17 [(.nanopb) = { ... }</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.SetHWMsg, Qmesh.SetHWMsg.Builder, Qmesh.SetHWMsgOrBuilder> 
+          getSethwMsgFieldBuilder() {
+        if (sethwMsgBuilder_ == null) {
+          sethwMsgBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              Qmesh.SetHWMsg, Qmesh.SetHWMsg.Builder, Qmesh.SetHWMsgOrBuilder>(
+                  getSethwMsg(),
+                  getParentForChildren(),
+                  isClean());
+          sethwMsg_ = null;
+        }
+        return sethwMsgBuilder_;
+      }
+
+      private Qmesh.SigRptMsg sigrptMsg_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.SigRptMsg, Qmesh.SigRptMsg.Builder, Qmesh.SigRptMsgOrBuilder> sigrptMsgBuilder_;
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public boolean hasSigrptMsg() {
+        return sigrptMsgBuilder_ != null || sigrptMsg_ != null;
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.SigRptMsg getSigrptMsg() {
+        if (sigrptMsgBuilder_ == null) {
+          return sigrptMsg_ == null ? Qmesh.SigRptMsg.getDefaultInstance() : sigrptMsg_;
+        } else {
+          return sigrptMsgBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSigrptMsg(Qmesh.SigRptMsg value) {
+        if (sigrptMsgBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          sigrptMsg_ = value;
+          onChanged();
+        } else {
+          sigrptMsgBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Builder setSigrptMsg(
+          Qmesh.SigRptMsg.Builder builderForValue) {
+        if (sigrptMsgBuilder_ == null) {
+          sigrptMsg_ = builderForValue.build();
+          onChanged();
+        } else {
+          sigrptMsgBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Builder mergeSigrptMsg(Qmesh.SigRptMsg value) {
+        if (sigrptMsgBuilder_ == null) {
+          if (sigrptMsg_ != null) {
+            sigrptMsg_ =
+              Qmesh.SigRptMsg.newBuilder(sigrptMsg_).mergeFrom(value).buildPartial();
+          } else {
+            sigrptMsg_ = value;
+          }
+          onChanged();
+        } else {
+          sigrptMsgBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Builder clearSigrptMsg() {
+        if (sigrptMsgBuilder_ == null) {
+          sigrptMsg_ = null;
+          onChanged();
+        } else {
+          sigrptMsg_ = null;
+          sigrptMsgBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.SigRptMsg.Builder getSigrptMsgBuilder() {
+        
+        onChanged();
+        return getSigrptMsgFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      public Qmesh.SigRptMsgOrBuilder getSigrptMsgOrBuilder() {
+        if (sigrptMsgBuilder_ != null) {
+          return sigrptMsgBuilder_.getMessageOrBuilder();
+        } else {
+          return sigrptMsg_ == null ?
+              Qmesh.SigRptMsg.getDefaultInstance() : sigrptMsg_;
+        }
+      }
+      /**
+       * <code>.SigRptMsg sigrpt_msg = 18 [(.nanopb) = { ... }</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          Qmesh.SigRptMsg, Qmesh.SigRptMsg.Builder, Qmesh.SigRptMsgOrBuilder> 
+          getSigrptMsgFieldBuilder() {
+        if (sigrptMsgBuilder_ == null) {
+          sigrptMsgBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              Qmesh.SigRptMsg, Qmesh.SigRptMsg.Builder, Qmesh.SigRptMsgOrBuilder>(
+                  getSigrptMsg(),
+                  getParentForChildren(),
+                  isClean());
+          sigrptMsg_ = null;
+        }
+        return sigrptMsgBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -24761,6 +25167,1419 @@ public final class Qmesh {
 
   }
 
+  public interface SetHWMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:SetHWMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>uint32 freq = 1;</code>
+     */
+    int getFreq();
+
+    /**
+     * <code>uint32 bw = 2;</code>
+     */
+    int getBw();
+
+    /**
+     * <code>uint32 sf = 3;</code>
+     */
+    int getSf();
+
+    /**
+     * <code>uint32 cr = 4;</code>
+     */
+    int getCr();
+
+    /**
+     * <code>uint32 pwr = 5;</code>
+     */
+    int getPwr();
+
+    /**
+     * <code>uint32 sync = 6;</code>
+     */
+    int getSync();
+
+    /**
+     * <code>uint32 crc = 7;</code>
+     */
+    int getCrc();
+  }
+  /**
+   * Protobuf type {@code SetHWMsg}
+   */
+  public  static final class SetHWMsg extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:SetHWMsg)
+      SetHWMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SetHWMsg.newBuilder() to construct.
+    private SetHWMsg(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SetHWMsg() {
+      freq_ = 0;
+      bw_ = 0;
+      sf_ = 0;
+      cr_ = 0;
+      pwr_ = 0;
+      sync_ = 0;
+      crc_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private SetHWMsg(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              freq_ = input.readUInt32();
+              break;
+            }
+            case 16: {
+
+              bw_ = input.readUInt32();
+              break;
+            }
+            case 24: {
+
+              sf_ = input.readUInt32();
+              break;
+            }
+            case 32: {
+
+              cr_ = input.readUInt32();
+              break;
+            }
+            case 40: {
+
+              pwr_ = input.readUInt32();
+              break;
+            }
+            case 48: {
+
+              sync_ = input.readUInt32();
+              break;
+            }
+            case 56: {
+
+              crc_ = input.readUInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Qmesh.internal_static_SetHWMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Qmesh.internal_static_SetHWMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Qmesh.SetHWMsg.class, Qmesh.SetHWMsg.Builder.class);
+    }
+
+    public static final int FREQ_FIELD_NUMBER = 1;
+    private int freq_;
+    /**
+     * <code>uint32 freq = 1;</code>
+     */
+    public int getFreq() {
+      return freq_;
+    }
+
+    public static final int BW_FIELD_NUMBER = 2;
+    private int bw_;
+    /**
+     * <code>uint32 bw = 2;</code>
+     */
+    public int getBw() {
+      return bw_;
+    }
+
+    public static final int SF_FIELD_NUMBER = 3;
+    private int sf_;
+    /**
+     * <code>uint32 sf = 3;</code>
+     */
+    public int getSf() {
+      return sf_;
+    }
+
+    public static final int CR_FIELD_NUMBER = 4;
+    private int cr_;
+    /**
+     * <code>uint32 cr = 4;</code>
+     */
+    public int getCr() {
+      return cr_;
+    }
+
+    public static final int PWR_FIELD_NUMBER = 5;
+    private int pwr_;
+    /**
+     * <code>uint32 pwr = 5;</code>
+     */
+    public int getPwr() {
+      return pwr_;
+    }
+
+    public static final int SYNC_FIELD_NUMBER = 6;
+    private int sync_;
+    /**
+     * <code>uint32 sync = 6;</code>
+     */
+    public int getSync() {
+      return sync_;
+    }
+
+    public static final int CRC_FIELD_NUMBER = 7;
+    private int crc_;
+    /**
+     * <code>uint32 crc = 7;</code>
+     */
+    public int getCrc() {
+      return crc_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (freq_ != 0) {
+        output.writeUInt32(1, freq_);
+      }
+      if (bw_ != 0) {
+        output.writeUInt32(2, bw_);
+      }
+      if (sf_ != 0) {
+        output.writeUInt32(3, sf_);
+      }
+      if (cr_ != 0) {
+        output.writeUInt32(4, cr_);
+      }
+      if (pwr_ != 0) {
+        output.writeUInt32(5, pwr_);
+      }
+      if (sync_ != 0) {
+        output.writeUInt32(6, sync_);
+      }
+      if (crc_ != 0) {
+        output.writeUInt32(7, crc_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (freq_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, freq_);
+      }
+      if (bw_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, bw_);
+      }
+      if (sf_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(3, sf_);
+      }
+      if (cr_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(4, cr_);
+      }
+      if (pwr_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(5, pwr_);
+      }
+      if (sync_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(6, sync_);
+      }
+      if (crc_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(7, crc_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Qmesh.SetHWMsg)) {
+        return super.equals(obj);
+      }
+      Qmesh.SetHWMsg other = (Qmesh.SetHWMsg) obj;
+
+      boolean result = true;
+      result = result && (getFreq()
+          == other.getFreq());
+      result = result && (getBw()
+          == other.getBw());
+      result = result && (getSf()
+          == other.getSf());
+      result = result && (getCr()
+          == other.getCr());
+      result = result && (getPwr()
+          == other.getPwr());
+      result = result && (getSync()
+          == other.getSync());
+      result = result && (getCrc()
+          == other.getCrc());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + FREQ_FIELD_NUMBER;
+      hash = (53 * hash) + getFreq();
+      hash = (37 * hash) + BW_FIELD_NUMBER;
+      hash = (53 * hash) + getBw();
+      hash = (37 * hash) + SF_FIELD_NUMBER;
+      hash = (53 * hash) + getSf();
+      hash = (37 * hash) + CR_FIELD_NUMBER;
+      hash = (53 * hash) + getCr();
+      hash = (37 * hash) + PWR_FIELD_NUMBER;
+      hash = (53 * hash) + getPwr();
+      hash = (37 * hash) + SYNC_FIELD_NUMBER;
+      hash = (53 * hash) + getSync();
+      hash = (37 * hash) + CRC_FIELD_NUMBER;
+      hash = (53 * hash) + getCrc();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Qmesh.SetHWMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.SetHWMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.SetHWMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.SetHWMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Qmesh.SetHWMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.SetHWMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Qmesh.SetHWMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code SetHWMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:SetHWMsg)
+        Qmesh.SetHWMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Qmesh.internal_static_SetHWMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Qmesh.internal_static_SetHWMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Qmesh.SetHWMsg.class, Qmesh.SetHWMsg.Builder.class);
+      }
+
+      // Construct using Qmesh.SetHWMsg.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        freq_ = 0;
+
+        bw_ = 0;
+
+        sf_ = 0;
+
+        cr_ = 0;
+
+        pwr_ = 0;
+
+        sync_ = 0;
+
+        crc_ = 0;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Qmesh.internal_static_SetHWMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public Qmesh.SetHWMsg getDefaultInstanceForType() {
+        return Qmesh.SetHWMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Qmesh.SetHWMsg build() {
+        Qmesh.SetHWMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Qmesh.SetHWMsg buildPartial() {
+        Qmesh.SetHWMsg result = new Qmesh.SetHWMsg(this);
+        result.freq_ = freq_;
+        result.bw_ = bw_;
+        result.sf_ = sf_;
+        result.cr_ = cr_;
+        result.pwr_ = pwr_;
+        result.sync_ = sync_;
+        result.crc_ = crc_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Qmesh.SetHWMsg) {
+          return mergeFrom((Qmesh.SetHWMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Qmesh.SetHWMsg other) {
+        if (other == Qmesh.SetHWMsg.getDefaultInstance()) return this;
+        if (other.getFreq() != 0) {
+          setFreq(other.getFreq());
+        }
+        if (other.getBw() != 0) {
+          setBw(other.getBw());
+        }
+        if (other.getSf() != 0) {
+          setSf(other.getSf());
+        }
+        if (other.getCr() != 0) {
+          setCr(other.getCr());
+        }
+        if (other.getPwr() != 0) {
+          setPwr(other.getPwr());
+        }
+        if (other.getSync() != 0) {
+          setSync(other.getSync());
+        }
+        if (other.getCrc() != 0) {
+          setCrc(other.getCrc());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        Qmesh.SetHWMsg parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (Qmesh.SetHWMsg) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int freq_ ;
+      /**
+       * <code>uint32 freq = 1;</code>
+       */
+      public int getFreq() {
+        return freq_;
+      }
+      /**
+       * <code>uint32 freq = 1;</code>
+       */
+      public Builder setFreq(int value) {
+        
+        freq_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 freq = 1;</code>
+       */
+      public Builder clearFreq() {
+        
+        freq_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int bw_ ;
+      /**
+       * <code>uint32 bw = 2;</code>
+       */
+      public int getBw() {
+        return bw_;
+      }
+      /**
+       * <code>uint32 bw = 2;</code>
+       */
+      public Builder setBw(int value) {
+        
+        bw_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 bw = 2;</code>
+       */
+      public Builder clearBw() {
+        
+        bw_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int sf_ ;
+      /**
+       * <code>uint32 sf = 3;</code>
+       */
+      public int getSf() {
+        return sf_;
+      }
+      /**
+       * <code>uint32 sf = 3;</code>
+       */
+      public Builder setSf(int value) {
+        
+        sf_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 sf = 3;</code>
+       */
+      public Builder clearSf() {
+        
+        sf_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int cr_ ;
+      /**
+       * <code>uint32 cr = 4;</code>
+       */
+      public int getCr() {
+        return cr_;
+      }
+      /**
+       * <code>uint32 cr = 4;</code>
+       */
+      public Builder setCr(int value) {
+        
+        cr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 cr = 4;</code>
+       */
+      public Builder clearCr() {
+        
+        cr_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int pwr_ ;
+      /**
+       * <code>uint32 pwr = 5;</code>
+       */
+      public int getPwr() {
+        return pwr_;
+      }
+      /**
+       * <code>uint32 pwr = 5;</code>
+       */
+      public Builder setPwr(int value) {
+        
+        pwr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 pwr = 5;</code>
+       */
+      public Builder clearPwr() {
+        
+        pwr_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int sync_ ;
+      /**
+       * <code>uint32 sync = 6;</code>
+       */
+      public int getSync() {
+        return sync_;
+      }
+      /**
+       * <code>uint32 sync = 6;</code>
+       */
+      public Builder setSync(int value) {
+        
+        sync_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 sync = 6;</code>
+       */
+      public Builder clearSync() {
+        
+        sync_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int crc_ ;
+      /**
+       * <code>uint32 crc = 7;</code>
+       */
+      public int getCrc() {
+        return crc_;
+      }
+      /**
+       * <code>uint32 crc = 7;</code>
+       */
+      public Builder setCrc(int value) {
+        
+        crc_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 crc = 7;</code>
+       */
+      public Builder clearCrc() {
+        
+        crc_ = 0;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:SetHWMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:SetHWMsg)
+    private static final Qmesh.SetHWMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Qmesh.SetHWMsg();
+    }
+
+    public static Qmesh.SetHWMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SetHWMsg>
+        PARSER = new com.google.protobuf.AbstractParser<SetHWMsg>() {
+      @java.lang.Override
+      public SetHWMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new SetHWMsg(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SetHWMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SetHWMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Qmesh.SetHWMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface SigRptMsgOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:SigRptMsg)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>int32 rssi = 1;</code>
+     */
+    int getRssi();
+
+    /**
+     * <pre>
+     * snr * 100
+     * </pre>
+     *
+     * <code>int32 snr = 2;</code>
+     */
+    int getSnr();
+  }
+  /**
+   * Protobuf type {@code SigRptMsg}
+   */
+  public  static final class SigRptMsg extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:SigRptMsg)
+      SigRptMsgOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SigRptMsg.newBuilder() to construct.
+    private SigRptMsg(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SigRptMsg() {
+      rssi_ = 0;
+      snr_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private SigRptMsg(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              rssi_ = input.readInt32();
+              break;
+            }
+            case 16: {
+
+              snr_ = input.readInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Qmesh.internal_static_SigRptMsg_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Qmesh.internal_static_SigRptMsg_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Qmesh.SigRptMsg.class, Qmesh.SigRptMsg.Builder.class);
+    }
+
+    public static final int RSSI_FIELD_NUMBER = 1;
+    private int rssi_;
+    /**
+     * <code>int32 rssi = 1;</code>
+     */
+    public int getRssi() {
+      return rssi_;
+    }
+
+    public static final int SNR_FIELD_NUMBER = 2;
+    private int snr_;
+    /**
+     * <pre>
+     * snr * 100
+     * </pre>
+     *
+     * <code>int32 snr = 2;</code>
+     */
+    public int getSnr() {
+      return snr_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (rssi_ != 0) {
+        output.writeInt32(1, rssi_);
+      }
+      if (snr_ != 0) {
+        output.writeInt32(2, snr_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (rssi_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, rssi_);
+      }
+      if (snr_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, snr_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Qmesh.SigRptMsg)) {
+        return super.equals(obj);
+      }
+      Qmesh.SigRptMsg other = (Qmesh.SigRptMsg) obj;
+
+      boolean result = true;
+      result = result && (getRssi()
+          == other.getRssi());
+      result = result && (getSnr()
+          == other.getSnr());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + RSSI_FIELD_NUMBER;
+      hash = (53 * hash) + getRssi();
+      hash = (37 * hash) + SNR_FIELD_NUMBER;
+      hash = (53 * hash) + getSnr();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Qmesh.SigRptMsg parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.SigRptMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Qmesh.SigRptMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.SigRptMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Qmesh.SigRptMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Qmesh.SigRptMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Qmesh.SigRptMsg prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code SigRptMsg}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:SigRptMsg)
+        Qmesh.SigRptMsgOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Qmesh.internal_static_SigRptMsg_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Qmesh.internal_static_SigRptMsg_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Qmesh.SigRptMsg.class, Qmesh.SigRptMsg.Builder.class);
+      }
+
+      // Construct using Qmesh.SigRptMsg.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        rssi_ = 0;
+
+        snr_ = 0;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Qmesh.internal_static_SigRptMsg_descriptor;
+      }
+
+      @java.lang.Override
+      public Qmesh.SigRptMsg getDefaultInstanceForType() {
+        return Qmesh.SigRptMsg.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Qmesh.SigRptMsg build() {
+        Qmesh.SigRptMsg result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Qmesh.SigRptMsg buildPartial() {
+        Qmesh.SigRptMsg result = new Qmesh.SigRptMsg(this);
+        result.rssi_ = rssi_;
+        result.snr_ = snr_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Qmesh.SigRptMsg) {
+          return mergeFrom((Qmesh.SigRptMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Qmesh.SigRptMsg other) {
+        if (other == Qmesh.SigRptMsg.getDefaultInstance()) return this;
+        if (other.getRssi() != 0) {
+          setRssi(other.getRssi());
+        }
+        if (other.getSnr() != 0) {
+          setSnr(other.getSnr());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        Qmesh.SigRptMsg parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (Qmesh.SigRptMsg) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int rssi_ ;
+      /**
+       * <code>int32 rssi = 1;</code>
+       */
+      public int getRssi() {
+        return rssi_;
+      }
+      /**
+       * <code>int32 rssi = 1;</code>
+       */
+      public Builder setRssi(int value) {
+        
+        rssi_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 rssi = 1;</code>
+       */
+      public Builder clearRssi() {
+        
+        rssi_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int snr_ ;
+      /**
+       * <pre>
+       * snr * 100
+       * </pre>
+       *
+       * <code>int32 snr = 2;</code>
+       */
+      public int getSnr() {
+        return snr_;
+      }
+      /**
+       * <pre>
+       * snr * 100
+       * </pre>
+       *
+       * <code>int32 snr = 2;</code>
+       */
+      public Builder setSnr(int value) {
+        
+        snr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * snr * 100
+       * </pre>
+       *
+       * <code>int32 snr = 2;</code>
+       */
+      public Builder clearSnr() {
+        
+        snr_ = 0;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:SigRptMsg)
+    }
+
+    // @@protoc_insertion_point(class_scope:SigRptMsg)
+    private static final Qmesh.SigRptMsg DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Qmesh.SigRptMsg();
+    }
+
+    public static Qmesh.SigRptMsg getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SigRptMsg>
+        PARSER = new com.google.protobuf.AbstractParser<SigRptMsg>() {
+      @java.lang.Override
+      public SigRptMsg parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new SigRptMsg(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SigRptMsg> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SigRptMsg> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Qmesh.SigRptMsg getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_LoraCfg_descriptor;
   private static final 
@@ -24881,6 +26700,16 @@ public final class Qmesh {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_ESP32CfgMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_SetHWMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_SetHWMsg_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_SigRptMsg_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_SigRptMsg_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -24939,7 +26768,7 @@ public final class Qmesh {
       "\030\007 \001(\021\022\013\n\003snr\030\010 \001(\021\022\017\n\007rx_size\030\t \001(\005\022\020\n\010" +
       "comp_crc\030\n \001(\r\022\013\n\003crc\030\013 \001(\r\022\016\n\006uptime\030\014 " +
       "\001(\r\022\030\n\007gps_msg\030\r \001(\0132\007.GPSMsg\"\027\n\007TimeMsg" +
-      "\022\014\n\004time\030\001 \001(\r\"\335\010\n\tSerialMsg\022\035\n\004type\030\001 \001" +
+      "\022\014\n\004time\030\001 \001(\r\"\300\t\n\tSerialMsg\022\035\n\004type\030\001 \001" +
       "(\0162\017.SerialMsg.Type\022\r\n\005retry\030\002 \001(\010\022\"\n\007sy" +
       "s_cfg\030\003 \001(\0132\n.SysCfgMsgB\005\222?\002\030\004\022&\n\tclock_" +
       "set\030\004 \001(\0132\014.ClockSetMsgB\005\222?\002\030\004\022!\n\006status" +
@@ -24954,56 +26783,62 @@ public final class Qmesh {
       "\030\004\022,\n\016int_params_msg\030\016 \001(\0132\r.IntParamsMs" +
       "gB\005\222?\002\030\004\022.\n\017voice_frame_msg\030\017 \001(\0132\016.Voic" +
       "eFrameMsgB\005\222?\002\030\004\022\037\n\007ack_msg\030\020 \001(\0132\007.AckM" +
-      "sgB\005\222?\002\030\004\"\202\004\n\004Type\022\016\n\nGET_CONFIG\020\000\022\016\n\nSE" +
-      "T_CONFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOC" +
-      "K_SET\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013S" +
-      "TAY_IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022" +
-      "\016\n\nERASE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\t" +
-      "ERASE_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_LOG_RE" +
-      "TRY\020\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022" +
-      "\027\n\023READ_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_BOOT_L" +
-      "OG\020\022\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025" +
-      "\022\007\n\003ERR\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016EXIT_K" +
-      "ISS_MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPD" +
-      "ATE\020\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\r" +
-      "TURN_OLED_OFF\020\036\022\016\n\nINT_PARAMS\020\037\022\r\n\tVOICE" +
-      "_MSG\020 :\006\222?\003\240\001\010\"\'\n\006AckMsg\022\035\n\025radio_out_qu" +
-      "eue_level\030\001 \001(\r\"!\n\nVersionMsg\022\023\n\003msg\030\001 \001" +
-      "(\tB\006\222?\003\010\200\001\"a\n\010ErrorMsg\022\034\n\004type\030\001 \001(\0162\016.E" +
-      "rrorMsg.Type\022\023\n\003msg\030\002 \001(\tB\006\222?\003\010\200\002\"\"\n\004Typ" +
-      "e\022\013\n\007CRC_ERR\020\000\022\r\n\tOTHER_ERR\020\001\"\305\002\n\007DataMs" +
-      "g\022\033\n\004type\030\001 \001(\0162\r.DataMsg.Type\022\021\n\tstream" +
-      "_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(\r\022\016\n\006sender\030\004 \001(\r\022\022" +
-      "\n\nsym_offset\030\005 \001(\r\022\027\n\007payload\030\006 \001(\014B\006\222?\003" +
-      "\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005voice\030\010 \001(\010\022\026\n\016kiss_" +
-      "cur_frame\030\t \001(\r\022\027\n\017kiss_tot_frames\030\n \001(\r" +
-      "\022\026\n\016kiss_stream_id\030\013 \001(\r\022\021\n\tredundant\030\014 " +
-      "\001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006\n\002RX\020\001\022\n\n\006KISSTX\020\002\022" +
-      "\n\n\006KISSRX\020\003\022\013\n\007VOICETX\020\004\022\013\n\007VOICERX\020\005\"N\n" +
-      "\rVoiceFrameMsg\022\021\n\tsize_bits\030\001 \001(\r\022\022\n\nend" +
-      "_stream\030\002 \001(\010\022\026\n\007payload\030\003 \001(\014B\005\222?\002\010 \"\375\001" +
-      "\n\tUpdateMsg\022\035\n\004type\030\001 \001(\0162\017.UpdateMsg.Ty" +
-      "pe\022\017\n\007pkt_cnt\030\002 \001(\005\022\024\n\004path\030\003 \001(\tB\006\222?\003\010\200" +
-      "\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200 \022\031\n\nsha256_pkt\030\005 \001" +
-      "(\014B\005\222?\002\010 \022\031\n\nsha256_upd\030\006 \001(\014B\005\222?\002\010 \022\031\n\n" +
-      "err_reason\030\007 \001(\tB\005\222?\002\010 \"<\n\004Type\022\t\n\005FIRST" +
-      "\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDLE\020\002\022\007\n\003ACK\020\003\022\n\n\006ACK" +
-      "ERR\020\004:\006\222?\003\240\001\010\"]\n\014IntParamsMsg\022\023\n\013freq_wo" +
-      "bble\030\001 \001(\005\022\017\n\007channel\030\002 \001(\005\022\023\n\013time_offs" +
-      "et\030\003 \001(\005\022\022\n\npwr_offset\030\004 \001(\005\"\233\003\n\016ESP32Cf" +
-      "gSubMsg\022\014\n\004isBT\030\001 \001(\010\022\014\n\004isAP\030\002 \001(\010\022\027\n\010s" +
-      "er_name\030\003 \001(\tB\005\222?\002\010 \022\026\n\007bt_name\030\004 \001(\tB\005\222" +
-      "?\002\010 \022\025\n\006bt_pin\030\005 \001(\tB\005\222?\002\010 \022\030\n\twifi_chan" +
-      "\030\006 \001(\tB\005\222?\002\010 \022\023\n\004ssid\030\007 \001(\tB\005\222?\002\010 \022\023\n\004pa" +
-      "ss\030\010 \001(\tB\005\222?\002\010 \022\026\n\007ip_addr\030\t \001(\tB\005\222?\002\010 \022" +
-      "\033\n\014gateway_addr\030\n \001(\tB\005\222?\002\010 \022\032\n\013subnet_a" +
-      "ddr\030\013 \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_lo\030\014 \001(\tB" +
-      "\005\222?\002\010 \022\034\n\rdhcp_range_hi\030\r \001(\tB\005\222?\002\010 \022\035\n\016" +
-      "multicast_addr\030\016 \001(\tB\005\222?\002\010 \022\031\n\nlocal_por" +
-      "t\030\017 \001(\tB\005\222?\002\010 \022\032\n\013remote_port\030\020 \001(\tB\005\222?\002" +
-      "\010 \"K\n\013ESP32CfgMsg\022\035\n\004esp0\030\001 \001(\0132\017.ESP32C" +
-      "fgSubMsg\022\035\n\004esp1\030\002 \001(\0132\017.ESP32CfgSubMsgb" +
-      "\006proto3"
+      "sgB\005\222?\002\030\004\022#\n\tsethw_msg\030\021 \001(\0132\t.SetHWMsgB" +
+      "\005\222?\002\030\004\022%\n\nsigrpt_msg\030\022 \001(\0132\n.SigRptMsgB\005" +
+      "\222?\002\030\004\"\231\004\n\004Type\022\016\n\nGET_CONFIG\020\000\022\016\n\nSET_CO" +
+      "NFIG\020\001\022\n\n\006CONFIG\020\002\022\010\n\004DATA\020\003\022\r\n\tCLOCK_SE" +
+      "T\020\004\022\n\n\006STATUS\020\005\022\016\n\nGET_STATUS\020\006\022\017\n\013STAY_" +
+      "IN_MGT\020\007\022\r\n\tDEBUG_MSG\020\010\022\n\n\006REBOOT\020\t\022\016\n\nE" +
+      "RASE_LOGS\020\n\022\023\n\017ERASE_BOOT_LOGS\020\013\022\r\n\tERAS" +
+      "E_CFG\020\014\022\014\n\010READ_LOG\020\r\022\022\n\016READ_LOG_RETRY\020" +
+      "\016\022\r\n\tREPLY_LOG\020\017\022\021\n\rREAD_BOOT_LOG\020\020\022\027\n\023R" +
+      "EAD_BOOT_LOG_RETRY\020\021\022\022\n\016REPLY_BOOT_LOG\020\022" +
+      "\022\013\n\007CRC_ERR\020\023\022\014\n\010SET_TIME\020\024\022\007\n\003ACK\020\025\022\007\n\003" +
+      "ERR\020\026\022\023\n\017ENTER_KISS_MODE\020\027\022\022\n\016EXIT_KISS_" +
+      "MODE\020\030\022\014\n\010BOOT_LOG\020\031\022\007\n\003LOG\020\032\022\n\n\006UPDATE\020" +
+      "\033\022\013\n\007VERSION\020\034\022\020\n\014TURN_OLED_ON\020\035\022\021\n\rTURN" +
+      "_OLED_OFF\020\036\022\016\n\nINT_PARAMS\020\037\022\r\n\tVOICE_MSG" +
+      "\020 \022\t\n\005SETHW\020!\022\n\n\006SIGRPT\020\":\006\222?\003\240\001\010\"\'\n\006Ack" +
+      "Msg\022\035\n\025radio_out_queue_level\030\001 \001(\r\"!\n\nVe" +
+      "rsionMsg\022\023\n\003msg\030\001 \001(\tB\006\222?\003\010\200\001\"a\n\010ErrorMs" +
+      "g\022\034\n\004type\030\001 \001(\0162\016.ErrorMsg.Type\022\023\n\003msg\030\002" +
+      " \001(\tB\006\222?\003\010\200\002\"\"\n\004Type\022\013\n\007CRC_ERR\020\000\022\r\n\tOTH" +
+      "ER_ERR\020\001\"\305\002\n\007DataMsg\022\033\n\004type\030\001 \001(\0162\r.Dat" +
+      "aMsg.Type\022\021\n\tstream_id\030\002 \001(\r\022\013\n\003ttl\030\003 \001(" +
+      "\r\022\016\n\006sender\030\004 \001(\r\022\022\n\nsym_offset\030\005 \001(\r\022\027\n" +
+      "\007payload\030\006 \001(\014B\006\222?\003\010\200\004\022\013\n\003crc\030\007 \001(\r\022\r\n\005v" +
+      "oice\030\010 \001(\010\022\026\n\016kiss_cur_frame\030\t \001(\r\022\027\n\017ki" +
+      "ss_tot_frames\030\n \001(\r\022\026\n\016kiss_stream_id\030\013 " +
+      "\001(\r\022\021\n\tredundant\030\014 \001(\010\"H\n\004Type\022\006\n\002TX\020\000\022\006" +
+      "\n\002RX\020\001\022\n\n\006KISSTX\020\002\022\n\n\006KISSRX\020\003\022\013\n\007VOICET" +
+      "X\020\004\022\013\n\007VOICERX\020\005\"N\n\rVoiceFrameMsg\022\021\n\tsiz" +
+      "e_bits\030\001 \001(\r\022\022\n\nend_stream\030\002 \001(\010\022\026\n\007payl" +
+      "oad\030\003 \001(\014B\005\222?\002\010 \"\375\001\n\tUpdateMsg\022\035\n\004type\030\001" +
+      " \001(\0162\017.UpdateMsg.Type\022\017\n\007pkt_cnt\030\002 \001(\005\022\024" +
+      "\n\004path\030\003 \001(\tB\006\222?\003\010\200\001\022\023\n\003pld\030\004 \001(\014B\006\222?\003\010\200" +
+      " \022\031\n\nsha256_pkt\030\005 \001(\014B\005\222?\002\010 \022\031\n\nsha256_u" +
+      "pd\030\006 \001(\014B\005\222?\002\010 \022\031\n\nerr_reason\030\007 \001(\tB\005\222?\002" +
+      "\010 \"<\n\004Type\022\t\n\005FIRST\020\000\022\010\n\004LAST\020\001\022\n\n\006MIDDL" +
+      "E\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntP" +
+      "aramsMsg\022\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007channel" +
+      "\030\002 \001(\005\022\023\n\013time_offset\030\003 \001(\005\022\022\n\npwr_offse" +
+      "t\030\004 \001(\005\"\233\003\n\016ESP32CfgSubMsg\022\014\n\004isBT\030\001 \001(\010" +
+      "\022\014\n\004isAP\030\002 \001(\010\022\027\n\010ser_name\030\003 \001(\tB\005\222?\002\010 \022" +
+      "\026\n\007bt_name\030\004 \001(\tB\005\222?\002\010 \022\025\n\006bt_pin\030\005 \001(\tB" +
+      "\005\222?\002\010 \022\030\n\twifi_chan\030\006 \001(\tB\005\222?\002\010 \022\023\n\004ssid" +
+      "\030\007 \001(\tB\005\222?\002\010 \022\023\n\004pass\030\010 \001(\tB\005\222?\002\010 \022\026\n\007ip" +
+      "_addr\030\t \001(\tB\005\222?\002\010 \022\033\n\014gateway_addr\030\n \001(\t" +
+      "B\005\222?\002\010 \022\032\n\013subnet_addr\030\013 \001(\tB\005\222?\002\010 \022\034\n\rd" +
+      "hcp_range_lo\030\014 \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_" +
+      "hi\030\r \001(\tB\005\222?\002\010 \022\035\n\016multicast_addr\030\016 \001(\tB" +
+      "\005\222?\002\010 \022\031\n\nlocal_port\030\017 \001(\tB\005\222?\002\010 \022\032\n\013rem" +
+      "ote_port\030\020 \001(\tB\005\222?\002\010 \"K\n\013ESP32CfgMsg\022\035\n\004" +
+      "esp0\030\001 \001(\0132\017.ESP32CfgSubMsg\022\035\n\004esp1\030\002 \001(" +
+      "\0132\017.ESP32CfgSubMsg\"d\n\010SetHWMsg\022\014\n\004freq\030\001" +
+      " \001(\r\022\n\n\002bw\030\002 \001(\r\022\n\n\002sf\030\003 \001(\r\022\n\n\002cr\030\004 \001(\r" +
+      "\022\013\n\003pwr\030\005 \001(\r\022\014\n\004sync\030\006 \001(\r\022\013\n\003crc\030\007 \001(\r" +
+      "\"&\n\tSigRptMsg\022\014\n\004rssi\030\001 \001(\005\022\013\n\003snr\030\002 \001(\005" +
+      "b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -25107,7 +26942,7 @@ public final class Qmesh {
     internal_static_SerialMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SerialMsg_descriptor,
-        new java.lang.String[] { "Type", "Retry", "SysCfg", "ClockSet", "Status", "DbgMsg", "LogMsg", "BootLogMsg", "DataMsg", "ErrorMsg", "TimeMsg", "UpdateMsg", "VerMsg", "IntParamsMsg", "VoiceFrameMsg", "AckMsg", });
+        new java.lang.String[] { "Type", "Retry", "SysCfg", "ClockSet", "Status", "DbgMsg", "LogMsg", "BootLogMsg", "DataMsg", "ErrorMsg", "TimeMsg", "UpdateMsg", "VerMsg", "IntParamsMsg", "VoiceFrameMsg", "AckMsg", "SethwMsg", "SigrptMsg", });
     internal_static_AckMsg_descriptor =
       getDescriptor().getMessageTypes().get(15);
     internal_static_AckMsg_fieldAccessorTable = new
@@ -25162,6 +26997,18 @@ public final class Qmesh {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ESP32CfgMsg_descriptor,
         new java.lang.String[] { "Esp0", "Esp1", });
+    internal_static_SetHWMsg_descriptor =
+      getDescriptor().getMessageTypes().get(24);
+    internal_static_SetHWMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_SetHWMsg_descriptor,
+        new java.lang.String[] { "Freq", "Bw", "Sf", "Cr", "Pwr", "Sync", "Crc", });
+    internal_static_SigRptMsg_descriptor =
+      getDescriptor().getMessageTypes().get(25);
+    internal_static_SigRptMsg_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_SigRptMsg_descriptor,
+        new java.lang.String[] { "Rssi", "Snr", });
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();
     registry.add(fi.kapsi.koti.jpa.nanopb.Nanopb.nanopb);
