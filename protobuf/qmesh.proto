@@ -273,22 +273,23 @@ message IntParamsMsg {
 }
 
 message ESP32CfgSubMsg {
-  bool isBT = 1;
-  bool isAP = 2;
-  string ser_name = 3 [(nanopb).max_size = 32];
-  string bt_name = 4 [(nanopb).max_size = 32];
-  string bt_pin = 5 [(nanopb).max_size = 32];
-  string wifi_chan = 6 [(nanopb).max_size = 32];
-  string ssid = 7 [(nanopb).max_size = 32];
-  string pass = 8 [(nanopb).max_size = 32];
-  string ip_addr = 9 [(nanopb).max_size = 32];
-  string gateway_addr = 10 [(nanopb).max_size = 32];
-  string subnet_addr = 11 [(nanopb).max_size = 32];
-  string dhcp_range_lo = 12 [(nanopb).max_size = 32];
-  string dhcp_range_hi = 13 [(nanopb).max_size = 32];
-  string multicast_addr = 14 [(nanopb).max_size = 32];
-  string local_port = 15 [(nanopb).max_size = 32];
-  string remote_port = 16 [(nanopb).max_size = 32];
+  bool exists = 1;
+  bool isBT = 2;
+  bool isAP = 3;
+  string ser_name = 4 [(nanopb).max_size = 32];
+  string bt_name = 5 [(nanopb).max_size = 32];
+  string bt_pin = 6 [(nanopb).max_size = 32];
+  string wifi_chan = 7 [(nanopb).max_size = 32];
+  string ssid = 8 [(nanopb).max_size = 32];
+  string pass = 9 [(nanopb).max_size = 32];
+  string ip_addr = 10 [(nanopb).max_size = 32];
+  string gateway_addr = 11 [(nanopb).max_size = 32];
+  string subnet_addr = 12 [(nanopb).max_size = 32];
+  string dhcp_range_lo = 13 [(nanopb).max_size = 32];
+  string dhcp_range_hi = 14 [(nanopb).max_size = 32];
+  string multicast_addr = 15 [(nanopb).max_size = 32];
+  string local_port = 16 [(nanopb).max_size = 32];
+  string remote_port = 17 [(nanopb).max_size = 32];
 }
 
 message ESP32CfgMsg {

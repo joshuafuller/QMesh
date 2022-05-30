@@ -21912,151 +21912,156 @@ public final class Qmesh {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>bool isBT = 1;</code>
+     * <code>bool exists = 1;</code>
+     */
+    boolean getExists();
+
+    /**
+     * <code>bool isBT = 2;</code>
      */
     boolean getIsBT();
 
     /**
-     * <code>bool isAP = 2;</code>
+     * <code>bool isAP = 3;</code>
      */
     boolean getIsAP();
 
     /**
-     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
      */
     java.lang.String getSerName();
     /**
-     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getSerNameBytes();
 
     /**
-     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
      */
     java.lang.String getBtName();
     /**
-     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getBtNameBytes();
 
     /**
-     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
      */
     java.lang.String getBtPin();
     /**
-     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getBtPinBytes();
 
     /**
-     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
      */
     java.lang.String getWifiChan();
     /**
-     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getWifiChanBytes();
 
     /**
-     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     * <code>string ssid = 8 [(.nanopb) = { ... }</code>
      */
     java.lang.String getSsid();
     /**
-     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     * <code>string ssid = 8 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getSsidBytes();
 
     /**
-     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     * <code>string pass = 9 [(.nanopb) = { ... }</code>
      */
     java.lang.String getPass();
     /**
-     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     * <code>string pass = 9 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getPassBytes();
 
     /**
-     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
      */
     java.lang.String getIpAddr();
     /**
-     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getIpAddrBytes();
 
     /**
-     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
      */
     java.lang.String getGatewayAddr();
     /**
-     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getGatewayAddrBytes();
 
     /**
-     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
      */
     java.lang.String getSubnetAddr();
     /**
-     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getSubnetAddrBytes();
 
     /**
-     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
      */
     java.lang.String getDhcpRangeLo();
     /**
-     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getDhcpRangeLoBytes();
 
     /**
-     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
      */
     java.lang.String getDhcpRangeHi();
     /**
-     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getDhcpRangeHiBytes();
 
     /**
-     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
      */
     java.lang.String getMulticastAddr();
     /**
-     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getMulticastAddrBytes();
 
     /**
-     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     * <code>string local_port = 16 [(.nanopb) = { ... }</code>
      */
     java.lang.String getLocalPort();
     /**
-     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     * <code>string local_port = 16 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getLocalPortBytes();
 
     /**
-     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
      */
     java.lang.String getRemotePort();
     /**
-     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
         getRemotePortBytes();
@@ -22074,6 +22079,7 @@ public final class Qmesh {
       super(builder);
     }
     private ESP32CfgSubMsg() {
+      exists_ = false;
       isBT_ = false;
       isAP_ = false;
       serName_ = "";
@@ -22118,93 +22124,98 @@ public final class Qmesh {
               break;
             case 8: {
 
-              isBT_ = input.readBool();
+              exists_ = input.readBool();
               break;
             }
             case 16: {
 
-              isAP_ = input.readBool();
+              isBT_ = input.readBool();
               break;
             }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 24: {
 
-              serName_ = s;
+              isAP_ = input.readBool();
               break;
             }
             case 34: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              btName_ = s;
+              serName_ = s;
               break;
             }
             case 42: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              btPin_ = s;
+              btName_ = s;
               break;
             }
             case 50: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              wifiChan_ = s;
+              btPin_ = s;
               break;
             }
             case 58: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              ssid_ = s;
+              wifiChan_ = s;
               break;
             }
             case 66: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              pass_ = s;
+              ssid_ = s;
               break;
             }
             case 74: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              ipAddr_ = s;
+              pass_ = s;
               break;
             }
             case 82: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              gatewayAddr_ = s;
+              ipAddr_ = s;
               break;
             }
             case 90: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              subnetAddr_ = s;
+              gatewayAddr_ = s;
               break;
             }
             case 98: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              dhcpRangeLo_ = s;
+              subnetAddr_ = s;
               break;
             }
             case 106: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              dhcpRangeHi_ = s;
+              dhcpRangeLo_ = s;
               break;
             }
             case 114: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              multicastAddr_ = s;
+              dhcpRangeHi_ = s;
               break;
             }
             case 122: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              localPort_ = s;
+              multicastAddr_ = s;
               break;
             }
             case 130: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              localPort_ = s;
+              break;
+            }
+            case 138: {
               java.lang.String s = input.readStringRequireUtf8();
 
               remotePort_ = s;
@@ -22242,28 +22253,37 @@ public final class Qmesh {
               Qmesh.ESP32CfgSubMsg.class, Qmesh.ESP32CfgSubMsg.Builder.class);
     }
 
-    public static final int ISBT_FIELD_NUMBER = 1;
+    public static final int EXISTS_FIELD_NUMBER = 1;
+    private boolean exists_;
+    /**
+     * <code>bool exists = 1;</code>
+     */
+    public boolean getExists() {
+      return exists_;
+    }
+
+    public static final int ISBT_FIELD_NUMBER = 2;
     private boolean isBT_;
     /**
-     * <code>bool isBT = 1;</code>
+     * <code>bool isBT = 2;</code>
      */
     public boolean getIsBT() {
       return isBT_;
     }
 
-    public static final int ISAP_FIELD_NUMBER = 2;
+    public static final int ISAP_FIELD_NUMBER = 3;
     private boolean isAP_;
     /**
-     * <code>bool isAP = 2;</code>
+     * <code>bool isAP = 3;</code>
      */
     public boolean getIsAP() {
       return isAP_;
     }
 
-    public static final int SER_NAME_FIELD_NUMBER = 3;
+    public static final int SER_NAME_FIELD_NUMBER = 4;
     private volatile java.lang.Object serName_;
     /**
-     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getSerName() {
       java.lang.Object ref = serName_;
@@ -22278,7 +22298,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+     * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getSerNameBytes() {
@@ -22294,10 +22314,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int BT_NAME_FIELD_NUMBER = 4;
+    public static final int BT_NAME_FIELD_NUMBER = 5;
     private volatile java.lang.Object btName_;
     /**
-     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getBtName() {
       java.lang.Object ref = btName_;
@@ -22312,7 +22332,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+     * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getBtNameBytes() {
@@ -22328,10 +22348,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int BT_PIN_FIELD_NUMBER = 5;
+    public static final int BT_PIN_FIELD_NUMBER = 6;
     private volatile java.lang.Object btPin_;
     /**
-     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getBtPin() {
       java.lang.Object ref = btPin_;
@@ -22346,7 +22366,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+     * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getBtPinBytes() {
@@ -22362,10 +22382,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int WIFI_CHAN_FIELD_NUMBER = 6;
+    public static final int WIFI_CHAN_FIELD_NUMBER = 7;
     private volatile java.lang.Object wifiChan_;
     /**
-     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getWifiChan() {
       java.lang.Object ref = wifiChan_;
@@ -22380,7 +22400,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+     * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getWifiChanBytes() {
@@ -22396,10 +22416,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int SSID_FIELD_NUMBER = 7;
+    public static final int SSID_FIELD_NUMBER = 8;
     private volatile java.lang.Object ssid_;
     /**
-     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     * <code>string ssid = 8 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getSsid() {
       java.lang.Object ref = ssid_;
@@ -22414,7 +22434,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+     * <code>string ssid = 8 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getSsidBytes() {
@@ -22430,10 +22450,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int PASS_FIELD_NUMBER = 8;
+    public static final int PASS_FIELD_NUMBER = 9;
     private volatile java.lang.Object pass_;
     /**
-     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     * <code>string pass = 9 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getPass() {
       java.lang.Object ref = pass_;
@@ -22448,7 +22468,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string pass = 8 [(.nanopb) = { ... }</code>
+     * <code>string pass = 9 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getPassBytes() {
@@ -22464,10 +22484,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int IP_ADDR_FIELD_NUMBER = 9;
+    public static final int IP_ADDR_FIELD_NUMBER = 10;
     private volatile java.lang.Object ipAddr_;
     /**
-     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getIpAddr() {
       java.lang.Object ref = ipAddr_;
@@ -22482,7 +22502,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+     * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getIpAddrBytes() {
@@ -22498,10 +22518,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int GATEWAY_ADDR_FIELD_NUMBER = 10;
+    public static final int GATEWAY_ADDR_FIELD_NUMBER = 11;
     private volatile java.lang.Object gatewayAddr_;
     /**
-     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getGatewayAddr() {
       java.lang.Object ref = gatewayAddr_;
@@ -22516,7 +22536,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+     * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getGatewayAddrBytes() {
@@ -22532,10 +22552,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int SUBNET_ADDR_FIELD_NUMBER = 11;
+    public static final int SUBNET_ADDR_FIELD_NUMBER = 12;
     private volatile java.lang.Object subnetAddr_;
     /**
-     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getSubnetAddr() {
       java.lang.Object ref = subnetAddr_;
@@ -22550,7 +22570,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+     * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getSubnetAddrBytes() {
@@ -22566,10 +22586,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int DHCP_RANGE_LO_FIELD_NUMBER = 12;
+    public static final int DHCP_RANGE_LO_FIELD_NUMBER = 13;
     private volatile java.lang.Object dhcpRangeLo_;
     /**
-     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getDhcpRangeLo() {
       java.lang.Object ref = dhcpRangeLo_;
@@ -22584,7 +22604,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getDhcpRangeLoBytes() {
@@ -22600,10 +22620,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int DHCP_RANGE_HI_FIELD_NUMBER = 13;
+    public static final int DHCP_RANGE_HI_FIELD_NUMBER = 14;
     private volatile java.lang.Object dhcpRangeHi_;
     /**
-     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getDhcpRangeHi() {
       java.lang.Object ref = dhcpRangeHi_;
@@ -22618,7 +22638,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+     * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getDhcpRangeHiBytes() {
@@ -22634,10 +22654,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int MULTICAST_ADDR_FIELD_NUMBER = 14;
+    public static final int MULTICAST_ADDR_FIELD_NUMBER = 15;
     private volatile java.lang.Object multicastAddr_;
     /**
-     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getMulticastAddr() {
       java.lang.Object ref = multicastAddr_;
@@ -22652,7 +22672,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+     * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getMulticastAddrBytes() {
@@ -22668,10 +22688,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int LOCAL_PORT_FIELD_NUMBER = 15;
+    public static final int LOCAL_PORT_FIELD_NUMBER = 16;
     private volatile java.lang.Object localPort_;
     /**
-     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     * <code>string local_port = 16 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getLocalPort() {
       java.lang.Object ref = localPort_;
@@ -22686,7 +22706,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+     * <code>string local_port = 16 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getLocalPortBytes() {
@@ -22702,10 +22722,10 @@ public final class Qmesh {
       }
     }
 
-    public static final int REMOTE_PORT_FIELD_NUMBER = 16;
+    public static final int REMOTE_PORT_FIELD_NUMBER = 17;
     private volatile java.lang.Object remotePort_;
     /**
-     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
      */
     public java.lang.String getRemotePort() {
       java.lang.Object ref = remotePort_;
@@ -22720,7 +22740,7 @@ public final class Qmesh {
       }
     }
     /**
-     * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+     * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
         getRemotePortBytes() {
@@ -22750,53 +22770,56 @@ public final class Qmesh {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      if (exists_ != false) {
+        output.writeBool(1, exists_);
+      }
       if (isBT_ != false) {
-        output.writeBool(1, isBT_);
+        output.writeBool(2, isBT_);
       }
       if (isAP_ != false) {
-        output.writeBool(2, isAP_);
+        output.writeBool(3, isAP_);
       }
       if (!getSerNameBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, serName_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, serName_);
       }
       if (!getBtNameBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, btName_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, btName_);
       }
       if (!getBtPinBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, btPin_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, btPin_);
       }
       if (!getWifiChanBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, wifiChan_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, wifiChan_);
       }
       if (!getSsidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, ssid_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, ssid_);
       }
       if (!getPassBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, pass_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, pass_);
       }
       if (!getIpAddrBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, ipAddr_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, ipAddr_);
       }
       if (!getGatewayAddrBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, gatewayAddr_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 11, gatewayAddr_);
       }
       if (!getSubnetAddrBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 11, subnetAddr_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 12, subnetAddr_);
       }
       if (!getDhcpRangeLoBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 12, dhcpRangeLo_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 13, dhcpRangeLo_);
       }
       if (!getDhcpRangeHiBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 13, dhcpRangeHi_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 14, dhcpRangeHi_);
       }
       if (!getMulticastAddrBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 14, multicastAddr_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 15, multicastAddr_);
       }
       if (!getLocalPortBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 15, localPort_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 16, localPort_);
       }
       if (!getRemotePortBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 16, remotePort_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 17, remotePort_);
       }
       unknownFields.writeTo(output);
     }
@@ -22807,55 +22830,59 @@ public final class Qmesh {
       if (size != -1) return size;
 
       size = 0;
+      if (exists_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, exists_);
+      }
       if (isBT_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, isBT_);
+          .computeBoolSize(2, isBT_);
       }
       if (isAP_ != false) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(2, isAP_);
+          .computeBoolSize(3, isAP_);
       }
       if (!getSerNameBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, serName_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, serName_);
       }
       if (!getBtNameBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, btName_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, btName_);
       }
       if (!getBtPinBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, btPin_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, btPin_);
       }
       if (!getWifiChanBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, wifiChan_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, wifiChan_);
       }
       if (!getSsidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, ssid_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, ssid_);
       }
       if (!getPassBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, pass_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, pass_);
       }
       if (!getIpAddrBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, ipAddr_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, ipAddr_);
       }
       if (!getGatewayAddrBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, gatewayAddr_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, gatewayAddr_);
       }
       if (!getSubnetAddrBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, subnetAddr_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, subnetAddr_);
       }
       if (!getDhcpRangeLoBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, dhcpRangeLo_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, dhcpRangeLo_);
       }
       if (!getDhcpRangeHiBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, dhcpRangeHi_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(14, dhcpRangeHi_);
       }
       if (!getMulticastAddrBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(14, multicastAddr_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, multicastAddr_);
       }
       if (!getLocalPortBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, localPort_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(16, localPort_);
       }
       if (!getRemotePortBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(16, remotePort_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(17, remotePort_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -22873,6 +22900,8 @@ public final class Qmesh {
       Qmesh.ESP32CfgSubMsg other = (Qmesh.ESP32CfgSubMsg) obj;
 
       boolean result = true;
+      result = result && (getExists()
+          == other.getExists());
       result = result && (getIsBT()
           == other.getIsBT());
       result = result && (getIsAP()
@@ -22916,6 +22945,9 @@ public final class Qmesh {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + EXISTS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getExists());
       hash = (37 * hash) + ISBT_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getIsBT());
@@ -23083,6 +23115,8 @@ public final class Qmesh {
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        exists_ = false;
+
         isBT_ = false;
 
         isAP_ = false;
@@ -23141,6 +23175,7 @@ public final class Qmesh {
       @java.lang.Override
       public Qmesh.ESP32CfgSubMsg buildPartial() {
         Qmesh.ESP32CfgSubMsg result = new Qmesh.ESP32CfgSubMsg(this);
+        result.exists_ = exists_;
         result.isBT_ = isBT_;
         result.isAP_ = isAP_;
         result.serName_ = serName_;
@@ -23205,6 +23240,9 @@ public final class Qmesh {
 
       public Builder mergeFrom(Qmesh.ESP32CfgSubMsg other) {
         if (other == Qmesh.ESP32CfgSubMsg.getDefaultInstance()) return this;
+        if (other.getExists() != false) {
+          setExists(other.getExists());
+        }
         if (other.getIsBT() != false) {
           setIsBT(other.getIsBT());
         }
@@ -23296,15 +23334,41 @@ public final class Qmesh {
         return this;
       }
 
+      private boolean exists_ ;
+      /**
+       * <code>bool exists = 1;</code>
+       */
+      public boolean getExists() {
+        return exists_;
+      }
+      /**
+       * <code>bool exists = 1;</code>
+       */
+      public Builder setExists(boolean value) {
+        
+        exists_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool exists = 1;</code>
+       */
+      public Builder clearExists() {
+        
+        exists_ = false;
+        onChanged();
+        return this;
+      }
+
       private boolean isBT_ ;
       /**
-       * <code>bool isBT = 1;</code>
+       * <code>bool isBT = 2;</code>
        */
       public boolean getIsBT() {
         return isBT_;
       }
       /**
-       * <code>bool isBT = 1;</code>
+       * <code>bool isBT = 2;</code>
        */
       public Builder setIsBT(boolean value) {
         
@@ -23313,7 +23377,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool isBT = 1;</code>
+       * <code>bool isBT = 2;</code>
        */
       public Builder clearIsBT() {
         
@@ -23324,13 +23388,13 @@ public final class Qmesh {
 
       private boolean isAP_ ;
       /**
-       * <code>bool isAP = 2;</code>
+       * <code>bool isAP = 3;</code>
        */
       public boolean getIsAP() {
         return isAP_;
       }
       /**
-       * <code>bool isAP = 2;</code>
+       * <code>bool isAP = 3;</code>
        */
       public Builder setIsAP(boolean value) {
         
@@ -23339,7 +23403,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>bool isAP = 2;</code>
+       * <code>bool isAP = 3;</code>
        */
       public Builder clearIsAP() {
         
@@ -23350,7 +23414,7 @@ public final class Qmesh {
 
       private java.lang.Object serName_ = "";
       /**
-       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getSerName() {
         java.lang.Object ref = serName_;
@@ -23365,7 +23429,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getSerNameBytes() {
@@ -23381,7 +23445,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
        */
       public Builder setSerName(
           java.lang.String value) {
@@ -23394,7 +23458,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
        */
       public Builder clearSerName() {
         
@@ -23403,7 +23467,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string ser_name = 3 [(.nanopb) = { ... }</code>
+       * <code>string ser_name = 4 [(.nanopb) = { ... }</code>
        */
       public Builder setSerNameBytes(
           com.google.protobuf.ByteString value) {
@@ -23419,7 +23483,7 @@ public final class Qmesh {
 
       private java.lang.Object btName_ = "";
       /**
-       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getBtName() {
         java.lang.Object ref = btName_;
@@ -23434,7 +23498,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getBtNameBytes() {
@@ -23450,7 +23514,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
        */
       public Builder setBtName(
           java.lang.String value) {
@@ -23463,7 +23527,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
        */
       public Builder clearBtName() {
         
@@ -23472,7 +23536,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string bt_name = 4 [(.nanopb) = { ... }</code>
+       * <code>string bt_name = 5 [(.nanopb) = { ... }</code>
        */
       public Builder setBtNameBytes(
           com.google.protobuf.ByteString value) {
@@ -23488,7 +23552,7 @@ public final class Qmesh {
 
       private java.lang.Object btPin_ = "";
       /**
-       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getBtPin() {
         java.lang.Object ref = btPin_;
@@ -23503,7 +23567,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getBtPinBytes() {
@@ -23519,7 +23583,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
        */
       public Builder setBtPin(
           java.lang.String value) {
@@ -23532,7 +23596,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
        */
       public Builder clearBtPin() {
         
@@ -23541,7 +23605,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string bt_pin = 5 [(.nanopb) = { ... }</code>
+       * <code>string bt_pin = 6 [(.nanopb) = { ... }</code>
        */
       public Builder setBtPinBytes(
           com.google.protobuf.ByteString value) {
@@ -23557,7 +23621,7 @@ public final class Qmesh {
 
       private java.lang.Object wifiChan_ = "";
       /**
-       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getWifiChan() {
         java.lang.Object ref = wifiChan_;
@@ -23572,7 +23636,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getWifiChanBytes() {
@@ -23588,7 +23652,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
        */
       public Builder setWifiChan(
           java.lang.String value) {
@@ -23601,7 +23665,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
        */
       public Builder clearWifiChan() {
         
@@ -23610,7 +23674,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string wifi_chan = 6 [(.nanopb) = { ... }</code>
+       * <code>string wifi_chan = 7 [(.nanopb) = { ... }</code>
        */
       public Builder setWifiChanBytes(
           com.google.protobuf.ByteString value) {
@@ -23626,7 +23690,7 @@ public final class Qmesh {
 
       private java.lang.Object ssid_ = "";
       /**
-       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       * <code>string ssid = 8 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getSsid() {
         java.lang.Object ref = ssid_;
@@ -23641,7 +23705,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       * <code>string ssid = 8 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getSsidBytes() {
@@ -23657,7 +23721,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       * <code>string ssid = 8 [(.nanopb) = { ... }</code>
        */
       public Builder setSsid(
           java.lang.String value) {
@@ -23670,7 +23734,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       * <code>string ssid = 8 [(.nanopb) = { ... }</code>
        */
       public Builder clearSsid() {
         
@@ -23679,7 +23743,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string ssid = 7 [(.nanopb) = { ... }</code>
+       * <code>string ssid = 8 [(.nanopb) = { ... }</code>
        */
       public Builder setSsidBytes(
           com.google.protobuf.ByteString value) {
@@ -23695,7 +23759,7 @@ public final class Qmesh {
 
       private java.lang.Object pass_ = "";
       /**
-       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       * <code>string pass = 9 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getPass() {
         java.lang.Object ref = pass_;
@@ -23710,7 +23774,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       * <code>string pass = 9 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getPassBytes() {
@@ -23726,7 +23790,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       * <code>string pass = 9 [(.nanopb) = { ... }</code>
        */
       public Builder setPass(
           java.lang.String value) {
@@ -23739,7 +23803,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       * <code>string pass = 9 [(.nanopb) = { ... }</code>
        */
       public Builder clearPass() {
         
@@ -23748,7 +23812,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string pass = 8 [(.nanopb) = { ... }</code>
+       * <code>string pass = 9 [(.nanopb) = { ... }</code>
        */
       public Builder setPassBytes(
           com.google.protobuf.ByteString value) {
@@ -23764,7 +23828,7 @@ public final class Qmesh {
 
       private java.lang.Object ipAddr_ = "";
       /**
-       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getIpAddr() {
         java.lang.Object ref = ipAddr_;
@@ -23779,7 +23843,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getIpAddrBytes() {
@@ -23795,7 +23859,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
        */
       public Builder setIpAddr(
           java.lang.String value) {
@@ -23808,7 +23872,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
        */
       public Builder clearIpAddr() {
         
@@ -23817,7 +23881,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string ip_addr = 9 [(.nanopb) = { ... }</code>
+       * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
        */
       public Builder setIpAddrBytes(
           com.google.protobuf.ByteString value) {
@@ -23833,7 +23897,7 @@ public final class Qmesh {
 
       private java.lang.Object gatewayAddr_ = "";
       /**
-       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getGatewayAddr() {
         java.lang.Object ref = gatewayAddr_;
@@ -23848,7 +23912,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getGatewayAddrBytes() {
@@ -23864,7 +23928,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
        */
       public Builder setGatewayAddr(
           java.lang.String value) {
@@ -23877,7 +23941,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
        */
       public Builder clearGatewayAddr() {
         
@@ -23886,7 +23950,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string gateway_addr = 10 [(.nanopb) = { ... }</code>
+       * <code>string gateway_addr = 11 [(.nanopb) = { ... }</code>
        */
       public Builder setGatewayAddrBytes(
           com.google.protobuf.ByteString value) {
@@ -23902,7 +23966,7 @@ public final class Qmesh {
 
       private java.lang.Object subnetAddr_ = "";
       /**
-       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getSubnetAddr() {
         java.lang.Object ref = subnetAddr_;
@@ -23917,7 +23981,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getSubnetAddrBytes() {
@@ -23933,7 +23997,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
        */
       public Builder setSubnetAddr(
           java.lang.String value) {
@@ -23946,7 +24010,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
        */
       public Builder clearSubnetAddr() {
         
@@ -23955,7 +24019,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string subnet_addr = 11 [(.nanopb) = { ... }</code>
+       * <code>string subnet_addr = 12 [(.nanopb) = { ... }</code>
        */
       public Builder setSubnetAddrBytes(
           com.google.protobuf.ByteString value) {
@@ -23971,7 +24035,7 @@ public final class Qmesh {
 
       private java.lang.Object dhcpRangeLo_ = "";
       /**
-       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getDhcpRangeLo() {
         java.lang.Object ref = dhcpRangeLo_;
@@ -23986,7 +24050,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getDhcpRangeLoBytes() {
@@ -24002,7 +24066,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
        */
       public Builder setDhcpRangeLo(
           java.lang.String value) {
@@ -24015,7 +24079,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
        */
       public Builder clearDhcpRangeLo() {
         
@@ -24024,7 +24088,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string dhcp_range_lo = 12 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_lo = 13 [(.nanopb) = { ... }</code>
        */
       public Builder setDhcpRangeLoBytes(
           com.google.protobuf.ByteString value) {
@@ -24040,7 +24104,7 @@ public final class Qmesh {
 
       private java.lang.Object dhcpRangeHi_ = "";
       /**
-       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getDhcpRangeHi() {
         java.lang.Object ref = dhcpRangeHi_;
@@ -24055,7 +24119,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getDhcpRangeHiBytes() {
@@ -24071,7 +24135,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
        */
       public Builder setDhcpRangeHi(
           java.lang.String value) {
@@ -24084,7 +24148,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
        */
       public Builder clearDhcpRangeHi() {
         
@@ -24093,7 +24157,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string dhcp_range_hi = 13 [(.nanopb) = { ... }</code>
+       * <code>string dhcp_range_hi = 14 [(.nanopb) = { ... }</code>
        */
       public Builder setDhcpRangeHiBytes(
           com.google.protobuf.ByteString value) {
@@ -24109,7 +24173,7 @@ public final class Qmesh {
 
       private java.lang.Object multicastAddr_ = "";
       /**
-       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getMulticastAddr() {
         java.lang.Object ref = multicastAddr_;
@@ -24124,7 +24188,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getMulticastAddrBytes() {
@@ -24140,7 +24204,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
        */
       public Builder setMulticastAddr(
           java.lang.String value) {
@@ -24153,7 +24217,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
        */
       public Builder clearMulticastAddr() {
         
@@ -24162,7 +24226,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string multicast_addr = 14 [(.nanopb) = { ... }</code>
+       * <code>string multicast_addr = 15 [(.nanopb) = { ... }</code>
        */
       public Builder setMulticastAddrBytes(
           com.google.protobuf.ByteString value) {
@@ -24178,7 +24242,7 @@ public final class Qmesh {
 
       private java.lang.Object localPort_ = "";
       /**
-       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       * <code>string local_port = 16 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getLocalPort() {
         java.lang.Object ref = localPort_;
@@ -24193,7 +24257,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       * <code>string local_port = 16 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getLocalPortBytes() {
@@ -24209,7 +24273,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       * <code>string local_port = 16 [(.nanopb) = { ... }</code>
        */
       public Builder setLocalPort(
           java.lang.String value) {
@@ -24222,7 +24286,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       * <code>string local_port = 16 [(.nanopb) = { ... }</code>
        */
       public Builder clearLocalPort() {
         
@@ -24231,7 +24295,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string local_port = 15 [(.nanopb) = { ... }</code>
+       * <code>string local_port = 16 [(.nanopb) = { ... }</code>
        */
       public Builder setLocalPortBytes(
           com.google.protobuf.ByteString value) {
@@ -24247,7 +24311,7 @@ public final class Qmesh {
 
       private java.lang.Object remotePort_ = "";
       /**
-       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
        */
       public java.lang.String getRemotePort() {
         java.lang.Object ref = remotePort_;
@@ -24262,7 +24326,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
           getRemotePortBytes() {
@@ -24278,7 +24342,7 @@ public final class Qmesh {
         }
       }
       /**
-       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
        */
       public Builder setRemotePort(
           java.lang.String value) {
@@ -24291,7 +24355,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
        */
       public Builder clearRemotePort() {
         
@@ -24300,7 +24364,7 @@ public final class Qmesh {
         return this;
       }
       /**
-       * <code>string remote_port = 16 [(.nanopb) = { ... }</code>
+       * <code>string remote_port = 17 [(.nanopb) = { ... }</code>
        */
       public Builder setRemotePortBytes(
           com.google.protobuf.ByteString value) {
@@ -26822,23 +26886,23 @@ public final class Qmesh {
       "E\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntP" +
       "aramsMsg\022\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007channel" +
       "\030\002 \001(\005\022\023\n\013time_offset\030\003 \001(\005\022\022\n\npwr_offse" +
-      "t\030\004 \001(\005\"\233\003\n\016ESP32CfgSubMsg\022\014\n\004isBT\030\001 \001(\010" +
-      "\022\014\n\004isAP\030\002 \001(\010\022\027\n\010ser_name\030\003 \001(\tB\005\222?\002\010 \022" +
-      "\026\n\007bt_name\030\004 \001(\tB\005\222?\002\010 \022\025\n\006bt_pin\030\005 \001(\tB" +
-      "\005\222?\002\010 \022\030\n\twifi_chan\030\006 \001(\tB\005\222?\002\010 \022\023\n\004ssid" +
-      "\030\007 \001(\tB\005\222?\002\010 \022\023\n\004pass\030\010 \001(\tB\005\222?\002\010 \022\026\n\007ip" +
-      "_addr\030\t \001(\tB\005\222?\002\010 \022\033\n\014gateway_addr\030\n \001(\t" +
-      "B\005\222?\002\010 \022\032\n\013subnet_addr\030\013 \001(\tB\005\222?\002\010 \022\034\n\rd" +
-      "hcp_range_lo\030\014 \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_" +
-      "hi\030\r \001(\tB\005\222?\002\010 \022\035\n\016multicast_addr\030\016 \001(\tB" +
-      "\005\222?\002\010 \022\031\n\nlocal_port\030\017 \001(\tB\005\222?\002\010 \022\032\n\013rem" +
-      "ote_port\030\020 \001(\tB\005\222?\002\010 \"K\n\013ESP32CfgMsg\022\035\n\004" +
-      "esp0\030\001 \001(\0132\017.ESP32CfgSubMsg\022\035\n\004esp1\030\002 \001(" +
-      "\0132\017.ESP32CfgSubMsg\"d\n\010SetHWMsg\022\014\n\004freq\030\001" +
-      " \001(\r\022\n\n\002bw\030\002 \001(\r\022\n\n\002sf\030\003 \001(\r\022\n\n\002cr\030\004 \001(\r" +
-      "\022\013\n\003pwr\030\005 \001(\r\022\014\n\004sync\030\006 \001(\r\022\013\n\003crc\030\007 \001(\r" +
-      "\"&\n\tSigRptMsg\022\014\n\004rssi\030\001 \001(\005\022\013\n\003snr\030\002 \001(\005" +
-      "b\006proto3"
+      "t\030\004 \001(\005\"\253\003\n\016ESP32CfgSubMsg\022\016\n\006exists\030\001 \001" +
+      "(\010\022\014\n\004isBT\030\002 \001(\010\022\014\n\004isAP\030\003 \001(\010\022\027\n\010ser_na" +
+      "me\030\004 \001(\tB\005\222?\002\010 \022\026\n\007bt_name\030\005 \001(\tB\005\222?\002\010 \022" +
+      "\025\n\006bt_pin\030\006 \001(\tB\005\222?\002\010 \022\030\n\twifi_chan\030\007 \001(" +
+      "\tB\005\222?\002\010 \022\023\n\004ssid\030\010 \001(\tB\005\222?\002\010 \022\023\n\004pass\030\t " +
+      "\001(\tB\005\222?\002\010 \022\026\n\007ip_addr\030\n \001(\tB\005\222?\002\010 \022\033\n\014ga" +
+      "teway_addr\030\013 \001(\tB\005\222?\002\010 \022\032\n\013subnet_addr\030\014" +
+      " \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_lo\030\r \001(\tB\005\222?\002\010" +
+      " \022\034\n\rdhcp_range_hi\030\016 \001(\tB\005\222?\002\010 \022\035\n\016multi" +
+      "cast_addr\030\017 \001(\tB\005\222?\002\010 \022\031\n\nlocal_port\030\020 \001" +
+      "(\tB\005\222?\002\010 \022\032\n\013remote_port\030\021 \001(\tB\005\222?\002\010 \"K\n" +
+      "\013ESP32CfgMsg\022\035\n\004esp0\030\001 \001(\0132\017.ESP32CfgSub" +
+      "Msg\022\035\n\004esp1\030\002 \001(\0132\017.ESP32CfgSubMsg\"d\n\010Se" +
+      "tHWMsg\022\014\n\004freq\030\001 \001(\r\022\n\n\002bw\030\002 \001(\r\022\n\n\002sf\030\003" +
+      " \001(\r\022\n\n\002cr\030\004 \001(\r\022\013\n\003pwr\030\005 \001(\r\022\014\n\004sync\030\006 " +
+      "\001(\r\022\013\n\003crc\030\007 \001(\r\"&\n\tSigRptMsg\022\014\n\004rssi\030\001 " +
+      "\001(\005\022\013\n\003snr\030\002 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -26990,7 +27054,7 @@ public final class Qmesh {
     internal_static_ESP32CfgSubMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ESP32CfgSubMsg_descriptor,
-        new java.lang.String[] { "IsBT", "IsAP", "SerName", "BtName", "BtPin", "WifiChan", "Ssid", "Pass", "IpAddr", "GatewayAddr", "SubnetAddr", "DhcpRangeLo", "DhcpRangeHi", "MulticastAddr", "LocalPort", "RemotePort", });
+        new java.lang.String[] { "Exists", "IsBT", "IsAP", "SerName", "BtName", "BtPin", "WifiChan", "Ssid", "Pass", "IpAddr", "GatewayAddr", "SubnetAddr", "DhcpRangeLo", "DhcpRangeHi", "MulticastAddr", "LocalPort", "RemotePort", });
     internal_static_ESP32CfgMsg_descriptor =
       getDescriptor().getMessageTypes().get(23);
     internal_static_ESP32CfgMsg_fieldAccessorTable = new

@@ -33,6 +33,7 @@ voice_frames_per_frame: 4
 codec2_bitrate: 700
 
 # Settings for the ESP32 modules
+esp0_exists: true
 esp0_isbt: true
 esp0_isap: false
 esp0_ser_name: bt0
@@ -50,6 +51,7 @@ esp0_multicast_addr: 224.0.0.0
 esp0_local_port: 1000
 esp0_remote_port: 1002
 
+esp1_exists: false
 esp1_isbt: true
 esp1_isap: false
 esp1_ser_name: bt1

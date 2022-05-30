@@ -40,6 +40,7 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['log_boot'] = ser_msg.sys_cfg.boot_log_en
     cfg_dict['watchdog_timer_en'] = ser_msg.sys_cfg.watchdog_timer_en
 
+    cfg_dict['esp0_exists'] = ser_msg.esp_cfg_msg.esp0.exists
     cfg_dict['esp0_isbt'] = ser_msg.esp_cfg_msg.esp0.isBT
     cfg_dict['esp0_isap'] = ser_msg.esp_cfg_msg.esp0.isAP
     cfg_dict['esp0_ser_name'] = ser_msg.esp_cfg_msg.esp0.ser_name
@@ -57,6 +58,7 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['esp0_local_port'] = ser_msg.esp_cfg_msg.esp0.local_port
     cfg_dict['esp0_remote_port'] = ser_msg.esp_cfg_msg.esp0.remote_port
 
+    cfg_dict['esp1_exists'] = ser_msg.esp_cfg_msg.esp1.exists
     cfg_dict['esp1_isbt'] = ser_msg.esp_cfg_msg.esp1.isBT
     cfg_dict['esp1_isap'] = ser_msg.esp_cfg_msg.esp1.isAP
     cfg_dict['esp1_ser_name'] = ser_msg.esp_cfg_msg.esp1.ser_name
@@ -132,6 +134,7 @@ def print_cfg_msg(ser_msg):
     print("\tESP32 CONFIG:")
     esp_cfg = sys_cfg.esp_cfg
     print("\t\tESP0:")
+    print("\t\t\tExists: %s" % (esp_cfg.esp0_exists))
     print("\t\t\tIs Bluetooth: %s" % (esp_cfg.esp0_isbt))
     print("\t\t\tIs AP: %s" % (esp_cfg.esp0_isap))
     print("\t\t\tSerial Name: %s" % (esp_cfg.esp0_ser_name))
@@ -150,6 +153,7 @@ def print_cfg_msg(ser_msg):
     print("\t\t\tRemote Port: %s" % (esp_cfg.esp0_remote_port))
 
     print("\t\tESP1:")
+    print("\t\t\tExists: %s" % (esp_cfg.esp1_exists))
     print("\t\t\tIs Bluetooth: %s" % (esp_cfg.esp1_isbt))
     print("\t\t\tIs AP: %s" % (esp_cfg.esp1_isap))
     print("\t\t\tSerial Name: %s" % (esp_cfg.esp1_ser_name))

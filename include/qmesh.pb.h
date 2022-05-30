@@ -136,6 +136,7 @@ typedef struct _DbgMsg {
 } DbgMsg;
 
 typedef struct _ESP32CfgSubMsg {
+    bool exists;
     bool isBT;
     bool isAP;
     char ser_name[32];
@@ -402,7 +403,7 @@ typedef struct _SysCfgMsg {
 #define VoiceFrameMsg_init_default               {0, 0, {0, {0}}}
 #define UpdateMsg_init_default                   {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define IntParamsMsg_init_default                {0, 0, 0, 0}
-#define ESP32CfgSubMsg_init_default              {0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
+#define ESP32CfgSubMsg_init_default              {0, 0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
 #define ESP32CfgMsg_init_default                 {false, ESP32CfgSubMsg_init_default, false, ESP32CfgSubMsg_init_default}
 #define SetHWMsg_init_default                    {0, 0, 0, 0, 0, 0, 0}
 #define SigRptMsg_init_default                   {0, 0}
@@ -428,7 +429,7 @@ typedef struct _SysCfgMsg {
 #define VoiceFrameMsg_init_zero                  {0, 0, {0, {0}}}
 #define UpdateMsg_init_zero                      {_UpdateMsg_Type_MIN, 0, "", {0, {0}}, {0, {0}}, {0, {0}}, ""}
 #define IntParamsMsg_init_zero                   {0, 0, 0, 0}
-#define ESP32CfgSubMsg_init_zero                 {0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
+#define ESP32CfgSubMsg_init_zero                 {0, 0, 0, "", "", "", "", "", "", "", "", "", "", "", "", "", ""}
 #define ESP32CfgMsg_init_zero                    {false, ESP32CfgSubMsg_init_zero, false, ESP32CfgSubMsg_init_zero}
 #define SetHWMsg_init_zero                       {0, 0, 0, 0, 0, 0, 0}
 #define SigRptMsg_init_zero                      {0, 0}
@@ -452,22 +453,23 @@ typedef struct _SysCfgMsg {
 #define DataMsg_kiss_stream_id_tag               11
 #define DataMsg_redundant_tag                    12
 #define DbgMsg_msg_tag                           1
-#define ESP32CfgSubMsg_isBT_tag                  1
-#define ESP32CfgSubMsg_isAP_tag                  2
-#define ESP32CfgSubMsg_ser_name_tag              3
-#define ESP32CfgSubMsg_bt_name_tag               4
-#define ESP32CfgSubMsg_bt_pin_tag                5
-#define ESP32CfgSubMsg_wifi_chan_tag             6
-#define ESP32CfgSubMsg_ssid_tag                  7
-#define ESP32CfgSubMsg_pass_tag                  8
-#define ESP32CfgSubMsg_ip_addr_tag               9
-#define ESP32CfgSubMsg_gateway_addr_tag          10
-#define ESP32CfgSubMsg_subnet_addr_tag           11
-#define ESP32CfgSubMsg_dhcp_range_lo_tag         12
-#define ESP32CfgSubMsg_dhcp_range_hi_tag         13
-#define ESP32CfgSubMsg_multicast_addr_tag        14
-#define ESP32CfgSubMsg_local_port_tag            15
-#define ESP32CfgSubMsg_remote_port_tag           16
+#define ESP32CfgSubMsg_exists_tag                1
+#define ESP32CfgSubMsg_isBT_tag                  2
+#define ESP32CfgSubMsg_isAP_tag                  3
+#define ESP32CfgSubMsg_ser_name_tag              4
+#define ESP32CfgSubMsg_bt_name_tag               5
+#define ESP32CfgSubMsg_bt_pin_tag                6
+#define ESP32CfgSubMsg_wifi_chan_tag             7
+#define ESP32CfgSubMsg_ssid_tag                  8
+#define ESP32CfgSubMsg_pass_tag                  9
+#define ESP32CfgSubMsg_ip_addr_tag               10
+#define ESP32CfgSubMsg_gateway_addr_tag          11
+#define ESP32CfgSubMsg_subnet_addr_tag           12
+#define ESP32CfgSubMsg_dhcp_range_lo_tag         13
+#define ESP32CfgSubMsg_dhcp_range_hi_tag         14
+#define ESP32CfgSubMsg_multicast_addr_tag        15
+#define ESP32CfgSubMsg_local_port_tag            16
+#define ESP32CfgSubMsg_remote_port_tag           17
 #define ErrorMsg_type_tag                        1
 #define ErrorMsg_msg_tag                         2
 #define FECCfg_type_tag                          1
@@ -821,22 +823,23 @@ X(a, STATIC,   SINGULAR, INT32,    pwr_offset,        4)
 #define IntParamsMsg_DEFAULT NULL
 
 #define ESP32CfgSubMsg_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     isBT,              1) \
-X(a, STATIC,   SINGULAR, BOOL,     isAP,              2) \
-X(a, STATIC,   SINGULAR, STRING,   ser_name,          3) \
-X(a, STATIC,   SINGULAR, STRING,   bt_name,           4) \
-X(a, STATIC,   SINGULAR, STRING,   bt_pin,            5) \
-X(a, STATIC,   SINGULAR, STRING,   wifi_chan,         6) \
-X(a, STATIC,   SINGULAR, STRING,   ssid,              7) \
-X(a, STATIC,   SINGULAR, STRING,   pass,              8) \
-X(a, STATIC,   SINGULAR, STRING,   ip_addr,           9) \
-X(a, STATIC,   SINGULAR, STRING,   gateway_addr,     10) \
-X(a, STATIC,   SINGULAR, STRING,   subnet_addr,      11) \
-X(a, STATIC,   SINGULAR, STRING,   dhcp_range_lo,    12) \
-X(a, STATIC,   SINGULAR, STRING,   dhcp_range_hi,    13) \
-X(a, STATIC,   SINGULAR, STRING,   multicast_addr,   14) \
-X(a, STATIC,   SINGULAR, STRING,   local_port,       15) \
-X(a, STATIC,   SINGULAR, STRING,   remote_port,      16)
+X(a, STATIC,   SINGULAR, BOOL,     exists,            1) \
+X(a, STATIC,   SINGULAR, BOOL,     isBT,              2) \
+X(a, STATIC,   SINGULAR, BOOL,     isAP,              3) \
+X(a, STATIC,   SINGULAR, STRING,   ser_name,          4) \
+X(a, STATIC,   SINGULAR, STRING,   bt_name,           5) \
+X(a, STATIC,   SINGULAR, STRING,   bt_pin,            6) \
+X(a, STATIC,   SINGULAR, STRING,   wifi_chan,         7) \
+X(a, STATIC,   SINGULAR, STRING,   ssid,              8) \
+X(a, STATIC,   SINGULAR, STRING,   pass,              9) \
+X(a, STATIC,   SINGULAR, STRING,   ip_addr,          10) \
+X(a, STATIC,   SINGULAR, STRING,   gateway_addr,     11) \
+X(a, STATIC,   SINGULAR, STRING,   subnet_addr,      12) \
+X(a, STATIC,   SINGULAR, STRING,   dhcp_range_lo,    13) \
+X(a, STATIC,   SINGULAR, STRING,   dhcp_range_hi,    14) \
+X(a, STATIC,   SINGULAR, STRING,   multicast_addr,   15) \
+X(a, STATIC,   SINGULAR, STRING,   local_port,       16) \
+X(a, STATIC,   SINGULAR, STRING,   remote_port,      17)
 #define ESP32CfgSubMsg_CALLBACK NULL
 #define ESP32CfgSubMsg_DEFAULT NULL
 
@@ -926,7 +929,7 @@ extern const pb_msgdesc_t SigRptMsg_msg;
 #define FECCfg_size                              35
 #define RadioCfg_size                            226
 #define NetCfg_size                              298
-#define SysCfgMsg_size                           1536
+#define SysCfgMsg_size                           1542
 #define ClockSetMsg_size                         6
 #define StatusMsg_size                           72
 #define DbgMsg_size                              258
@@ -943,8 +946,8 @@ extern const pb_msgdesc_t SigRptMsg_msg;
 #define VoiceFrameMsg_size                       42
 #define UpdateMsg_size                           4343
 #define IntParamsMsg_size                        44
-#define ESP32CfgSubMsg_size                      467
-#define ESP32CfgMsg_size                         940
+#define ESP32CfgSubMsg_size                      470
+#define ESP32CfgMsg_size                         946
 #define SetHWMsg_size                            42
 #define SigRptMsg_size                           22
 

@@ -44,12 +44,13 @@ TFEND = 0xDC.to_bytes(1, 'little')
 TFESC = 0xDD.to_bytes(1, 'little')
 SETHW = 0x06.to_bytes(1, 'little')
 DATAPKT = 0x00.to_bytes(1, 'little')
+QMPKT = 0x0A.to_bytes(1, 'little')
 EXITKISS = 0xFF.to_bytes(1, 'little')
 FRAME_MAX_SIZE = 8192
 def make_kiss_frame(frame):
     out_frame = bytearray()
     out_frame += FEND
-    out_frame += SETHW
+    out_frame += QMPKT
     for cur_byte in frame:
         cur_byte_arr = bytearray()
         cur_byte_arr.append(cur_byte)
@@ -86,7 +87,7 @@ def input_cb(ch, method, properties, body):
     global ser
     frame = bytearray()
     frame += FEND
-    frame += SETHW
+    frame += QMPKT
     for frame_byte in body_with_crc:
         if(frame_byte.to_bytes(1, 'little') == FEND):
             frame += FESC

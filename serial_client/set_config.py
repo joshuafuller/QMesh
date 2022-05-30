@@ -90,6 +90,44 @@ ser_msg.sys_cfg.net_cfg.invert_bits = cfg_dict['invert_bits']
 ser_msg.sys_cfg.net_cfg.voice_frames_per_frame = cfg_dict['voice_frames_per_frame']
 ser_msg.sys_cfg.net_cfg.codec2_bitrate = cfg_dict['codec2_bitrate']
 
+# ESP32 configuration
+ser_msg.esp_cfg_msg.esp0.exists = cfg_dict['esp0_exists'] 
+ser_msg.esp_cfg_msg.esp0.isBT = cfg_dict['esp0_isbt']
+ser_msg.esp_cfg_msg.esp0.isAP = cfg_dict['esp0_isap'] = 
+ser_msg.esp_cfg_msg.esp0.ser_name = cfg_dict['esp0_ser_name']
+ser_msg.esp_cfg_msg.esp0.bt_name = cfg_dict['esp0_bt_name']
+ser_msg.esp_cfg_msg.esp0.bt_pin = cfg_dict['esp0_bt_pin']
+ser_msg.esp_cfg_msg.esp0.wifi_chan = cfg_dict['esp0_wifi_chan']
+ser_msg.esp_cfg_msg.esp0.ssid = cfg_dict['esp0_ssid']
+ser_msg.esp_cfg_msg.esp0.pass = cfg_dict['esp0_pass']
+ser_msg.esp_cfg_msg.esp0.ip_addr = cfg_dict['esp0_ip_addr']
+ser_msg.esp_cfg_msg.esp0.gateway_addr = cfg_dict['esp0_gateway_addr']
+ser_msg.esp_cfg_msg.esp0.subnet_addr = cfg_dict['esp0_subnet_addr']
+ser_msg.esp_cfg_msg.esp0.dhcp_range_lo = cfg_dict['esp0_dhcp_range_lo']
+ser_msg.esp_cfg_msg.esp0.dhcp_range_hi = cfg_dict['esp0_dhcp_range_hi']
+ser_msg.esp_cfg_msg.esp0.multicast_addr = cfg_dict['esp0_multicast_addr']
+ser_msg.esp_cfg_msg.esp0.local_port = cfg_dict['esp0_local_port']
+ser_msg.esp_cfg_msg.esp0.remote_port = cfg_dict['esp0_remote_port']
+
+ser_msg.esp_cfg_msg.esp1.exists = cfg_dict['esp1_exists']
+ser_msg.esp_cfg_msg.esp1.isBT = cfg_dict['esp1_isbt']
+ser_msg.esp_cfg_msg.esp1.isAP = cfg_dict['esp1_isap']
+ser_msg.esp_cfg_msg.esp1.ser_name = cfg_dict['esp1_ser_name']
+ser_msg.esp_cfg_msg.esp1.bt_name = cfg_dict['esp1_bt_name']
+ser_msg.esp_cfg_msg.esp1.bt_pin = cfg_dict['esp1_bt_pin']
+ser_msg.esp_cfg_msg.esp1.wifi_chan = cfg_dict['esp1_wifi_chan']
+ser_msg.esp_cfg_msg.esp1.ssid = cfg_dict['esp1_ssid']
+ser_msg.esp_cfg_msg.esp1.pass = cfg_dict['esp1_pass']
+ser_msg.esp_cfg_msg.esp1.ip_addr = cfg_dict['esp1_ip_addr']
+ser_msg.esp_cfg_msg.esp1.gateway_addr = cfg_dict['esp1_gateway_addr']
+ser_msg.esp_cfg_msg.esp1.subnet_addr = cfg_dict['esp1_subnet_addr']
+ser_msg.esp_cfg_msg.esp1.dhcp_range_lo = cfg_dict['esp1_dhcp_range_lo']
+ser_msg.esp_cfg_msg.esp1.dhcp_range_hi = cfg_dict['esp1_dhcp_range_hi']
+ser_msg.esp_cfg_msg.esp1.multicast_addr = cfg_dict['esp1_multicast_addr']
+ser_msg.esp_cfg_msg.esp1.local_port = cfg_dict['esp1_local_port']
+ser_msg.esp_cfg_msg.esp1.remote_port = cfg_dict['esp1_remote_port']
+
+
 ser_msg.sys_cfg.valid = True
 
 qmesh_common.publish_msg(ser_msg)
