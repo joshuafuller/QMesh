@@ -200,8 +200,9 @@ static void write_default_cfg() {
 
     radio_cb.has_esp_cfg_msg = true;
     radio_cb.esp_cfg_msg.has_esp0 = true;
-    radio_cb.esp_cfg_msg.esp0.isBT = true;
-    radio_cb.esp_cfg_msg.esp0.isAP = false;
+    radio_cb.esp_cfg_msg.esp1.exists = true;
+    radio_cb.esp_cfg_msg.esp0.isBT = false;
+    radio_cb.esp_cfg_msg.esp0.isAP = true;
     static constexpr int ESP_CFG_STR_MAX_LEN = 32;
     strncpy(radio_cb.esp_cfg_msg.esp0.ser_name, "QMesh-Serial0", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.bt_name, "QMesh-BT0", ESP_CFG_STR_MAX_LEN);
@@ -218,6 +219,7 @@ static void write_default_cfg() {
     strncpy(radio_cb.esp_cfg_msg.esp0.remote_port, "1000", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.wifi_chan, "6", ESP_CFG_STR_MAX_LEN);
     radio_cb.esp_cfg_msg.has_esp1 = true;
+    radio_cb.esp_cfg_msg.esp1.exists = false;
     radio_cb.esp_cfg_msg.esp1.isBT = true;
     radio_cb.esp_cfg_msg.esp1.isAP = false;
     strncpy(radio_cb.esp_cfg_msg.esp1.ser_name, "QMesh-Serial1", ESP_CFG_STR_MAX_LEN);
