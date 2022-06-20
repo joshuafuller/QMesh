@@ -84,12 +84,10 @@ if __name__ == "__main__":
                 break
         if found_connect:
             break
-    
-    # Set up the serial passthrough
-    #ser.write("AT+CIPMODE=1\r\n")
-    #print(ser.readlines())
-    ser.write("AT+CIPSEND\r\n")
-    print(ser.readlines())
+
+    while(True):
+        lines_in = ser.readlines()
+        if len(lines_in) > 0 : print(lines_in)
     
     
 
