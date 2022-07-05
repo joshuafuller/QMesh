@@ -68,8 +68,15 @@ static constexpr uint8_t SETHW = 0x06;
 static constexpr uint8_t SIGRPT = 0x07;
 static constexpr uint8_t REBOOT = 0x08;
 static constexpr uint8_t DATAPKT = 0x00;
+static constexpr uint8_t VOICEPKT = 0x01;
+static constexpr uint8_t DEBUGPKT = 0x02;
 static constexpr uint8_t QMPKT = 0x0A;
 static constexpr uint8_t EXITKISS = 0xFF;
+static constexpr uint32_t LOWER_NIBBLE = 0x0FU;
+static constexpr uint32_t UPPER_NIBBLE = 0xF0U;
+static constexpr uint8_t PORT_DATA = 0x00U;
+static constexpr uint8_t PORT_VOICE = 0x01U;
+static constexpr uint8_t PORT_DEBUG = 0x02U;
 //static constexpr size_t MAX_MSG_SIZE = (SerialMsg_size+sizeof(crc_t))*2;
 
 static auto compare_frame_crc(const vector<uint8_t> &buf) -> bool;
@@ -90,8 +97,8 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
-            constexpr uint32_t LOWER_NIBBLE = 0x0F;
             uint32_t cur_byte_u32 = static_cast<uint32_t>(cur_byte) & LOWER_NIBBLE;
+            uint32_t port_num = (static_cast<uint32_t>(cur_byte) & UPPER_NIBBLE) >> 4U;
             if(cur_byte_u32 == SETHW) {
                 kiss_extended = false;
                 kiss_type = SETHW;
@@ -99,7 +106,16 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
             } 
             if(cur_byte_u32 == DATAPKT) {
                 kiss_extended = false;
-                kiss_type = DATAPKT;
+                if(port_num == PORT_DATA) {
+                    kiss_type = DATAPKT;
+                } else if(port_num == PORT_VOICE) {
+                    kiss_type = VOICEPKT;
+                } else if(port_num == PORT_DEBUG) {
+                    kiss_type = DEBUGPKT;
+                    kiss_extended = true;
+                } else {
+                    PORTABLE_ASSERT(false);
+                }
                 break;
             } 
             if(cur_byte_u32 == QMPKT) {
@@ -414,7 +430,6 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
 }
 
 
-static constexpr uint32_t SER_BAUD_RATE = 230400;
 static constexpr uint32_t BT_BAUD_RATE = 115200;
 KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName rst, ESP32CfgSubMsg &my_cfg, 
     const ser_port_type_t ser_port_type) :
@@ -531,9 +546,6 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts,
 }
 
 
-static constexpr int QUARTER_SECOND = 250;
-static constexpr int HALF_SECOND = 500;
-static constexpr int ONE_SECOND = 1000;
 static constexpr int BT_NAME_MAX_LEN = 8;
 void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
     // Set the UART values in the ESP32
@@ -595,8 +607,6 @@ void KISSSerialUART::configure_esp32_bt() {
 }
 
 
-static constexpr int SSID_MAX_LEN = 8;
-static constexpr int PASS_MAX_LEN = 32;
 void KISSSerialUART::configure_esp32_wifi() {
     PORTABLE_ASSERT(string(cfg.ssid).size() <= SSID_MAX_LEN);
     PORTABLE_ASSERT(string(cfg.pass).size() <= PASS_MAX_LEN);
@@ -750,7 +760,7 @@ void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
             }
         }
         if(ser_msg_sptr->data_msg().voice && 
-            (port_type == DEBUG_PORT || port_type == VOICE_PORT || port_type == APRS_PORT)) {
+            (port_type == DEBUG_PORT || port_type == VOICE_PORT || port_type == DATA_PORT)) {
             tx_ser_queue.enqueue_mail(ser_msg_sptr);  
         } else {
             PORTABLE_ASSERT(false);

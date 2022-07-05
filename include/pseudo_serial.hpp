@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TEST_FEC
 #include "os_portability.hpp"
 #endif /* TEST_FEC */
+#include <map>
 #include <vector>
 #include <string>
 #include <utility>
@@ -29,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <deque>
 #include <memory>
 #include <atomic>
+#include "qmesh.pb.h"
+#include "platform\ATCmdParser.h"
 
 
 class PseudoSerial {
@@ -77,84 +80,55 @@ public:
     }
 };
 
+class ESP32Manager;
 
-class ESP32WiFiPseudoSerial : public PseudoSerial {
+using ser_port_type_t = enum ser_port_type_enum {
+    DATA_PORT = 0, // both types of traffic
+    VOICE_PORT, // voice/streaming only
+    DEBUG_PORT   // data/telemetry only  
+};
+
+class ESP32PseudoSerial : public PseudoSerial {
 private:
     static constexpr int RX_BUF_SIZE = 128;
     static constexpr int MAX_NUM_CMDS = 16;
     static constexpr uint8_t KISS_FEND = 0xC0;
+    ser_port_type_t port_type;
     FILE *f_rd, *f_wr;
     vector<uint8_t> outbuf;
     Thread *rx_thread;
     Mail<char, RX_BUF_SIZE> *rx_data;
-    using BT_CMDS = enum { BT_NULL, BT_SEND_RDY };
-    Mail<BT_CMDS, MAX_NUM_CMDS> *bt_cmds;
-    atomic<bool> in_passthrough;
-    atomic<bool> bt_connected;
+    shared_ptr<ESP32Manager> esp32_manager;
 
     /// Parses the incoming characters and puts them into data 
     /// and command buffers
     void parser_thread_fn() {
-
     }
 
 public:
 
-    ~ESP32WiFiPseudoSerial() {
+    ~ESP32PseudoSerial() {
         rx_thread->join();
         delete rx_thread;
         fclose(f_rd);
         fclose(f_wr);
     }
 
-    ESP32WiFiPseudoSerial(const ESP32WiFiPseudoSerial &obj) = delete;
-    auto operator= (ESP32WiFiPseudoSerial &&) -> ESP32WiFiPseudoSerial & = delete;
-    ESP32WiFiPseudoSerial(ESP32WiFiPseudoSerial &&) = delete;
-    auto operator=(const ESP32WiFiPseudoSerial &) -> ESP32WiFiPseudoSerial & = delete; 	
+    ESP32PseudoSerial(const ESP32PseudoSerial &obj) = delete;
+    auto operator= (ESP32PseudoSerial &&) -> ESP32PseudoSerial & = delete;
+    ESP32PseudoSerial(ESP32PseudoSerial &&) = delete;
+    auto operator=(const ESP32PseudoSerial &) -> ESP32PseudoSerial & = delete; 	
 
-
-    auto putc(const int val) -> int override {
-        outbuf.push_back(val);
-        if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
-            // Put us into passthrough mode
-            if(!bt_connected) {
-                outbuf.clear();
-            }
-            while(!in_passthrough && bt_connected) {
-                if(fprintf(f_wr, "AT+BTSPPSEND\r\n") == EOF) {
-                    return EOF;
-                }
-                osEvent evt = bt_cmds->get(osWaitForever);
-                BT_CMDS bt_cmd = BT_NULL;
-                if(evt.status == osEventMail) {
-                    auto *val = static_cast<BT_CMDS *>(evt.value.p);
-                    bt_cmd = *val;
-                }  
-                if(bt_cmd == BT_SEND_RDY) {
-                    in_passthrough = true;
-                } else {
-                    return EOF;
-                }
-            }
-            for(uint8_t & it : outbuf) {
-                if(fputc(it, f_wr) == EOF) {
-                    outbuf.clear();
-                    return EOF;
-                }
-            }
-            outbuf.clear();
+    void recv_msg(const shared_ptr<vector<uint8_t>>& recv_data) {
+        for(unsigned char & it : *recv_data) {
+            char *val = rx_data->alloc(osWaitForever);
+            *val = it;
+            PORTABLE_ASSERT(rx_data->put(val) == osOK);
         }
-        return fputc(val, f_wr);
     }
 
-    auto getc() -> int override {
-        osEvent evt = rx_data->get(osWaitForever);
-        if(evt.status == osEventMail) {
-            char *val = static_cast<char *>(evt.value.p);
-            return *val;
-        }  
-        return EOF;
-    }
+    auto putc(int val) -> int override;
+    auto getc() -> int override;
 };
 
 
@@ -174,13 +148,6 @@ public:
      auto getc() -> int override {
         return fgetc(f_rd);
     }
-};
-
-
-using ser_port_type_t = enum ser_port_type_enum {
-    DEBUG_PORT, // both types of traffic
-    VOICE_PORT, // voice/streaming only
-    APRS_PORT   // data/telemetry only  
 };
 
 
@@ -267,5 +234,59 @@ public:
     }
 };
 #endif /* MBED_CONF_APP_HAS_BLE == 1 */
+
+// ESP32 pseudo-serial
+// What does this need to do?
+//  It needs to:
+//    0. Reset the ESP32 on startup
+//    1. Properly set up the ESP32 to be able to accept TCP connections
+//    2. Accept TCP connections
+//    3. Accept multiple TCP connections
+//    4. Distribute out KISS data to the different clients
+//    5. Eventually, be able to use a magic byte on Codec 2 Walkie-Talkie to distinguish between voice and data
+//    6. Ignore certain classes of OOB data, like the +DIST_STA_IP strings
+//    7. +IPD,<connection>,<data size> is the received data
+//    8. <connection>,CLOSED is the TCP/IP socket closing
+//    9. <connection>,CONNECT is the TCP/IP socket opening 
+//   10. Use different KISS TNC ports for different types of data (debug, voice, data)
+//   11. Have multiple ESP32 pseudo serial ports created (debug, voice, data). Each one operates on the same ESP32 object.
+
+/// Manages the possibly-multiple connections of an ESP32
+static constexpr uint32_t SER_BAUD_RATE = 230400;
+static constexpr int SSID_MAX_LEN = 8;
+static constexpr int PASS_MAX_LEN = 32;
+static constexpr int QUARTER_SECOND = 250;
+static constexpr int HALF_SECOND = 500;
+static constexpr int ONE_SECOND = 1000;
+
+
+class ESP32Manager {
+private:
+    ESP32CfgSubMsg cfg;
+    PinName tx_port, rx_port, cts_port, rts_port;
+    DigitalInOut esp32_rst;
+    shared_ptr<UARTSerial> ser;
+    portability::mutex ser_mtx;
+    shared_ptr<ESP32PseudoSerial> ps_voice, ps_data, ps_debug;
+    map<int, ser_port_type_t> ports;
+    shared_ptr<ATCmdParser> at_parser;
+    bool at_was_ok, at_was_err;
+    void startTCPServer() {}
+    void set_uart_flow_ctl() {
+        // We will assume that the ESP32 is already set up properly here
+        // Set the UART values on the ST board
+    }
+    void process_recv_data(const shared_ptr<vector<uint8_t>>& recv_data, int32_t conn_num);
+    /// This method accepts incoming data from the ESP32 and decides what
+    ///  to do with it
+    void oob_recv_data();
+    void recv_data();
+
+public:
+    /// This method distributes outgoing data
+    void send_data(ser_port_type_t port_type, vector<uint8_t> &data);
+    ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, ESP32CfgSubMsg &my_cfg);
+};
+
 
 #endif /* PSEUDO_SERIAL_HPP */

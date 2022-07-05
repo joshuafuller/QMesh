@@ -30,9 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ble_serial.hpp"
 
 static constexpr int TENTH_SECOND = 100; //NOLINT
-static constexpr int QUARTER_SECOND = 250;
-static constexpr int HALF_SECOND = 500;
-static constexpr int ONE_SECOND = 1000;
 static constexpr int TWO_SECONDS = 2000;
 static constexpr int FIVE_SECONDS = 5000;
 static constexpr int I2C_FREQ = 400000;

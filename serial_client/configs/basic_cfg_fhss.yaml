@@ -37,8 +37,8 @@ voice_frames_per_frame: 4
 codec2_bitrate: 700
 # Settings for the ESP32 modules
 esp0_exists: true
-esp0_isbt: true
-esp0_isap: false
+esp0_isbt: false
+esp0_isap: true
 esp0_ser_name: bt0
 esp0_bt_name: QMesh-BT0
 esp0_bt_pin: 0000
