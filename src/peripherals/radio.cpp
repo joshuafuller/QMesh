@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -112,8 +112,6 @@ static auto compute_fhss_preamble() -> uint32_t {
 
 // Included from lora_radio_helper.h is a radio object for our radio.
 // Let's set it up.
-static constexpr int QUARTER_SECOND = 250;
-static constexpr int ONE_SECOND = 1000;
 void init_radio() {
     PORTABLE_ASSERT(radio_cb.valid);
     // Initialize Radio driver

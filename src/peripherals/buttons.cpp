@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2020 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,8 +33,6 @@ extern portability::Thread *btn_evt_thread;
 extern shared_ptr<Adafruit_SSD1306_I2c> oled;
 //extern UARTSerial gps_serial;
 
-//static constexpr int HALF_SECOND = 500;
-static constexpr int ONE_SECOND = 1000;
 
 void button_thread_fn();
 void button_fn() {

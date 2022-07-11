@@ -94,7 +94,6 @@ static correct_convolutional_polynomial_t conv_r13_6_polynomial[] = {053, 075, 0
 static correct_convolutional_polynomial_t conv_r13_7_polynomial[] = {0137, 0153, 0121}; //NOLINT
 static correct_convolutional_polynomial_t conv_r13_8_polynomial[] = {0333, 0257, 0351}; //NOLINT  
 
-constexpr int ONE_SECOND = 1000;
 constexpr int ORDER_6 = 6;
 constexpr int ORDER_7 = 7;
 constexpr int ORDER_8 = 8;

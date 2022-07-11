@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 #include <atomic>
 #include "qmesh.pb.h"
-#include "platform\ATCmdParser.h"
+#include "platform/ATCmdParser.h"
 
 
 class PseudoSerial {

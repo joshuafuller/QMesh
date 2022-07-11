@@ -1,3 +1,21 @@
+/*
+QMesh
+Copyright (C) 2022 Daniel R. Fay
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "mbed.h"
 #include "pseudo_serial.hpp"
 #include <vector>
@@ -69,7 +87,7 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
     cts_port(cts),
     rts_port(rts),
     esp32_rst(DigitalInOut(rst)),
-    ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+    ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
     ps_voice(nullptr),
     ps_data(nullptr),
     ps_debug(nullptr),
@@ -91,7 +109,7 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
     FILE *ser_fh = fdopen(&*ser, "rw");
     PORTABLE_ASSERT(ser_fh != nullptr);
     // Start the AT command parser
-    at_parser = make_shared<ATCmdParser>(ser);
+    at_parser = make_shared<ATCmdParser>(&*ser);
     at_parser->debug_on(1);
     at_parser->set_delimiter("\r\n");
 

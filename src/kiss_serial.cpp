@@ -185,6 +185,12 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
             ser_msg.data_msg().type = DataMsg_Type_KISSTX;
             ser_msg.data_msg().payload.size = buf.size();
             memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());
+        } else if(kiss_type == VOICEPKT) {
+            ser_msg.clear();
+            ser_msg.type(SerialMsg_Type_VOICE_MSG);
+            ser_msg.data_msg().type = DataMsg_Type_KISSTX;
+            ser_msg.data_msg().payload.size = buf.size();
+            memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());            
         } else if(kiss_type == SETHW) {
             ser_msg.clear();
             ser_msg.type(SerialMsg_Type_SETHW);
@@ -297,7 +303,18 @@ auto save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_data_msg) ->
             if(ps.putc(QMPKT) == EOF) { return WRITE_SER_MSG_ERR; }
         }
     } else {
-        if(ps.putc(DATAPKT) == EOF) { return WRITE_SER_MSG_ERR; }  
+        enum kiss_port_type {
+            DATA, 
+            VOICE,
+            NONE
+        };
+        if(ser_msg.type() == SerialMsg_Type_DATA) {
+            if(ps.putc(DATAPKT | (static_cast<uint32_t>(DATA) << 4U)) == EOF) { return WRITE_SER_MSG_ERR; }  
+        } else if(ser_msg.type() == SerialMsg_Type_VOICE_MSG) {
+            if(ps.putc(DATAPKT | (static_cast<uint32_t>(VOICE) << 4U)) == EOF) { return WRITE_SER_MSG_ERR; }  
+        } else {    
+            PORTABLE_ASSERT(false);
+        }
     }
     for(uint8_t i : comb_buf) {
         if(i == FEND) {
@@ -759,8 +776,8 @@ void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
                 out_ser_msg->data_msg().type = DataMsg_Type_KISSRX;
             }
         }
-        if(ser_msg_sptr->data_msg().voice && 
-            (port_type == DEBUG_PORT || port_type == VOICE_PORT || port_type == DATA_PORT)) {
+        if(((ser_msg_sptr->data_msg().voice && (port_type == DEBUG_PORT || port_type == VOICE_PORT))) || 
+            (!ser_msg_sptr->data_msg().voice && (port_type == DEBUG_PORT || port_type == DATA_PORT))) {
             tx_ser_queue.enqueue_mail(ser_msg_sptr);  
         } else {
             PORTABLE_ASSERT(false);
@@ -773,21 +790,38 @@ void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
 
 auto KISSSerial::load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
     size_t byte_read_count = 0;
+    enum {
+        DATA, 
+        VOICE,
+        DEBUG,
+        NONE
+    } kiss_port_type = NONE;
     // Get past the first delimiter(s)
     for(;;) {
-        int cur_byte = ps.getc();
+        auto cur_byte = static_cast<uint32_t>(ps.getc());
         if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         while(cur_byte == FEND) {
             cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
         if(cur_byte != FEND) {
-            if(cur_byte == SETHW) {
-                kissExtended(true);
+            if((cur_byte & LOWER_NIBBLE) == SETHW) {
+                kissExtended(false);
                 break;
             } 
-            if(cur_byte == DATAPKT) {
-                kissExtended(false);
+            if((cur_byte & LOWER_NIBBLE) == DATAPKT) {
+                uint32_t kiss_port = ((cur_byte & UPPER_NIBBLE) >> 4U);
+                if(kiss_port == DATA) {
+                    kiss_port_type = DATA;
+                    kissExtended(false);
+                } else if(kiss_port == VOICE) {
+                    kiss_port_type = VOICE;
+                    kissExtended(false);
+                } else if(kiss_port == DEBUG) {
+                    kissExtended(true);
+                } else {
+                    PORTABLE_ASSERT(false);
+                }
                 break;
             } 
             if(cur_byte == EXITKISS) {
@@ -833,8 +867,15 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_
         }
     } else {
         ser_msg.clear();
-        ser_msg.type(SerialMsg_Type_DATA);
-        ser_msg.data_msg().type = DataMsg_Type_KISSTX;
+        if(kiss_port_type == DATA) {
+            ser_msg.type(SerialMsg_Type_DATA);
+            ser_msg.data_msg().type = DataMsg_Type_KISSTX;
+        } else if(kiss_port_type == VOICE) {
+            ser_msg.type(SerialMsg_Type_VOICE_MSG);
+            ser_msg.data_msg().type = DataMsg_Type_KISSTX;            
+        } else {
+            PORTABLE_ASSERT(false);
+        }
         ser_msg.data_msg().payload.size = buf.size();
         memcpy(ser_msg.data_msg().payload.bytes, buf.data(), buf.size());
     }
