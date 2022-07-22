@@ -113,7 +113,7 @@ public:
         return &pser_wr;
     }
 
-    void enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr);
+    void enqueue_msg(const shared_ptr<SerMsg> &ser_msg_sptr);
     virtual void sleep() = 0;
     virtual void wake() = 0;
 };

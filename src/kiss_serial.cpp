@@ -580,6 +580,9 @@ void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
 
 
 void KISSSerialUART::configure_esp32_bt() {
+    // We're not really supporting BT at this time
+    PORTABLE_ASSERT(false);
+
     PORTABLE_ASSERT(string(cfg.bt_name).size() <= BT_NAME_MAX_LEN);
     // Reset the ESP32 board
     esp32_rst.mode(OpenDrain);
@@ -652,7 +655,7 @@ void KISSSerialUART::configure_esp32_wifi() {
         wifi_softap_cmd.append(",");
         wifi_softap_cmd.append(cfg.pass);
         wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append(cfg.wifi_chan); // Just use Channel 6 for now
+        wifi_softap_cmd.append(cfg.wifi_chan);
         wifi_softap_cmd.append(",");
         wifi_softap_cmd.append("0"); // Open; no encryption
         wifi_softap_cmd.append(",");
@@ -763,7 +766,7 @@ KISSSerialUART::~KISSSerialUART() {
 }
 
 
-void KISSSerial::enqueue_msg(shared_ptr<SerMsg> ser_msg_sptr) { //NOLINT
+void KISSSerial::enqueue_msg(const shared_ptr<SerMsg> &ser_msg_sptr) { 
     if(ser_msg_sptr->type() == SerialMsg_Type_DATA) {
         PORTABLE_ASSERT(ser_msg_sptr->has_data_msg());
         auto out_ser_msg = make_shared<SerMsg>();

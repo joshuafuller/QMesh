@@ -61,7 +61,7 @@ void ESP32Manager::send_data(const ser_port_type_t port_type, vector<uint8_t> &d
         if(port.second == port_type) {
             at_parser->send("AT+CIPSEND=%d,%d\r\n", port.first, data.size());
             PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>"));
-            at_parser->write((char *)(data.data()), data.size()); 
+            at_parser->write((char *)(data.data()), data.size()); //NOLINT
             size_t sent_bytes = 0;
             PORTABLE_ASSERT(at_parser->recv("Recv %d bytes\r\n", &sent_bytes));
             PORTABLE_ASSERT(sent_bytes == data.size());
@@ -75,7 +75,8 @@ void ESP32Manager::send_data(const ser_port_type_t port_type, vector<uint8_t> &d
 void ESP32Manager::recv_data() {
     while(true) {
         // Dummy scanf designed to trigger the OOB receiver
-        at_parser->recv("%s");
+        char dummy_char = '\0';
+        at_parser->recv("%c", &dummy_char);
     }
 }
 

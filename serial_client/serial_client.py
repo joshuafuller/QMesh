@@ -44,7 +44,8 @@ TFEND = 0xDC.to_bytes(1, 'little')
 TFESC = 0xDD.to_bytes(1, 'little')
 SETHW = 0x06.to_bytes(1, 'little')
 DATAPKT = 0x00.to_bytes(1, 'little')
-QMPKT = 0x0A.to_bytes(1, 'little')
+#QMPKT = 0x0A.to_bytes(1, 'little')
+QMPKT = 0x20.to_bytes(1, 'little')
 EXITKISS = 0xFF.to_bytes(1, 'little')
 FRAME_MAX_SIZE = 8192
 def make_kiss_frame(frame):
