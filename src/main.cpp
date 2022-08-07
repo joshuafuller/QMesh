@@ -70,19 +70,30 @@ static void setup_uarts() {
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_DEBUG_UART_TX
     portability::sleep(HALF_SECOND);
+#if 0
     auto *debug_ser = new KISSSerialUART(MBED_CONF_APP_DEBUG_UART_TX, MBED_CONF_APP_DEBUG_UART_RX, 
                                 MBED_CONF_APP_DEBUG_UART_CTS, MBED_CONF_APP_DEBUG_UART_RTS,
                                 DEBUG_PORT);
+#else
+    auto *debug_ser = new KISSSerialUART(MBED_CONF_APP_DEBUG_UART_TX, MBED_CONF_APP_DEBUG_UART_RX, 
+                                DEBUG_PORT);
+#endif
     PORTABLE_ASSERT(debug_ser);
 #endif /* MBED_CONF_APP_DEBUG_UART_TX */
 
+#if 0
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_0
     if(radio_cb.esp_cfg_msg.esp0.exists) {
         portability::sleep(HALF_SECOND);
         PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp0);
+#if 0
         auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
                         KISS_UART_RST_ESP32_0, KISS_UART_CTS_ESP32_0, KISS_UART_RTS_ESP32_0, 
                         radio_cb.esp_cfg_msg.esp0, DEBUG_PORT);
+#else
+        auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
+                        KISS_UART_RST_ESP32_0, radio_cb.esp_cfg_msg.esp0, DEBUG_PORT);
+#endif
         PORTABLE_ASSERT(esp32_0_ser);
     }
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_0 */
@@ -97,6 +108,7 @@ static void setup_uarts() {
         PORTABLE_ASSERT(esp32_1_ser);
     }
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */
+#endif
 }
 
 time_t boot_timestamp;
