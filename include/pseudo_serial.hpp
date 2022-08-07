@@ -70,12 +70,12 @@ public:
     }
 
     auto putc(const int val) -> int override {
-        //PORTABLE_ASSERT(f_wr != nullptr);
+        PORTABLE_ASSERT(f_wr != nullptr);
         return fputc(val, f_wr);
     }
 
     auto getc() -> int override {
-        //PORTABLE_ASSERT(f_rd != nullptr);
+        PORTABLE_ASSERT(f_rd != nullptr);
         return fgetc(f_rd);
     }
 };
