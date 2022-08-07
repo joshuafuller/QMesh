@@ -554,6 +554,7 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts,
 
 static constexpr int BT_NAME_MAX_LEN = 8;
 void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
+    PORTABLE_ASSERT(false);
     // Set the UART values in the ESP32
     string flow_ctl_cmd("AT+UART_CUR=");
     constexpr int STR_SIZE = 32;
