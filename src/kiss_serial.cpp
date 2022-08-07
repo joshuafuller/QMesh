@@ -26,22 +26,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <atomic>
 #include <cstdio>
-#include "mbedtls/platform.h"
-#include "mbedtls/base64.h"
 #include "mesh_protocol.hpp"
 #include "qmesh.pb.h"
 #include "pb_common.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
-#include "serial_msg.hpp"
 #include <cstring>
-#include "USBSerial.h"
 #include "sha256.h"
 #include "pseudo_serial.hpp"
 #include "serial_data.hpp"
-#include "voice_msg.hpp"
 #include "peripherals.hpp"
-#include "Adafruit_SSD1306.h"
 #include "mem_trace.hpp"
 
 extern portability::EventQueue *background_queue;

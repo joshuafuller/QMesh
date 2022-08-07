@@ -358,57 +358,49 @@ void load_settings_from_flash() {
     PORTABLE_ASSERT(radio_cb.net_cfg.pld_len <= MAX_PLD_LEN);
     PORTABLE_ASSERT(radio_cb.net_cfg.pld_len >= 1);
 
-    PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.ser_name).empty());
+    PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.ser_name).empty());
     if(radio_cb.esp_cfg_msg.esp0.isBT) {
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.bt_name).empty());
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.bt_pin).empty());
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.bt_name).empty());
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.bt_pin).empty());
         PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.bt_pin).size() <= 8); 
     } else {
         struct in_addr inp{};
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.ip_addr, &inp) == 1); 
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.gateway_addr, &inp) == 1); 
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.subnet_addr, &inp) == 1); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.ip_addr, &inp) != 0); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.gateway_addr, &inp) != 0); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.subnet_addr, &inp) != 0); 
         if(radio_cb.esp_cfg_msg.esp0.isAP) {
-            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_lo, &inp) == 1); 
-            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_hi, &inp) == 1); 
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_lo, &inp) != 0); 
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_hi, &inp) != 0); 
         }
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.ssid).empty());    
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp0.pass).empty());
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.multicast_addr, &inp) == 1); 
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.ssid).empty());    
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.pass).empty());
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.multicast_addr, &inp) != 0); 
         string test_port_addr0(radio_cb.esp_cfg_msg.esp0.multicast_addr);
-        test_port_addr0.append(":");
-        test_port_addr0.append(radio_cb.esp_cfg_msg.esp0.remote_port);
-        PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) == 1); 
+        PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) != 0); 
         string test_port_addr1(radio_cb.esp_cfg_msg.esp0.multicast_addr);
-        test_port_addr1.append(":");
-        test_port_addr1.append(radio_cb.esp_cfg_msg.esp0.local_port);
-        PORTABLE_ASSERT(inet_aton(test_port_addr1.c_str(), &inp) == 1); 
+        PORTABLE_ASSERT(inet_aton(test_port_addr1.c_str(), &inp) != 0); 
     }
-    PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.ser_name).empty());
+    PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.ser_name).empty());
     if(radio_cb.esp_cfg_msg.esp1.isBT) {
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.bt_name).empty());
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.bt_pin).empty());
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.bt_name).empty());
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.bt_pin).empty());
         PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.bt_pin).size() <= 8); 
     } else {
         struct in_addr inp{};
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.ip_addr, &inp) == 1); 
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.gateway_addr, &inp) == 1);
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.subnet_addr, &inp) == 1);
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.ip_addr, &inp) != 0); 
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.gateway_addr, &inp) != 0);
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.subnet_addr, &inp) != 0);
         if(radio_cb.esp_cfg_msg.esp0.isAP) {
-            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_lo, &inp) == 1);
-            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_hi, &inp) == 1);
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_lo, &inp) != 0);
+            PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_hi, &inp) != 0);
         }
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.ssid).empty());    
-        PORTABLE_ASSERT(string(radio_cb.esp_cfg_msg.esp1.pass).empty());
-        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.multicast_addr, &inp) == 1);
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.ssid).empty());    
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.pass).empty());
+        PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.multicast_addr, &inp) != 0);
         string test_port_addr0(radio_cb.esp_cfg_msg.esp1.multicast_addr);
-        test_port_addr0.append(":");
-        test_port_addr0.append(radio_cb.esp_cfg_msg.esp1.remote_port);
-        PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) == 1);
+        PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) != 0);
         string test_port_addr1(radio_cb.esp_cfg_msg.esp1.multicast_addr);
-        test_port_addr1.append(":");
-        test_port_addr1.append(radio_cb.esp_cfg_msg.esp1.local_port);
-        PORTABLE_ASSERT(inet_aton(test_port_addr1.c_str(), &inp) == 1);   
+        PORTABLE_ASSERT(inet_aton(test_port_addr1.c_str(), &inp) != 0);   
     }
 
     radio_cb.valid = true;
