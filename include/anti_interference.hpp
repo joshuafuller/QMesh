@@ -20,20 +20,21 @@ class AntiInterference {
 private:
     std::pair<int32_t, int32_t> freq_range{-1, -1};
     int num_timing_offsets;
-    int cur_seed;
+    int cur_seed; //NOLINT
     int max_pwr_diff;
     int num_channels;
     uint8_t ttl;
     static constexpr int SEQUENCE_LEN = 32;
 public:
     AntiInterference(const std::pair<int32_t, int32_t> my_freq_range, const int my_num_timing_offsets,
-                        const int my_cur_seed, const int my_max_pwr_diff, const int my_num_channels) {
-        freq_range = my_freq_range;
-        num_timing_offsets = my_num_timing_offsets;
-        cur_seed = my_cur_seed;
-        max_pwr_diff = my_max_pwr_diff;
-        num_channels = my_num_channels;
-        ttl = 0;
+                        const int my_cur_seed, const int my_max_pwr_diff, const int my_num_channels) :
+        freq_range(my_freq_range),
+        num_timing_offsets(my_num_timing_offsets),
+        cur_seed(my_cur_seed),
+        max_pwr_diff(my_max_pwr_diff),
+        num_channels(my_num_channels), 
+        ttl(0) 
+    {
         PORTABLE_ASSERT(freq_range.first < freq_range.second);
         PORTABLE_ASSERT(abs(freq_range.first-freq_range.second) > 0);
     }

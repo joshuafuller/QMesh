@@ -1,5 +1,6 @@
 #include "anti_interference.hpp"
 #include <cstdio>
+#include <iterator>
 
 AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> freq_range, //NOLINT
                             const int num_timing_offsets,
@@ -35,13 +36,10 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
     for(uint32_t i = 0; i < walsh_iters; i++) {
         vector<bool> walsh_code_tmp = walsh_code;
         if(((cur_seed_u32 >> i) & 0x1U) == 0) {
-            for(bool && it : walsh_code_tmp) {
-                walsh_code.push_back(it);
-            }
+            copy(walsh_code_tmp.begin(), walsh_code_tmp.end(), back_inserter(walsh_code));
         } else {
-            for(bool && it : walsh_code_tmp) {
-                walsh_code.push_back(!it);
-            }
+            transform(walsh_code_tmp.begin(), walsh_code_tmp.end(), back_inserter(walsh_code),
+                        [](bool b) { return !b; });
         }
     }
     PORTABLE_ASSERT(walsh_code.size() == static_cast<size_t>(BITS_PER_ELEM*seqLen()));
@@ -71,9 +69,7 @@ void AntiInterferenceWalsh::load_field(list<bool> &slice, uint32_t &field, const
 auto AntiInterferenceWalsh::timingOffset() -> uint8_t {
     uint8_t ret_val = 0;
     ret_val = walsh_sequence[getTTL()].timing_off;
-    if(ret_val == 0) {
-        ret_val = 0;
-    } else if(ret_val > numTimingOffsets()-1) {
+    if(ret_val > numTimingOffsets()-1) {
         ret_val = numTimingOffsets()-1;
     }
     return ret_val;
