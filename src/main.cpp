@@ -262,7 +262,6 @@ auto main() -> int
     auto *disp_file = fopen("/fs/display.off", "re");
     if(disp_file == nullptr) {
         oled->displayOn();
-        fclose(disp_file);
     } else {
         oled->displayOff();
     }

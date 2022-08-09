@@ -163,7 +163,7 @@ auto setFramesBig(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
     frame.frame3b = 0;
     {
         uint64_t frame_tmp = 0;
-        PORTABLE_ASSERT(frames[0].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[0].size() <= sizeof(frame_tmp)*2);
         memcpy(&frame_tmp, frames[0].data(), frames[0].size()/2);
         frame.frame0a = frame_tmp;
         memcpy(&frame_tmp, frames[0].data()+frames[0].size()/2, frames[0].size()/2); //NOLINT
@@ -171,7 +171,7 @@ auto setFramesBig(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
     }
     if(frames.size() >= 1) { //NOLINT
         uint64_t frame_tmp = 0;
-        PORTABLE_ASSERT(frames[1].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[1].size() <= sizeof(frame_tmp)*2);
         memcpy(&frame_tmp, frames[1].data(), frames[1].size()/2);
         frame.frame1a = frame_tmp;
         memcpy(&frame_tmp, frames[1].data()+frames[1].size()/2, frames[1].size()/2); //NOLINT
@@ -179,7 +179,7 @@ auto setFramesBig(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
     }  //NOLINT
     if(frames.size() >= 2) { 
         uint64_t frame_tmp = 0;
-        PORTABLE_ASSERT(frames[2].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[2].size() <= sizeof(frame_tmp)*2);
         memcpy(&frame_tmp, frames[2].data(), frames[2].size()/2);
         frame.frame2a = frame_tmp;
         memcpy(&frame_tmp, frames[2].data()+frames[2].size()/2, frames[2].size()/2); //NOLINT
@@ -187,7 +187,7 @@ auto setFramesBig(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
     }
     if(frames.size() >= 3) {
         uint64_t frame_tmp = 0;
-        PORTABLE_ASSERT(frames[3].size() <= sizeof(frame_tmp*2));
+        PORTABLE_ASSERT(frames[3].size() <= sizeof(frame_tmp)*2);
         memcpy(&frame_tmp, frames[3].data(), frames[3].size()/2);
         frame.frame3a = frame_tmp;
         memcpy(&frame_tmp, frames[3].data()+frames[3].size()/2, frames[3].size()/2); //NOLINT

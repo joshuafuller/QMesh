@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <sstream>
 #include <exception>
+#include <utility>
 #include "qmesh.pb.h"
 #include "pb_common.h"
 #include "pb_encode.h"
@@ -60,9 +61,8 @@ class ParamException : public exception {
 private:
     string except_name;
 public:
-    explicit ParamException(const string &my_name) {
-        except_name = my_name;
-    }
+    explicit ParamException(string my_name) : 
+        except_name(std::move(my_name)) { }
      auto what() const noexcept -> const char* override {
         return except_name.c_str();
     }
@@ -306,7 +306,7 @@ void load_settings_from_flash() {
     PORTABLE_ASSERT(lora_bw == BW_125KHZ || lora_bw == BW_250KHZ || lora_bw == BW_500KHZ);
     debug_printf(DBG_INFO, "CR: %d\r\n", radio_cb.radio_cfg.lora_cfg.cr);
     uint32_t lora_cr = radio_cb.radio_cfg.lora_cfg.cr;
-    PORTABLE_ASSERT(lora_cr == 0 || lora_cr == 1 || lora_cr == 2 || lora_cr == 3 || lora_cr != 4);
+    PORTABLE_ASSERT(lora_cr == 0 || lora_cr == 1 || lora_cr == 2 || lora_cr == 3 || lora_cr == 4);
     uint32_t lora_sf = radio_cb.radio_cfg.lora_cfg.sf;
     constexpr uint32_t SF_5 = 5;
     constexpr uint32_t SF_6 = 6;

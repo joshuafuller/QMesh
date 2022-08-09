@@ -38,7 +38,7 @@ AntiInterferenceWalsh::AntiInterferenceWalsh(const std::pair<int32_t, int32_t> f
         if(((cur_seed_u32 >> i) & 0x1U) == 0) {
             copy(walsh_code_tmp.begin(), walsh_code_tmp.end(), back_inserter(walsh_code));
         } else {
-            transform(walsh_code_tmp.begin(), walsh_code_tmp.end(), back_inserter(walsh_code),
+            transform(walsh_code_tmp.cbegin(), walsh_code_tmp.cend(), back_inserter(walsh_code),
                         [](bool b) { return !b; });
         }
     }

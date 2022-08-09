@@ -152,9 +152,7 @@ auto Frame::serializeCodedInv(vector<uint8_t> &buf) -> size_t {
     ret_val = serializeCoded(buf);
     PORTABLE_ASSERT(!buf.empty());
     constexpr uint8_t ALL_ONES = 0xFF;
-    for(uint8_t & it : buf) {
-        it = it ^ ALL_ONES;
-    }
+    transform(buf.cbegin(), buf.cend(), buf.begin(), [](uint8_t c) { return c ^ ALL_ONES; });
     return ret_val;
 }
 
@@ -230,9 +228,7 @@ auto Frame::deserializeCodedInv(const shared_ptr<vector<uint8_t>> &buf) -> PKT_S
     auto buf_inv = make_shared<vector<uint8_t>>(*buf);
     // invert the encoded bits
     constexpr uint8_t ALL_ONES = 0xFF;
-    for(uint8_t & it : *buf_inv) {
-        it = it ^ ALL_ONES;
-    }
+    transform(buf_inv->cbegin(), buf_inv->cend(), buf_inv->begin(), [](uint8_t c) { return c ^ ALL_ONES; });
     return deserializeCoded(buf_inv);
 }
 
