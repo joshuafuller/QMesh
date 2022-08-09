@@ -48,10 +48,10 @@ void button_fn() {
         reboot_system();
     }
     else {
-        FILE *f = fopen("/fs/low_power.mode", "we");
-        if(f != nullptr) {
-            fprintf(f, "In low power mode\r\n");
-            fclose(f);
+        FILE *fw = fopen("/fs/low_power.mode", "we");
+        if(fw != nullptr) {
+            fprintf(fw, "In low power mode\r\n");
+            fclose(fw);
             mbed_file_handle(STDIN_FILENO)->enable_input(false);   
             //rx_serial_thread.terminate();
             //gps_serial.enable_input(false);
