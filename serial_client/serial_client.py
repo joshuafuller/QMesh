@@ -102,7 +102,10 @@ def input_cb(ch, method, properties, body):
     #for frame_byte in frame:
     #    print(hex(frame_byte))
     ser_mutex.acquire()
-    sock.send(bytearray(frame))
+    if sys.argv[2] == 'serial':
+        ser_write.write(bytearray(frame))
+    else:
+        sock.send(bytearray(frame))
     ser_mutex.release()
     last_frame = frame
 
@@ -131,7 +134,10 @@ def get_kiss_frame(ser):
     print("in kiss frame")
     while(True):
         #print("Reading byte")
-        my_byte = sock.recv(1)
+        if sys.argv[2] == 'serial':
+            my_byte = ser.read(1)
+        else:
+            my_byte = sock.recv(1)
         if(my_byte == FEND): 
             print("End delimiter found")
             break
@@ -140,7 +146,10 @@ def get_kiss_frame(ser):
     while(True):
         if(len(frame) > FRAME_MAX_SIZE): # If we get too big, we need to retry
             frame = bytearray()
-        cur_byte = sock.recv(1)
+        if sys.argv[2] == 'serial':
+            cur_byte = ser.read(1)
+        else:
+            cur_byte = sock.recv(1)
         #print("Read byte %s" % cur_byte)
         if(cur_byte == FEND): 
             # Try to deal with FEND bytes used for synchronization
@@ -149,10 +158,16 @@ def get_kiss_frame(ser):
                 yield bytearray(frame)
             frame = bytearray()
             # Need to receive the command code
-            cmd_byte = sock.recv(1)
+            if sys.argv[2] == 'serial':
+                cmd_byte = ser.read(1)
+            else:
+                cmd_byte = sock.recv(1)
             if(cmd_byte == FEND): continue
         elif(cur_byte == FESC):
-            next_byte = sock.recv(1)
+            if sys.argv[2] == 'serial':
+                next_byte = ser.read(1)
+            else:
+                next_byte = sock.recv(1)
             if(next_byte == TFEND):
                 frame += FEND 
             elif(next_byte == TFESC):
@@ -239,7 +254,10 @@ if __name__ == "__main__":
         try: 
             kiss_frame = make_kiss_exit_frame()
             ser_mutex.acquire()
-            sock.send(kiss_frame)
+            if sys.argv[2] == 'serial':
+                ser_write.write(kiss_frame)
+            else:
+                sock.send(kiss_frame)
             ser_mutex.release()
             time.sleep(1)
         except (KeyboardInterrupt, SystemExit):
@@ -256,7 +274,10 @@ if __name__ == "__main__":
             frame += crc_bytes
             frame += FEND
             ser_mutex.acquire()
-            sock.send(bytearray(frame))
+            if sys.argv[2] == 'serial':
+                ser_write.write(bytearray(frame))
+            else:
+                sock.send(bytearray(frame))
             ser_mutex.release()
             sys.exit(0)
 
