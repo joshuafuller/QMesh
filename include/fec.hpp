@@ -96,11 +96,10 @@ public:
     }
 
     /// Constructor.
-    explicit FEC(const int32_t my_msg_len) {
-        name = "Dummy FEC";
-        msg_len = my_msg_len;
-        enc_size = my_msg_len;
-    }
+    explicit FEC(const int32_t my_msg_len) :
+        name("Dummy FEC"),
+        msg_len(my_msg_len),
+        enc_size(my_msg_len) { }
 
     /// Constructor to facilitate unit testing.
     FEC(const int32_t my_msg_len, const int32_t  /*inv_rate*/, 
@@ -343,6 +342,8 @@ public:
     }
 
     auto operator= (FECRSV &&rhs) noexcept -> FECRSV & {
+        rs_con = rhs.rs_con;
+        rs_enc_msg_size = rhs.rs_enc_msg_size;
         rs_corr_bytes = rhs.rs_corr_bytes;
         return *this;
     }

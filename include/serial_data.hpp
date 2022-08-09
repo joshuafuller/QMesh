@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -187,11 +187,10 @@ public:
     * Constructor that loads a specific FEC.
     * @param my_fec shared_ptr to the FEC object.
     */
-    explicit Frame(const shared_ptr<FEC>& my_fec) {
-        pkt_status = PKT_UNITIALIZED;
-        fec = my_fec;
-        redundant = false;
-    }
+    explicit Frame(shared_ptr<FEC> my_fec) :
+        redundant(false),
+        pkt_status(PKT_UNITIALIZED),
+        fec(std::move(my_fec)) { }
 
     void serialize(vector<uint8_t> &ser_frame);
 

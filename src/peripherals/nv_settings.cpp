@@ -125,7 +125,7 @@ void init_filesystem() {
         err = fs->reformat(bd);
         debug_printf(DBG_WARN, "%s\r\n", (err != 0 ? "Fail :(" : "OK"));
         PORTABLE_ASSERT(!err);
-        int err = fs->mount(bd);
+        err = fs->mount(bd);
         PORTABLE_ASSERT(!err);
     }
 	// Display the root directory
@@ -514,6 +514,10 @@ void nv_log_fn() {
         int8_t snr = 0;
         log_frame->getRxStats(rssi, snr, rx_size);
         LogMsg log_msg;
+        log_msg.valid = true;
+        log_msg.count = 1;
+        log_msg.has_gps_msg = false;
+        log_msg.gps_msg = GPSMsg_init_zero;
 		time_t my_time = time(nullptr);
 		log_msg.timestamp = my_time;
         log_msg.sender = log_frame->getSender();

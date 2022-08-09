@@ -503,8 +503,8 @@ static auto handle_incoming_frag(const shared_ptr<DataMsg> &frag) -> shared_ptr<
         iter = frag_map.find(frag->stream_id);
         if(iter->second.tot_frames == iter->second.frags.size()) { // We got all the fragments
             vector<pair<uint8_t, shared_ptr<DataMsg>>> sort_frags;
-            for(auto & frag : iter->second.frags) {
-                sort_frags.emplace_back((*frag).kiss_cur_frame, frag); // DOES THIS EVEN WORK???
+            for(auto & my_frag : iter->second.frags) {
+                sort_frags.emplace_back((*my_frag).kiss_cur_frame, my_frag); // DOES THIS EVEN WORK???
             }
             sort(sort_frags.begin(), sort_frags.end());
             vector<uint8_t> frag_comb;

@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -351,7 +351,6 @@ void mesh_protocol_fsm() {
 }
 
 
-string beacon_msg;
 /**
  * Periodically queues up for transmission a beacon message.
  */

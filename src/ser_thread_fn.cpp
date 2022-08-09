@@ -97,11 +97,10 @@ void KISSSerial::rx_serial_thread_fn() {
 	bool reading_bootlog = false;
     past_log_msg.clear();
     auto ser_msg = make_shared<SerMsg>();
-    int err = 0;
     auto voice = make_shared<VoiceMsgProcessor>();
     for(;;) {
         ser_msg->clear();
-        err = load_SerMsg(*ser_msg, *pser_rd);
+        int err = load_SerMsg(*ser_msg, *pser_rd);
         if(err != 0) {
             debug_printf(DBG_WARN, "Error in reading serial port entry. Error %d\r\n", err);
             if(err == CRC_ERR) {
@@ -123,8 +122,11 @@ void KISSSerial::rx_serial_thread_fn() {
         if(ser_msg->type() == SerialMsg_Type_TURN_OLED_OFF) {
             debug_printf(DBG_INFO, "Received a request to turn OFF the OLED display\r\n");
             auto *disp_file = fopen("/fs/display.off", "we");
-            PORTABLE_ASSERT(disp_file != nullptr);
-            fclose(disp_file);
+            if(disp_file == nullptr) {
+                PORTABLE_ASSERT(false);
+            } else {
+                fclose(disp_file);
+            }
             oled->displayOff();
         }
         if(ser_msg->type() == SerialMsg_Type_VOICE_MSG) {
