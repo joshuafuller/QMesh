@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -127,10 +127,10 @@ public:
         }
         PORTABLE_ASSERT(msg.size() == msg_len);
         enc_msg = msg;
-        return msg.size();
         if(name == "Dummy FEC") {
             lock.unlock();
         }
+        return msg.size();
     }
 
     /**
@@ -144,10 +144,10 @@ public:
         }
         PORTABLE_ASSERT(enc_msg.size() == msg_len);
         dec_msg = enc_msg;
-        return msg_len;
         if(name == "Dummy FEC") {
             lock.unlock();
         }
+        return msg_len;
     }
 
     void benchmark(size_t num_iters);
