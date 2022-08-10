@@ -45,7 +45,6 @@ void PORTABLE_ASSERT(bool condition);
 //#define PORTABLE_ASSERT
 #endif /* TEST_FEC */
 
-constexpr int BITS_IN_BYTE = 8;
 constexpr int DEFAULT_CONV_CONS_LEN = 7;
 constexpr int DEFAULT_CONV_ORDER = 2;
 constexpr int DEFAULT_RS_BYTES = 8;
@@ -165,18 +164,9 @@ class FECInterleave : public FEC {
     int_params_struct int_params;
     
 private:
-    static auto getBit(const std::vector<uint8_t> &bytes, const int32_t pos) -> bool {
-        uint8_t byte = bytes[pos/BITS_IN_BYTE];
-        size_t byte_pos = pos % BITS_IN_BYTE;
-        return (((1U << byte_pos) & byte) != 0);
-    }
+    static auto getBit(const std::vector<uint8_t> &bytes, int32_t pos) -> bool;
 
-    static void setBit(const bool bit, const int32_t pos, std::vector<uint8_t> &bytes) {
-		size_t byte_pos = pos % BITS_IN_BYTE;
-        bytes[pos/BITS_IN_BYTE] &= ~(1U << byte_pos);
-        uint8_t my_bit = (bit == false) ? 0 : 1;
-        bytes[pos/BITS_IN_BYTE] |= static_cast<uint8_t>(my_bit << static_cast<uint8_t>(byte_pos));
-    }
+    static void setBit(bool bit, int32_t pos, std::vector<uint8_t> &bytes);
 
 
 public:

@@ -1,6 +1,6 @@
 /*
 QMesh
-Copyright (C) 2021 Daniel R. Fay
+Copyright (C) 2022 Daniel R. Fay
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -614,4 +614,19 @@ auto FECRSVGolay::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_ms
     }
 
     return dec_msg.size();
+}
+
+
+auto FECInterleave::getBit(const std::vector<uint8_t> &bytes, const int32_t pos) -> bool {
+    uint8_t byte = bytes[pos/BITS_IN_BYTE];
+    size_t byte_pos = pos % BITS_IN_BYTE;
+    return (((1U << byte_pos) & byte) != 0);
+}
+
+
+void FECInterleave::setBit(const bool bit, const int32_t pos, std::vector<uint8_t> &bytes) {
+	size_t byte_pos = pos % BITS_IN_BYTE;
+    bytes[pos/BITS_IN_BYTE] &= ~(1U << byte_pos);
+    uint8_t my_bit = (bit == false) ? 0 : 1;
+    bytes[pos/BITS_IN_BYTE] |= static_cast<uint8_t>(my_bit << static_cast<uint8_t>(byte_pos));
 }

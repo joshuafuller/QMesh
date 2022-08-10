@@ -21,6 +21,7 @@ static vector<int> bitrates = {BITRATE_450, BITRATE_700, BITRATE_1200, //NOLINT
                                 BITRATE_2400, BITRATE_3200}; 
 
 static constexpr int FRAME_RATE_HZ = 25;
+static constexpr int BITS_IN_BYTE = 8;
 
 
 #define FOUR_FRAME_TYPE_SMALL(NAME, BITRATE) \
@@ -201,7 +202,6 @@ auto setFramesBig(vector<vector<uint8_t>> frames) -> vector<uint8_t> {
 
 template<class T> 
 auto getFrames(vector<uint8_t> pld, const int bitrate) -> vector<vector<uint8_t>> {
-    constexpr int BITS_IN_BYTE = 8;
     T frame{};
     int bytes_per_frame = static_cast<int>(ceilf((static_cast<float>(bitrate)/
             static_cast<float>(FRAME_RATE_HZ)/static_cast<float>(BITS_IN_BYTE))));
@@ -236,7 +236,6 @@ auto getFrames(vector<uint8_t> pld, const int bitrate) -> vector<vector<uint8_t>
 
 template<class T> 
 auto getFramesBig(vector<uint8_t> pld, const int bitrate) -> vector<vector<uint8_t>> {
-    constexpr int BITS_IN_BYTE = 8;
     T frame{};
     int bytes_per_frame = static_cast<int>(ceilf((static_cast<float>(bitrate)/
             static_cast<float>(FRAME_RATE_HZ)/static_cast<float>(BITS_IN_BYTE))));

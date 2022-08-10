@@ -61,7 +61,8 @@ static constexpr uint8_t REBOOT = 0x08;
 static constexpr uint8_t DATAPKT = 0x00;
 static constexpr uint8_t VOICEPKT = 0x01;
 static constexpr uint8_t DEBUGPKT = 0x02;
-static constexpr uint8_t QMPKT = 0x0A;
+//static constexpr uint8_t QMPKT = 0x0A;
+static constexpr uint8_t QMPKT = 0x20;
 static constexpr uint8_t EXITKISS = 0xFF;
 static constexpr uint32_t LOWER_NIBBLE = 0x0FU;
 static constexpr uint32_t UPPER_NIBBLE = 0xF0U;
@@ -85,54 +86,47 @@ auto load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_err_t {
             cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
-        if(cur_byte != FEND) {
-            uint32_t cur_byte_u32 = static_cast<uint32_t>(cur_byte) & LOWER_NIBBLE;
-            uint32_t port_num = (static_cast<uint32_t>(cur_byte) & UPPER_NIBBLE) >> 4U;
-            if(cur_byte_u32 == SETHW) {
-                kiss_extended = false;
-                kiss_type = SETHW;
-                break;
-            } 
-            if(cur_byte_u32 == DATAPKT) {
-                kiss_extended = false;
-                if(port_num == PORT_DATA) {
-                    kiss_type = DATAPKT;
-                } else if(port_num == PORT_VOICE) {
-                    kiss_type = VOICEPKT;
-                } else if(port_num == PORT_DEBUG) {
-                    kiss_type = DEBUGPKT;
-                    kiss_extended = true;
-                } else {
-                    PORTABLE_ASSERT(false);
-                }
-                break;
-            } 
-            if(cur_byte_u32 == QMPKT) {
+        uint32_t cur_byte_u32 = static_cast<uint32_t>(cur_byte) & LOWER_NIBBLE;
+        uint32_t port_num = (static_cast<uint32_t>(cur_byte) & UPPER_NIBBLE) >> 4U;
+        if(cur_byte_u32 == SETHW) {
+            kiss_extended = false;
+            kiss_type = SETHW;
+            break;
+        } 
+        if(cur_byte_u32 == DATAPKT) {
+            kiss_extended = false;
+            if(port_num == PORT_DATA) {
+                kiss_type = DATAPKT;
+            } else if(port_num == PORT_VOICE) {
+                kiss_type = VOICEPKT;
+            } else if(port_num == PORT_DEBUG) {
+                kiss_type = DEBUGPKT;
                 kiss_extended = true;
-                kiss_type = QMPKT;
-                break;
+            } else {
+                PORTABLE_ASSERT(false);
             }
-            if(cur_byte_u32 == SIGRPT) {
-                kiss_extended = false;
-                kiss_type = SIGRPT;
-                break;
-            }
-            if(cur_byte_u32 == REBOOT) {
-                kiss_extended = false;
-                kiss_type = REBOOT;
-                static constexpr int ONE_SECOND = 1000;
-                portability::sleep(ONE_SECOND);
-                reboot_system();
-            }
-            if(cur_byte_u32 == EXITKISS) {
-                kiss_extended = false;
-                kiss_type = REBOOT;
-                ser_msg.clear();
-                ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
-                return READ_SUCCESS;
-            }  
-            return READ_INVALID_KISS_ID;  
+            break;
+        } 
+        if(cur_byte_u32 == QMPKT) {
+            kiss_extended = true;
+            kiss_type = QMPKT;
+            break;
         }
+        if(cur_byte_u32 == SIGRPT) {
+            kiss_extended = false;
+            kiss_type = SIGRPT;
+            break;
+        }
+        if(cur_byte_u32 == REBOOT) {
+            portability::sleep(ONE_SECOND);
+            reboot_system();
+        }
+        if(cur_byte_u32 == EXITKISS) {
+            ser_msg.clear();
+            ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
+            return READ_SUCCESS;
+        }  
+        return READ_INVALID_KISS_ID;  
     }
     // Pull in the main frame
     vector<uint8_t> buf;
@@ -399,9 +393,9 @@ auto KISSSerial::save_SerMsg(SerMsg &ser_msg, PseudoSerial &ps, const bool kiss_
 
 KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
     port_type(ser_port_type),
-    port_name(std::move(my_port_name)) {
-    pser_rd = nullptr;
-    pser_wr = nullptr;
+    port_name(std::move(my_port_name)),
+    pser_rd(nullptr),
+    pser_wr(nullptr) {
     past_log_msg.clear();
     kiss_extended = true;
     logfile_names = vector<string>();
@@ -424,10 +418,10 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
     rx_port(NC),
     cts_port(NC),
     rts_port(NC),
-    esp32_rst(DigitalInOut(NC)),
+    esp32_rst(DigitalInOut(NC)), 
     ser(nullptr),
     using_stdio(true),
-    flow_control(false) {
+    flow_control(false) { 
     startThreads();
 
     kiss_sers_mtx->lock();
@@ -559,7 +553,7 @@ void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
     string flow_ctl_cmd("AT+UART_CUR=");
     constexpr int STR_SIZE = 32;
     vector<char> baud_rate_string(STR_SIZE);
-    snprintf(baud_rate_string.data(), baud_rate_string.size(), "%d", BT_BAUD_RATE);
+    snprintf(baud_rate_string.data(), baud_rate_string.size(), "%d", static_cast<int32_t>(BT_BAUD_RATE));
     flow_ctl_cmd.append(baud_rate_string.data());
     flow_ctl_cmd.append(",8,1,0,3\r\n");
     fprintf(ser_fh, "%s", flow_ctl_cmd.c_str()); 
@@ -746,10 +740,13 @@ KISSSerial::~KISSSerial() {
 KISSSerialUART::~KISSSerialUART() {
     if(isESP32) {
         FILE *ser_fh = fdopen(&*ser, "rw");
-        PORTABLE_ASSERT(ser_fh != nullptr);
         portability::sleep(QUARTER_SECOND);
         string bt_leave_passthrough_cmd("+++\r\n");
-        fprintf(ser_fh, "%s", bt_leave_passthrough_cmd.c_str());
+        if(ser_fh != nullptr) {
+            fprintf(ser_fh, "%s", bt_leave_passthrough_cmd.c_str());
+        } else {
+            PORTABLE_ASSERT(false);
+        }
         portability::sleep(ONE_SECOND);
     } 
     delete ser;
@@ -797,33 +794,31 @@ auto KISSSerial::load_SerMsg(SerMsg &ser_msg, PseudoSerial &ps) -> read_ser_msg_
             cur_byte = ps.getc();
             if(++byte_read_count > SerMsg::maxSize()+sizeof(crc_t)) { return READ_MSG_OVERRUN_ERR; }
         }
-        if(cur_byte != FEND) {
-            if((cur_byte & LOWER_NIBBLE) == SETHW) {
+        if((cur_byte & LOWER_NIBBLE) == SETHW) {
+            kissExtended(false);
+            break;
+        } 
+        if((cur_byte & LOWER_NIBBLE) == DATAPKT) {
+            uint32_t kiss_port = ((cur_byte & UPPER_NIBBLE) >> 4U);
+            if(kiss_port == DATA) {
+                kiss_port_type = DATA;
                 kissExtended(false);
-                break;
-            } 
-            if((cur_byte & LOWER_NIBBLE) == DATAPKT) {
-                uint32_t kiss_port = ((cur_byte & UPPER_NIBBLE) >> 4U);
-                if(kiss_port == DATA) {
-                    kiss_port_type = DATA;
-                    kissExtended(false);
-                } else if(kiss_port == VOICE) {
-                    kiss_port_type = VOICE;
-                    kissExtended(false);
-                } else if(kiss_port == DEBUG) {
-                    kissExtended(true);
-                } else {
-                    PORTABLE_ASSERT(false);
-                }
-                break;
-            } 
-            if(cur_byte == EXITKISS) {
-                ser_msg.clear();
-                ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
-                return READ_SUCCESS;
-            }  
-            return READ_INVALID_KISS_ID;
-        }
+            } else if(kiss_port == VOICE) {
+                kiss_port_type = VOICE;
+                kissExtended(false);
+            } else if(kiss_port == DEBUG) {
+                kissExtended(true);
+            } else {
+                PORTABLE_ASSERT(false);
+            }
+            break;
+        } 
+        if(cur_byte == EXITKISS) {
+            ser_msg.clear();
+            ser_msg.type(SerialMsg_Type_EXIT_KISS_MODE);
+            return READ_SUCCESS;
+        }  
+        return READ_INVALID_KISS_ID;
     }
     // Pull in the main frame
     vector<uint8_t> buf;
