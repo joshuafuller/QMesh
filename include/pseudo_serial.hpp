@@ -56,15 +56,15 @@ public:
     UARTPseudoSerial(UARTPseudoSerial &&) = delete;
     auto operator=(const UARTPseudoSerial &) -> UARTPseudoSerial & = delete; 	
 
-    explicit UARTPseudoSerial(UARTSerial *ser, const bool read) :
+    explicit UARTPseudoSerial(const shared_ptr<UARTSerial>& ser, const bool read) :
         f_rd(nullptr),
         f_wr(nullptr)
     {
         if(read) {
-            f_rd = fdopen(ser, "r");
+            f_rd = fdopen(&*ser, "r");
             PORTABLE_ASSERT(f_rd != nullptr);
         } else {
-            f_wr = fdopen(ser, "w");
+            f_wr = fdopen(&*ser, "w");
             PORTABLE_ASSERT(f_wr != nullptr);
         }
     }

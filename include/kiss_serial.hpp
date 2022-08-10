@@ -125,7 +125,7 @@ private:
     bool isESP32;
     PinName tx_port, rx_port, cts_port, rts_port;
     DigitalInOut esp32_rst;
-    UARTSerial *ser;
+    shared_ptr<UARTSerial> ser;
     bool using_stdio;
     bool flow_control;
 

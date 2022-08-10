@@ -441,7 +441,7 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName rst, ESP32CfgSubM
         cts_port(NC),
         rts_port(NC),
         esp32_rst(DigitalInOut(rst)),
-        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
         flow_control(false) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
@@ -472,7 +472,7 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName rst, PinName cts,
         cts_port(cts),
         rts_port(rts),
         esp32_rst(DigitalInOut(rst)),
-        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
         flow_control(true) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
@@ -501,7 +501,7 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, const ser_port_type_t ser
         cts_port(NC),
         rts_port(NC),
         esp32_rst(DigitalInOut(NC)),
-        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
         flow_control(false) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
@@ -526,7 +526,7 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts,
         cts_port(cts),
         rts_port(rts),
         esp32_rst(DigitalInOut(NC)),
-        ser(new UARTSerial(tx_port, rx_port, SER_BAUD_RATE)),
+        ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
         flow_control(true) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
@@ -716,7 +716,7 @@ void KISSSerialUART::sleep() {
 void KISSSerialUART::wake() {
 #if 0
     if(ser == nullptr) {
-        ser = new UARTSerial(tx_port, rx_port, SER_BAUD_RATE);
+        ser = make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE);
         PORTABLE_ASSERT(ser);
     }
     if(hc05) {
@@ -749,7 +749,6 @@ KISSSerialUART::~KISSSerialUART() {
         }
         portability::sleep(ONE_SECOND);
     } 
-    delete ser;
 }
 
 
