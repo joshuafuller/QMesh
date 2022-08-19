@@ -59,14 +59,18 @@ void ESP32Manager::send_data(const ser_port_type_t port_type, vector<uint8_t> &d
     at_parser->abort();
     for(auto & port : ports) {
         if(port.second == port_type) {
-            at_parser->send("AT+CIPSEND=%d,%d\r\n", port.first, data.size());
-            PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>"));
-            at_parser->write((char *)(data.data()), data.size()); //NOLINT
-            size_t sent_bytes = 0;
-            PORTABLE_ASSERT(at_parser->recv("Recv %d bytes\r\n", &sent_bytes));
-            PORTABLE_ASSERT(sent_bytes == data.size());
-            PORTABLE_ASSERT("\r\n");
-            PORTABLE_ASSERT("SEND OK\r\n");
+            if(!cfg.isBT) {
+                at_parser->send("AT+CIPSEND=%d,%d\r\n", port.first, data.size());
+                PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>"));
+                at_parser->write((char *)(data.data()), data.size()); //NOLINT
+                size_t sent_bytes = 0;
+                PORTABLE_ASSERT(at_parser->recv("Recv %d bytes\r\n", &sent_bytes));
+                PORTABLE_ASSERT(sent_bytes == data.size());
+                PORTABLE_ASSERT("\r\n");
+                PORTABLE_ASSERT("SEND OK\r\n");
+            } else {
+                at_parser->write((char *)(data.data()), data.size()); //NOLINT
+            }
         }
     }
     data.clear();
@@ -105,116 +109,157 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
     esp32_rst = 1;
     portability::sleep(ONE_SECOND);
     // Set up the flow control on the STM32's UART
-    ser->set_flow_control(mbed::SerialBase::RTSCTS, rts_port, cts_port);
-    portability::sleep(QUARTER_SECOND);
+    PORTABLE_ASSERT(cts_port != NC && rts_port == NC);
+    PORTABLE_ASSERT(cts_port == NC && rts_port != NC);
+    if(cts_port != NC && rts_port != NC) {
+        ser->set_flow_control(mbed::SerialBase::RTSCTS, rts_port, cts_port);
+        portability::sleep(QUARTER_SECOND);
+    } else {
+        ser->set_flow_control(mbed::SerialBase::Disabled);
+        portability::sleep(QUARTER_SECOND);        
+    }
     FILE *ser_fh = fdopen(&*ser, "rw");
     PORTABLE_ASSERT(ser_fh != nullptr);
     // Start the AT command parser
     at_parser = make_shared<ATCmdParser>(&*ser);
     at_parser->debug_on(1);
     at_parser->set_delimiter("\r\n");
+    if(cfg.isBT) {
+        // Initialize BT
+        string bt_mode_cmd("AT+BTINIT=1\r\n");
+        at_parser->send("%s", bt_mode_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));
+        // Initialize BT SPP
+        string bt_spp_cmd("AT+BTSPPINIT=2\r\n");
+        at_parser->send("%s", bt_spp_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));
+        // Set the BT name
+        string bt_name_cmd("AT+BTNAME=");
+        bt_name_cmd.append(cfg.bt_name);
+        bt_name_cmd.append("\r\n");
+        at_parser->send("%s", bt_name_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));
+        // Set the BT scanmode
+        string bt_scanmode_cmd("AT+BTSCANMODE=2\r\n");
+        at_parser->send("%s", bt_scanmode_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));
+        // Set the BT security parameters
+        string bt_sec_cmd("AT+BTSECPARAM=3,1,\"");
+        bt_sec_cmd.append(cfg.bt_pin);
+        bt_sec_cmd.append("\"\r\n");
+        at_parser->send("%s", bt_sec_cmd.c_str());;
+        PORTABLE_ASSERT(at_parser->recv("OK"));
+        // Start the BT Classic SPP profile
+        string bt_start_cmd("AT+BTSPPSTART\r\n");
+        at_parser->send("%s", bt_start_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));
+        // Set up the passthrough mode
+        // NOTE: see whether this is actually possible to do without an active BT connection
+        string bt_passthru_cmd("AT+BTSPPSEND\r\n");
+        at_parser->send("%s", bt_passthru_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>\r\n"));
+    } else { 
+        if(cfg.isAP) {
+            // Set the Wi-Fi mode to SoftAP mode
+            string wifi_mode_cmd("AT+CWMODE=2\r\n");
+            at_parser->send("%s", wifi_mode_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
+            // Set the ESP SoftAP params
+            string wifi_softap_cmd("AT+CWSAP=");
+            wifi_softap_cmd.append("\"");
+            wifi_softap_cmd.append(cfg.ssid);
+            wifi_softap_cmd.append("\"");
+            wifi_softap_cmd.append(",");
+            wifi_softap_cmd.append("\"");
+            wifi_softap_cmd.append(cfg.pass);
+            wifi_softap_cmd.append("\"");
+            wifi_softap_cmd.append(",");
+            wifi_softap_cmd.append(cfg.wifi_chan);
+            wifi_softap_cmd.append(",");
+            wifi_softap_cmd.append("3"); // Open; no encryption
+            wifi_softap_cmd.append("\r\n");
+            at_parser->send("%s", wifi_softap_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));            
+            // Set address of the ESP32 SoftAP
+            string wifi_ip_cmd("AT+CIPAP=");
+            wifi_ip_cmd.append("\"");
+            wifi_ip_cmd.append(cfg.ip_addr);
+            wifi_ip_cmd.append("\"");
+            wifi_ip_cmd.append(",");
+            wifi_ip_cmd.append("\"");
+            wifi_ip_cmd.append(cfg.gateway_addr);
+            wifi_ip_cmd.append("\"");
+            wifi_ip_cmd.append(",");
+            wifi_ip_cmd.append("\"");
+            wifi_ip_cmd.append(cfg.subnet_addr);
+            wifi_ip_cmd.append("\"");
+            wifi_ip_cmd.append("\r\n");
+            at_parser->send("%s", wifi_ip_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
+            // Enable DHCP
+            string dhcp_en_cmd("AT+CWDHCP=1,2\r\n");
+            at_parser->send("%s", dhcp_en_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
+            // Setup the DHCP address ranges
+            string dhcp_addr_cmd("AT+CWDHCPS=1,3,");
+            dhcp_addr_cmd.append("\"");
+            dhcp_addr_cmd.append(cfg.dhcp_range_lo);
+            dhcp_addr_cmd.append("\"");
+            dhcp_addr_cmd.append(",");
+            dhcp_addr_cmd.append("\"");
+            dhcp_addr_cmd.append(cfg.dhcp_range_hi);
+            dhcp_addr_cmd.append("\"");            
+            dhcp_addr_cmd.append("\r\n");
+            at_parser->send("%s", dhcp_addr_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
+            //*****************************
 
-    if(cfg.isAP) {
-        // Set the Wi-Fi mode to SoftAP mode
-        string wifi_mode_cmd("AT+CWMODE=2\r\n");
-        at_parser->send("%s", wifi_mode_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));
-        // Set the ESP SoftAP params
-        string wifi_softap_cmd("AT+CWSAP=");
-        wifi_softap_cmd.append("\"");
-        wifi_softap_cmd.append(cfg.ssid);
-        wifi_softap_cmd.append("\"");
-        wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append("\"");
-        wifi_softap_cmd.append(cfg.pass);
-        wifi_softap_cmd.append("\"");
-        wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append(cfg.wifi_chan);
-        wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append("3"); // Open; no encryption
-        wifi_softap_cmd.append("\r\n");
-        at_parser->send("%s", wifi_softap_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));            
-        // Set address of the ESP32 SoftAP
-        string wifi_ip_cmd("AT+CIPAP=");
-        wifi_ip_cmd.append("\"");
-        wifi_ip_cmd.append(cfg.ip_addr);
-        wifi_ip_cmd.append("\"");
-        wifi_ip_cmd.append(",");
-        wifi_ip_cmd.append("\"");
-        wifi_ip_cmd.append(cfg.gateway_addr);
-        wifi_ip_cmd.append("\"");
-        wifi_ip_cmd.append(",");
-        wifi_ip_cmd.append("\"");
-        wifi_ip_cmd.append(cfg.subnet_addr);
-        wifi_ip_cmd.append("\"");
-        wifi_ip_cmd.append("\r\n");
-        at_parser->send("%s", wifi_ip_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));
-        // Enable DHCP
-        string dhcp_en_cmd("AT+CWDHCP=1,2\r\n");
-        at_parser->send("%s", dhcp_en_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));
-        // Setup the DHCP address ranges
-        string dhcp_addr_cmd("AT+CWDHCPS=1,3,");
-        dhcp_addr_cmd.append("\"");
-        dhcp_addr_cmd.append(cfg.dhcp_range_lo);
-        dhcp_addr_cmd.append("\"");
-        dhcp_addr_cmd.append(",");
-        dhcp_addr_cmd.append("\"");
-        dhcp_addr_cmd.append(cfg.dhcp_range_hi);
-        dhcp_addr_cmd.append("\"");            
-        dhcp_addr_cmd.append("\r\n");
-        at_parser->send("%s", dhcp_addr_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));
-        //*****************************
+            // Setup the DHCP server
+            string wifi_dhcp_cmd("AT+CWDHCP=1,2\r\n");
+            fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
+            string wifi_dhcp_ip_range("AT+CWDHCPS=1,3,");
+            wifi_dhcp_ip_range.append("\"");
+            wifi_dhcp_ip_range.append(cfg.dhcp_range_lo);
+            wifi_dhcp_ip_range.append("\"");
+            wifi_dhcp_ip_range.append(",\"");
+            wifi_dhcp_ip_range.append(cfg.dhcp_range_hi);
+            wifi_dhcp_ip_range.append("\"\r\n");
+            at_parser->send("%s", wifi_dhcp_ip_range.c_str());
+        } else {
+            // Enable DHCP client
+            string wifi_dhcp_cmd("AT+CWDHCP=1,1\r\n");
+            fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
+            // Setup and enable mDNS
+            string wifi_mdns_cmd("AT+MDNS=1,\"QMesh-");
+            wifi_mdns_cmd.append(cfg.ssid);
+            wifi_mdns_cmd.append("\",\"_iot\",8080\r\n");
+            fprintf(ser_fh, "%s", wifi_mdns_cmd.c_str()); 
+            // Connect to the AP
+            string wifi_conn_ap_cmd("AT+CWJAP=");
+            wifi_conn_ap_cmd.append(cfg.ssid);
+            wifi_conn_ap_cmd.append(",");
+            wifi_conn_ap_cmd.append(cfg.pass);
+            wifi_conn_ap_cmd.append("\r\n");
+            at_parser->send("%s", wifi_conn_ap_cmd.c_str());
+        }
+        // Setup a UDP server to transmit/receive on a multicast IP address
+        // TODO: make this a TCP socket server
+        string wifi_conn_mux_cmd("AT+CIPMUX=1\r\n");
+        fprintf(ser_fh, "%s", wifi_conn_mux_cmd.c_str());
+        string wifi_tcp_srvr_cmd("AT+CIPSERVER=1,");
+        wifi_tcp_srvr_cmd.append(cfg.multicast_addr);
+        wifi_tcp_srvr_cmd.append(",");
+        wifi_tcp_srvr_cmd.append(cfg.remote_port);
+        wifi_tcp_srvr_cmd.append(",");
+        wifi_tcp_srvr_cmd.append(cfg.local_port);
+        wifi_tcp_srvr_cmd.append(",0\r\n");
+        at_parser->send("%s", wifi_tcp_srvr_cmd.c_str());
 
-        // Setup the DHCP server
-        string wifi_dhcp_cmd("AT+CWDHCP=1,2\r\n");
-        fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
-        string wifi_dhcp_ip_range("AT+CWDHCPS=1,3,");
-        wifi_dhcp_ip_range.append("\"");
-        wifi_dhcp_ip_range.append(cfg.dhcp_range_lo);
-        wifi_dhcp_ip_range.append("\"");
-        wifi_dhcp_ip_range.append(",\"");
-        wifi_dhcp_ip_range.append(cfg.dhcp_range_hi);
-        wifi_dhcp_ip_range.append("\"\r\n");
-        at_parser->send("%s", wifi_dhcp_ip_range.c_str());
-    } else {
-        // Enable DHCP
-        string wifi_dhcp_cmd("AT+CWDHCP=1,1\r\n");
-        fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
-        // Setup and enable mDNS
-        string wifi_mdns_cmd("AT+MDNS=1,\"QMesh-");
-        wifi_mdns_cmd.append(cfg.ssid);
-        wifi_mdns_cmd.append("\",\"_iot\",8080\r\n");
-        fprintf(ser_fh, "%s", wifi_mdns_cmd.c_str()); 
-        // Connect to the AP
-        string wifi_conn_ap_cmd("AT+CWJAP=");
-        wifi_conn_ap_cmd.append(cfg.ssid);
-        wifi_conn_ap_cmd.append(",");
-        wifi_conn_ap_cmd.append(cfg.pass);
-        wifi_conn_ap_cmd.append("\r\n");
-        at_parser->send("%s", wifi_conn_ap_cmd.c_str());
+        // Enter passthrough mode
+        string wifi_pass_cmd("AT+CIPSEND\r\n");
+        at_parser->send("%s", wifi_pass_cmd.c_str());
+        portability::sleep(QUARTER_SECOND);
     }
-
-    // Setup a UDP server to transmit/receive on a multicast IP address
-    string wifi_conn_mux_cmd("AT+CIPMUX=0\r\n");
-    fprintf(ser_fh, "%s", wifi_conn_mux_cmd.c_str());
-    string wifi_udp_srvr_cmd("AT+CIPSTART=");
-    wifi_udp_srvr_cmd.append(cfg.multicast_addr);
-    wifi_udp_srvr_cmd.append(",");
-    wifi_udp_srvr_cmd.append(cfg.remote_port);
-    wifi_udp_srvr_cmd.append(",");
-    wifi_udp_srvr_cmd.append(cfg.local_port);
-    wifi_udp_srvr_cmd.append(",0\r\n");
-    at_parser->send("%s", wifi_udp_srvr_cmd.c_str());
-
-    // Enter passthrough mode
-    string wifi_pass_cmd("AT+CIPSEND\r\n");
-    at_parser->send("%s", wifi_pass_cmd.c_str());
-    portability::sleep(QUARTER_SECOND);
-
     printf("Done with configuration\r\n");
 }
 

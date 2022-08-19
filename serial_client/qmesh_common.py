@@ -48,7 +48,7 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['esp0_bt_pin'] = ser_msg.esp_cfg_msg.esp0.bt_pin
     cfg_dict['esp0_wifi_chan'] = ser_msg.esp_cfg_msg.esp0.wifi_chan
     cfg_dict['esp0_ssid'] = ser_msg.esp_cfg_msg.esp0.ssid
-    cfg_dict['esp0_pass'] = ser_msg.esp_cfg_msg.esp0.pass
+    cfg_dict['esp0_pass'] = ser_msg.esp_cfg_msg.esp0.password
     cfg_dict['esp0_ip_addr'] = ser_msg.esp_cfg_msg.esp0.ip_addr
     cfg_dict['esp0_gateway_addr'] = ser_msg.esp_cfg_msg.esp0.gateway_addr
     cfg_dict['esp0_subnet_addr'] = ser_msg.esp_cfg_msg.esp0.subnet_addr
@@ -66,7 +66,7 @@ def cfg_to_yaml_file(ser_msg, yaml_file_path):
     cfg_dict['esp1_bt_pin'] = ser_msg.esp_cfg_msg.esp1.bt_pin
     cfg_dict['esp1_wifi_chan'] = ser_msg.esp_cfg_msg.esp1.wifi_chan
     cfg_dict['esp1_ssid'] = ser_msg.esp_cfg_msg.esp1.ssid
-    cfg_dict['esp1_pass'] = ser_msg.esp_cfg_msg.esp1.pass
+    cfg_dict['esp1_pass'] = ser_msg.esp_cfg_msg.esp1.password
     cfg_dict['esp1_ip_addr'] = ser_msg.esp_cfg_msg.esp1.ip_addr
     cfg_dict['esp1_gateway_addr'] = ser_msg.esp_cfg_msg.esp1.gateway_addr
     cfg_dict['esp1_subnet_addr'] = ser_msg.esp_cfg_msg.esp1.subnet_addr

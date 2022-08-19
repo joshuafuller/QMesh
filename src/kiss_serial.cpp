@@ -43,7 +43,7 @@ extern portability::EventQueue *background_queue;
 // debug_printf() uses this vector to determine which serial ports to send out
 vector<KISSSerial *> kiss_sers;
 portability::mutex *kiss_sers_mtx;
-static portability::mutex *shared_mtx;
+portability::mutex *shared_mtx;
 void create_kiss_serial_data_objects() {
     kiss_sers_mtx = new portability::mutex();
     PORTABLE_ASSERT(kiss_sers_mtx != nullptr);

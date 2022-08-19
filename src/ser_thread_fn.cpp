@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 extern portability::EventQueue *background_queue;
-static portability::mutex *shared_mtx;
+extern portability::mutex *shared_mtx;
 static const DataMsg data_msg_zero = DataMsg_init_zero;
 
 static constexpr int ERR_MSG_SIZE = 32;

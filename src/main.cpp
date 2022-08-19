@@ -121,8 +121,8 @@ void send_status();
 portability::DigitalIn *user_button = nullptr;
 SoftI2C *oled_i2c = nullptr;
 shared_ptr<Adafruit_SSD1306_I2c> oled;
-void create_serial_data_objects();
 void create_kiss_serial_data_objects();
+void create_serial_data_objects();
 void create_radio_timing_data_objects();
 void create_nv_settings_objects();
 void create_radio_objects();
@@ -182,8 +182,8 @@ auto main() -> int
 {
     portability::special_init();
     create_background_queue();
-    create_serial_data_objects();
     create_kiss_serial_data_objects();
+    create_serial_data_objects();
     create_radio_objects();
 
     create_threads();
