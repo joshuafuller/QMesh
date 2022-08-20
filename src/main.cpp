@@ -79,7 +79,7 @@ static void setup_uarts() {
     PORTABLE_ASSERT(debug_ser);
 #endif /* MBED_CONF_APP_DEBUG_UART_TX */
 
-#if 0
+#if 1
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_0
     if(radio_cb.esp_cfg_msg.esp0.exists) {
         portability::sleep(HALF_SECOND);

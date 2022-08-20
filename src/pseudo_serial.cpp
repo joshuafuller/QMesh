@@ -23,81 +23,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 
 
-void ESP32Manager::process_recv_data(const shared_ptr<vector<uint8_t>>& recv_data, const int32_t conn_num) {
-    constexpr uint8_t KISS_DATA_FRAME = 0x00;
-    constexpr uint8_t KISS_FEND = 0xC0;
-    constexpr uint8_t KISS_PORT_MASK = 0x0F;
-    PORTABLE_ASSERT((*recv_data)[0] == KISS_FEND);
-    uint8_t cmd_code = (*recv_data)[1] >> 4U;
-    PORTABLE_ASSERT(cmd_code == KISS_DATA_FRAME);
-    uint8_t port = (*recv_data)[1] & KISS_PORT_MASK;
-    PORTABLE_ASSERT(port > 0x02);
-    if(static_cast<ser_port_type_t>(port) == DATA_PORT) { ps_data->recv_msg(recv_data); } 
-    else { ps_voice->recv_msg(recv_data); }
-    ps_debug->recv_msg(recv_data);
-    // Update what the port belongs to
-    ports.insert(pair<int, ser_port_type_t>(conn_num, static_cast<ser_port_type_t>(port)));
-}
 
-/// This method accepts incoming data from the ESP32 and decides what
-///  to do with it
-void ESP32Manager::oob_recv_data() {
-    int32_t conn_num = -1;
-    int32_t num_bytes = -1;
-    constexpr int MAX_RECV_BYTES = 2048;
-    PORTABLE_ASSERT(at_parser->recv("+IPD,%d,%d", &conn_num, &num_bytes));
-    PORTABLE_ASSERT(num_bytes <= MAX_RECV_BYTES);
-    auto recv_data = make_shared<vector<uint8_t>>();
-    for(int i = 0; i < num_bytes; i++) {
-        recv_data->push_back(at_parser->getc());
-    }
-    process_recv_data(recv_data, conn_num);
-}
-
-/// This method distributes outgoing data
-void ESP32Manager::send_data(const ser_port_type_t port_type, vector<uint8_t> &data) {
-    at_parser->abort();
-    for(auto & port : ports) {
-        if(port.second == port_type) {
-            if(!cfg.isBT) {
-                at_parser->send("AT+CIPSEND=%d,%d\r\n", port.first, data.size());
-                PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>"));
-                at_parser->write((char *)(data.data()), data.size()); //NOLINT
-                size_t sent_bytes = 0;
-                PORTABLE_ASSERT(at_parser->recv("Recv %d bytes\r\n", &sent_bytes));
-                PORTABLE_ASSERT(sent_bytes == data.size());
-                PORTABLE_ASSERT("\r\n");
-                PORTABLE_ASSERT("SEND OK\r\n");
-            } else {
-                at_parser->write((char *)(data.data()), data.size()); //NOLINT
-            }
-        }
-    }
-    data.clear();
-}
-
-void ESP32Manager::recv_data() {
-    while(true) {
-        // Dummy scanf designed to trigger the OOB receiver
-        char dummy_char = '\0';
-        at_parser->recv("%c", &dummy_char);
-    }
-}
-
-ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, 
-                            ESP32CfgSubMsg &my_cfg) : 
+ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, 
+                            ESP32CfgSubMsg &my_cfg) :
     cfg(my_cfg),
     tx_port(tx),
     rx_port(rx),
     cts_port(cts),
     rts_port(rts),
     esp32_rst(DigitalInOut(rst)),
-    ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
-    ps_voice(nullptr),
-    ps_data(nullptr),
-    ps_debug(nullptr),
-    at_was_ok(false),
-    at_was_err(false)
+    ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE))
 {
     PORTABLE_ASSERT(string(cfg.ssid).size() <= SSID_MAX_LEN);
     PORTABLE_ASSERT(string(cfg.password).size() <= PASS_MAX_LEN);
@@ -216,7 +151,8 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
 
             // Setup the DHCP server
             string wifi_dhcp_cmd("AT+CWDHCP=1,2\r\n");
-            fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
+            at_parser->send("%s", wifi_dhcp_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->send("OK"));
             string wifi_dhcp_ip_range("AT+CWDHCPS=1,3,");
             wifi_dhcp_ip_range.append("\"");
             wifi_dhcp_ip_range.append(cfg.dhcp_range_lo);
@@ -225,15 +161,18 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
             wifi_dhcp_ip_range.append(cfg.dhcp_range_hi);
             wifi_dhcp_ip_range.append("\"\r\n");
             at_parser->send("%s", wifi_dhcp_ip_range.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
         } else {
             // Enable DHCP client
             string wifi_dhcp_cmd("AT+CWDHCP=1,1\r\n");
-            fprintf(ser_fh, "%s", wifi_dhcp_cmd.c_str());
+            at_parser->send("%s", wifi_dhcp_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
             // Setup and enable mDNS
             string wifi_mdns_cmd("AT+MDNS=1,\"QMesh-");
             wifi_mdns_cmd.append(cfg.ssid);
             wifi_mdns_cmd.append("\",\"_iot\",8080\r\n");
-            fprintf(ser_fh, "%s", wifi_mdns_cmd.c_str()); 
+            at_parser->send("%s", wifi_mdns_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
             // Connect to the AP
             string wifi_conn_ap_cmd("AT+CWJAP=");
             wifi_conn_ap_cmd.append(cfg.ssid);
@@ -241,11 +180,12 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
             wifi_conn_ap_cmd.append(cfg.password);
             wifi_conn_ap_cmd.append("\r\n");
             at_parser->send("%s", wifi_conn_ap_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
         }
-        // Setup a UDP server to transmit/receive on a multicast IP address
-        // TODO: make this a TCP socket server
+        // Setup a TCP server
         string wifi_conn_mux_cmd("AT+CIPMUX=1\r\n");
-        fprintf(ser_fh, "%s", wifi_conn_mux_cmd.c_str());
+        at_parser->send("%s", wifi_conn_mux_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));
         string wifi_tcp_srvr_cmd("AT+CIPSERVER=1,");
         wifi_tcp_srvr_cmd.append(cfg.multicast_addr);
         wifi_tcp_srvr_cmd.append(",");
@@ -254,10 +194,12 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
         wifi_tcp_srvr_cmd.append(cfg.local_port);
         wifi_tcp_srvr_cmd.append(",0\r\n");
         at_parser->send("%s", wifi_tcp_srvr_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));   
 
         // Enter passthrough mode
         string wifi_pass_cmd("AT+CIPSEND\r\n");
         at_parser->send("%s", wifi_pass_cmd.c_str());
+        PORTABLE_ASSERT(at_parser->recv("OK"));   
         portability::sleep(QUARTER_SECOND);
     }
     printf("Done with configuration\r\n");
@@ -265,21 +207,57 @@ ESP32Manager::ESP32Manager(PinName tx, PinName rx, PinName rst, PinName cts, Pin
 
 
 auto ESP32PseudoSerial::getc() -> int {
-    osEvent evt = rx_data->get(osWaitForever);
-    if(evt.status == osEventMail) {
-        char *val = static_cast<char *>(evt.value.p);
-        return *val;
-    }  
-    return EOF;
+    ser_mtx.lock();
+    constexpr int MAX_RECV_BYTES = 256;
+    if(recv_data.empty()) {
+        int conn_num = -1;
+        int num_bytes = -1;
+        vector<uint8_t> buf(MAX_RECV_BYTES);
+        // TODO -- need to factor in when connections come and go
+        if(cfg.isBT) {
+            at_parser->recv("+BTDATA:%d,%s", &num_bytes, buf.data());
+        } else {
+            at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
+            tcp_conns.insert(pair<int, bool>(conn_num, true));
+        }
+        PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
+        copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
+    }
+    auto ret_val = recv_data[0];
+    recv_data.pop_front();
+    ser_mtx.unlock();
+    return ret_val;
 }
 
 
 auto ESP32PseudoSerial::putc(const int val) -> int {
+    ser_mtx.lock();
     outbuf.push_back(val);
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
-        PORTABLE_ASSERT(esp32_manager != nullptr);
-        esp32_manager->send_data(port_type, outbuf);
+        PORTABLE_ASSERT(at_parser != nullptr);
+        if(cfg.isBT) {
+            at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size());
+            at_parser->recv(">");
+            at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size());
+            at_parser->recv("OK");
+        }
+        else {
+            // Iterate through all of the TCP connections
+            for(auto & tcp_conn : tcp_conns) {
+                at_parser->send("AT+CIPSEND=%d,%d", tcp_conn.first, outbuf.size());
+                at_parser->recv("OK");
+                at_parser->recv("");
+                at_parser->recv(">");
+                at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size());
+                int rx_bytes = -1;
+                at_parser->recv("Recv %d bytes", &rx_bytes);
+                PORTABLE_ASSERT(rx_bytes == static_cast<int>(outbuf.size()));
+                at_parser->recv("");
+                at_parser->recv("SEND OK");
+            }           
+        }
     }
+    ser_mtx.unlock();
     return val;
 }
 

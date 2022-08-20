@@ -433,58 +433,25 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
 static constexpr uint32_t BT_BAUD_RATE = 115200;
 KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName rst, ESP32CfgSubMsg &my_cfg, 
     const ser_port_type_t ser_port_type) :
-        KISSSerial(cfg.ser_name, ser_port_type), 
-        cfg(my_cfg),
-        isESP32(true),
-        tx_port(tx),
-        rx_port(rx),
-        cts_port(NC),
-        rts_port(NC),
-        esp32_rst(DigitalInOut(rst)),
-        ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
-        flow_control(false) {
-    PORTABLE_ASSERT(ser);
-    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
-    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
-    using_stdio = false;
-    if(my_cfg.isBT) {
-        configure_esp32_bt();
-    } else {
-        configure_esp32_wifi();
-    }
-
-    startThreads();
-
-    kiss_sers_mtx->lock();
-    kiss_sers.push_back(this);
-    kiss_sers_mtx->unlock();
-}
-
+    KISSSerialUART(tx, rx, rst, NC, NC, my_cfg, ser_port_type) { }
 
 
 KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts,
                                 ESP32CfgSubMsg &my_cfg, const ser_port_type_t ser_port_type) :
-        KISSSerial(cfg.ser_name, ser_port_type), 
-        cfg(my_cfg),
-        isESP32(true),
-        tx_port(tx),
-        rx_port(rx),
-        cts_port(cts),
-        rts_port(rts),
-        esp32_rst(DigitalInOut(rst)),
-        ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
-        flow_control(true) {
+KISSSerial(cfg.ser_name, ser_port_type), 
+cfg(my_cfg),
+isESP32(true),
+tx_port(tx),
+rx_port(rx),
+cts_port(cts),
+rts_port(rts),
+esp32_rst(DigitalInOut(rst)),
+ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
+flow_control(true) {
     PORTABLE_ASSERT(ser);
-    *pserRd() = make_shared<UARTPseudoSerial>(ser, true);
-    *pserWr() = make_shared<UARTPseudoSerial>(ser, false);
+    *pserRd() = make_shared<ESP32PseudoSerial>(tx, rx, rst, cts, rts, my_cfg);
+    *pserWr() = *pserRd();
     using_stdio = false;
-    if(my_cfg.isBT) {
-        configure_esp32_bt();
-    } else {
-        configure_esp32_wifi();
-    }
-
-    startThreads();
 
     kiss_sers_mtx->lock();
     kiss_sers.push_back(this);
@@ -547,6 +514,7 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts,
 
 
 static constexpr int BT_NAME_MAX_LEN = 8;
+static constexpr int BT_PIN_MAX_LEN = 4;
 void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
     PORTABLE_ASSERT(false);
     // Set the UART values in the ESP32
@@ -564,13 +532,12 @@ void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
 
 
 void KISSSerialUART::configure_esp32_bt() {
-    // We're not really supporting BT at this time
-    PORTABLE_ASSERT(false);
-
     PORTABLE_ASSERT(string(cfg.bt_name).size() <= BT_NAME_MAX_LEN);
+    PORTABLE_ASSERT(string(cfg.bt_pin).size() <= BT_PIN_MAX_LEN);
     // Reset the ESP32 board
     esp32_rst.mode(OpenDrain);
     esp32_rst.mode(PullNone);
+    // Reset the ESP32
     esp32_rst = 0;
     portability::sleep(HALF_SECOND);
     esp32_rst = 1;
