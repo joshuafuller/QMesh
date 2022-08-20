@@ -613,7 +613,7 @@ void KISSSerialUART::configure_esp32_bt() {
 
 void KISSSerialUART::configure_esp32_wifi() {
     PORTABLE_ASSERT(string(cfg.ssid).size() <= SSID_MAX_LEN);
-    PORTABLE_ASSERT(string(cfg.pass).size() <= PASS_MAX_LEN);
+    PORTABLE_ASSERT(string(cfg.password).size() <= PASS_MAX_LEN);
     // Reset the ESP32 board
     esp32_rst.mode(OpenDrain);
     esp32_rst.mode(PullNone);
@@ -637,7 +637,7 @@ void KISSSerialUART::configure_esp32_wifi() {
         string wifi_softap_cmd("AT+CWSAP=");
         wifi_softap_cmd.append(cfg.ssid);
         wifi_softap_cmd.append(",");
-        wifi_softap_cmd.append(cfg.pass);
+        wifi_softap_cmd.append(cfg.password);
         wifi_softap_cmd.append(",");
         wifi_softap_cmd.append(cfg.wifi_chan);
         wifi_softap_cmd.append(",");
@@ -681,7 +681,7 @@ void KISSSerialUART::configure_esp32_wifi() {
         string wifi_conn_ap_cmd("AT+CWJAP=");
         wifi_conn_ap_cmd.append(cfg.ssid);
         wifi_conn_ap_cmd.append(",");
-        wifi_conn_ap_cmd.append(cfg.pass);
+        wifi_conn_ap_cmd.append(cfg.password);
         wifi_conn_ap_cmd.append("\r\n");
         fprintf(ser_fh, "%s", wifi_conn_ap_cmd.c_str());
     }

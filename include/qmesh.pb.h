@@ -144,7 +144,7 @@ typedef struct _ESP32CfgSubMsg {
     char bt_pin[32];
     char wifi_chan[32];
     char ssid[32];
-    char pass[32];
+    char password[32];
     char ip_addr[32];
     char gateway_addr[32];
     char subnet_addr[32];
@@ -461,7 +461,7 @@ typedef struct _SysCfgMsg {
 #define ESP32CfgSubMsg_bt_pin_tag                6
 #define ESP32CfgSubMsg_wifi_chan_tag             7
 #define ESP32CfgSubMsg_ssid_tag                  8
-#define ESP32CfgSubMsg_pass_tag                  9
+#define ESP32CfgSubMsg_password_tag              9
 #define ESP32CfgSubMsg_ip_addr_tag               10
 #define ESP32CfgSubMsg_gateway_addr_tag          11
 #define ESP32CfgSubMsg_subnet_addr_tag           12
@@ -831,7 +831,7 @@ X(a, STATIC,   SINGULAR, STRING,   bt_name,           5) \
 X(a, STATIC,   SINGULAR, STRING,   bt_pin,            6) \
 X(a, STATIC,   SINGULAR, STRING,   wifi_chan,         7) \
 X(a, STATIC,   SINGULAR, STRING,   ssid,              8) \
-X(a, STATIC,   SINGULAR, STRING,   pass,              9) \
+X(a, STATIC,   SINGULAR, STRING,   password,          9) \
 X(a, STATIC,   SINGULAR, STRING,   ip_addr,          10) \
 X(a, STATIC,   SINGULAR, STRING,   gateway_addr,     11) \
 X(a, STATIC,   SINGULAR, STRING,   subnet_addr,      12) \

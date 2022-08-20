@@ -213,7 +213,7 @@ static void write_default_cfg() {
     strncpy(radio_cb.esp_cfg_msg.esp0.dhcp_range_lo, "192.168.10.30", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.dhcp_range_hi, "192.168.10.40", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.ssid, "QMesh-AP0", ESP_CFG_STR_MAX_LEN);
-    strncpy(radio_cb.esp_cfg_msg.esp0.pass, "password", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp0.password, "password", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.multicast_addr, "224.0.0.0", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.local_port, "1002", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp0.remote_port, "1000", ESP_CFG_STR_MAX_LEN);
@@ -231,7 +231,7 @@ static void write_default_cfg() {
     strncpy(radio_cb.esp_cfg_msg.esp1.dhcp_range_lo, "192.168.20.30", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp1.dhcp_range_hi, "192.168.20.40", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp1.ssid, "QMesh-AP1", ESP_CFG_STR_MAX_LEN);
-    strncpy(radio_cb.esp_cfg_msg.esp1.pass, "password", ESP_CFG_STR_MAX_LEN);
+    strncpy(radio_cb.esp_cfg_msg.esp1.password, "password", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp1.multicast_addr, "224.0.0.1", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp1.local_port, "1002", ESP_CFG_STR_MAX_LEN);
     strncpy(radio_cb.esp_cfg_msg.esp1.remote_port, "1000", ESP_CFG_STR_MAX_LEN);
@@ -373,7 +373,7 @@ void load_settings_from_flash() {
             PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.dhcp_range_hi, &inp) != 0); 
         }
         PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.ssid).empty());    
-        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.pass).empty());
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp0.password).empty());
         PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp0.multicast_addr, &inp) != 0); 
         string test_port_addr0(radio_cb.esp_cfg_msg.esp0.multicast_addr);
         PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) != 0); 
@@ -395,7 +395,7 @@ void load_settings_from_flash() {
             PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.dhcp_range_hi, &inp) != 0);
         }
         PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.ssid).empty());    
-        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.pass).empty());
+        PORTABLE_ASSERT(!string(radio_cb.esp_cfg_msg.esp1.password).empty());
         PORTABLE_ASSERT(inet_aton(radio_cb.esp_cfg_msg.esp1.multicast_addr, &inp) != 0);
         string test_port_addr0(radio_cb.esp_cfg_msg.esp1.multicast_addr);
         PORTABLE_ASSERT(inet_aton(test_port_addr0.c_str(), &inp) != 0);

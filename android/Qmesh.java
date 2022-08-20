@@ -21977,14 +21977,14 @@ public final class Qmesh {
         getSsidBytes();
 
     /**
-     * <code>string pass = 9 [(.nanopb) = { ... }</code>
+     * <code>string password = 9 [(.nanopb) = { ... }</code>
      */
-    java.lang.String getPass();
+    java.lang.String getPassword();
     /**
-     * <code>string pass = 9 [(.nanopb) = { ... }</code>
+     * <code>string password = 9 [(.nanopb) = { ... }</code>
      */
     com.google.protobuf.ByteString
-        getPassBytes();
+        getPasswordBytes();
 
     /**
      * <code>string ip_addr = 10 [(.nanopb) = { ... }</code>
@@ -22087,7 +22087,7 @@ public final class Qmesh {
       btPin_ = "";
       wifiChan_ = "";
       ssid_ = "";
-      pass_ = "";
+      password_ = "";
       ipAddr_ = "";
       gatewayAddr_ = "";
       subnetAddr_ = "";
@@ -22170,7 +22170,7 @@ public final class Qmesh {
             case 74: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              pass_ = s;
+              password_ = s;
               break;
             }
             case 82: {
@@ -22450,34 +22450,34 @@ public final class Qmesh {
       }
     }
 
-    public static final int PASS_FIELD_NUMBER = 9;
-    private volatile java.lang.Object pass_;
+    public static final int PASSWORD_FIELD_NUMBER = 9;
+    private volatile java.lang.Object password_;
     /**
-     * <code>string pass = 9 [(.nanopb) = { ... }</code>
+     * <code>string password = 9 [(.nanopb) = { ... }</code>
      */
-    public java.lang.String getPass() {
-      java.lang.Object ref = pass_;
+    public java.lang.String getPassword() {
+      java.lang.Object ref = password_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        pass_ = s;
+        password_ = s;
         return s;
       }
     }
     /**
-     * <code>string pass = 9 [(.nanopb) = { ... }</code>
+     * <code>string password = 9 [(.nanopb) = { ... }</code>
      */
     public com.google.protobuf.ByteString
-        getPassBytes() {
-      java.lang.Object ref = pass_;
+        getPasswordBytes() {
+      java.lang.Object ref = password_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        pass_ = b;
+        password_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -22794,8 +22794,8 @@ public final class Qmesh {
       if (!getSsidBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 8, ssid_);
       }
-      if (!getPassBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, pass_);
+      if (!getPasswordBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, password_);
       }
       if (!getIpAddrBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, ipAddr_);
@@ -22857,8 +22857,8 @@ public final class Qmesh {
       if (!getSsidBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, ssid_);
       }
-      if (!getPassBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, pass_);
+      if (!getPasswordBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, password_);
       }
       if (!getIpAddrBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, ipAddr_);
@@ -22916,8 +22916,8 @@ public final class Qmesh {
           .equals(other.getWifiChan());
       result = result && getSsid()
           .equals(other.getSsid());
-      result = result && getPass()
-          .equals(other.getPass());
+      result = result && getPassword()
+          .equals(other.getPassword());
       result = result && getIpAddr()
           .equals(other.getIpAddr());
       result = result && getGatewayAddr()
@@ -22964,8 +22964,8 @@ public final class Qmesh {
       hash = (53 * hash) + getWifiChan().hashCode();
       hash = (37 * hash) + SSID_FIELD_NUMBER;
       hash = (53 * hash) + getSsid().hashCode();
-      hash = (37 * hash) + PASS_FIELD_NUMBER;
-      hash = (53 * hash) + getPass().hashCode();
+      hash = (37 * hash) + PASSWORD_FIELD_NUMBER;
+      hash = (53 * hash) + getPassword().hashCode();
       hash = (37 * hash) + IP_ADDR_FIELD_NUMBER;
       hash = (53 * hash) + getIpAddr().hashCode();
       hash = (37 * hash) + GATEWAY_ADDR_FIELD_NUMBER;
@@ -23131,7 +23131,7 @@ public final class Qmesh {
 
         ssid_ = "";
 
-        pass_ = "";
+        password_ = "";
 
         ipAddr_ = "";
 
@@ -23183,7 +23183,7 @@ public final class Qmesh {
         result.btPin_ = btPin_;
         result.wifiChan_ = wifiChan_;
         result.ssid_ = ssid_;
-        result.pass_ = pass_;
+        result.password_ = password_;
         result.ipAddr_ = ipAddr_;
         result.gatewayAddr_ = gatewayAddr_;
         result.subnetAddr_ = subnetAddr_;
@@ -23269,8 +23269,8 @@ public final class Qmesh {
           ssid_ = other.ssid_;
           onChanged();
         }
-        if (!other.getPass().isEmpty()) {
-          pass_ = other.pass_;
+        if (!other.getPassword().isEmpty()) {
+          password_ = other.password_;
           onChanged();
         }
         if (!other.getIpAddr().isEmpty()) {
@@ -23757,71 +23757,71 @@ public final class Qmesh {
         return this;
       }
 
-      private java.lang.Object pass_ = "";
+      private java.lang.Object password_ = "";
       /**
-       * <code>string pass = 9 [(.nanopb) = { ... }</code>
+       * <code>string password = 9 [(.nanopb) = { ... }</code>
        */
-      public java.lang.String getPass() {
-        java.lang.Object ref = pass_;
+      public java.lang.String getPassword() {
+        java.lang.Object ref = password_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          pass_ = s;
+          password_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>string pass = 9 [(.nanopb) = { ... }</code>
+       * <code>string password = 9 [(.nanopb) = { ... }</code>
        */
       public com.google.protobuf.ByteString
-          getPassBytes() {
-        java.lang.Object ref = pass_;
+          getPasswordBytes() {
+        java.lang.Object ref = password_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          pass_ = b;
+          password_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>string pass = 9 [(.nanopb) = { ... }</code>
+       * <code>string password = 9 [(.nanopb) = { ... }</code>
        */
-      public Builder setPass(
+      public Builder setPassword(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        pass_ = value;
+        password_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string pass = 9 [(.nanopb) = { ... }</code>
+       * <code>string password = 9 [(.nanopb) = { ... }</code>
        */
-      public Builder clearPass() {
+      public Builder clearPassword() {
         
-        pass_ = getDefaultInstance().getPass();
+        password_ = getDefaultInstance().getPassword();
         onChanged();
         return this;
       }
       /**
-       * <code>string pass = 9 [(.nanopb) = { ... }</code>
+       * <code>string password = 9 [(.nanopb) = { ... }</code>
        */
-      public Builder setPassBytes(
+      public Builder setPasswordBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
         
-        pass_ = value;
+        password_ = value;
         onChanged();
         return this;
       }
@@ -26886,23 +26886,23 @@ public final class Qmesh {
       "E\020\002\022\007\n\003ACK\020\003\022\n\n\006ACKERR\020\004:\006\222?\003\240\001\010\"]\n\014IntP" +
       "aramsMsg\022\023\n\013freq_wobble\030\001 \001(\005\022\017\n\007channel" +
       "\030\002 \001(\005\022\023\n\013time_offset\030\003 \001(\005\022\022\n\npwr_offse" +
-      "t\030\004 \001(\005\"\253\003\n\016ESP32CfgSubMsg\022\016\n\006exists\030\001 \001" +
+      "t\030\004 \001(\005\"\257\003\n\016ESP32CfgSubMsg\022\016\n\006exists\030\001 \001" +
       "(\010\022\014\n\004isBT\030\002 \001(\010\022\014\n\004isAP\030\003 \001(\010\022\027\n\010ser_na" +
       "me\030\004 \001(\tB\005\222?\002\010 \022\026\n\007bt_name\030\005 \001(\tB\005\222?\002\010 \022" +
       "\025\n\006bt_pin\030\006 \001(\tB\005\222?\002\010 \022\030\n\twifi_chan\030\007 \001(" +
-      "\tB\005\222?\002\010 \022\023\n\004ssid\030\010 \001(\tB\005\222?\002\010 \022\023\n\004pass\030\t " +
-      "\001(\tB\005\222?\002\010 \022\026\n\007ip_addr\030\n \001(\tB\005\222?\002\010 \022\033\n\014ga" +
-      "teway_addr\030\013 \001(\tB\005\222?\002\010 \022\032\n\013subnet_addr\030\014" +
-      " \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_lo\030\r \001(\tB\005\222?\002\010" +
-      " \022\034\n\rdhcp_range_hi\030\016 \001(\tB\005\222?\002\010 \022\035\n\016multi" +
-      "cast_addr\030\017 \001(\tB\005\222?\002\010 \022\031\n\nlocal_port\030\020 \001" +
-      "(\tB\005\222?\002\010 \022\032\n\013remote_port\030\021 \001(\tB\005\222?\002\010 \"K\n" +
-      "\013ESP32CfgMsg\022\035\n\004esp0\030\001 \001(\0132\017.ESP32CfgSub" +
-      "Msg\022\035\n\004esp1\030\002 \001(\0132\017.ESP32CfgSubMsg\"d\n\010Se" +
-      "tHWMsg\022\014\n\004freq\030\001 \001(\r\022\n\n\002bw\030\002 \001(\r\022\n\n\002sf\030\003" +
-      " \001(\r\022\n\n\002cr\030\004 \001(\r\022\013\n\003pwr\030\005 \001(\r\022\014\n\004sync\030\006 " +
-      "\001(\r\022\013\n\003crc\030\007 \001(\r\"&\n\tSigRptMsg\022\014\n\004rssi\030\001 " +
-      "\001(\005\022\013\n\003snr\030\002 \001(\005b\006proto3"
+      "\tB\005\222?\002\010 \022\023\n\004ssid\030\010 \001(\tB\005\222?\002\010 \022\027\n\010passwor" +
+      "d\030\t \001(\tB\005\222?\002\010 \022\026\n\007ip_addr\030\n \001(\tB\005\222?\002\010 \022\033" +
+      "\n\014gateway_addr\030\013 \001(\tB\005\222?\002\010 \022\032\n\013subnet_ad" +
+      "dr\030\014 \001(\tB\005\222?\002\010 \022\034\n\rdhcp_range_lo\030\r \001(\tB\005" +
+      "\222?\002\010 \022\034\n\rdhcp_range_hi\030\016 \001(\tB\005\222?\002\010 \022\035\n\016m" +
+      "ulticast_addr\030\017 \001(\tB\005\222?\002\010 \022\031\n\nlocal_port" +
+      "\030\020 \001(\tB\005\222?\002\010 \022\032\n\013remote_port\030\021 \001(\tB\005\222?\002\010" +
+      " \"K\n\013ESP32CfgMsg\022\035\n\004esp0\030\001 \001(\0132\017.ESP32Cf" +
+      "gSubMsg\022\035\n\004esp1\030\002 \001(\0132\017.ESP32CfgSubMsg\"d" +
+      "\n\010SetHWMsg\022\014\n\004freq\030\001 \001(\r\022\n\n\002bw\030\002 \001(\r\022\n\n\002" +
+      "sf\030\003 \001(\r\022\n\n\002cr\030\004 \001(\r\022\013\n\003pwr\030\005 \001(\r\022\014\n\004syn" +
+      "c\030\006 \001(\r\022\013\n\003crc\030\007 \001(\r\"&\n\tSigRptMsg\022\014\n\004rss" +
+      "i\030\001 \001(\005\022\013\n\003snr\030\002 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -27054,7 +27054,7 @@ public final class Qmesh {
     internal_static_ESP32CfgSubMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ESP32CfgSubMsg_descriptor,
-        new java.lang.String[] { "Exists", "IsBT", "IsAP", "SerName", "BtName", "BtPin", "WifiChan", "Ssid", "Pass", "IpAddr", "GatewayAddr", "SubnetAddr", "DhcpRangeLo", "DhcpRangeHi", "MulticastAddr", "LocalPort", "RemotePort", });
+        new java.lang.String[] { "Exists", "IsBT", "IsAP", "SerName", "BtName", "BtPin", "WifiChan", "Ssid", "Password", "IpAddr", "GatewayAddr", "SubnetAddr", "DhcpRangeLo", "DhcpRangeHi", "MulticastAddr", "LocalPort", "RemotePort", });
     internal_static_ESP32CfgMsg_descriptor =
       getDescriptor().getMessageTypes().get(23);
     internal_static_ESP32CfgMsg_fieldAccessorTable = new

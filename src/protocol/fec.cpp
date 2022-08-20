@@ -508,7 +508,12 @@ auto FECRSV::decode(const vector<uint8_t> &enc_msg, vector<uint8_t> &dec_msg) ->
         get_lock().lock();
     }
     // Deinterleave
-    PORTABLE_ASSERT(enc_msg.size() == encSize());
+    printf("enc_msg.size %d vs. encSize %d\r\n", enc_msg.size(), encSize());
+    if(typeid(*this) == typeid(FECRSVGolay)) {
+        PORTABLE_ASSERT(enc_msg.size() == encSize()-3);
+    } else {
+        PORTABLE_ASSERT(enc_msg.size() == encSize());        
+    }
     vector<uint8_t> deint_msg(get_conv_params().bytes, 0);
     deinterleaveBits(enc_msg, deint_msg);
     PORTABLE_ASSERT(static_cast<int32_t>(deint_msg.size()) == get_conv_params().bytes);

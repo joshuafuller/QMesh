@@ -281,7 +281,7 @@ message ESP32CfgSubMsg {
   string bt_pin = 6 [(nanopb).max_size = 32];
   string wifi_chan = 7 [(nanopb).max_size = 32];
   string ssid = 8 [(nanopb).max_size = 32];
-  string pass = 9 [(nanopb).max_size = 32];
+  string password = 9 [(nanopb).max_size = 32];
   string ip_addr = 10 [(nanopb).max_size = 32];
   string gateway_addr = 11 [(nanopb).max_size = 32];
   string subnet_addr = 12 [(nanopb).max_size = 32];
