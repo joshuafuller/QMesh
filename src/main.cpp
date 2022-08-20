@@ -55,11 +55,9 @@ static void create_background_queue() {
 static void create_threads();
 static void create_threads() {
     constexpr int THREAD_STACK_SIZE = 4096;
-    //background_queue = new portability::EventQueue();
     mesh_protocol_thread = new portability::Thread(osPriorityRealtime, THREAD_STACK_SIZE, nullptr, "MESH-FSM"); /// Handles the mesh protocol
     rx_frame_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "RX-FRAME"); /// Processes and routes received Frames
-    nv_log_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash
-    //background_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "BG"); /// Background thread
+    nv_log_thread = new portability::Thread(osPriorityNormal, THREAD_STACK_SIZE, nullptr, "NV-LOG"); /// Logging to the QSPI flash   
 } 
 
 
@@ -203,12 +201,10 @@ auto main() -> int
 
     start_cal();
     time(&boot_timestamp);
-#if 0
 #if MBED_CONF_APP_HAS_WATCHDOG == 1
     Watchdog &wdt = Watchdog::get_instance();
     wdt.start();
     wdt_pet();
-#endif
 #endif
 
     // Set up the LEDs
@@ -360,15 +356,6 @@ sleep_portable(500);
  
     // Start the OLED monitoring
     background_queue->call(oled_mon_fn);
-
-    // Enable the watchdog timer if configured to do so
-#if 0
-    if(radio_cb.watchdog_timer_en) {
-        debug_printf(DBG_INFO, "Enabling watchdog timer\r\n");
-        // Start the WDT thread
-        wdt_thread.start(wdt_fn);
-    }
-#endif
 
     debug_printf(DBG_INFO, "Starting the memory usage tracker\r\n");
     //start_max_memory_usage();

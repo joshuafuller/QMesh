@@ -187,6 +187,7 @@ auto Frame::calcUniqueCRC() -> uint32_t {
 auto Frame::deserializeCoded(const shared_ptr<vector<uint8_t>> &buf) -> PKT_STATUS_ENUM {
     PORTABLE_ASSERT(!buf->empty());
     PORTABLE_ASSERT(buf->size() <= 256);
+    PORTABLE_ASSERT(buf->size() == fec->encSize());
     // Step zero: remove the forward error correction
     static vector<uint8_t> dec_buf;
     //debug_printf(DBG_WARN, "Received %d bytes\r\n", buf->size());
