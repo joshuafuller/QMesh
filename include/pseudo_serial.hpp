@@ -102,7 +102,7 @@ private:
     PinName tx_port, rx_port, cts_port, rts_port;
     DigitalInOut esp32_rst;
     shared_ptr<UARTSerial> ser;
-    portability::mutex ser_mtx;
+    portability::mutex ser_mtx, recv_data_mtx;
 
 public:
     ~ESP32PseudoSerial() = default;

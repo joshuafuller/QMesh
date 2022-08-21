@@ -206,58 +206,103 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
 }
 
 
+constexpr int MAX_RECV_BYTES = 256;
+constexpr int RECV_TIMEOUT_MS = 50;
 auto ESP32PseudoSerial::getc() -> int {
-    ser_mtx.lock();
-    constexpr int MAX_RECV_BYTES = 256;
-    if(recv_data.empty()) {
+    while(recv_data.empty()) {
         int conn_num = -1;
         int num_bytes = -1;
         vector<uint8_t> buf(MAX_RECV_BYTES);
-        // TODO -- need to factor in when connections come and go
+        bool rx_success = false;
         if(cfg.isBT) {
-            at_parser->recv("+BTDATA:%d,%s", &num_bytes, buf.data());
+            ser_mtx.lock();
+            rx_success = at_parser->recv("+BTDATA:%d,%s", &num_bytes, buf.data());
+            ser_mtx.unlock();
         } else {
-            at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
-            tcp_conns.insert(pair<int, bool>(conn_num, true));
+            ser_mtx.lock();
+            rx_success = at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
+            ser_mtx.unlock();
+            if(rx_success) {
+                tcp_conns.insert(pair<int, bool>(conn_num, true));
+            }
         }
-        PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
-        copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
+        if(rx_success) {
+            PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
+            recv_data_mtx.lock();
+            copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
+            recv_data_mtx.unlock();
+        }
     }
+    recv_data_mtx.lock();
     auto ret_val = recv_data[0];
     recv_data.pop_front();
-    ser_mtx.unlock();
+    recv_data_mtx.unlock();
     return ret_val;
 }
 
 
 auto ESP32PseudoSerial::putc(const int val) -> int {
-    ser_mtx.lock();
     outbuf.push_back(val);
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
         PORTABLE_ASSERT(at_parser != nullptr);
         if(cfg.isBT) {
-            at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size());
-            at_parser->recv(">");
-            at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size());
-            at_parser->recv("OK");
+            at_parser->abort();
+            ser_mtx.lock();
+            at_parser->set_timeout(0);
+            int num_bytes = -1;
+            vector<uint8_t> buf(MAX_RECV_BYTES);
+            bool recv_success = at_parser->recv("+BTDATA:%d,%s", &num_bytes, buf.data());
+            if(recv_success) {
+                PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
+                recv_data_mtx.lock();
+                copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
+                recv_data_mtx.unlock();
+            }
+            at_parser->set_timeout(RECV_TIMEOUT_MS);
+            bool comms_success = at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size()) &&
+                at_parser->recv(">") &&
+                (at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size()) != -1) &&
+                at_parser->recv("OK");
+                ser_mtx.unlock();
+            if(!comms_success) {
+                printf("Failed to send to ESP32 on BT\r\n");
+            }
         }
         else {
             // Iterate through all of the TCP connections
             for(auto & tcp_conn : tcp_conns) {
-                at_parser->send("AT+CIPSEND=%d,%d", tcp_conn.first, outbuf.size());
-                at_parser->recv("OK");
-                at_parser->recv("");
-                at_parser->recv(">");
-                at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size());
+                at_parser->abort();
+                ser_mtx.lock();
+                at_parser->set_timeout(0);
+                int num_bytes = -1;
+                int conn_num = -1;
+                vector<uint8_t> buf(MAX_RECV_BYTES);
+                bool recv_success = at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
+                if(recv_success) {
+                    PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
+                    tcp_conns.insert(pair<int, bool>(conn_num, true));
+                    recv_data_mtx.lock();
+                    copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
+                    recv_data_mtx.unlock();
+                }
+                at_parser->set_timeout(RECV_TIMEOUT_MS);
                 int rx_bytes = -1;
-                at_parser->recv("Recv %d bytes", &rx_bytes);
+                bool comms_success = at_parser->send("AT+CIPSEND=%d,%d", tcp_conn.first, outbuf.size()) &&
+                    at_parser->recv("OK") && 
+                    at_parser->recv("") &&
+                    at_parser->recv(">") &&
+                    (at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size()) != -1) &&
+                    at_parser->recv("Recv %d bytes", &rx_bytes) &&
+                    at_parser->recv("") &&
+                    at_parser->recv("SEND OK");
+                ser_mtx.unlock();
                 PORTABLE_ASSERT(rx_bytes == static_cast<int>(outbuf.size()));
-                at_parser->recv("");
-                at_parser->recv("SEND OK");
+                if(!comms_success) {
+                    printf("Failed to send to ESP32 on WiFi connection %d\r\n", tcp_conn.first);
+                }
             }           
         }
     }
-    ser_mtx.unlock();
     return val;
 }
 
