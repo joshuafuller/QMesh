@@ -101,6 +101,7 @@ private:
     
     PinName tx_port, rx_port, cts_port, rts_port;
     DigitalInOut esp32_rst;
+    atomic<bool> bt_active;
     shared_ptr<UARTSerial> ser;
     portability::mutex ser_mtx, recv_data_mtx;
 
@@ -113,6 +114,9 @@ public:
     auto operator=(const ESP32PseudoSerial &) -> ESP32PseudoSerial & = delete; 	
 
     ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, ESP32CfgSubMsg &my_cfg);
+
+    void at_callback_bt();
+    void at_callback_tcp();
 
     auto putc(int val) -> int override;
     auto getc() -> int override;

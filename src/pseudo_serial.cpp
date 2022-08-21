@@ -32,6 +32,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     cts_port(cts),
     rts_port(rts),
     esp32_rst(DigitalInOut(rst)),
+    bt_active(false),
     ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE))
 {
     PORTABLE_ASSERT(string(cfg.ssid).size() <= SSID_MAX_LEN);
@@ -246,8 +247,9 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
         PORTABLE_ASSERT(at_parser != nullptr);
         if(cfg.isBT) {
-            at_parser->abort();
-            ser_mtx.lock();
+            do {
+                at_parser->abort();
+            } while(ser_mtx.trylock_for(1));
             at_parser->set_timeout(0);
             int num_bytes = -1;
             vector<uint8_t> buf(MAX_RECV_BYTES);
@@ -259,35 +261,59 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
                 recv_data_mtx.unlock();
             }
             at_parser->set_timeout(RECV_TIMEOUT_MS);
-            bool comms_success = at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size()) &&
-                at_parser->recv(">") &&
-                (at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size()) != -1) &&
-                at_parser->recv("OK");
-                ser_mtx.unlock();
-            if(!comms_success) {
-                printf("Failed to send to ESP32 on BT\r\n");
+            // See if there's an established BT connection
+            PORTABLE_ASSERT(at_parser->send("AT+BTSPPCON?"));
+            int conn_idx = -1;
+            PORTABLE_ASSERT(at_parser->recv("+BTSPPCON:%d", &conn_idx));
+            if(conn_idx != -1) {
+                PORTABLE_ASSERT(at_parser->recv("OK"));
+                bool comms_success = at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size()) &&
+                    at_parser->recv(">") &&
+                    (at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size()) != -1) &&
+                    at_parser->recv("OK");
+                    ser_mtx.unlock();
+                if(!comms_success) {
+                    printf("Failed to send to ESP32 on BT\r\n");
+                }
             }
         }
         else {
-            // Iterate through all of the TCP connections
-            for(auto & tcp_conn : tcp_conns) {
+            do {
                 at_parser->abort();
-                ser_mtx.lock();
-                at_parser->set_timeout(0);
-                int num_bytes = -1;
-                int conn_num = -1;
-                vector<uint8_t> buf(MAX_RECV_BYTES);
-                bool recv_success = at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
-                if(recv_success) {
-                    PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
-                    tcp_conns.insert(pair<int, bool>(conn_num, true));
-                    recv_data_mtx.lock();
-                    copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
-                    recv_data_mtx.unlock();
-                }
-                at_parser->set_timeout(RECV_TIMEOUT_MS);
+            } while(ser_mtx.trylock_for(1));
+            at_parser->set_timeout(0);
+            int num_bytes = -1;
+            int conn_num = -1;
+            vector<uint8_t> buf(MAX_RECV_BYTES);
+            bool recv_success = at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
+            if(recv_success) {
+                PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
+                tcp_conns.insert(pair<int, bool>(conn_num, true));
+                recv_data_mtx.lock();
+                copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
+                recv_data_mtx.unlock();
+            }
+            at_parser->set_timeout(RECV_TIMEOUT_MS);
+            // Check to see if there's still any connections
+            PORTABLE_ASSERT(at_parser->send("AT+CIPSTATE?"));
+            int link_id = -1;
+            constexpr int DUMMY_STR_LEN = 32;
+            vector<char> dummy_str(DUMMY_STR_LEN);
+            vector<char> dummy_str2(DUMMY_STR_LEN);
+            int remote_port = -1;
+            int local_port = -1;
+            int tetype = -1;
+            vector<int> link_ids;
+            while(at_parser->recv("+CIPSTATE:%d,%s,%s,%d,%d,%d", 
+                &link_id, dummy_str.data(), dummy_str2.data(), &remote_port, 
+                &local_port, &tetype)) {
+                link_ids.push_back(link_id);
+            }
+            PORTABLE_ASSERT(at_parser->recv("OK")); 
+            // Send everything out over all of the links  
+            for(int & it : link_ids) {
                 int rx_bytes = -1;
-                bool comms_success = at_parser->send("AT+CIPSEND=%d,%d", tcp_conn.first, outbuf.size()) &&
+                bool comms_success = at_parser->send("AT+CIPSEND=%d,%d", it, outbuf.size()) &&
                     at_parser->recv("OK") && 
                     at_parser->recv("") &&
                     at_parser->recv(">") &&
@@ -298,10 +324,11 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
                 ser_mtx.unlock();
                 PORTABLE_ASSERT(rx_bytes == static_cast<int>(outbuf.size()));
                 if(!comms_success) {
-                    printf("Failed to send to ESP32 on WiFi connection %d\r\n", tcp_conn.first);
+                    printf("Failed to send to ESP32 on WiFi connection %d\r\n", link_id);
                 }
-            }           
+            } 
         }
+        outbuf.clear();
     }
     return val;
 }
