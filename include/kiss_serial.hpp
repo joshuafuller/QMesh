@@ -129,8 +129,6 @@ private:
     bool using_stdio;
     bool flow_control;
 
-    void configure_esp32_bt();
-    void configure_esp32_wifi();
     void set_uart_flow_ctl(FILE *ser_fh);
 
 public:
