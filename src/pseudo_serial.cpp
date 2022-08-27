@@ -107,6 +107,17 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
             string wifi_mode_cmd("AT+CWMODE=2\r\n");
             at_parser->send(safe_pcts(wifi_mode_cmd).c_str(), wifi_mode_cmd.c_str());
             PORTABLE_ASSERT(at_parser->recv("OK"));
+            string wifi_tcp_close_cmd("AT+CIPCLOSE=5\r\n");
+            at_parser->send(safe_pcts(wifi_tcp_close_cmd).c_str(), wifi_tcp_close_cmd.c_str());
+            string wifi_conn_mux_cmd("AT+CIPMUX=1\r\n");
+            at_parser->send(safe_pcts(wifi_conn_mux_cmd).c_str(), wifi_conn_mux_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));
+            // Setup a TCP server
+            string wifi_tcp_srvr_cmd("AT+CIPSERVER=1,");
+            wifi_tcp_srvr_cmd.append(cfg.local_port);
+            wifi_tcp_srvr_cmd.append("\r\n");
+            at_parser->send(safe_pcts(wifi_tcp_srvr_cmd).c_str(), wifi_tcp_srvr_cmd.c_str());
+            PORTABLE_ASSERT(at_parser->recv("OK"));   
             // Set the ESP SoftAP params
             string wifi_softap_cmd("AT+CWSAP=");
             wifi_softap_cmd.append("\"");
@@ -190,15 +201,6 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
             at_parser->send(safe_pcts(wifi_conn_ap_cmd).c_str(), wifi_conn_ap_cmd.c_str());
             PORTABLE_ASSERT(at_parser->recv("OK"));
         }
-        // Setup a TCP server
-        string wifi_conn_mux_cmd("AT+CIPMUX=1\r\n");
-        at_parser->send(safe_pcts(wifi_conn_mux_cmd).c_str(), wifi_conn_mux_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));
-        string wifi_tcp_srvr_cmd("AT+CIPSERVER=1,");
-        wifi_tcp_srvr_cmd.append(cfg.local_port);
-        wifi_tcp_srvr_cmd.append("\r\n");
-        at_parser->send(safe_pcts(wifi_tcp_srvr_cmd).c_str(), wifi_tcp_srvr_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));   
 
         // Enter passthrough mode
         //string wifi_pass_cmd("AT+CIPSEND\r\n");
@@ -213,6 +215,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
 constexpr int MAX_RECV_BYTES = 256;
 constexpr int RECV_TIMEOUT_MS = 50;
 auto ESP32PseudoSerial::getc() -> int {
+    printf("in getc\r\n");
     while(recv_data.empty()) {
         int conn_num = -1;
         int num_bytes = -1;
@@ -221,7 +224,7 @@ auto ESP32PseudoSerial::getc() -> int {
         if(cfg.isBT) {
             ser_mtx.lock();
             at_parser->set_timeout(RECV_TIMEOUT_MS);
-            string at_fmt_str("+BTDATA:%8d,%");
+            string at_fmt_str("+BTDATA:%d,%");
             at_fmt_str.append(to_string(MAX_RECV_BYTES));
             at_fmt_str.append("s");
             rx_success = at_parser->recv(at_fmt_str.c_str(), &num_bytes, buf.data());
@@ -229,17 +232,22 @@ auto ESP32PseudoSerial::getc() -> int {
         } else {
             ser_mtx.lock();
             at_parser->set_timeout(RECV_TIMEOUT_MS);
-            string at_fmt_str("+IPD,%8d,%8d:%");
-            at_fmt_str.append(to_string(MAX_RECV_BYTES));
-            at_fmt_str.append("s");
+            string at_fmt_str("+IPD,%d,%d:");
+            //at_fmt_str.append(to_string(MAX_RECV_BYTES));
+            //at_fmt_str.append("s");
             rx_success = at_parser->recv(at_fmt_str.c_str(), &conn_num, &num_bytes, buf.data());
+            if(rx_success) {
+                for(int i = 0; i < num_bytes; i++) {
+                    buf[i] = at_parser->getc();
+                }
+            }
             ser_mtx.unlock();
             if(rx_success) {
                 tcp_conns.insert(pair<int, bool>(conn_num, true));
             }
         }
         if(rx_success) {
-            PORTABLE_ASSERT(num_bytes > MAX_RECV_BYTES);
+            PORTABLE_ASSERT(num_bytes < MAX_RECV_BYTES);
             recv_data_mtx.lock();
             copy(buf.begin(), buf.begin()+num_bytes, back_inserter(recv_data));
             recv_data_mtx.unlock();
@@ -321,37 +329,17 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             vector<int> link_ids;
             constexpr int RECV_STR_LEN = 128;
             vector<char> recv_char(RECV_STR_LEN);
+            link_ids.clear();
             for(;;) {
-                string at_recv_fmt_str("%");
-                at_recv_fmt_str.append(to_string(RECV_STR_LEN));
-                PORTABLE_ASSERT(at_parser->recv(at_recv_fmt_str.c_str(), recv_char.data()));
-                string recv_str(recv_char.data());
-                if(recv_str.find("OK") != 0) {
+                if(!at_parser->recv("+CIPSTATE:%d,%s", &link_id, recv_char.data())) {
                     break;
-                }
-                string cipstate_str("+CIPSTATE:%8d");
-                cipstate_str.append("%");
-                cipstate_str.append(to_string(DUMMY_STR_LEN));
-                cipstate_str.append("s%");
-                cipstate_str.append(to_string(DUMMY_STR_LEN));
-                cipstate_str.append("s%8d%8d%8d");  
-                int scanf_read = sscanf(recv_str.c_str(), 
-                                cipstate_str.c_str(),
-                                &link_id, 
-                                dummy_str.data(), 
-                                dummy_str2.data(), 
-                                &remote_port, 
-                                &local_port, 
-                                &tetype);
-                PORTABLE_ASSERT(scanf_read != 0);
-                PORTABLE_ASSERT(scanf_read > RECV_STR_LEN);
+                } 
                 link_ids.push_back(link_id);
-               
             }
             // Send everything out over all of the links  
             for(int & it : link_ids) {
                 int rx_bytes = -1;
-                bool comms_success = at_parser->send("AT+CIPSEND=%8d,%8d", it, outbuf.size()) &&
+                bool comms_success = at_parser->send("AT+CIPSEND=%d,%d", it, outbuf.size()) &&
                     at_parser->recv("OK") && 
                     at_parser->recv("") &&
                     at_parser->recv(">") &&

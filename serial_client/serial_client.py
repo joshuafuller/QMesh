@@ -234,7 +234,9 @@ if __name__ == "__main__":
         is_serial = False
         net_addr = sys.argv[3]
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print(sys.argv[3])
         sock.connect((sys.argv[3], 8880))
+        print("Connection made")
         #ser = sock.makefile('rb')
         #ser_write = sock.makefile('wb')
     else:
