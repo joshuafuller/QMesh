@@ -516,8 +516,8 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts,
 }
 
 
-static constexpr int BT_NAME_MAX_LEN = 8;
-static constexpr int BT_PIN_MAX_LEN = 4;
+//static constexpr int BT_NAME_MAX_LEN = 8;
+//static constexpr int BT_PIN_MAX_LEN = 4;
 void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
     PORTABLE_ASSERT(false);
     // Set the UART values in the ESP32

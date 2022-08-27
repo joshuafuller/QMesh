@@ -51,8 +51,8 @@ esp0_subnet_addr: 255.255.255.0
 esp0_dhcp_range_lo: 192.168.10.10
 esp0_dhcp_range_hi: 192.168.10.50
 esp0_multicast_addr: 224.0.0.0
-esp0_local_port: "1000"
-esp0_remote_port: "1002"
+esp0_local_port: "8880"
+esp0_remote_port: "8881"
 
 esp1_exists: false
 esp1_isbt: true
@@ -69,6 +69,6 @@ esp1_subnet_addr: 255.255.255.0
 esp1_dhcp_range_lo: 192.168.20.10
 esp1_dhcp_range_hi: 192.168.20.50
 esp1_multicast_addr: 224.0.0.1
-esp1_local_port: "1000"
-esp1_remote_port: "1002"
+esp1_local_port: "8880"
+esp1_remote_port: "8881"
 

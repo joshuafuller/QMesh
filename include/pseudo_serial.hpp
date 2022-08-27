@@ -115,6 +115,8 @@ public:
 
     ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, ESP32CfgSubMsg &my_cfg);
 
+    static auto safe_pcts(string &send_str) -> string;
+
     void at_callback_bt();
     void at_callback_tcp();
 
