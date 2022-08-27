@@ -244,7 +244,8 @@ public:
 
 /// Manages the possibly-multiple connections of an ESP32
 static constexpr uint32_t SER_BAUD_RATE = 230400;
-static constexpr int SSID_MAX_LEN = 8;
+static constexpr uint32_t ESP_BAUD_RATE = 115200;
+static constexpr int SSID_MAX_LEN = 16;
 static constexpr int PASS_MAX_LEN = 32;
 static constexpr int QUARTER_SECOND = 250;
 static constexpr int HALF_SECOND = 500;

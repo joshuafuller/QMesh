@@ -33,7 +33,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     rts_port(rts),
     esp32_rst(DigitalInOut(rst)),
     bt_active(false),
-    ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE))
+    ser(make_shared<UARTSerial>(tx_port, rx_port, ESP_BAUD_RATE))
 {
     PORTABLE_ASSERT(string(cfg.ssid).size() <= SSID_MAX_LEN);
     PORTABLE_ASSERT(string(cfg.password).size() <= PASS_MAX_LEN);
@@ -45,8 +45,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     esp32_rst = 1;
     portability::sleep(ONE_SECOND);
     // Set up the flow control on the STM32's UART
-    PORTABLE_ASSERT(cts_port != NC && rts_port == NC);
-    PORTABLE_ASSERT(cts_port == NC && rts_port != NC);
+    PORTABLE_ASSERT(!(cts_port == NC ^ rts_port == NC));
     if(cts_port != NC && rts_port != NC) {
         ser->set_flow_control(mbed::SerialBase::RTSCTS, rts_port, cts_port);
         portability::sleep(QUARTER_SECOND);
@@ -188,20 +187,16 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
         at_parser->send("%s", wifi_conn_mux_cmd.c_str());
         PORTABLE_ASSERT(at_parser->recv("OK"));
         string wifi_tcp_srvr_cmd("AT+CIPSERVER=1,");
-        wifi_tcp_srvr_cmd.append(cfg.multicast_addr);
-        wifi_tcp_srvr_cmd.append(",");
-        wifi_tcp_srvr_cmd.append(cfg.remote_port);
-        wifi_tcp_srvr_cmd.append(",");
         wifi_tcp_srvr_cmd.append(cfg.local_port);
-        wifi_tcp_srvr_cmd.append(",0\r\n");
+        wifi_tcp_srvr_cmd.append("\r\n");
         at_parser->send("%s", wifi_tcp_srvr_cmd.c_str());
         PORTABLE_ASSERT(at_parser->recv("OK"));   
 
         // Enter passthrough mode
-        string wifi_pass_cmd("AT+CIPSEND\r\n");
-        at_parser->send("%s", wifi_pass_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));   
-        portability::sleep(QUARTER_SECOND);
+        //string wifi_pass_cmd("AT+CIPSEND\r\n");
+        //at_parser->send("%s", wifi_pass_cmd.c_str());
+        //PORTABLE_ASSERT(at_parser->recv("OK"));   
+        //portability::sleep(QUARTER_SECOND);
     }
     printf("Done with configuration\r\n");
 }
@@ -210,17 +205,21 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
 constexpr int MAX_RECV_BYTES = 256;
 constexpr int RECV_TIMEOUT_MS = 50;
 auto ESP32PseudoSerial::getc() -> int {
+    printf("in getc\r\n");
     while(recv_data.empty()) {
+        printf("in getc while loop\r\n");
         int conn_num = -1;
         int num_bytes = -1;
         vector<uint8_t> buf(MAX_RECV_BYTES);
         bool rx_success = false;
         if(cfg.isBT) {
             ser_mtx.lock();
+            at_parser->set_timeout(RECV_TIMEOUT_MS);
             rx_success = at_parser->recv("+BTDATA:%d,%s", &num_bytes, buf.data());
             ser_mtx.unlock();
         } else {
             ser_mtx.lock();
+            at_parser->set_timeout(RECV_TIMEOUT_MS);
             rx_success = at_parser->recv("+IPD,%d,%d:%s", &conn_num, &num_bytes, buf.data());
             ser_mtx.unlock();
             if(rx_success) {
@@ -243,13 +242,12 @@ auto ESP32PseudoSerial::getc() -> int {
 
 
 auto ESP32PseudoSerial::putc(const int val) -> int {
+    printf("entering putc\r\n");
     outbuf.push_back(val);
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
         PORTABLE_ASSERT(at_parser != nullptr);
         if(cfg.isBT) {
-            do {
-                at_parser->abort();
-            } while(ser_mtx.trylock_for(1));
+            do { at_parser->abort(); } while(ser_mtx.trylock_for(1));
             at_parser->set_timeout(0);
             int num_bytes = -1;
             vector<uint8_t> buf(MAX_RECV_BYTES);
@@ -278,9 +276,8 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             }
         }
         else {
-            do {
-                at_parser->abort();
-            } while(ser_mtx.trylock_for(1));
+            printf("Doing a putc iteration\r\n");
+            do { at_parser->abort(); } while(ser_mtx.trylock_for(1));
             at_parser->set_timeout(0);
             int num_bytes = -1;
             int conn_num = -1;
