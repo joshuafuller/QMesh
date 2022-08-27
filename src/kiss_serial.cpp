@@ -524,10 +524,10 @@ void KISSSerialUART::set_uart_flow_ctl(FILE *ser_fh) {
     string flow_ctl_cmd("AT+UART_CUR=");
     constexpr int STR_SIZE = 32;
     vector<char> baud_rate_string(STR_SIZE);
-    snprintf(baud_rate_string.data(), baud_rate_string.size(), "%d", static_cast<int32_t>(BT_BAUD_RATE));
+    snprintf(baud_rate_string.data(), baud_rate_string.size(), "%8d", static_cast<int32_t>(BT_BAUD_RATE));
     flow_ctl_cmd.append(baud_rate_string.data());
     flow_ctl_cmd.append(",8,1,0,3\r\n");
-    fprintf(ser_fh, "%s", flow_ctl_cmd.c_str()); 
+    fprintf(ser_fh, PseudoSerial::safe_pcts(flow_ctl_cmd).c_str(), flow_ctl_cmd.c_str()); 
     // Set the UART values on the ST board
     ser->set_baud(BT_BAUD_RATE);
     ser->set_flow_control(mbed::SerialBase::RTSCTS, rts_port, cts_port);
@@ -569,7 +569,8 @@ KISSSerialUART::~KISSSerialUART() {
         portability::sleep(QUARTER_SECOND);
         string bt_leave_passthrough_cmd("+++\r\n");
         if(ser_fh != nullptr) {
-            fprintf(ser_fh, "%s", bt_leave_passthrough_cmd.c_str());
+            fprintf(ser_fh, PseudoSerial::safe_pcts(bt_leave_passthrough_cmd).c_str(), 
+                    bt_leave_passthrough_cmd.c_str());
         } else {
             PORTABLE_ASSERT(false);
         }
@@ -758,7 +759,7 @@ void KISSSerial::send_error(const string &err_str) {
     auto ser_msg_sptr = make_shared<SerMsg>();
     ser_msg_sptr->type(SerialMsg_Type_ERR);
     strncpy(ser_msg_sptr->error_msg().msg, err_str.c_str(), sizeof(ser_msg_sptr->error_msg().msg));
-    debug_printf(DBG_WARN, "%s", err_str.c_str());
+    debug_printf(DBG_WARN, PseudoSerial::safe_pcts(err_str).c_str(), err_str.c_str());
     tx_ser_queue.enqueue_mail(ser_msg_sptr);   
 }  
 

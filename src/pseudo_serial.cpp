@@ -24,12 +24,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 
 
-auto ESP32PseudoSerial::safe_pcts(string &send_str) -> string {
+auto PseudoSerial::safe_pcts(const string &send_str) -> string {
     string safe_str("%");
     safe_str.append(to_string(send_str.size()));
     safe_str.append("s");
     return safe_str;
 }
+
 
 ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, 
                             ESP32CfgSubMsg &my_cfg) :

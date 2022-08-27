@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class PseudoSerial {
 public:
+    static auto safe_pcts(const string &send_str) -> string;
     virtual auto putc(int val) -> int = 0;
     virtual auto getc() -> int = 0;
 };
@@ -114,8 +115,6 @@ public:
     auto operator=(const ESP32PseudoSerial &) -> ESP32PseudoSerial & = delete; 	
 
     ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, ESP32CfgSubMsg &my_cfg);
-
-    static auto safe_pcts(string &send_str) -> string;
 
     void at_callback_bt();
     void at_callback_tcp();
