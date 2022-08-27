@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//#include "absl/strings/match.h"
 #include "mbed.h"
 #include "pseudo_serial.hpp"
 #include <vector>
@@ -205,9 +206,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
 constexpr int MAX_RECV_BYTES = 256;
 constexpr int RECV_TIMEOUT_MS = 50;
 auto ESP32PseudoSerial::getc() -> int {
-    printf("in getc\r\n");
     while(recv_data.empty()) {
-        printf("in getc while loop\r\n");
         int conn_num = -1;
         int num_bytes = -1;
         vector<uint8_t> buf(MAX_RECV_BYTES);
@@ -242,7 +241,6 @@ auto ESP32PseudoSerial::getc() -> int {
 
 
 auto ESP32PseudoSerial::putc(const int val) -> int {
-    printf("entering putc\r\n");
     outbuf.push_back(val);
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
         PORTABLE_ASSERT(at_parser != nullptr);
@@ -276,8 +274,9 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             }
         }
         else {
-            printf("Doing a putc iteration\r\n");
-            do { at_parser->abort(); } while(ser_mtx.trylock_for(1));
+            //do { at_parser->abort(); } while(ser_mtx.lock();
+            at_parser->abort();
+            ser_mtx.lock();
             at_parser->set_timeout(0);
             int num_bytes = -1;
             int conn_num = -1;
@@ -301,12 +300,25 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             int local_port = -1;
             int tetype = -1;
             vector<int> link_ids;
-            while(at_parser->recv("+CIPSTATE:%d,%s,%s,%d,%d,%d", 
-                &link_id, dummy_str.data(), dummy_str2.data(), &remote_port, 
-                &local_port, &tetype)) {
-                link_ids.push_back(link_id);
+            constexpr int RECV_STR_LEN = 128;
+            vector<char> recv_char(RECV_STR_LEN);
+            for(;;) {
+                PORTABLE_ASSERT(at_parser->recv("%s", recv_char.data()));
+                string recv_str(recv_char.data());
+                if(recv_str.find("OK") != 0) {
+                    break;
+                } else {
+                    PORTABLE_ASSERT(sscanf(recv_str.c_str(), 
+                                    "+CIPSTATE:%d,%s,%s,%d,%d,%d",
+                                    &link_id, 
+                                    dummy_str.data(), 
+                                    dummy_str2.data(), 
+                                    &remote_port, 
+                                    &local_port, 
+                                    &tetype) != 0);
+                    link_ids.push_back(link_id);
+                }
             }
-            PORTABLE_ASSERT(at_parser->recv("OK")); 
             // Send everything out over all of the links  
             for(int & it : link_ids) {
                 int rx_bytes = -1;
@@ -318,13 +330,14 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
                     at_parser->recv("Recv %d bytes", &rx_bytes) &&
                     at_parser->recv("") &&
                     at_parser->recv("SEND OK");
-                ser_mtx.unlock();
                 PORTABLE_ASSERT(rx_bytes == static_cast<int>(outbuf.size()));
                 if(!comms_success) {
                     printf("Failed to send to ESP32 on WiFi connection %d\r\n", link_id);
                 }
             } 
+            ser_mtx.unlock();
         }
+        printf("clearing the outbuf\r\n");
         outbuf.clear();
     }
     return val;

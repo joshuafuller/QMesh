@@ -447,15 +447,18 @@ cts_port(cts),
 rts_port(rts),
 esp32_rst(DigitalInOut(rst)),
 ser(make_shared<UARTSerial>(tx_port, rx_port, SER_BAUD_RATE)),
-flow_control(true) {
+flow_control(cts != NC) {
     PORTABLE_ASSERT(ser);
     *pserRd() = make_shared<ESP32PseudoSerial>(tx, rx, rst, cts, rts, my_cfg);
     *pserWr() = *pserRd();
     using_stdio = false;
-
+    printf("starting the threads\r\n");
+    startThreads();
+    printf("loading the serial ports\r\n");
     kiss_sers_mtx->lock();
     kiss_sers.push_back(this);
     kiss_sers_mtx->unlock();
+    printf("loaded the serial ports\r\n");
 }
 
 
