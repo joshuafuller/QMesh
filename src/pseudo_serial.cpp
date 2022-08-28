@@ -32,6 +32,9 @@ auto PseudoSerial::safe_pcts(const string &send_str) -> string {
 }
 
 
+constexpr int MAX_RECV_BYTES = 256;
+constexpr int RECV_TIMEOUT_MS = 10;
+constexpr int RECV_TIMEOUT_RX_MS = 25;
 ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinName cts, PinName rts, 
                             ESP32CfgSubMsg &my_cfg) :
     cfg(my_cfg),
@@ -66,6 +69,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     // Start the AT command parser
     at_parser = make_shared<ATCmdParser>(&*ser);
     at_parser->debug_on(1);
+    at_parser->set_timeout(RECV_TIMEOUT_MS);
     at_parser->set_delimiter("\r\n");
     if(cfg.isBT) {
         // Initialize BT
@@ -109,6 +113,11 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
             PORTABLE_ASSERT(at_parser->recv("OK"));
             string wifi_tcp_close_cmd("AT+CIPCLOSE=5\r\n");
             at_parser->send(safe_pcts(wifi_tcp_close_cmd).c_str(), wifi_tcp_close_cmd.c_str());
+            vector<char> test_str(MAX_RECV_BYTES);
+            string wifi_tcp_close_str("%");
+            wifi_tcp_close_str.append(to_string(MAX_RECV_BYTES));
+            wifi_tcp_close_str.append("s");
+            PORTABLE_ASSERT(at_parser->recv(wifi_tcp_close_str.data(), test_str.data()));
             string wifi_conn_mux_cmd("AT+CIPMUX=1\r\n");
             at_parser->send(safe_pcts(wifi_conn_mux_cmd).c_str(), wifi_conn_mux_cmd.c_str());
             PORTABLE_ASSERT(at_parser->recv("OK"));
@@ -212,8 +221,6 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
 }
 
 
-constexpr int MAX_RECV_BYTES = 256;
-constexpr int RECV_TIMEOUT_MS = 50;
 auto ESP32PseudoSerial::getc() -> int {
     printf("in getc\r\n");
     while(recv_data.empty()) {
@@ -223,7 +230,7 @@ auto ESP32PseudoSerial::getc() -> int {
         bool rx_success = false;
         if(cfg.isBT) {
             ser_mtx.lock();
-            at_parser->set_timeout(RECV_TIMEOUT_MS);
+            at_parser->set_timeout(RECV_TIMEOUT_RX_MS);
             string at_fmt_str("+BTDATA:%d,%");
             at_fmt_str.append(to_string(MAX_RECV_BYTES));
             at_fmt_str.append("s");
@@ -231,7 +238,7 @@ auto ESP32PseudoSerial::getc() -> int {
             ser_mtx.unlock();
         } else {
             ser_mtx.lock();
-            at_parser->set_timeout(RECV_TIMEOUT_MS);
+            at_parser->set_timeout(RECV_TIMEOUT_RX_MS);
             string at_fmt_str("+IPD,%d,%d:");
             //at_fmt_str.append(to_string(MAX_RECV_BYTES));
             //at_fmt_str.append("s");
@@ -266,7 +273,8 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
         PORTABLE_ASSERT(at_parser != nullptr);
         if(cfg.isBT) {
-            do { at_parser->abort(); } while(ser_mtx.trylock_for(1));
+            at_parser->abort();
+            ser_mtx.lock();
             at_parser->set_timeout(0);
             int num_bytes = -1;
             vector<uint8_t> buf(MAX_RECV_BYTES);
@@ -287,7 +295,7 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             PORTABLE_ASSERT(at_parser->recv("+BTSPPCON:%8d", &conn_idx));
             if(conn_idx != -1) {
                 PORTABLE_ASSERT(at_parser->recv("OK"));
-                bool comms_success = at_parser->send("AT+BTSPPSEND=0,%8d", outbuf.size()) &&
+                bool comms_success = at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size()) &&
                     at_parser->recv(">") &&
                     (at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size()) != -1) &&
                     at_parser->recv("OK");
@@ -296,16 +304,14 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
                     printf("Failed to send to ESP32 on BT\r\n");
                 }
             }
-        }
-        else {
-            //do { at_parser->abort(); } while(ser_mtx.lock();
+        } else {
             at_parser->abort();
             ser_mtx.lock();
             at_parser->set_timeout(0);
             int num_bytes = -1;
             int conn_num = -1;
             vector<uint8_t> buf(MAX_RECV_BYTES);
-            string ipd_fmt_str("+IPD,%8d,%8d:%");
+            string ipd_fmt_str("+IPD,%d,%d:%");
             ipd_fmt_str.append(to_string(MAX_RECV_BYTES));
             ipd_fmt_str.append("s");
             bool recv_success = at_parser->recv(ipd_fmt_str.c_str(), &conn_num, &num_bytes, buf.data());
@@ -320,18 +326,15 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             // Check to see if there's still any connections
             PORTABLE_ASSERT(at_parser->send("AT+CIPSTATE?"));
             int link_id = -1;
-            constexpr int DUMMY_STR_LEN = 32;
-            vector<char> dummy_str(DUMMY_STR_LEN);
-            vector<char> dummy_str2(DUMMY_STR_LEN);
-            int remote_port = -1;
-            int local_port = -1;
-            int tetype = -1;
             vector<int> link_ids;
             constexpr int RECV_STR_LEN = 128;
             vector<char> recv_char(RECV_STR_LEN);
             link_ids.clear();
+            string cipstate_str("+CIPSTATE:%d,%");
+            cipstate_str.append(to_string(RECV_STR_LEN));
+            cipstate_str.append("s");
             for(;;) {
-                if(!at_parser->recv("+CIPSTATE:%d,%s", &link_id, recv_char.data())) {
+                if(!at_parser->recv(cipstate_str.c_str(), &link_id, recv_char.data())) {
                     break;
                 } 
                 link_ids.push_back(link_id);
