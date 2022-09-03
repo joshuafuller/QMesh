@@ -68,30 +68,17 @@ static void setup_uarts() {
     // Start the serial handler threads
 #ifdef MBED_CONF_APP_DEBUG_UART_TX
     portability::sleep(HALF_SECOND);
-#if 0
-    auto *debug_ser = new KISSSerialUART(MBED_CONF_APP_DEBUG_UART_TX, MBED_CONF_APP_DEBUG_UART_RX, 
-                                MBED_CONF_APP_DEBUG_UART_CTS, MBED_CONF_APP_DEBUG_UART_RTS,
-                                DEBUG_PORT);
-#else
     auto *debug_ser = new KISSSerialUART(MBED_CONF_APP_DEBUG_UART_TX, MBED_CONF_APP_DEBUG_UART_RX, 
                                 DEBUG_PORT);
-#endif
     PORTABLE_ASSERT(debug_ser);
 #endif /* MBED_CONF_APP_DEBUG_UART_TX */
 
-#if 1
 #ifdef MBED_CONF_APP_KISS_UART_TX_ESP32_0
     if(radio_cb.esp_cfg_msg.esp0.exists) {
         portability::sleep(HALF_SECOND);
         PORTABLE_ASSERT(radio_cb.esp_cfg_msg.has_esp0);
-#if 0
-        auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
-                        KISS_UART_RST_ESP32_0, KISS_UART_CTS_ESP32_0, KISS_UART_RTS_ESP32_0, 
-                        radio_cb.esp_cfg_msg.esp0, DEBUG_PORT);
-#else
         auto *esp32_0_ser = new KISSSerialUART(KISS_UART_TX_ESP32_0, KISS_UART_RX_ESP32_0, 
                         KISS_UART_RST_ESP32_0, radio_cb.esp_cfg_msg.esp0, DEBUG_PORT);
-#endif
         PORTABLE_ASSERT(esp32_0_ser);
     }
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_0 */
@@ -106,7 +93,6 @@ static void setup_uarts() {
         PORTABLE_ASSERT(esp32_1_ser);
     }
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */
-#endif
 }
 
 time_t boot_timestamp;
@@ -273,14 +259,6 @@ auto main() -> int
     osStatus stat = rx_frame_thread->start(rx_frame_ser_thread_fn);
     PORTABLE_ASSERT(stat == osOK);
 
-    // Start up the GPS code
-#if 0
-    if(radio_cb.gps_en) {
-        stat = gps_thread.start(gpsd_thread_fn);
-        PORTABLE_ASSERT(stat == osOK);
-    }
-#endif
-
     // Wait for 2 seconds in MANAGEMENT mode
     current_mode = system_state_t::MANAGEMENT;
     oled->printf("MANAGEMENT mode...\r\n");
@@ -299,32 +277,6 @@ auto main() -> int
     led2->LEDOff();
     led3->LEDOff();
 
-    // Test the FEC
-#if 0
-    debug_printf(DBG_INFO, "Now testing the FEC\r\n");
-    auto fec_frame = make_shared<Frame>();  
-    debug_printf(DBG_INFO, "Size of fec_frame is %d\r\n", fec_frame->codedSize());
-    print_memory_info();
-    {
-    auto fec_test_fec = make_shared<FEC>(Frame::size());
-    fec_test_fec->benchmark(TENTH_SECOND);
-    auto fec_test_interleave = make_shared<FECInterleave>(Frame::size());
-    fec_test_interleave->benchmark(TENTH_SECOND);
-    auto fec_test_conv = make_shared<FECConv>(Frame::size(), 2, 9);
-    fec_test_conv->benchmark(TENTH_SECOND);
-    sleep_portable(HALF_SECOND);
-    auto fec_test_rsv = make_shared<FECRSV>(Frame::size(), 2, 9, 8);
-    fec_test_rsv->benchmark(TENTH_SECOND);
-    sleep_portable(HALF_SECOND);
-    print_memory_info();
-    auto fec_test_rsv_big = make_shared<FECRSV>(Frame::size(), 3, 9, 8);
-    fec_test_rsv_big->benchmark(TENTH_SECOND);
-    sleep_portable(HALF_SECOND);
-    print_memory_info();
-    } 
-print_memory_info();
-sleep_portable(500);
-#endif
     // Start the NVRAM logging thread
     debug_printf(DBG_INFO, "Starting the NV logger\r\n");
     PORTABLE_ASSERT(nv_log_thread != nullptr);

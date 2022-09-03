@@ -106,6 +106,9 @@ private:
     shared_ptr<UARTSerial> ser;
     portability::mutex ser_mtx, recv_data_mtx;
 
+    atomic<int32_t> idle_time;
+    auto putc(int val, bool dummy_char) -> int;
+
 public:
     ~ESP32PseudoSerial() = default;
 
@@ -244,7 +247,7 @@ public:
 //   11. Have multiple ESP32 pseudo serial ports created (debug, voice, data). Each one operates on the same ESP32 object.
 
 /// Manages the possibly-multiple connections of an ESP32
-static constexpr uint32_t SER_BAUD_RATE = 230400;
+static constexpr uint32_t SER_BAUD_RATE = 115200;
 static constexpr uint32_t ESP_BAUD_RATE = 115200;
 static constexpr int SSID_MAX_LEN = 16;
 static constexpr int PASS_MAX_LEN = 32;

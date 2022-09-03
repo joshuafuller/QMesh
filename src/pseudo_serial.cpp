@@ -72,18 +72,28 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     at_parser->set_timeout(RECV_TIMEOUT_MS);
     at_parser->set_delimiter("\r\n");
     if(cfg.isBT) {
-        // Initialize BT
-        string bt_mode_cmd("AT+BTINIT=1\r\n");
-        at_parser->send(safe_pcts(bt_mode_cmd).c_str(), bt_mode_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK"));
+        printf("Bluetooth chosen\r\n");
+        string bt_mode_chk_cmd("AT+BTINIT?\r\n");
+        at_parser->send(safe_pcts(bt_mode_chk_cmd).c_str(), bt_mode_chk_cmd.c_str());
+        int32_t bt_init = -1;
+        at_parser->recv("+BTINIT:%d\r\n", &bt_init);
+        at_parser->recv("OK");
+        if(bt_init == 0) {
+            // Initialize BT
+            string bt_mode_cmd("AT+BTINIT=1\r\n");
+            at_parser->send(safe_pcts(bt_mode_cmd).c_str(), bt_mode_cmd.c_str());
+            portability::sleep(ONE_SECOND);
+            PORTABLE_ASSERT(at_parser->recv("OK"));
+        }
         // Initialize BT SPP
         string bt_spp_cmd("AT+BTSPPINIT=2\r\n");
         at_parser->send(safe_pcts(bt_spp_cmd).c_str(), bt_spp_cmd.c_str());
         PORTABLE_ASSERT(at_parser->recv("OK"));
         // Set the BT name
         string bt_name_cmd("AT+BTNAME=");
+        bt_name_cmd.append("\"");
         bt_name_cmd.append(cfg.bt_name);
-        bt_name_cmd.append("\r\n");
+        bt_name_cmd.append("\"\r\n");
         at_parser->send(safe_pcts(bt_name_cmd).c_str(), bt_name_cmd.c_str());
         PORTABLE_ASSERT(at_parser->recv("OK"));
         // Set the BT scanmode
@@ -102,9 +112,9 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
         PORTABLE_ASSERT(at_parser->recv("OK"));
         // Set up the passthrough mode
         // NOTE: see whether this is actually possible to do without an active BT connection
-        string bt_passthru_cmd("AT+BTSPPSEND\r\n");
-        at_parser->send(safe_pcts(bt_passthru_cmd).c_str(), bt_passthru_cmd.c_str());
-        PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>\r\n"));
+        //string bt_passthru_cmd("AT+BTSPPSEND\r\n");
+        //at_parser->send(safe_pcts(bt_passthru_cmd).c_str(), bt_passthru_cmd.c_str());
+        //PORTABLE_ASSERT(at_parser->recv("OK\r\n\r\n>\r\n"));
     } else { 
         if(cfg.isAP) {
             // Set the Wi-Fi mode to SoftAP mode
@@ -210,20 +220,19 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
             at_parser->send(safe_pcts(wifi_conn_ap_cmd).c_str(), wifi_conn_ap_cmd.c_str());
             PORTABLE_ASSERT(at_parser->recv("OK"));
         }
-
-        // Enter passthrough mode
-        //string wifi_pass_cmd("AT+CIPSEND\r\n");
-        //at_parser->send("%s", wifi_pass_cmd.c_str());
-        //PORTABLE_ASSERT(at_parser->recv("OK"));   
-        //portability::sleep(QUARTER_SECOND);
+        idle_time = static_cast<int32_t>(time(nullptr));
     }
-    printf("Done with configuration\r\n");
 }
 
 
+static constexpr int MAX_IDLE_TIME_SEC = 5;
 auto ESP32PseudoSerial::getc() -> int {
-    printf("in getc\r\n");
     while(recv_data.empty()) {
+        // Send out dummy characters to prevent ESP32 TCP server from timing out
+        if((static_cast<int32_t>(time(nullptr)) - idle_time) > MAX_IDLE_TIME_SEC) {
+            putc(KISS_FEND);
+            idle_time = time(nullptr);
+        }
         int conn_num = -1;
         int num_bytes = -1;
         vector<uint8_t> buf(MAX_RECV_BYTES);
@@ -240,8 +249,6 @@ auto ESP32PseudoSerial::getc() -> int {
             ser_mtx.lock();
             at_parser->set_timeout(RECV_TIMEOUT_RX_MS);
             string at_fmt_str("+IPD,%d,%d:");
-            //at_fmt_str.append(to_string(MAX_RECV_BYTES));
-            //at_fmt_str.append("s");
             rx_success = at_parser->recv(at_fmt_str.c_str(), &conn_num, &num_bytes, buf.data());
             if(rx_success) {
                 for(int i = 0; i < num_bytes; i++) {
@@ -269,9 +276,22 @@ auto ESP32PseudoSerial::getc() -> int {
 
 
 auto ESP32PseudoSerial::putc(const int val) -> int {
-    outbuf.push_back(val);
+    return putc(val, false);
+}
+
+
+auto ESP32PseudoSerial::putc(const int val, bool dummy_char) -> int {
+    if(dummy_char && outbuf.empty()) {
+        outbuf.push_back(val);
+    } else if(dummy_char && !outbuf.empty()) {
+        // Don't queue up the character, as another thread is loading a 
+        //  KISS frame
+    } else {
+        outbuf.push_back(val);
+    }
     if(val == KISS_FEND || outbuf.size() >= RX_BUF_SIZE) {
         PORTABLE_ASSERT(at_parser != nullptr);
+        idle_time = static_cast<int32_t>(time(nullptr));
         if(cfg.isBT) {
             at_parser->abort();
             ser_mtx.lock();
@@ -292,6 +312,7 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             // See if there's an established BT connection
             PORTABLE_ASSERT(at_parser->send("AT+BTSPPCON?"));
             int conn_idx = -1;
+            // HANDLE THIS HERE
             PORTABLE_ASSERT(at_parser->recv("+BTSPPCON:%8d", &conn_idx));
             if(conn_idx != -1) {
                 PORTABLE_ASSERT(at_parser->recv("OK"));
@@ -357,7 +378,6 @@ auto ESP32PseudoSerial::putc(const int val) -> int {
             } 
             ser_mtx.unlock();
         }
-        printf("clearing the outbuf\r\n");
         outbuf.clear();
     }
     return val;

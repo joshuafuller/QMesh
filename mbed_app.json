@@ -59,8 +59,8 @@
             "target.features_add": ["STORAGE"],
             "target.components_add": ["SPIF", "QSPIF"],
             "platform.stdio-convert-newlines": true,
-            "platform.stdio-baud-rate": 230400,
-            "platform.default-serial-baud-rate": 230400,
+            "platform.stdio-baud-rate": 115200,
+            "platform.default-serial-baud-rate": 115200,
             "platform.stdio-buffered-serial": true,
             "platform.cpu-stats-enabled": 1,
             "platform.thread-stats-enabled": true,
@@ -70,13 +70,7 @@
             "drivers.uart-serial-rxbuf-size": 4200,
             "drivers.uart-serial-txbuf-size": 256,            
             "rtos.idle-thread-stack-size": 8192,
-    		"rtos.idle-thread-stack-size-debug-extra": 8192,
-            "lora.over-the-air-activation": true,
-            "lora.duty-cycle-on": true,
-            "lora.phy": "EU868",
-            "lora.device-eui": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }",
-            "lora.application-eui": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }",
-            "lora.application-key": "{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }"
+    		"rtos.idle-thread-stack-size-debug-extra": 8192
         },
 
         "NRF52840_DK" : {

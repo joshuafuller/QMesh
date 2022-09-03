@@ -222,7 +222,7 @@ if __name__ == "__main__":
         while True:
             try:
                 print("Trying serial port " + str(serial_ports[0]))
-                ser = serial.Serial(serial_ports[0], baudrate=230400)
+                ser = serial.Serial(serial_ports[0], baudrate=115200)
                 break
             except serial.serialutil.SerialException:
                 print("Failed to open port. Trying again in 1s...")
