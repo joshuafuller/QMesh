@@ -6,7 +6,7 @@ sf: 7
 bw: 2
 cr: 0
 num_offsets: 4
-#payload_length: 32
+payload_length: 32
 cw_test_mode: false
 # RF Parameters
 tcxo_time_us: 2000.0

@@ -68,7 +68,7 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     PORTABLE_ASSERT(ser_fh != nullptr);
     // Start the AT command parser
     at_parser = make_shared<ATCmdParser>(&*ser);
-    at_parser->debug_on(1);
+    at_parser->debug_on(0);
     at_parser->set_timeout(RECV_TIMEOUT_MS);
     at_parser->set_delimiter("\r\n");
     if(cfg.isBT) {
@@ -293,6 +293,7 @@ auto ESP32PseudoSerial::putc(const int val, bool dummy_char) -> int {
         PORTABLE_ASSERT(at_parser != nullptr);
         idle_time = static_cast<int32_t>(time(nullptr));
         if(cfg.isBT) {
+            printf("sending out a packet\r\n");
             at_parser->abort();
             ser_mtx.lock();
             at_parser->set_timeout(0);
@@ -310,21 +311,28 @@ auto ESP32PseudoSerial::putc(const int val, bool dummy_char) -> int {
             }
             at_parser->set_timeout(RECV_TIMEOUT_MS);
             // See if there's an established BT connection
-            PORTABLE_ASSERT(at_parser->send("AT+BTSPPCON?"));
-            int conn_idx = -1;
-            // HANDLE THIS HERE
-            PORTABLE_ASSERT(at_parser->recv("+BTSPPCON:%8d", &conn_idx));
-            if(conn_idx != -1) {
+            //PORTABLE_ASSERT(at_parser->send("AT+BTSPPCON?"));
+            //string bt_recv_str("%");
+            //bt_recv_str.append(to_string(outbuf.size()));
+            //bt_recv_str.append("s");
+            //PORTABLE_ASSERT(at_parser->recv(bt_recv_str.c_str(), outbuf.data()));
+            printf("sending outbuf\r\n");
+            at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size());
+            /*
+            if(strncmp("BTSPPCON", reinterpret_cast<char *>(outbuf.data()), outbuf.size()) == 0) {
                 PORTABLE_ASSERT(at_parser->recv("OK"));
                 bool comms_success = at_parser->send("AT+BTSPPSEND=0,%d", outbuf.size()) &&
                     at_parser->recv(">") &&
                     (at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size()) != -1) &&
                     at_parser->recv("OK");
-                    ser_mtx.unlock();
                 if(!comms_success) {
                     printf("Failed to send to ESP32 on BT\r\n");
                 }
+            } else {
+                PORTABLE_ASSERT(at_parser->recv("ERROR"));
             }
+            */
+            ser_mtx.unlock();
         } else {
             at_parser->abort();
             ser_mtx.lock();
