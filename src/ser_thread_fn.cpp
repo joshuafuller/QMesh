@@ -355,12 +355,12 @@ void KISSSerial::rx_serial_thread_fn() {
             } else if(ser_msg->data_msg().type == DataMsg_Type_KISSTX) {
                 debug_printf(DBG_INFO, "Received a KISS frame on port %s of size %d\r\n",
                             port_name.c_str(), ser_msg->data_msg().payload.size); 
-                //size_t tot_bytes = ser_msg->data_msg.payload.size;
                 size_t max_pld_size = Frame::getKISSMaxSize();
-                //size_t cur_bytes = 0;
                 size_t frame_num = 0;
                 size_t tot_frames = ceilf(static_cast<float>(ser_msg->data_msg().payload.size)/
                                             static_cast<float>(max_pld_size));
+                debug_printf(DBG_INFO, "KISS frame size is %d. Max size is %d. Splitting into %d frags\r\n",
+                                ser_msg->data_msg().payload.size, max_pld_size, tot_frames);
                 uint8_t stream_id = Frame::createStreamID();
                 vector<uint8_t> frags(ser_msg->data_msg().payload.size);
                 memcpy(frags.data(), ser_msg->data_msg().payload.bytes, frags.size());

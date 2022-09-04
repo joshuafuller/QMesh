@@ -72,7 +72,6 @@ ESP32PseudoSerial::ESP32PseudoSerial(PinName tx, PinName rx, PinName rst, PinNam
     at_parser->set_timeout(RECV_TIMEOUT_MS);
     at_parser->set_delimiter("\r\n");
     if(cfg.isBT) {
-        printf("Bluetooth chosen\r\n");
         string bt_mode_chk_cmd("AT+BTINIT?\r\n");
         at_parser->send(safe_pcts(bt_mode_chk_cmd).c_str(), bt_mode_chk_cmd.c_str());
         int32_t bt_init = -1;
@@ -293,7 +292,6 @@ auto ESP32PseudoSerial::putc(const int val, bool dummy_char) -> int {
         PORTABLE_ASSERT(at_parser != nullptr);
         idle_time = static_cast<int32_t>(time(nullptr));
         if(cfg.isBT) {
-            printf("sending out a packet\r\n");
             at_parser->abort();
             ser_mtx.lock();
             at_parser->set_timeout(0);
@@ -316,7 +314,7 @@ auto ESP32PseudoSerial::putc(const int val, bool dummy_char) -> int {
             //bt_recv_str.append(to_string(outbuf.size()));
             //bt_recv_str.append("s");
             //PORTABLE_ASSERT(at_parser->recv(bt_recv_str.c_str(), outbuf.data()));
-            printf("sending outbuf\r\n");
+            //printf("sending outbuf\r\n");
             at_parser->write(reinterpret_cast<char *>(outbuf.data()), outbuf.size());
             /*
             if(strncmp("BTSPPCON", reinterpret_cast<char *>(outbuf.data()), outbuf.size()) == 0) {

@@ -6,15 +6,14 @@ sf: 7
 bw: 2
 cr: 0
 num_offsets: 4
-payload_length: 32
+payload_length: 34
 cw_test_mode: false
 # RF Parameters
-tcxo_time_us: 2000.0
+tcxo_time_us: 1000.0
 frequencies:
         - 424000000
         - 425000000
         - 426000000
-        - 427000000
 frequency: 426000000
 # FEC Parameters
 fec_algo: 4

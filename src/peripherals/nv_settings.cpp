@@ -353,7 +353,7 @@ void load_settings_from_flash() {
     PORTABLE_ASSERT(radio_cb.radio_cfg.tx_power <= MAX_TX_POWER_DBM);
     PORTABLE_ASSERT(radio_cb.radio_cfg.tx_power >= 0);
     //radio_cb.net_cfg.pld_len = VoiceMsgProcessor::size();
-    constexpr uint32_t MAX_PLD_LEN = 128;
+    constexpr uint32_t MAX_PLD_LEN = 64;
     debug_printf(DBG_INFO, "Payload Length: %d\r\n", radio_cb.net_cfg.pld_len);
     PORTABLE_ASSERT(radio_cb.net_cfg.pld_len <= MAX_PLD_LEN);
     PORTABLE_ASSERT(radio_cb.net_cfg.pld_len >= 1);
