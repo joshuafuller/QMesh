@@ -23,7 +23,9 @@ using Ticker = mbed::Ticker;
 using LowPowerTicker = mbed::LowPowerTicker;
 using LowPowerTimer = mbed::LowPowerTimer;
 using LowPowerTimeout = mbed::LowPowerTimeout;
+#if MBED_CONF_APP_HAS_WATCHDOG == 1
 using Watchdog = mbed::Watchdog;
+#endif
 using EventQueue = EventQueue;
 
 void special_init();

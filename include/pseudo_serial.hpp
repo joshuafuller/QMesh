@@ -206,8 +206,6 @@ public:
     explicit BLEPseudoSerial(ser_port_type_t my_ser_type) : ser_type(my_ser_type) { 
         if(ser_type == DEBUG_PORT) {
             my_in_queue = &dbg_in_queue;
-        } else if(ser_type == APRS_PORT) {
-            my_in_queue = &aprs_in_queue;
         } else if(ser_type == VOICE_PORT) {
             my_in_queue = &voice_in_queue;
         } else {
