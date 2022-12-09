@@ -63,6 +63,9 @@ static void create_threads() {
 
 static void setup_uarts();
 static void setup_uarts() {
+
+#if MBED_CONF_APP_HAS_BLE == 0
+
     PORTABLE_ASSERT(radio_cb.valid);
     PORTABLE_ASSERT(radio_cb.has_esp_cfg_msg);
     // Start the serial handler threads
@@ -93,6 +96,8 @@ static void setup_uarts() {
         PORTABLE_ASSERT(esp32_1_ser);
     }
 #endif /* MBED_CONF_APP_KISS_UART_TX_ESP32_1 */
+
+#endif /* #if MBED_CONF_APP_HAS_BLE == 0 */
 }
 
 time_t boot_timestamp;

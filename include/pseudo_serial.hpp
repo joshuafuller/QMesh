@@ -89,6 +89,7 @@ using ser_port_type_t = enum ser_port_type_enum {
 };
 
 
+#if MBED_CONF_APP_HAS_BLE == 0
 class ESP32PseudoSerial : public PseudoSerial {
 private:
     static constexpr int RX_BUF_SIZE = 128;
@@ -125,6 +126,8 @@ public:
     auto putc(int val) -> int override;
     auto getc() -> int override;
 };
+
+#endif /* #if MBED_CONF_APP_HAS_BLE == 0 */
 
 
 class FilePseudoSerial : public PseudoSerial {

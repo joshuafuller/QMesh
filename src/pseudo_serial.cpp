@@ -32,6 +32,7 @@ auto PseudoSerial::safe_pcts(const string &send_str) -> string {
 }
 
 
+#if MBED_CONF_APP_HAS_BLE == 0
 constexpr int MAX_RECV_BYTES = 256;
 constexpr int RECV_TIMEOUT_MS = 10;
 constexpr int RECV_TIMEOUT_RX_MS = 25;
@@ -389,6 +390,7 @@ auto ESP32PseudoSerial::putc(const int val, bool dummy_char) -> int {
     return val;
 }
 
+#endif /* #if MBED_CONF_APP_HAS_BLE == 0 */
 
 #if MBED_CONF_APP_HAS_BLE == 1
 Mail<pair<ser_port_type_t, shared_ptr<vector<uint8_t>>>, BLE_QUEUE_SIZE> ble_out_queue;

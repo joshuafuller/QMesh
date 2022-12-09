@@ -409,6 +409,9 @@ KISSSerial::KISSSerial(string my_port_name, ser_port_type_t ser_port_type) :
 }
 
 
+static constexpr uint32_t BT_BAUD_RATE = 115200;
+
+#if MBED_CONF_APP_HAS_BLE == 0
 static constexpr ESP32CfgSubMsg ESP32CfgSubMsg_zero = ESP32CfgSubMsg_init_zero;
 KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t ser_port_type) :
     KISSSerial(my_port_name, ser_port_type),
@@ -430,7 +433,6 @@ KISSSerialUART::KISSSerialUART(const string &my_port_name, const ser_port_type_t
 }
 
 
-static constexpr uint32_t BT_BAUD_RATE = 115200;
 KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName rst, ESP32CfgSubMsg &my_cfg, 
     const ser_port_type_t ser_port_type) :
     KISSSerialUART(tx, rx, rst, NC, NC, my_cfg, ser_port_type) { }
@@ -514,6 +516,8 @@ KISSSerialUART::KISSSerialUART(PinName tx, PinName rx, PinName cts, PinName rts,
     kiss_sers.push_back(this);
     kiss_sers_mtx->unlock();
 }
+
+#endif /* #if MBED_CONF_APP_HAS_BLE == 0 */
 
 
 //static constexpr int BT_NAME_MAX_LEN = 8;
