@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif /* TEST_FEC */
 #include "serial_msg.hpp"
 #include "pseudo_serial.hpp"
+#include "ble_pseudo_serial.hpp"
 #include "params.hpp"
 #include "mail_queues.hpp"
 #if MBED_CONF_APP_HAS_BLE == 1
